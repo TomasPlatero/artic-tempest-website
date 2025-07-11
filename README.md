@@ -42,7 +42,7 @@
 
 ### Prerequisites
 
-* Node.js 16+ and npm (or yarn)
+* Node.js 20+ and npm (or yarn)
 * Angular CLI globally installed: `npm install -g @angular/cli`
 
 ### Installation
