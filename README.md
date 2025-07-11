@@ -32,7 +32,7 @@
 
 ## Tech Stack
 
-* **Frontend**: Angular 17, TypeScript
+* **Frontend**: Angular 20, TypeScript
 * **Styling**: TailwindCSS, shadcn/ui
 * **State Management**: RxJS observables
 * **Backend**: NestJS + Supabase (separate repository)
@@ -42,7 +42,7 @@
 
 ### Prerequisites
 
-* Node.js 16+ and npm (or yarn)
+* Node.js 20+ and npm (or yarn)
 * Angular CLI globally installed: `npm install -g @angular/cli`
 
 ### Installation
