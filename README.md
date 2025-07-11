@@ -32,7 +32,7 @@
 
 ## Tech Stack
 
-* **Frontend**: Angular 17, TypeScript
+* **Frontend**: Angular 20, TypeScript
 * **Styling**: TailwindCSS, shadcn/ui
 * **State Management**: RxJS observables
 * **Backend**: NestJS + Supabase (separate repository)
