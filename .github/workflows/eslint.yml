@@ -2,11 +2,11 @@ name: ESLint
 
 on:
   push:
-    branches: [ "Master", "develop", "master" ]
+    branches: ["Master", "develop", "master"]
   pull_request:
-    branches: [ "Master" ]
+    branches: ["Master"]
   schedule:
-    - cron: '35 13 * * 3'
+    - cron: "35 13 * * 3"
 
 jobs:
   eslint:
@@ -15,7 +15,6 @@ jobs:
     permissions:
       contents: read
       security-events: write
-      actions: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
