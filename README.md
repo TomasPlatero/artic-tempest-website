@@ -33,7 +33,7 @@
 ## Tech Stack
 
 * **Frontend**: Angular 20, TypeScript
-* **Styling**: TailwindCSS, shadcn/ui
+* **Styling**: TailwindCSS
 * **State Management**: RxJS observables
 * **Backend**: NestJS + Supabase (separate repository)
 * **CI/CD**: GitHub Actions, Vercel (frontend)
