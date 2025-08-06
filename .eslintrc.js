@@ -3,16 +3,28 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 'latest',
-    sourceType: 'module'
+    sourceType: 'module',
+    ecmaFeatures: {
+      jsx: true,
+    },
   },
-  plugins: ['@typescript-eslint'],
+  plugins: [
+    '@typescript-eslint',
+    'prettier'
+  ],
   extends: [
-    'eslint:recommended',
-    'plugin:@typescript-eslint/recommended'
+    'next/core-web-vitals',
+    'next/typescript',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:prettier/recommended'
   ],
   env: {
     browser: true,
-    es2022: true
+    es2022: true,
+    node: true
   },
-  rules: {}
+  rules: {
+    '@typescript-eslint/no-explicit-any': 'warn',
+    'prettier/prettier': 'error'
+  }
 };
