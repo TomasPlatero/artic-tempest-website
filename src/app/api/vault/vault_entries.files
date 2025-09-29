@@ -1,9 +1,0 @@
-{
-  "path": "2025-W37/<guildId>/<discordId>/<uuid>.jpg",
-  "name": "cap1.jpg",
-  "type": "image/jpeg",
-  "size": 523344,
-  "checksum": "sha256:...",          // opcional (si calculas)
-  "width": 0, "height": 0,           // opcional (si inspeccionas)
-  "uploadedAt": "2025-09-13T20:01:00Z"
-}
