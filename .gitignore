@@ -1,46 +1,72 @@
-# Node dependencies
-/node_modules/
+# ========================
+# Node.js / NPM / PNPM
+# ========================
+node_modules/
 .pnp/
 .pnp.*
 
+# ========================
 # Next.js build output
-/.next/
-/out/
-/build/
+# ========================
+.next/
+out/
+build/
+.vercel
+.next/cache/
 
+# ========================
 # TypeScript
+# ========================
 next-env.d.ts
 *.tsbuildinfo
 
-# Testing (Jest, Vitest, coverage)
-/coverage/
-/.vitest/
+# ========================
+# Testing (Jest, Vitest, Playwright, coverage)
+# ========================
+coverage/
+.vitest/
 jest-report/
 test-results/
+playwright-report/
 
-# Environment variables
+# ========================
+# Environment variables (todas las variantes comunes)
+# ========================
 .env
+.env.local
+.env.development
+.env.production
+.env.test
 .env.*.local
 
-# IDE and editor
+# ========================
+# Claves / certificados
+# ========================
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# ========================
+# IDE / Editor
+# ========================
 .vscode/
 .idea/
 *.code-workspace
 
+# ========================
 # Miscellaneous system files
+# ========================
 .DS_Store
 Thumbs.db
-*.pem
 *.log
-
-# Optional: Tailwind or build outputs
-/dist/
-/build/
-
-# Debug logs
 npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
+.eslintcache
 
-# CI/CD / Deployment
-.vercel
+# ========================
+# Optional: build outputs adicionales
+# ========================
+dist/

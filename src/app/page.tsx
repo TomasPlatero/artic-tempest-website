@@ -1,50 +1,63 @@
-'use client';
+'use client'
 
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import { signIn } from 'next-auth/react'
+import Image from 'next/image'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
 
 export default function HomePage() {
   return (
-    <main className="flex flex-col min-h-screen">
-      {/* Hero Section */}
-      <section className="flex grow flex-col items-center justify-center bg-slate-900 text-white text-center py-24 px-6">
-        <h1 className="text-5xl font-bold">GuildBoard</h1>
-        <p className="mt-4 text-lg max-w-xl">
-          Gestiona la progresión de tu guild en World of Warcraft y mantente siempre al día.
-        </p>
-        <Button className="mt-8" variant="default">Comenzar</Button>
-        <Button className="mt-4" variant="ghost" onClick={() => window.location.href="/login"}>
-          Iniciar sesión
-        </Button>
-      </section>
+    <main className="relative min-h-screen bg-black">
+      {/* Fondo WoW */}
+      <div
+        className="absolute inset-0 -z-10 bg-cover bg-center"
+        style={{
+          backgroundImage:
+            "url('/assets/images/wow-raid-hero.jpg')", // pon tu imagen épica aquí
+        }}
+      />
+      {/* Overlay degradado/nebla */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/70 via-black/60 to-black/90" />
 
-      {/* Features Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-4xl mx-auto space-y-8">
-          <h2 className="text-3xl font-semibold text-center">Por qué GuildBoard</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <Card className="p-6 text-center">
-              <h3 className="text-xl font-bold mb-2">Actualización automáticas</h3>
-              <p>Importa progreso de raids y runs Mythic+ en tiempo real.</p>
-            </Card>
-            <Card className="p-6 text-center">
-              <h3 className="text-xl font-bold mb-2">Visual Dashboard</h3>
-              <p>Gráficos limpios con accesibilidad y diseño moderno.</p>
-            </Card>
-            <Card className="p-6 text-center">
-              <h3 className="text-xl font-bold mb-2">Control de roles</h3>
-              <p>Define roles, permisos y visualiza participation por miembro.</p>
-            </Card>
-          </div>
-        </div>
-      </section>
+      {/* Aurora/luces suaves */}
+      <div className="pointer-events-none absolute -top-24 left-1/2 h-[40rem] w-[40rem] -translate-x-1/2 rounded-full bg-cyan-500/10 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 left-10 h-[30rem] w-[30rem] rounded-full bg-indigo-500/10 blur-3xl" />
 
-      {/* Footer */}
-      <footer className="flex items-center justify-center py-8 bg-slate-100">
-        <p className="text-sm text-gray-600">
-          © {new Date().getFullYear()} GuildBoard – <a href="/login" className="underline">Iniciar sesión</a>
-        </p>
-      </footer>
+      {/* Contenido */}
+      <section className="flex min-h-screen items-center justify-center px-4 py-12">
+        <Card className="w-full max-w-md border-white/10 bg-white/5 backdrop-blur-xl">
+          <CardContent className="flex flex-col items-center gap-6 p-8">
+            {/* Logo + nombre */}
+            <div className="flex flex-col items-center gap-3">
+              <div className="relative h-30 w-100">
+                <Image
+                  src="/assets/brand/logo-texto.png" // coloca tu logo
+                  alt="Artic Tempest"
+                  fill
+                  priority
+                />
+              </div>
+              <Separator />
+
+            </div>
+
+            {/* Botón de login */}
+            <Button
+              size="lg"
+              className="w-full rounded-xl"
+              onClick={() => signIn('discord', { callbackUrl: '/dashboard' })}
+            >
+              Iniciar sesión con Discord
+            </Button>
+
+            {/* Pie pequeño */}
+            <p className="mt-2 text-center text-xs text-white/50">
+              © {new Date().getFullYear()} Artic Tempest · GuildBoard
+            </p>
+          </CardContent>
+        </Card>
+      </section>
     </main>
   )
 }
