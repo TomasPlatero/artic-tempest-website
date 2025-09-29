@@ -34,7 +34,6 @@ Autenticación **exclusivamente con Discord** (sin login por email).
 - **Portada** pública con CTA → **Login Discord** (Supabase OAuth).
 - **Dashboard** protegido (SSR) con perfil del usuario y rol interno.
 - **RBAC** inicial: `gm`, `officer`, `rl`, `raider_core`, `raider`, `trial`.
-- **Storage** Supabase para capturas del **Vault semanal** (bucket `guild-vault`).
 - **Tareas programadas** (pg_cron) para purgado semanal de capturas.
 - UI con **shadcn/ui** (Tailwind v4) y componentes accesibles.
 
@@ -121,9 +120,6 @@ Abre `http://localhost:3000`.
 ### Supabase (DB/Storage)
 
 - Tabla `profiles` con RLS.  
-- Tabla `vault_entries` con RLS.  
-- Bucket `guild-vault` (MIME `image/*`).  
-- Cron semanal `purge_guild_vault_weekly` (borra capturas de la semana pasada el miércoles).  
 
 > La base ya tiene policies y triggers preparados. Si migras de entorno, aplica los SQL del repo `/supabase/sql`.
 
