@@ -21,34 +21,6 @@ type DiscordMember = {
   roles: string[]
 }
 
-/** ==== Augmentations (evita @ts-expect-error) ==== */
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string
-      discordId: string
-      username: string | null
-      avatarUrl: string | null
-      roleLevel: RoleLevel
-    }
-    checkedAt: string
-  }
-  interface User {
-    id: string
-  }
-}
-
-declare module "next-auth/jwt" {
-  interface JWT {
-    userId?: string
-    discordId?: string
-    roleLevel?: RoleLevel
-    username?: string | null
-    avatarUrl?: string | null
-    checkedAt?: string
-  }
-}
-
 /** ==== ENV ==== */
 const {
   NEXTAUTH_SECRET,

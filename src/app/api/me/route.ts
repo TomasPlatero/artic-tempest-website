@@ -1,7 +1,7 @@
 // src/app/api/me/route.ts
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/infrastructure/auth/auth-options" // según tu estructura
+import { authOptions } from "@/infrastructure/auth/auth-options"
 import { createClient } from "@supabase/supabase-js"
 
 export const runtime = "nodejs"
@@ -9,17 +9,25 @@ export const dynamic = "force-dynamic"
 
 export async function GET() {
   const session = await getServerSession(authOptions)
-  if (!session || !session.user) {
+  if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  // SIEMPRE usa las server keys aquí
   const supabase = createClient(
     process.env.SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const discordId = (session.user as any).discordId as string | undefined
+  const {
+    user: {
+      discordId,
+      username: sessUsername,
+      avatarUrl: sessAvatarUrl,
+      roleLevel: sessRoleLevel,
+      email: sessEmail,
+    },
+  } = session
+
   if (!discordId) {
     return NextResponse.json({ error: "No discord id in session" }, { status: 400 })
   }
@@ -30,26 +38,25 @@ export async function GET() {
     .eq("discord_id", discordId)
     .single()
 
-  // SI HAY BD -> manda siempre el rol de BD (gm/officer/raider_core/raider/trial)
   if (!error && data) {
     return NextResponse.json(
       {
-        name: data.username ?? (session.user as any).username ?? "Usuario",
-        email: (session.user as any).email ?? "",
-        avatar: data.avatar_url ?? (session.user as any).avatarUrl ?? "",
+        name: data.username ?? sessUsername ?? "Usuario",
+        email: sessEmail ?? "",
+        avatar: data.avatar_url ?? sessAvatarUrl ?? "",
         role: data.role ?? "user",
       },
       { status: 200, headers: { "Cache-Control": "no-store" } }
     )
   }
 
-  // Fallback a lo que venga en la sesión (p.ej. primer login)
+  // Fallback a lo que venga en la sesión (primer login, etc.)
   return NextResponse.json(
     {
-      name: (session.user as any).username ?? "Usuario",
-      email: (session.user as any).email ?? "",
-      avatar: (session.user as any).avatarUrl ?? "",
-      role: (session.user as any).roleLevel ?? "user",
+      name: sessUsername ?? "Usuario",
+      email: sessEmail ?? "",
+      avatar: sessAvatarUrl ?? "",
+      role: sessRoleLevel ?? "user",
     },
     { status: 200, headers: { "Cache-Control": "no-store" } }
   )

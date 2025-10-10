@@ -1,11 +1,6 @@
-// src/types/next-auth.d.ts
 import "next-auth";
 import "next-auth/jwt";
-
-// Si ya tienes RoleLevel en un archivo de tipos, impórtalo:
-// import type { RoleLevel } from "@/types/auth";
-// O bien decláralo aquí:
-export type RoleLevel = "gm" | "officer" | "raider";
+import type { RoleLevel } from "@/types/auth";
 
 declare module "next-auth" {
   interface Session {
@@ -15,6 +10,7 @@ declare module "next-auth" {
       username: string | null;
       avatarUrl: string | null;
       roleLevel: RoleLevel;
+      email?: string | null;
     };
     checkedAt: string;
   }
