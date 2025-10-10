@@ -1,11 +1,55 @@
 // src/auth/auth-options.ts
-import type { NextAuthOptions } from "next-auth"
-import DiscordProvider from "next-auth/providers/discord"
+import type { NextAuthOptions, Account, Session } from "next-auth"
+import DiscordProvider, { type DiscordProfile } from "next-auth/providers/discord"
 import { createClient } from "@supabase/supabase-js"
 
+/** ==== Tipos propios ==== */
 type RoleLevel = "gm" | "officer" | "raider"
 const ROLE_ORDER: RoleLevel[] = ["raider", "officer", "gm"]
 
+type GuildboardMeta = {
+  profileId: string
+  discordId: string
+  roleLevel: RoleLevel
+  username: string | null
+  avatarUrl: string | null
+  checkedAt: string
+}
+
+type DiscordMember = {
+  user: { id: string; username?: string; global_name?: string; avatar?: string | null }
+  roles: string[]
+}
+
+/** ==== Augmentations (evita @ts-expect-error) ==== */
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string
+      discordId: string
+      username: string | null
+      avatarUrl: string | null
+      roleLevel: RoleLevel
+    }
+    checkedAt: string
+  }
+  interface User {
+    id: string
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    userId?: string
+    discordId?: string
+    roleLevel?: RoleLevel
+    username?: string | null
+    avatarUrl?: string | null
+    checkedAt?: string
+  }
+}
+
+/** ==== ENV ==== */
 const {
   NEXTAUTH_SECRET,
   DISCORD_CLIENT_ID,
@@ -25,11 +69,17 @@ export const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: { persistSession: false },
 })
 
+/** ==== Utilidades ==== */
 const rank = (r?: RoleLevel | null) => ROLE_ORDER.indexOf((r ?? "raider") as RoleLevel)
 const pickMax = (a?: RoleLevel | null, b?: RoleLevel | null): RoleLevel =>
   rank(b) > rank(a) ? (b as RoleLevel) : ((a ?? "raider") as RoleLevel)
 
-async function fetchDiscordMember(accessToken: string) {
+function discordAvatarURL(userId: string, avatar?: string | null) {
+  return avatar ? `https://cdn.discordapp.com/avatars/${userId}/${avatar}.png` : null
+}
+
+/** ==== Discord API ==== */
+async function fetchDiscordMember(accessToken: string): Promise<DiscordMember | null> {
   const res = await fetch(
     `https://discord.com/api/users/@me/guilds/${DISCORD_GUILD_ID}/member`,
     { headers: { Authorization: `Bearer ${accessToken}` }, cache: "no-store" }
@@ -47,13 +97,10 @@ async function fetchDiscordMember(accessToken: string) {
     throw new Error(`Discord devolvió algo inesperado: ${text.slice(0, 200)}`)
   }
 
-  return res.json() as Promise<{
-    user: { id: string; username?: string; global_name?: string; avatar?: string }
-    roles: string[]
-  }>
+  return res.json() as Promise<DiscordMember>
 }
 
-
+/** ==== DB ==== */
 /** Devuelve el mejor rol (gm/officer/raider) basado en los IDs de Discord y la tabla guild_roles */
 async function pickTopDiscordRole(
   discordRoleIds: string[]
@@ -68,20 +115,15 @@ async function pickTopDiscordRole(
   if (error) throw error
   if (!data?.length) return null
 
-  return data.reduce(
-    (best, row) => {
-      const lvl = row.role_level as RoleLevel
-      return !best || rank(lvl) > rank(best.level)
-        ? { roleId: row.role_id as string, level: lvl }
-        : best
-    },
-    null as { roleId: string; level: RoleLevel } | null
-  )
+  return data.reduce<{ roleId: string; level: RoleLevel } | null>((best, row) => {
+    const lvl = row.role_level as RoleLevel
+    return !best || rank(lvl) > rank(best.level)
+      ? { roleId: row.role_id as string, level: lvl }
+      : best
+  }, null)
 }
 
-const discordAvatarURL = (userId: string, avatar?: string | null) =>
-  avatar ? `https://cdn.discordapp.com/avatars/${userId}/${avatar}.png` : null
-
+/** ==== NextAuth ==== */
 export const authOptions: NextAuthOptions = {
   secret: NEXTAUTH_SECRET,
   session: { strategy: "jwt" },
@@ -103,12 +145,17 @@ export const authOptions: NextAuthOptions = {
       const top = await pickTopDiscordRole(member.roles) // puede ser null
 
       const userId = member.user.id
-      const username =
-        (profile as any)?.global_name ?? member.user.username ?? null
-      const avatarUrl =
-        discordAvatarURL(userId, (profile as any)?.avatar ?? member.user.avatar ?? null)
+      const dProfile = profile as DiscordProfile | null
 
-      // Lee lo existente (para permitir upgrade pero nunca downgrade)
+      const username =
+        dProfile?.global_name ?? member.user.username ?? null
+
+      const avatarUrl = discordAvatarURL(
+        userId,
+        dProfile?.avatar ?? member.user.avatar ?? null
+      )
+
+      // Lee lo existente (permite upgrade pero nunca downgrade)
       const { data: existing } = await sb
         .from("profiles")
         .select("id, role, guild_role_id")
@@ -141,9 +188,9 @@ export const authOptions: NextAuthOptions = {
         .select("id")
         .single()
 
-      if (error || !data) throw error ?? new Error("Upsert perfil falló")
+      if (error || !data) throw (error ?? new Error("Upsert perfil falló"))
 
-      ;(account as any).__guildboard = {
+      const meta: GuildboardMeta = {
         profileId: data.id,
         discordId: userId,
         roleLevel: finalLevel,
@@ -152,34 +199,35 @@ export const authOptions: NextAuthOptions = {
         checkedAt: new Date().toISOString(),
       }
 
+      // Anclar metadatos tipados al objeto account sin usar any
+      ;(account as Account & { __guildboard?: GuildboardMeta }).__guildboard = meta
+
       return true
     },
 
     async jwt({ token, account }) {
-      const meta = (account as any)?.__guildboard
+      const meta = (account as (Account & { __guildboard?: GuildboardMeta }) | null)?.__guildboard
       if (meta) {
         token.userId = meta.profileId
         token.discordId = meta.discordId
         token.roleLevel = meta.roleLevel
-        token.username = meta.username ?? null
-        token.avatarUrl = meta.avatarUrl ?? null
+        token.username = meta.username
+        token.avatarUrl = meta.avatarUrl
         token.checkedAt = meta.checkedAt
       }
       return token
     },
 
     async session({ session, token }) {
-      // @ts-ignore (extensión propia)
       session.user = {
-        id: token.userId as string,
-        discordId: token.discordId as string,
-        username: (token.username as string) ?? null,
-        avatarUrl: (token.avatarUrl as string) ?? null,
+        id: (token.userId as string) ?? "",
+        discordId: (token.discordId as string) ?? "",
+        username: (token.username as string | null) ?? null,
+        avatarUrl: (token.avatarUrl as string | null) ?? null,
         roleLevel: (token.roleLevel as RoleLevel) ?? "raider",
       }
-      // @ts-ignore
-      session.checkedAt = token.checkedAt as string
-      return session
+      session.checkedAt = (token.checkedAt as string) ?? new Date().toISOString()
+      return session as Session
     },
   },
 }

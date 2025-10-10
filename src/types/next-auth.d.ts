@@ -2,7 +2,10 @@
 import "next-auth";
 import "next-auth/jwt";
 
-export type RoleLevel = "gm" | "officer" | "core" | "raider" | "trial";
+// Si ya tienes RoleLevel en un archivo de tipos, impórtalo:
+// import type { RoleLevel } from "@/types/auth";
+// O bien decláralo aquí:
+export type RoleLevel = "gm" | "officer" | "raider";
 
 declare module "next-auth" {
   interface Session {
@@ -19,11 +22,13 @@ declare module "next-auth" {
 
 declare module "next-auth/jwt" {
   interface JWT {
-    userId: string;
-    discordId: string;
-    username: string | null;
-    avatarUrl: string | null;
-    roleLevel: RoleLevel;
-    checkedAt: string;
+    userId?: string;
+    discordId?: string;
+    roleLevel?: RoleLevel;
+    username?: string | null;
+    avatarUrl?: string | null;
+    checkedAt?: string;
   }
 }
+
+export {};
