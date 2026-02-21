@@ -1,8 +1,7 @@
 // src/app/api/me/route.ts
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/infrastructure/auth/auth-options"
-import { createClient } from "@supabase/supabase-js"
+import { authOptions, sb } from "@/infrastructure/auth/auth-options"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -12,11 +11,6 @@ export async function GET() {
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
-
-  const supabase = createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
 
   const {
     user: {
@@ -32,19 +26,19 @@ export async function GET() {
     return NextResponse.json({ error: "No discord id in session" }, { status: 400 })
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await sb
     .from("profiles")
-    .select("username, avatar_url, role")
-    .eq("discord_id", discordId)
+    .select("discord_username, discord_avatar, role_level")
+    .eq("discord_user_id", discordId)
     .single()
 
   if (!error && data) {
     return NextResponse.json(
       {
-        name: data.username ?? sessUsername ?? "Usuario",
+        name: data.discord_username ?? sessUsername ?? "Usuario",
         email: sessEmail ?? "",
-        avatar: data.avatar_url ?? sessAvatarUrl ?? "",
-        role: data.role ?? "user",
+        avatar: data.discord_avatar ?? sessAvatarUrl ?? "",
+        role: data.role_level ?? "raider",
       },
       { status: 200, headers: { "Cache-Control": "no-store" } }
     )
@@ -56,7 +50,7 @@ export async function GET() {
       name: sessUsername ?? "Usuario",
       email: sessEmail ?? "",
       avatar: sessAvatarUrl ?? "",
-      role: sessRoleLevel ?? "user",
+      role: sessRoleLevel ?? "raider",
     },
     { status: 200, headers: { "Cache-Control": "no-store" } }
   )
