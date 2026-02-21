@@ -1,12 +1,28 @@
 'use client'
 
-import { signIn } from 'next-auth/react'
+import { useEffect } from 'react'
+import { signIn, useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { sileo } from 'sileo'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 
 export default function HomePage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (status === 'authenticated' && session) {
+      sileo.success({
+        title: '¡Bienvenido!',
+        description: `Conectado como ${session.user?.username ?? 'Usuario'}`,
+      })
+      router.push('/dashboard')
+    }
+  }, [status, session, router])
+
   return (
     <main className="relative min-h-screen bg-black">
       {/* Fondo WoW */}
@@ -14,7 +30,7 @@ export default function HomePage() {
         className="absolute inset-0 -z-10 bg-cover bg-center"
         style={{
           backgroundImage:
-            "url('/assets/images/wow-raid-hero.jpg')", // pon tu imagen épica aquí
+            "url('/assets/images/wow-raid-hero.jpg')",
         }}
       />
       {/* Overlay degradado/nebla */}
@@ -32,7 +48,7 @@ export default function HomePage() {
             <div className="flex flex-col items-center gap-3">
               <div className="relative h-30 w-100">
                 <Image
-                  src="/assets/brand/logo-texto.png" // coloca tu logo
+                  src="/assets/brand/logo-texto.png"
                   alt="Artic Tempest"
                   fill
                   priority
@@ -46,9 +62,10 @@ export default function HomePage() {
             <Button
               size="lg"
               className="w-full rounded-xl"
-              onClick={() => signIn('discord', { callbackUrl: '/dashboard' })}
+              onClick={() => signIn('discord', { callbackUrl: '/' })}
+              disabled={status === 'loading'}
             >
-              Iniciar sesión con Discord
+              {status === 'loading' ? 'Conectando...' : 'Iniciar sesión con Discord'}
             </Button>
 
             {/* Pie pequeño */}

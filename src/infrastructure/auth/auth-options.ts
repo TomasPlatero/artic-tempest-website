@@ -28,16 +28,16 @@ const {
   DISCORD_CLIENT_SECRET,
   DISCORD_REQUESTED_SCOPES = "identify guilds guilds.members.read",
   DISCORD_GUILD_ID,
-  SUPABASE_URL,
+  NEXT_PUBLIC_SUPABASE_URL,
   SUPABASE_SERVICE_ROLE_KEY,
 } = process.env
 
 if (!NEXTAUTH_SECRET) throw new Error("Falta NEXTAUTH_SECRET")
 if (!DISCORD_CLIENT_ID || !DISCORD_CLIENT_SECRET) throw new Error("Faltan credenciales de Discord")
 if (!DISCORD_GUILD_ID) throw new Error("Falta DISCORD_GUILD_ID")
-if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error("Falta configuración de Supabase")
+if (!NEXT_PUBLIC_SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error("Falta configuración de Supabase")
 
-export const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+export const sb = createClient(NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: { persistSession: false },
 })
 
@@ -73,22 +73,22 @@ async function fetchDiscordMember(accessToken: string): Promise<DiscordMember | 
 }
 
 /** ==== DB ==== */
-/** Devuelve el mejor rol (gm/officer/raider) basado en los IDs de Discord y la tabla guild_roles */
+/** Devuelve el mejor rol (gm/officer/raider) basado en los IDs de Discord y la tabla discord_roles */
 async function pickTopDiscordRole(
   discordRoleIds: string[]
 ): Promise<{ roleId: string; level: RoleLevel } | null> {
   if (!discordRoleIds?.length) return null
 
   const { data, error } = await sb
-    .from("guild_roles")
-    .select("role_id, role_level")
+    .from("discord_roles")
+    .select("role_id, level")
     .in("role_id", discordRoleIds)
 
   if (error) throw error
   if (!data?.length) return null
 
   return data.reduce<{ roleId: string; level: RoleLevel } | null>((best, row) => {
-    const lvl = row.role_level as RoleLevel
+    const lvl = row.level as RoleLevel
     return !best || rank(lvl) > rank(best.level)
       ? { roleId: row.role_id as string, level: lvl }
       : best
@@ -130,40 +130,40 @@ export const authOptions: NextAuthOptions = {
       // Lee lo existente (permite upgrade pero nunca downgrade)
       const { data: existing } = await sb
         .from("profiles")
-        .select("id, role, guild_role_id")
-        .eq("discord_id", userId)
+        .select("user_id, role_level, discord_role_id")
+        .eq("discord_user_id", userId)
         .maybeSingle()
 
-      const dbLevel = (existing?.role as RoleLevel | null) ?? null
+      const dbLevel = (existing?.role_level as RoleLevel | null) ?? null
       const newLevel = top?.level ?? null
       const finalLevel = pickMax(dbLevel, newLevel)
 
-      const finalGuildRoleId =
+      const finalDiscordRoleId =
         newLevel && rank(newLevel) > rank(dbLevel)
           ? top!.roleId
-          : existing?.guild_role_id ?? top?.roleId ?? null
+          : existing?.discord_role_id ?? top?.roleId ?? null
 
       const { data, error } = await sb
         .from("profiles")
         .upsert(
           {
-            discord_id: userId,
-            username,
-            avatar_url: avatarUrl,
-            guild_role_id: finalGuildRoleId,
-            role: finalLevel,
+            discord_user_id: userId,
+            discord_username: username,
+            discord_avatar: avatarUrl,
+            discord_role_id: finalDiscordRoleId,
+            role_level: finalLevel,
             roles_cached: member.roles,
             last_role_check: new Date().toISOString(),
           },
-          { onConflict: "discord_id" }
+          { onConflict: "discord_user_id" }
         )
-        .select("id")
+        .select("user_id")
         .single()
 
       if (error || !data) throw (error ?? new Error("Upsert perfil falló"))
 
       const meta: GuildboardMeta = {
-        profileId: data.id,
+        profileId: data.user_id,
         discordId: userId,
         roleLevel: finalLevel,
         username,
@@ -171,8 +171,8 @@ export const authOptions: NextAuthOptions = {
         checkedAt: new Date().toISOString(),
       }
 
-      // Anclar metadatos tipados al objeto account sin usar any
-      ;(account as Account & { __guildboard?: GuildboardMeta }).__guildboard = meta
+        // Anclar metadatos tipados al objeto account sin usar any
+        ; (account as Account & { __guildboard?: GuildboardMeta }).__guildboard = meta
 
       return true
     },
