@@ -1,180 +1,203 @@
-# GuildBoard
+# 🧭 GuildBoard – Dashboard de Hermandad para World of Warcraft
 
-[![ESLint](https://img.shields.io/github/actions/workflow/status/TomasPlatero/guildboard/eslint.yml?branch=master&label=ESLint)](https://github.com/TomasPlatero/guildboard/actions)
-[![CodeQL](https://img.shields.io/github/actions/workflow/status/TomasPlatero/guildboard/codeql-analysis.yml?branch=master&label=CodeQL)](https://github.com/TomasPlatero/guildboard/actions)
-[![Dependabot](https://img.shields.io/badge/Dependabot-enabled-brightgreen)](https://github.com/TomasPlatero/guildboard/security/dependabot)
-[![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Vercel](https://img.shields.io/badge/Deploy-Vercel-black)](https://guildboard.vercel.app)
-
-**GuildBoard** es una **webapp privada** para el clan _Artic Tempest_.  
-Front en **Next.js** con **Supabase** (Auth/DB/Storage) y **shadcn/ui**.  
-Autenticación **exclusivamente con Discord** (sin login por email).
-
-> Producción: `https://guildboard.vercel.app`
+**GuildBoard** es un panel web privado desarrollado con **Next.js**, **Supabase** y **NextAuth** que permite a los líderes y oficiales de hermandades de *World of Warcraft* gestionar su roster, permisos y datos sincronizados con **Discord** y **Raider.io**.
 
 ---
 
-## Tabla de contenidos
+## ⚙️ Tecnologías principales
 
-- [Características](#características)
-- [Stack técnico](#stack-técnico)
-- [Estructura del proyecto](#estructura-del-proyecto)
-- [Inicio rápido](#inicio-rápido)
-- [Configuración](#configuración)
-- [Scripts](#scripts)
-- [Autenticación y roles](#autenticación-y-roles)
-- [Despliegue](#despliegue)
-- [Seguridad](#seguridad)
-- [Licencia](#licencia)
+| Componente | Descripción |
+|-------------|-------------|
+| 🧩 **Next.js 14** | Framework React con App Router y renderizado híbrido (SSR/ISR). |
+| 🔐 **NextAuth.js** | Autenticación OAuth2 con Discord y Battle.net. |
+| 🗄️ **Supabase** | Base de datos PostgreSQL + autenticación + políticas RLS. |
+| 🎨 **TailwindCSS** | Sistema de estilos utilitario para la UI. |
+| 🧱 **shadcn/ui** | Componentes accesibles y personalizables para la interfaz. |
+| 🧰 **TypeScript** | Tipado estático para mayor robustez y escalabilidad. |
 
 ---
 
-## Características
-
-- **Portada** pública con CTA → **Login Discord** (Supabase OAuth).
-- **Dashboard** protegido (SSR) con perfil del usuario y rol interno.
-- **RBAC** inicial: `gm`, `officer`, `rl`, `raider_core`, `raider`, `trial`.
-- **Tareas programadas** (pg_cron) para purgado semanal de capturas.
-- UI con **shadcn/ui** (Tailwind v4) y componentes accesibles.
-
-> Importante: **No** se usa Raider.IO. Los datos externos del juego se integrarán más adelante vía APIs oficiales de **Blizzard** y caché propia.
-
----
-
-## Stack técnico
-
-- **Framework**: Next.js 15 (App Router) + React 19  
-- **UI**: Tailwind CSS v4, shadcn/ui, lucide-react  
-- **Datos**: Supabase (Auth, Postgres, Storage, RLS)  
-- **Estado**: Server Components + fetch en server  
-- **Calidad**: TypeScript, ESLint, Prettier  
-- **CI**: GitHub Actions (ESLint, CodeQL)  
-- **Infra**: Vercel (front), Supabase (backend gestionado)
-
----
-
-## Estructura del proyecto
+## 🏗️ Arquitectura
 
 ```
-/app
-  /(marketing)         -> portada pública
-  /dashboard           -> zona autenticada (layout + views)
-  /api                 -> route handlers server-only (futuro: integraciones)
-  /_components         -> componentes compartidos (shadcn/ui wrappers)
-/lib
-  supabase.ts          -> cliente supabase (browser/server)
-/public
-/styles                -> estilos globales
+src/
+ ├─ app/
+ │   ├─ login/                # Página de login
+ │   ├─ dashboard/            # Dashboard principal (protegido)
+ │   ├─ api/
+ │   │   └─ auth/[...nextauth]/ # Rutas de NextAuth
+ │   └─ layout.tsx            # Layout base con Sidebar + Header
+ ├─ infrastructure/
+ │   ├─ auth/                 # Opciones de NextAuth + helpers
+ │   ├─ lib/                  # Supabase client y utilidades
+ │   └─ components/           # Sidebar, Header, Card, etc.
+ └─ styles/
+     └─ globals.css
 ```
 
 ---
 
-## Inicio rápido
+## 🔐 Autenticación
 
-### Requisitos
-- Node.js 20+
-- Cuenta de Supabase (proyecto creado)
-- Proyecto en Vercel (opcional para producción)
+La autenticación usa **NextAuth** con el proveedor **Discord** y obtiene automáticamente los roles del usuario en el servidor de la hermandad:
 
-### Pasos
+- `guilds.members.read` permite comprobar si el usuario pertenece al servidor de Discord de la hermandad.  
+- El nivel de rol (`gm`, `officer`, `raider`) se asigna en base al rol que tenga dentro del servidor.  
+- Los datos del perfil se guardan en la tabla `profiles` de Supabase.
 
-1) Clona el repo e instala:
-```bash
-git clone https://github.com/TomasPlatero/guildboard.git
-cd guildboard
-npm install
-```
+> ⚠️ La clave `SUPABASE_SERVICE_ROLE_KEY` **solo se usa en el backend** (rutas con `runtime = "nodejs"`).  
+> No debe ser accesible desde el cliente.
 
-2) Crea un `.env.local` a partir de `.env.example`:
+---
+
+## 🧾 Variables de entorno
+
+Crea un archivo `.env.local` en la raíz del proyecto con el siguiente contenido:
+
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://<tu-proyecto>.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
+# --- NEXTAUTH ---
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=changeme
+
+# --- DISCORD ---
+DISCORD_CLIENT_ID=xxxxxxxxxxxxxxxxxx
+DISCORD_CLIENT_SECRET=xxxxxxxxxxxxxxxxxx
+DISCORD_GUILD_ID=xxxxxxxxxxxxxxxxxx
+DISCORD_REQUESTED_SCOPES=identify guilds guilds.members.read
+
+# --- SUPABASE ---
+NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=xxxxx
+SUPABASE_SERVICE_ROLE_KEY=xxxxx
 ```
-> **No** subas `.env.local` al repo.
 
-3) Configura **Discord** en Supabase → **Auth → Providers → Discord**  
-   - `Redirect URL / Site URL`: `http://localhost:3000` (dev) y `https://guildboard.vercel.app` (prod)  
-   - Scopes mínimos: `identify email`  
-   - Activa **Save provider tokens** (recomendado)
+> 💡 Ejemplo en el repo: `.env.local.sample`  
+> **Nunca comitees `.env.local`** con valores reales.
 
-4) Levanta en local:
+---
+
+## 🚀 Puesta en marcha
+
+### 1️⃣ Instalar dependencias
+```bash
+npm install
+# o
+pnpm install
+```
+
+### 2️⃣ Ejecutar en desarrollo
 ```bash
 npm run dev
 ```
-Abre `http://localhost:3000`.
+Accede en: [http://localhost:3000](http://localhost:3000)
 
----
-
-## Configuración
-
-### Variables de entorno
-
-| Variable                         | Dónde            | Descripción                                |
-|----------------------------------|------------------|--------------------------------------------|
-| `NEXT_PUBLIC_SUPABASE_URL`       | Vercel / local   | URL del proyecto Supabase                  |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY`  | Vercel / local   | ANON KEY de Supabase                       |
-
-> No uses `NEXT_PUBLIC_*` para secretos de servidor.  
-> Blizzard y otras integraciones (server-only) irán sin prefijo `NEXT_PUBLIC_` cuando se añadan.
-
-### Supabase (DB/Storage)
-
-- Tabla `profiles` con RLS.  
-
-> La base ya tiene policies y triggers preparados. Si migras de entorno, aplica los SQL del repo `/supabase/sql`.
-
----
-
-## Scripts
-
-```json
-"scripts": {
-  "dev": "next dev --turbopack",
-  "build": "next build",
-  "start": "next start",
-  "lint": "next lint",
-  "type-check": "tsc -b",
-  "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\""
-}
+### 3️⃣ Build de producción
+```bash
+npm run build
+npm run start
 ```
 
-Útiles:
-- `npm run dev` → desarrollo
-- `npm run build && npm start` → producción local
-- `npm run lint` / `npm run format` / `npm run type-check`
+---
+
+## 🗃️ Base de datos (Supabase)
+
+### Tablas principales
+- **profiles:** Usuarios autenticados vinculados a Discord.
+- **discord_roles:** Catálogo de roles del servidor (FK de `profiles.discord_role_id`).
+- **guilds_managed:** Datos de la hermandad (nombre, región, realm, miembros, etc).
+
+### Políticas RLS
+- Solo los **oficiales** y **GM** pueden ver y editar todos los perfiles.
+- Los **raiders** solo pueden ver su propio perfil.
+
+> Si alteras el tipo de columnas usadas en policies, **desactiva temporalmente la RLS** antes de ejecutar el `ALTER TABLE`.
+
+### Migraciones (Supabase CLI)
+
+El proyecto usa **Supabase CLI** para gestionar el esquema de base de datos con migraciones versionadas.
+
+```
+supabase/
+  ├─ config.toml                              # Configuración local
+  ├─ migrations/
+  │   └─ 20260221000000_initial_schema.sql    # Migración inicial
+  └─ seed.sql                                 # Datos iniciales
+```
+
+#### Configuración inicial (una sola vez)
+
+```bash
+# 1. Crear un Access Token en https://supabase.com/dashboard/account/tokens
+
+# 2. Configurar el token (PowerShell)
+$env:SUPABASE_ACCESS_TOKEN="tu-token-aquí"
+
+# 3. Enlazar con el proyecto remoto
+npx supabase link --project-ref vrniyndhfaawwqzcrqng
+```
+
+#### Comandos disponibles
+
+| Comando | Descripción |
+|---------|-------------|
+| `npm run db:push` | Aplica las migraciones pendientes al proyecto remoto. |
+| `npm run db:reset` | Resetea la base de datos y re-aplica todas las migraciones + seed. |
+| `npm run db:new nombre` | Crea un nuevo archivo de migración con timestamp. |
+| `npm run db:status` | Muestra el estado de las migraciones (aplicadas/pendientes). |
+
+#### Flujo para cambios en la base de datos
+
+```bash
+# 1. Crear una nueva migración
+npm run db:new add_events_table
+
+# 2. Editar el archivo generado en supabase/migrations/
+
+# 3. Aplicar al proyecto remoto
+npm run db:push
+```
+
+> ⚠️ **Nunca edites migraciones ya aplicadas.** Si necesitas corregir algo, crea una nueva migración con los cambios.
 
 ---
 
-## Autenticación y roles
+## 🧩 Roles y permisos
 
-- Autenticación **solo** con **Discord** vía Supabase.
-- Al iniciar sesión se crea/actualiza `public.profiles`.
-- Roles internos (`profiles.role`): `gm`, `officer`, `rl`, `raider_core`, `raider`, `trial`.  
-- Gating de rutas **en servidor** (SSR). La UI oculta/enseña tarjetas según rol, pero la protección real es server-side.
-
-> Sincronización automática con roles del Discord del clan se tratará más adelante (requiere `guilds.members.read` y mapeo de IDs → `profiles.role`).
-
----
-
-## Despliegue
-
-- **Vercel**: conecta el repo, añade `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY` en “Environment Variables”.
-- **Supabase**: en **Auth → URL config** pon la `Site URL` de producción (`https://guildboard.vercel.app`).  
-- **Discord developer portal**: registra exactamente los mismos Redirects (`https://guildboard.vercel.app`).
+| Rol | Permisos |
+|------|-----------|
+| 🧙‍♂️ Guild Master (`gm`) | Acceso total al dashboard y configuración. |
+| 🛡️ Officer (`officer`) | Gestión de roster y miembros. |
+| ⚔️ Raider (`raider`) | Acceso de lectura a su propio perfil. |
 
 ---
 
-## Seguridad
+## 🧹 Mantenimiento
 
-- App **privada** para miembros del clan.  
-- RLS activo en tablas sensibles; `role` solo modificable por **GM** (trigger).  
-- No se almacenan secretos en el cliente.  
-- Revisa `Security Advisor` y `Database Linter` de Supabase después de cada cambio de schema.
-
-> Reporta vulnerabilidades a `taplatero@outlook.es`.
+- 🔄 **CRON Supabase:** Actualiza datos de Raider.io y sincroniza con Discord.
+- 🧽 **Purge automático de Storage:** Todos los miércoles (Europe/Madrid).
+- 🛠️ **Seed inicial:** Inserta roles base en `discord_roles` antes de conectar el auth.
 
 ---
 
-## Licencia
+## 💬 Próximas funcionalidades
 
-MIT — ver [LICENSE](LICENSE).
+- [ ] Integración con **Raider.io** (progreso de banda y M+).
+- [ ] Sistema de **Vault semanal**.
+- [ ] Gestión de **Roster** con permisos.
+- [ ] Panel de **reclutamiento** editable.
+- [ ] Sincronización automática de **ranks Discord ↔ roles Supabase**.
+
+---
+
+## 🧑‍💻 Desarrollado por
+
+**Zatoshi**  
+Guild Master de *Artic Tempest (EU-Dun Modr)*  
+🌐 [www.artictempest.es](https://www.artictempest.es)
+
+---
+
+## 🧱 Licencia
+
+Este proyecto es privado y de uso interno para la hermandad *Artic Tempest*.  
+No está destinado a distribución pública.

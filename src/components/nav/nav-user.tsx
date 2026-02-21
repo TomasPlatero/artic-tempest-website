@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { signOut } from "next-auth/react"
+import { sileo } from "sileo"
 
 import { IconCreditCard, IconDotsVertical, IconLogout, IconNotification, IconUserCircle } from "@tabler/icons-react"
 
@@ -34,30 +35,34 @@ export function NavUser() {
 
   React.useEffect(() => {
     let active = true
-    ;(async () => {
-      try {
-        // fuerza a no cachear para que no se quede "user" por un payload viejo
-        const res = await fetch("/api/me", { credentials: "include", cache: "no-store" })
-        if (!res.ok) throw new Error("failed")
-        const data: MePayload = await res.json()
-        if (active) setUser(data)
-      } catch {
-        // fallback silencioso
-      }
-    })()
+      ; (async () => {
+        try {
+          // fuerza a no cachear para que no se quede "user" por un payload viejo
+          const res = await fetch("/api/me", { credentials: "include", cache: "no-store" })
+          if (!res.ok) throw new Error("failed")
+          const data: MePayload = await res.json()
+          if (active) setUser(data)
+        } catch {
+          // fallback silencioso
+        }
+      })()
     return () => {
       active = false
     }
   }, [])
 
   const handleLogout = async () => {
+    sileo.info({
+      title: "Sesión cerrada",
+      description: "¡Hasta pronto!",
+    })
     await signOut({ callbackUrl: "/" })
   }
 
   const displayName = user?.name ?? "Usuario"
   const displayAvatar = user?.avatar ?? ""
   const displayRole = user?.role ?? ""
-  console.log(displayRole)
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -93,29 +98,6 @@ export function NavUser() {
             align="end"
             sideOffset={4}
           >
-            <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={displayAvatar} alt={displayName} />
-                  <AvatarFallback className="rounded-lg">
-                    {displayName?.[0]?.toUpperCase() ?? "?"}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">
-                    {displayName}
-                    {displayRole ? (
-                      <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
-                        {displayRole}
-                      </span>
-                    ) : null}
-                  </span>
-                </div>
-              </div>
-            </DropdownMenuLabel>
-
-            <DropdownMenuSeparator />
-
             <DropdownMenuGroup>
               <DropdownMenuItem>
                 <IconUserCircle />
