@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth"
 import { authOptions, sb } from "@/infrastructure/auth/auth-options"
 import { redirect } from "next/navigation"
 import { RaidEditorClient } from "@/components/calendar/raid-editor-client"
+import { getAppPermission } from "@/infrastructure/auth/permissions"
 
 export default async function RaidEditorPage({
     params,
@@ -11,9 +12,16 @@ export default async function RaidEditorPage({
     searchParams: Promise<{ date?: string }>
 }) {
     const session = await getServerSession(authOptions)
+    if (!session) {
+        redirect("/")
+    }
+
+    const roleLevel = session.user.roleLevel ?? "member"
+    const { canEdit } = await getAppPermission(roleLevel, 'calendar')
+
     const { id } = await params
 
-    if (!session || (session.user?.roleLevel !== 'gm' && session.user?.roleLevel !== 'officer')) {
+    if (!canEdit) {
         if (id) {
             redirect(`/dashboard/calendario/${id}`)
         }
@@ -47,11 +55,11 @@ export default async function RaidEditorPage({
 
     // Fetch visible ranks from settings
     const { data: visibleRanks } = await sb
-        .from("guild_rank_visibility")
-        .select("rank_id")
+        .from("guild_ranks")
+        .select("rank")
         .eq("is_visible", true)
 
-    const visibleRankIds = (visibleRanks || []).map(r => r.rank_id)
+    const visibleRankIds = (visibleRanks || []).map(r => r.rank)
 
     // Fetch all members belonging to visible ranks to show in the "Available" pool
     let query = sb.from("guild_members").select("*")

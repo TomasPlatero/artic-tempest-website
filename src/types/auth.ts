@@ -1,1 +1,1 @@
-export type RoleLevel = "gm" | "officer" | "raider";
+export type RoleLevel = "gm" | "officer" | "raider" | "member";

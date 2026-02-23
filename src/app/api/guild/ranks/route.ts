@@ -21,7 +21,7 @@ export async function PATCH(request: Request) {
             return NextResponse.json({ error: "Datos inválidos" }, { status: 400 })
         }
 
-        const payload: any = { rank_id: rankId, is_visible: isVisible }
+        const payload: any = { rank: rankId, is_visible: isVisible }
         if (name !== undefined) {
             payload.name = name
         }
@@ -30,10 +30,10 @@ export async function PATCH(request: Request) {
         }
 
         const { error } = await sb
-            .from("guild_rank_visibility")
+            .from("guild_ranks")
             .upsert(
                 payload,
-                { onConflict: "rank_id" }
+                { onConflict: "rank" }
             )
 
         if (error) {

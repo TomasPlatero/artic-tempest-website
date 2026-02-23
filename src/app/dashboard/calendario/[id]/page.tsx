@@ -3,16 +3,17 @@ import type React from "react"
 import { redirect, notFound } from "next/navigation"
 import { getServerSession } from "next-auth"
 import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { getAppPermission } from "@/infrastructure/auth/permissions"
 
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { SiteHeader } from "@/components/layout/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/common/sidebar"
-import { EventDetailClient } from "@/components/calendar/event-detail-client"
+import { RaidEditorClient } from "@/components/calendar/raid-editor-client"
 
 export const runtime = "nodejs"
 
 async function getEventDetails(eventId: string) {
-    // Fetch event
+    // 1. Fetch event
     const { data: event, error: eventErr } = await sb
         .from("guild_events")
         .select("*")
@@ -21,31 +22,32 @@ async function getEventDetails(eventId: string) {
 
     if (eventErr || !event) return null
 
-    // Fetch signups joining with members/profiles
+    // 2. Fetch signups joining with members
     const { data: signups } = await sb
         .from("event_signups")
-        .select(`
-      member_id,
-      role_preference,
-      status,
-      selection_status,
-      comment,
-      guild_members!inner(character_name, class_id)
-    `)
+        .select("*, guild_members(*)")
         .eq("event_id", eventId)
 
-    // Format signups for client
-    const formattedSignups = (signups || []).map((s: any) => ({
-        member_id: s.member_id,
-        character_name: s.guild_members.character_name,
-        class_id: s.guild_members.class_id,
-        role_preference: s.role_preference,
-        status: s.status,
-        selection_status: s.selection_status,
-        comment: s.comment,
-    }))
+    // 3. Fetch plannable members (those with visible ranks)
+    const { data: visibleRanks, error: vrError } = await sb
+        .from("guild_ranks")
+        .select("rank")
+        .eq("is_visible", true)
 
-    return { event, signups: formattedSignups }
+    const visibleRankIds = (visibleRanks || []).map(r => r.rank)
+
+    let query = sb.from("guild_members").select("*")
+    if (visibleRankIds.length > 0) {
+        query = query.in("rank", visibleRankIds)
+    }
+
+    const { data: plannableMembers } = await query.order("rank", { ascending: true })
+
+    return {
+        event,
+        signups: signups || [],
+        plannableMembers: plannableMembers || []
+    }
 }
 
 export default async function EventDetailPage({ params }: { params: { id: string } }) {
@@ -54,12 +56,32 @@ export default async function EventDetailPage({ params }: { params: { id: string
         redirect("/")
     }
 
-    const roleLevel = session.user?.roleLevel ?? "raider"
+    const userId = session.user.id
+    const roleLevel = session.user?.roleLevel ?? "member"
+    const { canView, canEdit } = await getAppPermission(roleLevel, 'calendar')
+
+    if (!canView) {
+        redirect("/dashboard")
+    }
+
     const details = await getEventDetails(params.id)
 
     if (!details) {
         notFound()
     }
+
+    const { data: profile } = await sb
+        .from("profiles")
+        .select("id, character_name, character_realm")
+        .eq("user_id", session.user.id)
+        .single()
+
+    const { data: currentMember } = profile ? await sb
+        .from("guild_members")
+        .select("id")
+        .eq("character_name", profile.character_name)
+        .eq("realm_slug", profile.character_realm)
+        .single() : { data: null }
 
     const style = {
         "--sidebar-width": "calc(var(--spacing) * 72)",
@@ -72,10 +94,12 @@ export default async function EventDetailPage({ params }: { params: { id: string
             <SidebarInset>
                 <SiteHeader />
                 <div className="flex flex-1 flex-col p-4 md:p-6 bg-[#16161a]">
-                    <EventDetailClient
-                        event={details.event}
-                        signups={details.signups}
-                        roleLevel={roleLevel}
+                    <RaidEditorClient
+                        initialRaid={details.event}
+                        initialSignups={details.signups}
+                        plannableMembers={details.plannableMembers}
+                        isReadOnly={!canEdit}
+                        currentMemberId={userId}
                     />
                 </div>
             </SidebarInset>

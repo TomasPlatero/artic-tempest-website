@@ -88,12 +88,16 @@ export function RaidEditorClient({
     initialRaid,
     initialSignups,
     plannableMembers,
-    preselectedDate
+    preselectedDate,
+    currentMemberId,
+    isReadOnly = false
 }: {
     initialRaid: any
     initialSignups: any[]
     plannableMembers: Member[]
     preselectedDate?: string
+    currentMemberId?: string
+    isReadOnly?: boolean
 }) {
     const router = useRouter()
     const [raid, setRaid] = useState(initialRaid ? {
@@ -142,6 +146,42 @@ export function RaidEditorClient({
     const [isSaving, setIsSaving] = useState(false)
     const [hasMounted, setHasMounted] = useState(false)
 
+    // Personal presence state (for raiders/viewers)
+    const [presence, setPresence] = useState(() => {
+        const mySignup = initialSignups.find(s => s.member_id === currentMemberId)
+        return mySignup?.status || "present"
+    })
+    const [comment, setComment] = useState(() => {
+        const mySignup = initialSignups.find(s => s.member_id === currentMemberId)
+        return mySignup?.comment || ""
+    })
+
+    const handleSavePresence = async () => {
+        setIsSaving(true)
+        try {
+            const res = await fetch("/api/guild/events/signup", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    event_id: raid.id,
+                    status: presence,
+                    comment: comment,
+                    role_preference: "dps" // Fallback
+                })
+            })
+
+            if (!res.ok) throw new Error("Failed to save")
+            sileo.success({ title: "Inscripción guardada", description: "Tu estado para esta raid ha sido actualizado." })
+            router.refresh()
+        } catch (error) {
+            console.error(error)
+            sileo.error({ title: "Error", description: "No se pudo guardar tu inscripción." })
+        } finally {
+            setIsSaving(false)
+        }
+    }
+
+
     useEffect(() => {
         setHasMounted(true)
         console.log("RaidEditorClient Mounted")
@@ -184,6 +224,9 @@ export function RaidEditorClient({
         })
     )
 
+    const canDrag = !isReadOnly
+
+
     const handleDragStart = (event: any) => {
         setActiveId(event.active.id)
     }
@@ -196,6 +239,7 @@ export function RaidEditorClient({
     }
 
     const handleDragEnd = (event: any) => {
+        if (!canDrag) return
         const { active, over } = event
         setActiveId(null)
 
@@ -374,7 +418,7 @@ export function RaidEditorClient({
                     </h1>
                 </div>
                 <div className="flex items-center gap-2">
-                    {initialRaid && (
+                    {!isReadOnly && initialRaid && (
                         <Button
                             variant="outline"
                             onClick={handleDelete}
@@ -385,10 +429,12 @@ export function RaidEditorClient({
                             Eliminar Evento
                         </Button>
                     )}
-                    <Button onClick={handleSave} disabled={isSaving} className="bg-primary hover:bg-primary/90">
-                        <IconDeviceFloppy className="size-4 mr-2" />
-                        {isSaving ? "Guardando..." : "Guardar Cambios"}
-                    </Button>
+                    {!isReadOnly && (
+                        <Button onClick={handleSave} disabled={isSaving} className="bg-primary hover:bg-primary/90">
+                            <IconDeviceFloppy className="size-4 mr-2" />
+                            {isSaving ? "Guardando..." : "Guardar Cambios"}
+                        </Button>
+                    )}
                 </div>
             </div>
 
@@ -401,11 +447,12 @@ export function RaidEditorClient({
                         value={raid.event_date.slice(0, 16)}
                         onChange={e => setRaid({ ...raid, event_date: e.target.value })}
                         className="bg-background border-border/20"
+                        readOnly={isReadOnly}
                     />
                 </div>
                 <div className="flex flex-col gap-1.5">
                     <Label className="text-xs text-muted-foreground uppercase tracking-wider">Destino (Midnight)</Label>
-                    <Select value={raid.destination} onValueChange={v => setRaid({ ...raid, destination: v })}>
+                    <Select value={raid.destination} onValueChange={v => setRaid({ ...raid, destination: v })} disabled={isReadOnly}>
                         <SelectTrigger className="bg-background border-border/20">
                             <SelectValue />
                         </SelectTrigger>
@@ -418,7 +465,7 @@ export function RaidEditorClient({
                 </div>
                 <div className="flex flex-col gap-1.5">
                     <Label className="text-xs text-muted-foreground uppercase tracking-wider">Dificultad</Label>
-                    <Select value={raid.difficulty} onValueChange={v => setRaid({ ...raid, difficulty: v })}>
+                    <Select value={raid.difficulty} onValueChange={v => setRaid({ ...raid, difficulty: v })} disabled={isReadOnly}>
                         <SelectTrigger className="bg-background border-border/20">
                             <SelectValue />
                         </SelectTrigger>
@@ -431,7 +478,7 @@ export function RaidEditorClient({
                 </div>
                 <div className="flex flex-col gap-1.5">
                     <Label className="text-xs text-muted-foreground uppercase tracking-wider">Duración</Label>
-                    <Select value={duration} onValueChange={setDuration}>
+                    <Select value={duration} onValueChange={setDuration} disabled={isReadOnly}>
                         <SelectTrigger className="bg-background border-border/20">
                             <SelectValue />
                         </SelectTrigger>
@@ -447,6 +494,45 @@ export function RaidEditorClient({
                 </div>
             </div>
 
+            {/* Personal Presence Row (Visible for everyone, but mainly for Raiders) */}
+            <div className="bg-card/50 border border-border/40 rounded-xl p-4 shadow-sm">
+                <div className="flex flex-wrap gap-4 items-end text-sm">
+                    <div className="space-y-1 w-[160px]">
+                        <Label className="text-muted-foreground text-[10px] uppercase font-bold">Tu Asistencia</Label>
+                        <Select value={presence} onValueChange={setPresence}>
+                            <SelectTrigger className="h-9 bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="present">Presente</SelectItem>
+                                <SelectItem value="absent">Ausente</SelectItem>
+                                <SelectItem value="tentativo">Tentativo</SelectItem>
+                                <SelectItem value="late">Tarde</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="space-y-1 flex-1 min-w-[200px]">
+                        <Label className="text-muted-foreground text-[10px] uppercase font-bold">Comentario</Label>
+                        <Input
+                            placeholder="Ej. Llego 10 min tarde"
+                            className="h-9 bg-background border-border/20"
+                            value={comment}
+                            onChange={(e) => setComment(e.target.value)}
+                        />
+                    </div>
+
+                    <Button
+                        variant="secondary"
+                        className="h-9 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20"
+                        onClick={handleSavePresence}
+                        disabled={isSaving}
+                    >
+                        {isSaving ? "Guardando..." : "Inscribirse / Actualizar"}
+                    </Button>
+                </div>
+            </div>
+
             {/* Main Planning Area */}
             {!hasMounted ? (
                 <div className="flex flex-col gap-8 opacity-50">
@@ -456,11 +542,11 @@ export function RaidEditorClient({
             ) : (
                 <DndContext
                     id="raid-planner-dnd"
-                    sensors={sensors}
+                    sensors={canDrag ? sensors : []}
                     collisionDetection={customCollisionDetection}
-                    onDragStart={handleDragStart}
-                    onDragOver={handleDragOver}
-                    onDragEnd={handleDragEnd}
+                    onDragStart={canDrag ? handleDragStart : undefined}
+                    onDragOver={canDrag ? handleDragOver : undefined}
+                    onDragEnd={canDrag ? handleDragEnd : undefined}
                 >
                     <div className="flex flex-col lg:flex-row gap-6 items-start">
                         {/* COLUMN 1: Active Roster Grouped (33%) */}
@@ -479,7 +565,7 @@ export function RaidEditorClient({
                                 <div className="flex flex-col gap-2">
                                     <h4 className="text-[10px] font-bold text-emerald-500/60 uppercase pl-1">Tanques</h4>
                                     {activeByRole.tanks.length > 0 ? activeByRole.tanks.map(s => (
-                                        <MemberItem key={s.member_id} signup={s} onToggle={() => toggleStatus(s.member_id)} onChangeRole={() => changeRole(s.member_id)} />
+                                        <MemberItem key={s.member_id} signup={s} onToggle={() => toggleStatus(s.member_id)} onChangeRole={() => changeRole(s.member_id)} isReadOnly={isReadOnly} />
                                     )) : <div className="h-10 border border-dashed border-emerald-500/10 rounded-lg flex items-center justify-center text-[10px] text-emerald-500/30 font-bold uppercase italic">Sin Tanques</div>}
                                 </div>
 
@@ -487,7 +573,7 @@ export function RaidEditorClient({
                                 <div className="flex flex-col gap-2">
                                     <h4 className="text-[10px] font-bold text-emerald-500/60 uppercase pl-1">Healers</h4>
                                     {activeByRole.heals.length > 0 ? activeByRole.heals.map(s => (
-                                        <MemberItem key={s.member_id} signup={s} onToggle={() => toggleStatus(s.member_id)} onChangeRole={() => changeRole(s.member_id)} />
+                                        <MemberItem key={s.member_id} signup={s} onToggle={() => toggleStatus(s.member_id)} onChangeRole={() => changeRole(s.member_id)} isReadOnly={isReadOnly} />
                                     )) : <div className="h-10 border border-dashed border-emerald-500/10 rounded-lg flex items-center justify-center text-[10px] text-emerald-500/30 font-bold uppercase italic">Sin Healers</div>}
                                 </div>
 
@@ -495,7 +581,7 @@ export function RaidEditorClient({
                                 <div className="flex flex-col gap-2">
                                     <h4 className="text-[10px] font-bold text-emerald-500/60 uppercase pl-1">Melee DPS</h4>
                                     {activeByRole.melee.length > 0 ? activeByRole.melee.map(s => (
-                                        <MemberItem key={s.member_id} signup={s} onToggle={() => toggleStatus(s.member_id)} onChangeRole={() => changeRole(s.member_id)} />
+                                        <MemberItem key={s.member_id} signup={s} onToggle={() => toggleStatus(s.member_id)} onChangeRole={() => changeRole(s.member_id)} isReadOnly={isReadOnly} />
                                     )) : <div className="h-10 border border-dashed border-emerald-500/10 rounded-lg flex items-center justify-center text-[10px] text-emerald-500/30 font-bold uppercase italic">Sin Melee</div>}
                                 </div>
 
@@ -503,7 +589,7 @@ export function RaidEditorClient({
                                 <div className="flex flex-col gap-2">
                                     <h4 className="text-[10px] font-bold text-emerald-500/60 uppercase pl-1">Ranged DPS</h4>
                                     {activeByRole.ranged.length > 0 ? activeByRole.ranged.map(s => (
-                                        <MemberItem key={s.member_id} signup={s} onToggle={() => toggleStatus(s.member_id)} onChangeRole={() => changeRole(s.member_id)} />
+                                        <MemberItem key={s.member_id} signup={s} onToggle={() => toggleStatus(s.member_id)} onChangeRole={() => changeRole(s.member_id)} isReadOnly={isReadOnly} />
                                     )) : <div className="h-10 border border-dashed border-emerald-500/10 rounded-lg flex items-center justify-center text-[10px] text-emerald-500/30 font-bold uppercase italic">Sin Ranged</div>}
                                 </div>
                             </DroppableContainer>
@@ -525,7 +611,7 @@ export function RaidEditorClient({
                                 <div className="flex flex-col gap-2">
                                     <h4 className="text-[10px] font-bold text-amber-500/60 uppercase pl-1">Tanques</h4>
                                     {reserveByRole.tanks.length > 0 ? reserveByRole.tanks.map(s => (
-                                        <MemberItem key={s.member_id} signup={s} onToggle={() => toggleStatus(s.member_id)} onChangeRole={() => changeRole(s.member_id)} />
+                                        <MemberItem key={s.member_id} signup={s} onToggle={() => toggleStatus(s.member_id)} onChangeRole={() => changeRole(s.member_id)} isReadOnly={isReadOnly} />
                                     )) : <div className="h-10 border border-dashed border-amber-500/10 rounded-lg flex items-center justify-center text-[10px] text-amber-500/30 font-bold uppercase italic">Vacío</div>}
                                 </div>
 
@@ -533,7 +619,7 @@ export function RaidEditorClient({
                                 <div className="flex flex-col gap-2">
                                     <h4 className="text-[10px] font-bold text-amber-500/60 uppercase pl-1">Healers</h4>
                                     {reserveByRole.heals.length > 0 ? reserveByRole.heals.map(s => (
-                                        <MemberItem key={s.member_id} signup={s} onToggle={() => toggleStatus(s.member_id)} onChangeRole={() => changeRole(s.member_id)} />
+                                        <MemberItem key={s.member_id} signup={s} onToggle={() => toggleStatus(s.member_id)} onChangeRole={() => changeRole(s.member_id)} isReadOnly={isReadOnly} />
                                     )) : <div className="h-10 border border-dashed border-amber-500/10 rounded-lg flex items-center justify-center text-[10px] text-amber-500/30 font-bold uppercase italic">Vacío</div>}
                                 </div>
 
@@ -541,7 +627,7 @@ export function RaidEditorClient({
                                 <div className="flex flex-col gap-2">
                                     <h4 className="text-[10px] font-bold text-amber-500/60 uppercase pl-1">Melee DPS</h4>
                                     {reserveByRole.melee.length > 0 ? reserveByRole.melee.map(s => (
-                                        <MemberItem key={s.member_id} signup={s} onToggle={() => toggleStatus(s.member_id)} onChangeRole={() => changeRole(s.member_id)} />
+                                        <MemberItem key={s.member_id} signup={s} onToggle={() => toggleStatus(s.member_id)} onChangeRole={() => changeRole(s.member_id)} isReadOnly={isReadOnly} />
                                     )) : <div className="h-10 border border-dashed border-amber-500/10 rounded-lg flex items-center justify-center text-[10px] text-amber-500/30 font-bold uppercase italic">Vacío</div>}
                                 </div>
 
@@ -549,7 +635,7 @@ export function RaidEditorClient({
                                 <div className="flex flex-col gap-2">
                                     <h4 className="text-[10px] font-bold text-amber-500/60 uppercase pl-1">Ranged DPS</h4>
                                     {reserveByRole.ranged.length > 0 ? reserveByRole.ranged.map(s => (
-                                        <MemberItem key={s.member_id} signup={s} onToggle={() => toggleStatus(s.member_id)} onChangeRole={() => changeRole(s.member_id)} />
+                                        <MemberItem key={s.member_id} signup={s} onToggle={() => toggleStatus(s.member_id)} onChangeRole={() => changeRole(s.member_id)} isReadOnly={isReadOnly} />
                                     )) : <div className="h-10 border border-dashed border-amber-500/10 rounded-lg flex items-center justify-center text-[10px] text-amber-500/30 font-bold uppercase italic">Vacío</div>}
                                 </div>
                             </DroppableContainer>
@@ -604,8 +690,8 @@ export function RaidEditorClient({
     )
 }
 
-function MemberItem({ signup, onToggle, onChangeRole }: { signup: Signup, onToggle: () => void, onChangeRole: () => void }) {
-    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: signup.member_id })
+function MemberItem({ signup, onToggle, onChangeRole, isReadOnly = false }: { signup: Signup, onToggle: () => void, onChangeRole: () => void, isReadOnly?: boolean }) {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: signup.member_id, disabled: isReadOnly })
 
     const style = {
         transform: CSS.Transform.toString(transform),
@@ -629,21 +715,30 @@ function MemberItem({ signup, onToggle, onChangeRole }: { signup: Signup, onTogg
             </div>
 
             <div className="flex items-center gap-1.5">
-                <button
-                    onClick={(e) => { e.stopPropagation(); onChangeRole(); }}
-                    className="text-[10px] uppercase font-bold text-muted-foreground/60 w-12 text-center hover:text-white transition-colors cursor-pointer bg-muted/50 hover:bg-muted py-1 rounded"
-                    title="Cambiar rol"
-                >
-                    {signup.event_role}
-                </button>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 text-muted-foreground hover:text-white"
-                    onClick={onToggle}
-                >
-                    {signup.selection_status === 'selected' ? <IconTrash className="size-3 text-red-500" /> : <IconCheck className="size-3 text-emerald-500" />}
-                </Button>
+                {!isReadOnly && (
+                    <>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onChangeRole(); }}
+                            className="text-[10px] uppercase font-bold text-muted-foreground/60 w-12 text-center hover:text-white transition-colors cursor-pointer bg-muted/50 hover:bg-muted py-1 rounded"
+                            title="Cambiar rol"
+                        >
+                            {signup.event_role}
+                        </button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-muted-foreground hover:text-white"
+                            onClick={onToggle}
+                        >
+                            {signup.selection_status === 'selected' ? <IconTrash className="size-3 text-red-500" /> : <IconCheck className="size-3 text-emerald-500" />}
+                        </Button>
+                    </>
+                )}
+                {isReadOnly && (
+                    <span className="text-[10px] uppercase font-bold text-muted-foreground/40 w-12 text-center py-1">
+                        {signup.event_role}
+                    </span>
+                )}
             </div>
         </div>
     )

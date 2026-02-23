@@ -38,10 +38,19 @@ async function getRoster() {
     }))
 }
 
+import { getAppPermission } from "@/infrastructure/auth/permissions"
+
 export default async function EstadisticasPage() {
     const session = await getServerSession(authOptions)
     if (!session) {
         redirect("/")
+    }
+
+    const roleLevel = session.user?.roleLevel ?? "member"
+    const { canView } = await getAppPermission(roleLevel, 'stats')
+
+    if (!canView) {
+        redirect("/dashboard")
     }
 
     const roster = await getRoster()

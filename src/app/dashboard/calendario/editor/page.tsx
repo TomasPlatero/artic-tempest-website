@@ -1,5 +1,6 @@
 import { getServerSession } from "next-auth"
 import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { getAppPermission } from "@/infrastructure/auth/permissions"
 import { redirect } from "next/navigation"
 import { RaidEditorClient } from "@/components/calendar/raid-editor-client"
 
@@ -13,7 +14,14 @@ export default async function RaidEditorPage({
     searchParams: Promise<{ date?: string }>
 }) {
     const session = await getServerSession(authOptions)
-    if (!session || (session.user?.roleLevel !== 'gm' && session.user?.roleLevel !== 'officer')) {
+    if (!session) {
+        redirect("/")
+    }
+
+    const roleLevel = session.user.roleLevel ?? "member"
+    const { canEdit } = await getAppPermission(roleLevel, 'calendar')
+
+    if (!canEdit) {
         redirect("/dashboard/calendario")
     }
 
@@ -43,18 +51,18 @@ export default async function RaidEditorPage({
         }
     }
 
-    // 1. Fetch visible ranks from settings
+    // Step 1: Fetch visible ranks from settings
     const { data: visibleRanks, error: vrError } = await sb
-        .from("guild_rank_visibility")
-        .select("rank_id")
+        .from("guild_ranks")
+        .select("rank")
         .eq("is_visible", true)
 
     if (vrError) console.error("RaidEditorPage - Error fetching visible ranks:", vrError)
 
-    const visibleRankIds = (visibleRanks || []).map(r => r.rank_id)
+    const visibleRankIds = (visibleRanks || []).map(r => r.rank)
     console.log("RaidEditorPage - Visible Rank IDs:", visibleRankIds)
 
-    // 2. Fetch all members belonging to visible ranks to show in the "Available" pool
+    // Step 2: Fetch all members belonging to visible ranks to show in the "Available" pool
     // FALLBACK: If no visible ranks specified, try fetching all to debug
     let query = sb.from("guild_members").select("*")
     if (visibleRankIds.length > 0) {

@@ -3,6 +3,7 @@ import type React from "react"
 import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
 import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { getAppPermission } from "@/infrastructure/auth/permissions"
 
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { SiteHeader } from "@/components/layout/site-header"
@@ -19,19 +20,26 @@ async function getRoster() {
         .order("rank", { ascending: true })
         .order("character_name", { ascending: true })
 
-    const { data: rawVisibilities } = await sb
-        .from("guild_rank_visibility")
-        .select("rank_id, name, is_visible")
+    const { data: visibleRanks } = await sb
+        .from("guild_ranks")
+        .select("rank")
+        .eq("is_visible", true)
+
+    const visibleRankIds = (visibleRanks || []).map(r => r.rank)
+
+    const { data: rawRanks } = await sb
+        .from("guild_ranks")
+        .select("rank, name, is_visible")
 
     const defaultNames = ["Guild Master", "Officer", "Officer Alt", "Raider", "Trial", "Social", "Alt", "Initiate", "Recruit", "Member"]
 
     const rankNames = Array.from({ length: 10 }, (_, i) => {
-        const found = rawVisibilities?.find(v => v.rank_id === i)
+        const found = rawRanks?.find(v => v.rank === i)
         return found?.name || defaultNames[i]
     })
 
     const rankVisibility = Array.from({ length: 10 }, (_, i) => {
-        const found = rawVisibilities?.find(v => v.rank_id === i)
+        const found = rawRanks?.find(v => v.rank === i)
         return found ? found.is_visible : false
     })
 
@@ -46,8 +54,14 @@ export default async function RosterPage() {
         redirect("/")
     }
 
+    const roleLevel = session.user?.roleLevel ?? "member"
+    const { canView } = await getAppPermission(roleLevel, 'roster')
+
+    if (!canView) {
+        redirect("/dashboard")
+    }
+
     const { roster, rankNames } = await getRoster()
-    const roleLevel = session.user?.roleLevel ?? "raider"
 
     const style = {
         "--sidebar-width": "calc(var(--spacing) * 72)",

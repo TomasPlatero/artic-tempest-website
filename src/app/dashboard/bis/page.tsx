@@ -3,6 +3,7 @@ import type React from "react"
 import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
 import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { getAppPermission } from "@/infrastructure/auth/permissions"
 
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { SiteHeader } from "@/components/layout/site-header"
@@ -32,13 +33,13 @@ async function getBisData(userId: string) {
         return { eligibleMembers: [] as EligibleMember[] }
     }
 
-    // Step 2: Find guild_members that match those names with ranks marked as visible
+    // 2. Fetch plannable members (those with visible ranks)
     const { data: visibleRanks } = await sb
-        .from("guild_rank_visibility")
-        .select("rank_id")
+        .from("guild_ranks")
+        .select("rank")
         .eq("is_visible", true)
 
-    const visibleRankIds = (visibleRanks || []).map(r => r.rank_id)
+    const visibleRankIds = (visibleRanks || []).map(r => r.rank)
 
     let query = sb
         .from("guild_members")
@@ -65,7 +66,15 @@ export default async function BisPage() {
         redirect("/")
     }
 
-    const { eligibleMembers } = await getBisData(session.user.id)
+    const userId = session.user.id
+    const roleLevel = session.user?.roleLevel ?? "member"
+    const { canView } = await getAppPermission(roleLevel, 'bis')
+
+    if (!canView) {
+        redirect("/dashboard")
+    }
+
+    const { eligibleMembers } = await getBisData(userId)
 
     const style = {
         "--sidebar-width": "calc(var(--spacing) * 72)",
