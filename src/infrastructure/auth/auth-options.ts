@@ -2,6 +2,7 @@
 import type { NextAuthOptions, Account, Session } from "next-auth"
 import DiscordProvider, { type DiscordProfile } from "next-auth/providers/discord"
 import { createClient } from "@supabase/supabase-js"
+import { getGuildCredentials } from "@/infrastructure/auth/credentials"
 
 /** ==== Tipos propios ==== */
 type RoleLevel = "gm" | "officer" | "raider"
@@ -24,17 +25,14 @@ type DiscordMember = {
 /** ==== ENV ==== */
 const {
   NEXTAUTH_SECRET,
-  DISCORD_CLIENT_ID,
-  DISCORD_CLIENT_SECRET,
+  DISCORD_CLIENT_ID = "",
+  DISCORD_CLIENT_SECRET = "",
   DISCORD_REQUESTED_SCOPES = "identify guilds guilds.members.read",
-  DISCORD_GUILD_ID,
   NEXT_PUBLIC_SUPABASE_URL,
   SUPABASE_SERVICE_ROLE_KEY,
 } = process.env
 
 if (!NEXTAUTH_SECRET) throw new Error("Falta NEXTAUTH_SECRET")
-if (!DISCORD_CLIENT_ID || !DISCORD_CLIENT_SECRET) throw new Error("Faltan credenciales de Discord")
-if (!DISCORD_GUILD_ID) throw new Error("Falta DISCORD_GUILD_ID")
 if (!NEXT_PUBLIC_SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error("Falta configuración de Supabase")
 
 export const sb = createClient(NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -43,62 +41,48 @@ export const sb = createClient(NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_K
 
 /** ==== Utilidades ==== */
 const rank = (r?: RoleLevel | null) => ROLE_ORDER.indexOf((r ?? "raider") as RoleLevel)
-const pickMax = (a?: RoleLevel | null, b?: RoleLevel | null): RoleLevel =>
-  rank(b) > rank(a) ? (b as RoleLevel) : ((a ?? "raider") as RoleLevel)
 
 function discordAvatarURL(userId: string, avatar?: string | null) {
   return avatar ? `https://cdn.discordapp.com/avatars/${userId}/${avatar}.png` : null
 }
 
-/** ==== Discord API ==== */
-async function fetchDiscordMember(accessToken: string): Promise<DiscordMember | null> {
-  const res = await fetch(
-    `https://discord.com/api/users/@me/guilds/${DISCORD_GUILD_ID}/member`,
-    { headers: { Authorization: `Bearer ${accessToken}` }, cache: "no-store" }
-  )
-
-  if (res.status === 404) return null
-  if (!res.ok) {
-    const text = await res.text()
-    throw new Error(`Discord API ${res.status}: ${text}`)
+/** ==== DB / Helpers ==== */
+async function fetchDiscordMember(accessToken: string, guildId: string): Promise<DiscordMember | null> {
+  if (!guildId) return null
+  const url = `https://discord.com/api/users/@me/guilds/${guildId}/member`
+  try {
+    const response = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } })
+    if (!response.ok) return null
+    return (await response.json()) as DiscordMember
+  } catch (error) {
+    console.error("Error fetching Discord member", error)
+    return null
   }
-
-  const ct = res.headers.get("content-type")
-  if (!ct?.includes("application/json")) {
-    const text = await res.text()
-    throw new Error(`Discord devolvió algo inesperado: ${text.slice(0, 200)}`)
-  }
-
-  return res.json() as Promise<DiscordMember>
 }
 
-/** ==== DB ==== */
-/** Devuelve el mejor rol (gm/officer/raider) basado en los IDs de Discord y la tabla discord_roles */
-async function pickTopDiscordRole(
-  discordRoleIds: string[]
-): Promise<{ roleId: string; level: RoleLevel } | null> {
-  if (!discordRoleIds?.length) return null
+async function pickTopDiscordRole(roleIds: string[]): Promise<{ roleId: string; level: RoleLevel } | null> {
+  if (!roleIds || roleIds.length === 0) return null
 
-  const { data, error } = await sb
-    .from("discord_roles")
-    .select("role_id, level")
-    .in("role_id", discordRoleIds)
+  const { data } = await sb.from("discord_roles").select("role_id, level").in("role_id", roleIds)
+  if (!data || data.length === 0) return null
 
-  if (error) throw error
-  if (!data?.length) return null
+  const sorted = data.sort((a, b) => rank(b.level as RoleLevel) - rank(a.level as RoleLevel))
+  return { roleId: sorted[0].role_id, level: sorted[0].level as RoleLevel }
+}
 
-  return data.reduce<{ roleId: string; level: RoleLevel } | null>((best, row) => {
-    const lvl = row.level as RoleLevel
-    return !best || rank(lvl) > rank(best.level)
-      ? { roleId: row.role_id as string, level: lvl }
-      : best
-  }, null)
+const pickMax = (a: RoleLevel | null, b: RoleLevel | null): RoleLevel => {
+  const ra = rank(a)
+  const rb = rank(b)
+  return ra >= rb ? (a ?? "raider") : (b ?? "raider")
 }
 
 /** ==== NextAuth ==== */
 export const authOptions: NextAuthOptions = {
   secret: NEXTAUTH_SECRET,
-  session: { strategy: "jwt" },
+  session: {
+    strategy: "jwt",
+    maxAge: 24 * 60 * 60, // 24 hours (LOPD/GDPR compliance for strict necessity)
+  },
   providers: [
     DiscordProvider({
       clientId: DISCORD_CLIENT_ID,
@@ -111,37 +95,32 @@ export const authOptions: NextAuthOptions = {
       const accessToken = account?.access_token
       if (!accessToken) return false
 
-      const member = await fetchDiscordMember(accessToken)
-      if (!member) return false
-
-      const top = await pickTopDiscordRole(member.roles) // puede ser null
-
-      const userId = member.user.id
+      const userId = profile?.sub ?? (profile as any)?.id
       const dProfile = profile as DiscordProfile | null
 
       const username =
-        dProfile?.global_name ?? member.user.username ?? null
+        dProfile?.global_name ?? dProfile?.username ?? null
 
       const avatarUrl = discordAvatarURL(
         userId,
-        dProfile?.avatar ?? member.user.avatar ?? null
+        dProfile?.avatar ?? null
       )
 
-      // Lee lo existente (permite upgrade pero nunca downgrade)
+      // Read Discord Guild ID from DB (with env fallback)
+      const creds = await getGuildCredentials()
+      const member = await fetchDiscordMember(accessToken, creds.discord_guild_id)
+      const topRole = member ? await pickTopDiscordRole(member.roles) : null
+
+      // Lee el rol persistente de la BD.
       const { data: existing } = await sb
         .from("profiles")
-        .select("user_id, role_level, discord_role_id")
+        .select("user_id, role_level")
         .eq("discord_user_id", userId)
         .maybeSingle()
 
-      const dbLevel = (existing?.role_level as RoleLevel | null) ?? null
-      const newLevel = top?.level ?? null
+      const dbLevel = (existing?.role_level as RoleLevel | null) ?? "raider"
+      const newLevel = topRole?.level ?? "raider"
       const finalLevel = pickMax(dbLevel, newLevel)
-
-      const finalDiscordRoleId =
-        newLevel && rank(newLevel) > rank(dbLevel)
-          ? top!.roleId
-          : existing?.discord_role_id ?? top?.roleId ?? null
 
       const { data, error } = await sb
         .from("profiles")
@@ -150,9 +129,7 @@ export const authOptions: NextAuthOptions = {
             discord_user_id: userId,
             discord_username: username,
             discord_avatar: avatarUrl,
-            discord_role_id: finalDiscordRoleId,
             role_level: finalLevel,
-            roles_cached: member.roles,
             last_role_check: new Date().toISOString(),
           },
           { onConflict: "discord_user_id" }
@@ -165,7 +142,7 @@ export const authOptions: NextAuthOptions = {
       const meta: GuildboardMeta = {
         profileId: data.user_id,
         discordId: userId,
-        roleLevel: finalLevel,
+        roleLevel: dbLevel,
         username,
         avatarUrl,
         checkedAt: new Date().toISOString(),

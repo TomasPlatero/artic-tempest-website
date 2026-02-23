@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions, sb } from "@/infrastructure/auth/auth-options"
 
+export const dynamic = "force-dynamic"
+
 export async function POST(request: Request) {
     try {
         const session = await getServerSession(authOptions)
@@ -15,7 +17,7 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json()
-        const { title, destination, event_date, end_date, difficulty } = body
+        const { title, destination, event_date, end_date, difficulty, selected_bosses } = body
 
         if (!event_date || !destination) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
@@ -24,19 +26,31 @@ export async function POST(request: Request) {
         // Fake standard backgrounds based on destination
         let background_url = null
         const destLower = destination.toLowerCase()
-        if (destLower.includes("ulduar")) {
-            background_url = "https://wow.zamimg.com/uploads/screenshots/normal/136894-ulduar.jpg"
-        } else if (destLower.includes("naxx")) {
-            background_url = "https://wow.zamimg.com/uploads/screenshots/normal/105741-naxxramas.jpg"
-        } else if (destLower.includes("malygos") || destLower.includes("eye of eternity")) {
-            background_url = "https://wow.zamimg.com/uploads/screenshots/normal/105745-the-eye-of-eternity.jpg"
-        } else if (destLower.includes("sartharion") || destLower.includes("obsidian")) {
-            background_url = "https://wow.zamimg.com/uploads/screenshots/normal/105742-the-obsidian-sanctum.jpg"
+        if (destLower.includes("voidspire")) {
+            background_url = "https://www.nerdsquare.eu/wp-content/uploads/2025/08/nerdsquare-wow-midnight-raid-voidspire-700x394.jpg"
+        } else if (destLower.includes("dreamrift")) {
+            background_url = "https://www.nerdsquare.eu/wp-content/uploads/2025/08/nerdsquare-wow-midnight-raid-dreamrift-700x394.jpg"
+        } else if (destLower.includes("quel'danas") || destLower.includes("sunwell")) {
+            background_url = "https://www.nerdsquare.eu/wp-content/uploads/2025/08/nerdsquare-wow-midnight-raid-marchonqueldanas-700x394.jpg"
+        }
+
+        // Get the first guild ID (since the app manages one guild for now)
+        const { data: guildData, error: guildError } = await sb
+            .from("guilds_managed")
+            .select("guild_id")
+            .limit(1)
+            .single()
+
+        if (guildError || !guildData) {
+            console.error("POST /api/guild/events - Guild fetch error:", guildError)
+            return NextResponse.json({ error: "Guild not found" }, { status: 500 })
         }
 
         const { data, error } = await sb
             .from("guild_events")
             .insert({
+                guild_id: guildData.guild_id,
+                author_id: session.user.id,
                 title: destination, // For this usecase wowaudit usually titles it by destination
                 event_type: "raid",
                 event_date,
@@ -45,13 +59,14 @@ export async function POST(request: Request) {
                 destination,
                 difficulty,
                 status: "scheduled",
-                background_url
+                background_url,
+                selected_bosses: selected_bosses || []
             })
             .select()
             .single()
 
         if (error) {
-            console.error("Supabase insert error:", error)
+            console.error("POST /api/guild/events - Insert error:", error)
             return NextResponse.json({ error: error.message }, { status: 500 })
         }
 

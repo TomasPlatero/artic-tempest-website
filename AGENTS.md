@@ -12,13 +12,16 @@ Mantener un registro claro y auditable de las herramientas inteligentes, automat
 
 ## 🤖 Agentes y Asistentes
 
-### 1. **Codex (GitHub Copilot Workspace)**
-- **Tipo**: Asistente de desarrollo basado en IA.
-- **Rol**: Propuesta de cambios, redacción de commits, sugerencias de refactor y generación de mensajes de PR.
+- **Intervención humana requerida**: ✅
+
+---
+
+### 2. **Antigravity (Google DeepMind)**
+- **Tipo**: Agente de IA avanzado (LLM).
+- **Rol**: Planificación, ejecución de código, refinamiento de UI, debugging y mantenimiento de documentación.
 - **Limitaciones**:
-  - No realiza `git push`.
-  - No crea PRs reales automáticamente.
-  - Necesita intervención explícita para aplicar cambios.
+  - Requiere aprobación del usuario para ejecutar comandos del sistema.
+  - Opera dentro del contexto proporcionado por el usuario.
 - **Intervención humana requerida**: ✅
 
 ---
@@ -95,6 +98,6 @@ Mantener un registro claro y auditable de las herramientas inteligentes, automat
 
 ## 🧩 Última revisión
 
-**11 de julio de 2025** — Documento generado automáticamente a partir de la configuración actual del entorno. Actualiza este archivo si introduces nuevos agentes o cambian las responsabilidades de los existentes.
+**22 de febrero de 2026** — Documento actualizado tras la implementación de las fases de Roster, Calendario y Battle.net. Actualiza este archivo si introduces nuevos agentes o cambian las responsabilidades de los existentes.
 
 ---

@@ -8,9 +8,7 @@ import {
   IconInnerShadowTop,
   IconSearch,
   IconSettings,
-  IconSword,
   IconUsers,
-  IconShield,
   IconCalendarEvent,
   IconListCheck,
   IconPlus,
@@ -44,20 +42,11 @@ const data = {
       icon: IconUsers,
     },
     {
-      title: "Progreso",
-      url: "/dashboard/progreso",
-      icon: IconSword,
-    },
-    {
       title: "Estadísticas",
       url: "/dashboard/estadisticas",
       icon: IconChartBar,
     },
-    {
-      title: "Roles",
-      url: "/dashboard/roles",
-      icon: IconShield,
-    },
+
     {
       title: "Calendario",
       url: "/dashboard/calendario",
