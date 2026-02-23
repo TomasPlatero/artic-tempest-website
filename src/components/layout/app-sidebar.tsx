@@ -18,6 +18,7 @@ import {
 import { NavMain } from "@/components/nav/nav-main"
 import { NavSecondary } from "@/components/nav/nav-secondary";
 import { NavUser } from "@/components/nav/nav-user"
+import { useSession } from "next-auth/react"
 import {
   Sidebar,
   SidebarContent,
@@ -63,6 +64,7 @@ const data = {
       title: "Ajustes",
       url: "/dashboard/settings",
       icon: IconSettings,
+      roles: ["gm", "officer"]
     },
     {
       title: "Ayuda",
@@ -73,7 +75,14 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { data: session } = useSession()
+  const roleLevel = session?.user?.roleLevel ?? "raider"
   const [iconUrl, setIconUrl] = React.useState<string | null>(null)
+
+  const filteredSecondary = data.navSecondary.filter(item => {
+    if (!item.roles) return true
+    return item.roles.includes(roleLevel)
+  })
 
   React.useEffect(() => {
     fetch("/api/guild/info")
@@ -106,7 +115,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavSecondary items={filteredSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser />
