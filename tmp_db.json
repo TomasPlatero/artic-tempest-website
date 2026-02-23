@@ -1,0 +1,86 @@
+[
+  {
+    "id": "a1f93678-398a-41dc-9e8f-eb57349acc22",
+    "guild_id": "a0000000-0000-4000-8000-000000000001",
+    "day_of_week": 1,
+    "start_time": "17:30:00",
+    "end_time": "19:30:00",
+    "destination": "The Voidspire",
+    "difficulty": "Heroic",
+    "is_active": true,
+    "created_at": "2026-02-22T22:51:06.391538+00:00",
+    "updated_at": "2026-02-22T22:51:47.427857+00:00"
+  },
+  {
+    "id": "391fe71f-932b-4df7-86ac-0eaa46ec88dc",
+    "guild_id": "a0000000-0000-4000-8000-000000000001",
+    "day_of_week": 2,
+    "start_time": "17:30:00",
+    "end_time": "19:30:00",
+    "destination": "The Voidspire",
+    "difficulty": "Heroic",
+    "is_active": true,
+    "created_at": "2026-02-22T22:51:06.391538+00:00",
+    "updated_at": "2026-02-22T22:51:47.427857+00:00"
+  },
+  {
+    "id": "9460ef3e-b285-44be-a748-b134a1c09261",
+    "guild_id": "a0000000-0000-4000-8000-000000000001",
+    "day_of_week": 3,
+    "start_time": "17:30:00",
+    "end_time": "19:30:00",
+    "destination": "The Voidspire",
+    "difficulty": "Heroic",
+    "is_active": true,
+    "created_at": "2026-02-22T22:51:06.391538+00:00",
+    "updated_at": "2026-02-22T22:51:47.427857+00:00"
+  },
+  {
+    "id": "c3955841-a7c8-4fc8-a40d-438e1428f6b1",
+    "guild_id": "a0000000-0000-4000-8000-000000000001",
+    "day_of_week": 4,
+    "start_time": "17:30:00",
+    "end_time": "19:30:00",
+    "destination": "The Voidspire",
+    "difficulty": "Heroic",
+    "is_active": true,
+    "created_at": "2026-02-22T22:51:06.391538+00:00",
+    "updated_at": "2026-02-22T22:51:47.427857+00:00"
+  },
+  {
+    "id": "a4b6ce2c-384b-4fcc-87f7-4f87722398ff",
+    "guild_id": "a0000000-0000-4000-8000-000000000001",
+    "day_of_week": 5,
+    "start_time": "17:30:00",
+    "end_time": "19:30:00",
+    "destination": "The Voidspire",
+    "difficulty": "Heroic",
+    "is_active": true,
+    "created_at": "2026-02-22T22:51:06.391538+00:00",
+    "updated_at": "2026-02-22T22:51:47.427857+00:00"
+  },
+  {
+    "id": "83407ceb-e49e-4d25-b18b-b443cb8c0541",
+    "guild_id": "a0000000-0000-4000-8000-000000000001",
+    "day_of_week": 6,
+    "start_time": "17:30:00",
+    "end_time": "19:30:00",
+    "destination": "The Voidspire",
+    "difficulty": "Heroic",
+    "is_active": false,
+    "created_at": "2026-02-22T22:51:06.391538+00:00",
+    "updated_at": "2026-02-22T22:51:47.427857+00:00"
+  },
+  {
+    "id": "678fb21d-1bca-4b2a-9177-1517d8e6b941",
+    "guild_id": "a0000000-0000-4000-8000-000000000001",
+    "day_of_week": 7,
+    "start_time": "17:30:00",
+    "end_time": "19:30:00",
+    "destination": "The Voidspire",
+    "difficulty": "Heroic",
+    "is_active": false,
+    "created_at": "2026-02-22T22:51:06.391538+00:00",
+    "updated_at": "2026-02-22T22:51:47.427857+00:00"
+  }
+]

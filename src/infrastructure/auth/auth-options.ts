@@ -2,6 +2,7 @@
 import type { NextAuthOptions, Account, Session } from "next-auth"
 import DiscordProvider, { type DiscordProfile } from "next-auth/providers/discord"
 import { createClient } from "@supabase/supabase-js"
+import { getGuildCredentials } from "@/infrastructure/auth/credentials"
 
 /** ==== Tipos propios ==== */
 type RoleLevel = "gm" | "officer" | "raider"
@@ -24,17 +25,14 @@ type DiscordMember = {
 /** ==== ENV ==== */
 const {
   NEXTAUTH_SECRET,
-  DISCORD_CLIENT_ID,
-  DISCORD_CLIENT_SECRET,
+  DISCORD_CLIENT_ID = "",
+  DISCORD_CLIENT_SECRET = "",
   DISCORD_REQUESTED_SCOPES = "identify guilds guilds.members.read",
-  DISCORD_GUILD_ID,
   NEXT_PUBLIC_SUPABASE_URL,
   SUPABASE_SERVICE_ROLE_KEY,
 } = process.env
 
 if (!NEXTAUTH_SECRET) throw new Error("Falta NEXTAUTH_SECRET")
-if (!DISCORD_CLIENT_ID || !DISCORD_CLIENT_SECRET) throw new Error("Faltan credenciales de Discord")
-if (!DISCORD_GUILD_ID) throw new Error("Falta DISCORD_GUILD_ID")
 if (!NEXT_PUBLIC_SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error("Falta configuración de Supabase")
 
 export const sb = createClient(NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -49,9 +47,9 @@ function discordAvatarURL(userId: string, avatar?: string | null) {
 }
 
 /** ==== DB / Helpers ==== */
-async function fetchDiscordMember(accessToken: string): Promise<DiscordMember | null> {
-  if (!DISCORD_GUILD_ID) return null
-  const url = `https://discord.com/api/users/@me/guilds/${DISCORD_GUILD_ID}/member`
+async function fetchDiscordMember(accessToken: string, guildId: string): Promise<DiscordMember | null> {
+  if (!guildId) return null
+  const url = `https://discord.com/api/users/@me/guilds/${guildId}/member`
   try {
     const response = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } })
     if (!response.ok) return null
@@ -108,7 +106,9 @@ export const authOptions: NextAuthOptions = {
         dProfile?.avatar ?? null
       )
 
-      const member = await fetchDiscordMember(accessToken)
+      // Read Discord Guild ID from DB (with env fallback)
+      const creds = await getGuildCredentials()
+      const member = await fetchDiscordMember(accessToken, creds.discord_guild_id)
       const topRole = member ? await pickTopDiscordRole(member.roles) : null
 
       // Lee el rol persistente de la BD.

@@ -107,7 +107,7 @@ export function RosterClient({
         </div>
       </div>
 
-      <div className="px-4 lg:px-6 grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-4">
+      <div className="px-4 lg:px-6 grid gap-6 grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 xl:grid-cols-3">
         {/* Tanques */}
         <div className="flex flex-col gap-2">
           <div className="py-2 flex items-center gap-2 text-base font-semibold text-sky-400 border-b border-border/40">

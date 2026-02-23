@@ -29,9 +29,13 @@ async function getProgressionData() {
 async function getRoster() {
     const { data } = await sb
         .from("guild_members")
-        .select("class_id")
+        .select("id, character_name, realm_slug, class_id, role")
+        .order("character_name", { ascending: true })
 
-    return data ?? []
+    return (data ?? []).map(m => ({
+        ...m,
+        character_realm: m.realm_slug,
+    }))
 }
 
 export default async function EstadisticasPage() {

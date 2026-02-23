@@ -1,7 +1,6 @@
 "use client"
 
 import { useMemo, useState, useEffect } from "react"
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip, Legend } from "recharts"
 import {
     Card,
     CardContent,
@@ -37,22 +36,7 @@ export function StatsClient({ members, rioData }: { members: any[], rioData?: an
         13: "#33937F", // Evoker
     }
 
-    const classData = useMemo(() => {
-        const counts: Record<number, number> = {}
-        members.forEach((m) => {
-            const cid = m.class_id ?? 0
-            counts[cid] = (counts[cid] || 0) + 1
-        })
 
-        return Object.entries(counts)
-            .filter(([id]) => id !== "0") // ignore unknowns
-            .map(([id, count]) => ({
-                name: WOW_CLASSES[parseInt(id)],
-                value: count,
-                color: WOW_CLASS_COLORS[parseInt(id)],
-            }))
-            .sort((a, b) => b.value - a.value)
-    }, [members])
 
     const raidKeys = useMemo(() => {
         if (!rioData || !rioData.raid_progression) return []

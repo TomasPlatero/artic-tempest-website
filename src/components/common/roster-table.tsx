@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import {
   IconSettings,
   IconTrash,
@@ -235,20 +234,19 @@ export function RosterTable({
                   <TableCell className="font-medium pl-4 py-2">
                     <div className="flex items-center gap-3">
                       {m.class_id ? (
-                        <Image
+                        <img
                           src={`/assets/images/classes/${m.class_id}.jpg`}
                           alt={classNameStr}
-                          width={24}
-                          height={24}
-                          className="rounded-full shadow-inner border border-border/30 shrink-0 object-cover"
+                          className="size-6 rounded-full shadow-inner border border-border/30 object-cover"
                         />
                       ) : (
-                        <div className="size-6 rounded-full bg-[#1e1e24] flex items-center justify-center text-[10px] border border-border/30 shadow-inner overflow-hidden shrink-0">
+                        <div className="size-6 rounded-full bg-[#1e1e24] flex items-center justify-center text-[10px] border border-border/30 shadow-inner overflow-hidden">
                           <div
                             className={`w-full h-full bg-current opacity-20 text-white`}
                           ></div>
                         </div>
                       )}
+
                       <span
                         className={`${classColor} font-semibold drop-shadow-sm`}
                       >
@@ -259,7 +257,39 @@ export function RosterTable({
 
                   {/* Status & Actions */}
                   <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-3 opacity-80 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center justify-end gap-1">
+                      <div className="flex items-end align-right justify-end">
+                        <a
+                          href={`https://worldofwarcraft.blizzard.com/es-es/character/eu/${m.realm_slug}/${m.character_name.toLowerCase()}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1 hover:bg-muted rounded transition-colors w-10"
+                          title="Armería de WoW"
+                        >
+                          <img src="/assets/images/icons/armory.png" className="size-5 opacity-80 hover:opacity-100 transition-all object-contain" alt="Armería" />
+                        </a>
+                        <a
+                          href={`https://www.warcraftlogs.com/character/eu/${m.realm_slug}/${m.character_name.toLowerCase()}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1 hover:bg-muted rounded transition-colors w-10"
+                          title="WarcraftLogs"
+                        >
+                          <img src="/assets/images/icons/wcl.png" className="size-5 opacity-80 hover:opacity-100 transition-all object-contain" alt="WCL" />
+                        </a>
+                        <a
+                          href={`https://raider.io/characters/eu/${m.realm_slug}/${m.character_name.toLowerCase()}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1 hover:bg-muted rounded transition-colors w-10"
+                          title="Raider.io"
+                        >
+                          <img src="/assets/images/icons/raiderio.png" className="size-5 opacity-80 hover:opacity-100 transition-all object-contain" alt="RIO" />
+                        </a>
+                      </div>
+
+                      <div className="w-px h-4 bg-border/20 mx-1" />
+
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button
@@ -282,12 +312,10 @@ export function RosterTable({
                           <div className="space-y-4 py-4">
                             <div className="flex items-center gap-3 bg-muted/20 p-3 rounded-md border border-border/10">
                               {m.class_id ? (
-                                <Image
+                                <img
                                   src={`/assets/images/classes/${m.class_id}.jpg`}
                                   alt={classNameStr}
-                                  width={36}
-                                  height={36}
-                                  className="rounded-full shadow-inner border border-border/30 shrink-0 object-cover"
+                                  className="size-9 rounded-full shadow-inner border border-border/30 object-cover"
                                 />
                               ) : (
                                 <div className="size-9 rounded-full bg-[#1e1e24] flex items-center justify-center border border-border/30 shadow-inner">
@@ -461,7 +489,7 @@ function NoteCell({
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-emerald-500 hover:bg-emerald-500/10 shrink-0"
+          className="h-8 w-8 text-emerald-500 hover:bg-emerald-500/10"
           onClick={handleSave}
           disabled={isSaving}
         >
@@ -470,7 +498,7 @@ function NoteCell({
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-red-500 hover:bg-red-500/10 shrink-0"
+          className="h-8 w-8 text-red-500 hover:bg-red-500/10"
           onClick={() => {
             setIsEditing(false);
             setNote(initialNote ?? "");
@@ -491,7 +519,7 @@ function NoteCell({
       <Button
         variant="ghost"
         size="icon"
-        className="h-6 w-6 opacity-0 group-hover/note:opacity-100 transition-opacity shrink-0"
+        className="h-6 w-6 opacity-0 group-hover/note:opacity-100 transition-opacity"
         onClick={() => setIsEditing(true)}
       >
         <IconPencil className="size-3 text-muted-foreground" />

@@ -1,0 +1,86 @@
+import { NextResponse } from "next/server";
+import { sb } from "@/infrastructure/auth/auth-options";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/infrastructure/auth/auth-options";
+
+export async function GET(req: Request) {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user) {
+            return new NextResponse("Unauthorized", { status: 401 });
+        }
+
+        // Fetch WCL credentials from the guild settings
+        const { data: guild } = await sb
+            .from("guilds_managed")
+            .select("wcl_client_id, wcl_client_secret")
+            .limit(1)
+            .single();
+
+        if (!guild?.wcl_client_id || !guild?.wcl_client_secret) {
+            return NextResponse.json({ error: "No WCL credentials configured" }, { status: 400 });
+        }
+
+        const clientId = guild.wcl_client_id;
+        const clientSecret = guild.wcl_client_secret;
+
+        // 1. Authenticate with WCL OAuth
+        const authString = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
+
+        const tokenRes = await fetch("https://www.warcraftlogs.com/oauth/token", {
+            method: "POST",
+            headers: {
+                "Authorization": `Basic ${authString}`,
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: "grant_type=client_credentials",
+            // Cache the token to prevent rate limiting, or WCL tokens usually last for 24h
+            next: { revalidate: 3600 }
+        });
+
+        if (!tokenRes.ok) {
+            console.error("WCL Token error:", await tokenRes.text());
+            return NextResponse.json({ error: "Failed to authenticate with WarcraftLogs" }, { status: 502 });
+        }
+
+        const tokenData = await tokenRes.json();
+        const accessToken = tokenData.access_token;
+
+        // 2. Fetch recent reports via GraphQL
+        const query = `
+        query {
+            reportData {
+                reports(guildID: 743623, limit: 10) {
+                    data {
+                        code
+                        title
+                        startTime
+                        zone { name }
+                    }
+                }
+            }
+        }`;
+
+        const gqlRes = await fetch("https://www.warcraftlogs.com/api/v2/client", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ query }),
+            next: { revalidate: 300 } // Revalidate every 5 mins
+        });
+
+        if (!gqlRes.ok) {
+            console.error("WCL GraphQL error:", await gqlRes.text());
+            return NextResponse.json({ error: "Failed to fetch reports from WarcraftLogs" }, { status: 502 });
+        }
+
+        const responseData = await gqlRes.json();
+        return NextResponse.json(responseData.data);
+
+    } catch (e: any) {
+        console.error("WCL API Error:", e.message);
+        return new NextResponse("Internal server error", { status: 500 });
+    }
+}

@@ -1,14 +1,7 @@
 // src/infrastructure/bnet/bnet-client.ts
 // Blizzard Battle.net API client using client_credentials OAuth2
 
-const {
-    BNET_CLIENT_ID,
-    BNET_CLIENT_SECRET,
-} = process.env
-
-if (!BNET_CLIENT_ID || !BNET_CLIENT_SECRET) {
-    console.warn("⚠️ Faltan BNET_CLIENT_ID / BNET_CLIENT_SECRET — la sincronización con Battle.net no funcionará")
-}
+import { getGuildCredentials } from "@/infrastructure/auth/credentials"
 
 /** Cached token */
 let cachedToken: { token: string; expiresAt: number } | null = null
@@ -19,10 +12,15 @@ export async function getAccessToken(): Promise<string> {
         return cachedToken.token
     }
 
+    const creds = await getGuildCredentials()
+    if (!creds.bnet_client_id || !creds.bnet_client_secret) {
+        throw new Error("Faltan credenciales de Battle.net (configúralas en Ajustes > Dashboard)")
+    }
+
     const body = new URLSearchParams({
         grant_type: "client_credentials",
-        client_id: BNET_CLIENT_ID!,
-        client_secret: BNET_CLIENT_SECRET!,
+        client_id: creds.bnet_client_id,
+        client_secret: creds.bnet_client_secret,
     })
 
     const res = await fetch("https://oauth.battle.net/token", {
@@ -44,6 +42,7 @@ export async function getAccessToken(): Promise<string> {
 
     return cachedToken.token
 }
+
 
 /** WoW class names by ID */
 export const WOW_CLASSES: Record<number, string> = {

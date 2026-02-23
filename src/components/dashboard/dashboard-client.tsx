@@ -1,6 +1,6 @@
 "use client"
 
-import { IconUsers, IconRefresh, IconCalendarEvent, IconListSearch } from "@tabler/icons-react"
+import { IconUsers, IconRefresh, IconCalendarEvent, IconListSearch, IconSword } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 
@@ -79,25 +79,52 @@ export function DashboardClient({ data, roleLevel }: { data: any, roleLevel: str
                     )}
                 </div>
 
-                {/* Upcoming Raid */}
-                <div className="bg-card text-card-foreground border rounded-xl p-5 flex flex-col items-center justify-center text-center gap-2 shadow-sm hover:border-primary/50 transition-colors">
-                    <div className="flex items-center gap-2 font-semibold text-lg">
-                        <IconCalendarEvent className="size-5 text-muted-foreground" />
-                        Próxima Raid
+                {/* Upcoming Raid — Enhanced Preview */}
+                <div className="bg-card text-card-foreground border rounded-xl overflow-hidden shadow-sm hover:border-primary/50 transition-colors relative">
+                    {/* Raid background */}
+                    <div className="absolute inset-0 z-0">
+                        <div
+                            className="absolute inset-0 bg-cover bg-center opacity-15"
+                            style={{ backgroundImage: "url('https://bnetcmsus-a.akamaihd.net/cms/blog_header/2g/2GBQ9V0N95F91740612321487.png')" }}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/80 to-card/40" />
                     </div>
-                    {data.nextRaid ? (
-                        <>
-                            <p className="text-sm text-muted-foreground mt-1">
-                                Tu próxima <span className="text-primary cursor-pointer hover:underline" onClick={() => router.push('/dashboard/calendario')}>raid</span> a <span className="text-foreground font-semibold">{data.nextRaid.destination || data.nextRaid.title}</span> empieza pronto.
-                            </p>
-                            <div className="flex items-center gap-2 text-emerald-500 font-semibold mt-2 text-lg">
-                                <div className="rounded-full border border-emerald-500 size-5 flex items-center justify-center text-xs">✓</div>
-                                <span className="text-muted-foreground text-sm font-normal ml-1">Planificada en el calendario</span>
-                            </div>
-                        </>
-                    ) : (
-                        <p className="text-sm text-muted-foreground mt-1">No hay raids próximas en el calendario.</p>
-                    )}
+
+                    <div className="relative z-10 p-5 flex flex-col items-center justify-center text-center gap-2">
+                        <div className="flex items-center gap-2 font-semibold text-lg">
+                            <IconCalendarEvent className="size-5 text-muted-foreground" />
+                            Próxima Raid
+                        </div>
+                        {data.nextRaid ? (
+                            <>
+                                <p className="text-xl font-bold text-foreground mt-1">
+                                    {data.nextRaid.destination || data.nextRaid.title}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                    {new Date(data.nextRaid.event_date).toLocaleDateString("es-ES", {
+                                        weekday: "long",
+                                        day: "numeric",
+                                        month: "long",
+                                        hour: "2-digit",
+                                        minute: "2-digit"
+                                    })}
+                                </p>
+                                <div className="flex items-center gap-2 text-emerald-500 font-semibold mt-1 text-sm">
+                                    <div className="rounded-full border border-emerald-500 size-4 flex items-center justify-center text-[10px]">✓</div>
+                                    <span className="text-muted-foreground font-normal">Planificada en el calendario</span>
+                                </div>
+                                <button
+                                    onClick={() => router.push('/dashboard/bis')}
+                                    className="mt-2 px-4 py-1.5 rounded-md bg-purple-600/80 hover:bg-purple-600 text-white text-xs font-medium transition-colors flex items-center gap-1.5"
+                                >
+                                    <IconSword className="size-3.5" />
+                                    Configurar BiS
+                                </button>
+                            </>
+                        ) : (
+                            <p className="text-sm text-muted-foreground mt-1">No hay raids próximas en el calendario.</p>
+                        )}
+                    </div>
                 </div>
 
                 {/* GM / Officer exclusive cards */}
