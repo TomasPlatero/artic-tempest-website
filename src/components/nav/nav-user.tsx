@@ -3,6 +3,7 @@
 import * as React from "react"
 import { signOut } from "next-auth/react"
 import { sileo } from "sileo"
+import Link from "next/link"
 
 import { IconCreditCard, IconDotsVertical, IconLogout, IconNotification, IconUserCircle } from "@tabler/icons-react"
 
@@ -99,9 +100,11 @@ export function NavUser() {
             sideOffset={4}
           >
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <IconUserCircle />
-                Cuenta
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/cuenta">
+                  <IconUserCircle />
+                  Cuenta
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <IconCreditCard />

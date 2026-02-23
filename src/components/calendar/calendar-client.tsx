@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useMemo } from "react"
-import { IconChevronLeft, IconChevronRight, IconPlus, IconCalendarEvent } from "@tabler/icons-react"
+import { useState, useMemo, useEffect } from "react"
+import { IconChevronLeft, IconChevronRight, IconPlus, IconCalendarEvent, IconSettings } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { cn } from "@/infrastructure/tailwind/tailwind-utils"
@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { toast } from "sonner"
+import { sileo } from "sileo"
 
 export type GuildEvent = {
     id: string
@@ -23,9 +23,7 @@ export type GuildEvent = {
     difficulty: string | null
     status: string
     background_url: string | null
-    // We'll also expect a signups count from the backend eventually
-    signups_count?: number
-    total_spots?: number
+    event_signups?: any[]
 }
 
 function getDaysInMonth(year: number, month: number) {
@@ -53,45 +51,6 @@ export function CalendarClient({
         const d = new Date()
         return new Date(d.getFullYear(), d.getMonth(), 1)
     })
-
-    // Dialog state
-    const [isCreateOpen, setIsCreateOpen] = useState(false)
-    const [createDestination, setCreateDestination] = useState("naxx")
-    const [createDate, setCreateDate] = useState("")
-    const [createDifficulty, setCreateDifficulty] = useState("25")
-    const [isSaving, setIsSaving] = useState(false)
-
-    const handleCreateRaid = async () => {
-        if (!createDate) {
-            toast.error("Please select a date and time")
-            return
-        }
-
-        setIsSaving(true)
-        try {
-            const res = await fetch("/api/guild/events", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    destination: createDestination,
-                    event_date: new Date(createDate).toISOString(),
-                    end_date: new Date(createDate).toISOString(), // Simplified assumption 
-                    difficulty: createDifficulty
-                })
-            })
-
-            const data = await res.json()
-            if (!res.ok) throw new Error(data.error || "Failed to create raid")
-
-            toast.success("Raid created successfully!")
-            setIsCreateOpen(false)
-            router.refresh()
-        } catch (e: any) {
-            toast.error(e.message)
-        } finally {
-            setIsSaving(false)
-        }
-    }
 
     // Calendar math
     const year = currentDate.getFullYear()
@@ -126,7 +85,7 @@ export function CalendarClient({
     const cells = []
     // Empty cells for days before the 1st
     for (let i = 1; i < firstDay; i++) {
-        cells.push(<div key={`empty-${i}`} className="min-h-[120px] p-2" />)
+        cells.push(<div key={`empty-${i}`} className="min-h-[120px] p-2 border-t border-r border-border/50" />)
     }
 
     // Actual days
@@ -137,20 +96,36 @@ export function CalendarClient({
         const now = new Date()
         const isToday = d === now.getDate() && month === now.getMonth() && year === now.getFullYear()
 
+        // Format ISO date for the day (at noon to avoid timezone issues when just picking a day)
+        const dayDate = new Date(year, month, d, 12, 0, 0)
+        const dateStr = dayDate.toISOString().split('T')[0]
+
         cells.push(
             <div
                 key={`day-${d}`}
+                onClick={() => {
+                    if (isOfficerOrGm) {
+                        router.push(`/dashboard/calendario/editor?date=${dateStr}`)
+                    }
+                }}
                 className={cn(
-                    "min-h-[120px] p-1 border-t border-r border-border/50 flex flex-col gap-1 relative group transition-colors",
+                    "min-h-[120px] p-1 border-t border-r border-border/50 flex flex-col gap-1 relative group transition-colors cursor-pointer hover:bg-muted/5",
                     isToday && "bg-muted/10"
                 )}
             >
-                <span className={cn(
-                    "text-xs font-semibold self-end mr-1 mb-1 mt-1",
-                    isToday ? "text-primary" : "text-muted-foreground"
-                )}>
-                    {d < 10 ? `0${d}` : d}
-                </span>
+                <div className="flex justify-between items-start">
+                    {isOfficerOrGm && dayEvents.length === 0 && (
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-primary/20 text-primary text-[10px] px-1.5 py-0.5 rounded border border-primary/30 ml-1 mt-1 font-bold">
+                            create
+                        </div>
+                    )}
+                    <span className={cn(
+                        "text-xs font-semibold self-end mr-1 mb-1 mt-1 ml-auto",
+                        isToday ? "text-primary" : "text-muted-foreground"
+                    )}>
+                        {d < 10 ? `0${d}` : d}
+                    </span>
+                </div>
 
                 {/* Render Events */}
                 {dayEvents.map(evt => {
@@ -160,32 +135,38 @@ export function CalendarClient({
                     const timeStringStart = start.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })
                     const timeStringEnd = end.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })
 
-                    // Fallback background color if no image
                     const bgStyle = evt.background_url
-                        ? { backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.8)), url(${evt.background_url})` }
+                        ? { backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.8) 100%), url(${evt.background_url})` }
                         : {}
+
+                    // Calculate participants and bounds
+                    const signups = evt.event_signups || []
+                    const selectedCount = signups.filter((s: any) => s.selection_status === 'selected').length
+                    const diffGroups = (evt.difficulty || "").match(/\((\d+)\)/)
+                    const maxActive = diffGroups ? parseInt(diffGroups[1], 10) : 30
 
                     return (
                         <div
                             key={evt.id}
-                            onClick={() => router.push(`/dashboard/calendario/${evt.id}`)}
-                            className="relative flex flex-col justify-between rounded-md p-1.5 cursor-pointer text-xs text-white overflow-hidden bg-blue-900/60 hover:ring-2 ring-primary/50 transition-all bg-cover bg-center h-[70px]"
+                            onClick={(e) => {
+                                e.stopPropagation()
+                                router.push(`/dashboard/calendario/editor/${evt.id}`)
+                            }}
+                            className="relative flex flex-col justify-between rounded p-2 cursor-pointer text-[10px] text-white overflow-hidden bg-blue-600 hover:ring-2 ring-white transition-all bg-cover bg-center min-h-[60px] border border-white/20 shadow-lg"
                             style={bgStyle}
                         >
-                            {/* Top row: Destination title */}
-                            <div className="font-semibold text-[10px] leading-tight truncate opacity-90 drop-shadow-md">
-                                {evt.destination || evt.title}
+                            <div className="flex justify-between items-start">
+                                <div className="font-bold truncate drop-shadow-md flex-1">
+                                    {evt.destination || evt.title}
+                                </div>
+                                <div className="bg-black/60 backdrop-blur-sm px-1.5 py-0.5 rounded text-[9px] font-bold border border-white/10 shrink-0 shadow-sm ml-2">
+                                    <span className={selectedCount >= maxActive ? "text-red-400" : "text-emerald-400"}>{selectedCount}</span> / <span className="text-white/80">{maxActive}</span>
+                                </div>
                             </div>
 
-                            {/* Time */}
-                            <div className="flex justify-between font-mono text-[10px] drop-shadow-md mt-1 font-bold">
-                                <span>{timeStringStart}</span>
-                                <span>{timeStringEnd}</span>
-                            </div>
-
-                            {/* Roster count floating bottom right */}
-                            <div className="absolute bottom-1 right-1 font-bold text-xs drop-shadow-lg">
-                                32 / 32
+                            <div className="flex justify-between font-mono font-bold text-[9px] mt-auto pt-2 drop-shadow-[0_1px_2px_rgba(0,0,0,1)]">
+                                <span className="text-amber-300">{timeStringStart}</span>
+                                <span className="text-white/60">{timeStringEnd}</span>
                             </div>
                         </div>
                     )
@@ -199,12 +180,12 @@ export function CalendarClient({
     const remainder = totalCells % 7
     if (remainder !== 0) {
         for (let i = 0; i < 7 - remainder; i++) {
-            cells.push(<div key={`empty-end-${i}`} className="min-h-[120px] p-2 border-t border-border/50" />)
+            cells.push(<div key={`empty-end-${i}`} className="min-h-[120px] p-2 border-t border-r border-border/50" />)
         }
     }
 
     return (
-        <div className="flex flex-col gap-4 bg-background h-full">
+        <div className="flex flex-col gap-4 bg-background h-fit mb-8">
             {/* Header Toolbar */}
             <div className="flex items-center justify-between">
                 {/* Title */}
@@ -215,64 +196,6 @@ export function CalendarClient({
                     </h1>
                     <p className="text-sm text-muted-foreground">Raids - Team raiders</p>
                 </div>
-                {/* Create Button */}
-                {isOfficerOrGm && (
-                    <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-                        <DialogTrigger asChild>
-                            <Button variant="secondary" size="sm" className="bg-muted/50">
-                                Create raid
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-md bg-[#1e1e24] border-border/20">
-                            <DialogHeader>
-                                <DialogTitle>Create New Raid</DialogTitle>
-                            </DialogHeader>
-                            <div className="flex flex-col gap-4 py-4">
-                                <Label>Select Destination</Label>
-                                <Select value={createDestination} onValueChange={setCreateDestination}>
-                                    <SelectTrigger className="bg-[#2b2b36] border-border/20">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="naxx">Naxxramas</SelectItem>
-                                        <SelectItem value="malygos">The Eye of Eternity</SelectItem>
-                                        <SelectItem value="sartharion">The Obsidian Sanctum</SelectItem>
-                                        <SelectItem value="ulduar">Ulduar</SelectItem>
-                                    </SelectContent>
-                                </Select>
-
-                                <Label>Date & Time</Label>
-                                <Input
-                                    type="datetime-local"
-                                    className="bg-[#2b2b36] border-border/20"
-                                    value={createDate}
-                                    onChange={(e) => setCreateDate(e.target.value)}
-                                />
-
-                                <Label>Difficulty</Label>
-                                <Select value={createDifficulty} onValueChange={setCreateDifficulty}>
-                                    <SelectTrigger className="bg-[#2b2b36] border-border/20">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="10">10 Player</SelectItem>
-                                        <SelectItem value="25">25 Player</SelectItem>
-                                        <SelectItem value="10hm">10 Player (Heroic)</SelectItem>
-                                        <SelectItem value="25hm">25 Player (Heroic)</SelectItem>
-                                    </SelectContent>
-                                </Select>
-
-                                <Button
-                                    className="w-full mt-4"
-                                    onClick={handleCreateRaid}
-                                    disabled={isSaving}
-                                >
-                                    {isSaving ? "Saving..." : "Save Raid"}
-                                </Button>
-                            </div>
-                        </DialogContent>
-                    </Dialog>
-                )}
             </div>
             <div className="flex items-center justify-between py-2 border-b border-border/50 mt-4">
                 <Button variant="ghost" size="sm" onClick={prevMonth} className="text-muted-foreground">
@@ -281,7 +204,6 @@ export function CalendarClient({
                 </Button>
 
                 <div className="flex gap-2">
-                    {/* Mockup selects to look like wowaudit */}
                     <div className="px-3 py-1 bg-muted/30 rounded text-sm cursor-pointer hover:bg-muted/50 border border-border/50 flex items-center gap-2 font-medium">
                         {monthNames[month]} <IconChevronLeft className="size-3 -rotate-90" />
                     </div>
@@ -290,14 +212,27 @@ export function CalendarClient({
                     </div>
                 </div>
 
-                <Button variant="ghost" size="sm" onClick={nextMonth} className="text-muted-foreground">
-                    {month === 11 ? monthNames[0] : monthNames[month + 1]}
-                    <IconChevronRight className="size-4 ml-1" />
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="sm" onClick={nextMonth} className="text-muted-foreground">
+                        {month === 11 ? monthNames[0] : monthNames[month + 1]}
+                        <IconChevronRight className="size-4 ml-1" />
+                    </Button>
+                    {isOfficerOrGm && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => router.push("/dashboard/calendario/ajustes")}
+                            className="text-muted-foreground hover:bg-muted/30 ml-2 border border-border/50 bg-[#1e1e24]/40"
+                            title="Ajustes de Horario"
+                        >
+                            <IconSettings className="size-4" />
+                        </Button>
+                    )}
+                </div>
             </div>
 
             {/* Calendar Grid */}
-            <div className="bg-[#1e1e24]/20 border border-border/30 rounded-lg overflow-hidden flex-1 shadow-sm">
+            <div className="bg-[#1e1e24]/20 border-l border-b border-border/30 rounded-lg overflow-hidden h-fit shadow-sm">
                 {/* Days of week header */}
                 <div className="grid grid-cols-7 border-b border-border/50">
                     {dayNames.map(d => (

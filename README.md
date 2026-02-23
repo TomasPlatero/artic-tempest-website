@@ -1,6 +1,6 @@
 # 🧭 GuildBoard – Dashboard de Hermandad para World of Warcraft
 
-**GuildBoard** es un panel web privado desarrollado con **Next.js**, **Supabase** y **NextAuth** que permite a los líderes y oficiales de hermandades de *World of Warcraft* gestionar su roster, permisos y datos sincronizados con **Discord** y **Raider.io**.
+**GuildBoard** es un panel web avanzado diseñado para hermandades de *World of Warcraft*. Permite centralizar la gestión del roster, la planificación de raids, y la sincronización de personajes mediante la API de **Battle.net**, proporcionando una interfaz moderna, rápida y personalizada.
 
 ---
 
@@ -8,184 +8,119 @@
 
 | Componente | Descripción |
 |-------------|-------------|
-| 🧩 **Next.js 14** | Framework React con App Router y renderizado híbrido (SSR/ISR). |
-| 🔐 **NextAuth.js** | Autenticación OAuth2 con Discord y Battle.net. |
-| 🗄️ **Supabase** | Base de datos PostgreSQL + autenticación + políticas RLS. |
-| 🎨 **TailwindCSS** | Sistema de estilos utilitario para la UI. |
-| 🧱 **shadcn/ui** | Componentes accesibles y personalizables para la interfaz. |
-| 🧰 **TypeScript** | Tipado estático para mayor robustez y escalabilidad. |
+| 🧩 **Next.js 16.1.6 (Turbopack)** | Última versión del framework React con App Router. |
+| ⚛️ **React 19.2.4** | La última versión estable de la librería de interfaces. |
+| 🛡️ **Battle.net API** | Integración oficial para sincronizar hermandades, personajes y rangos. |
+| 🔐 **NextAuth.js 4.24** | Autenticación doble vía OAuth2 con Discord y Battle.net. |
+| 🗄️ **Supabase 2.57** | Backend-as-a-Service (PostgreSQL, Auth, RLS, Storage). |
+| 🎨 **TailwindCSS 4.1.13** | Estilos modernos con soporte nativo para variables CSS. |
+| 🧱 **shadcn/ui** | Base de componentes visuales de alta calidad. |
+| 🔔 **Sileo 0.1.4** | Sistema de notificaciones (toasts) premium. |
+| 🏎️ **Radix UI / Lucide** | Componentes de bajo nivel e iconos modernos. |
+| 🏗️ **dnd-kit 6.3** | Motor de arrastrar y soltar para planificación de raids. |
 
 ---
 
-## 🏗️ Arquitectura
+## 🏗️ Arquitectura del Proyecto
 
-```
+```text
 src/
  ├─ app/
- │   ├─ login/                # Página de login
- │   ├─ dashboard/            # Dashboard principal (protegido)
- │   ├─ api/
- │   │   └─ auth/[...nextauth]/ # Rutas de NextAuth
- │   └─ layout.tsx            # Layout base con Sidebar + Header
+ │   ├─ login/                # Acceso mediante Discord
+ │   ├─ dashboard/
+ │   │   ├─ calendario/       # Vista mensual interactiva de raids
+ │   │   ├─ roster/           # Gestión avanzada de miembros
+ │   │   ├─ ajustes/          # Configuración de rangos y hermandad
+ │   │   └─ cuenta/           # Vinculación Battle.net y personajes
+ │   └─ api/                  # Endpoints de sincronización, notas, roles y eventos
+ ├─ components/
+ │   ├─ calendar/             # Lógica de grid mensual y diálogos de raid
+ │   ├─ roster/               # Filtros y lógica de cliente para miembros
+ │   ├─ settings/             # Gestión de nombres de rango y visibilidad
+ │   ├─ common/               # RosterTable, Sidebar, etc.
+ │   └─ ui/                   # Librería base (Radix UI)
  ├─ infrastructure/
- │   ├─ auth/                 # Opciones de NextAuth + helpers
- │   ├─ lib/                  # Supabase client y utilidades
- │   └─ components/           # Sidebar, Header, Card, etc.
- └─ styles/
-     └─ globals.css
+ │   ├─ auth/                 # Configuración de roles y sesión
+ │   ├─ bnet/                 # Cliente API Battle.net
+ │   └─ raiderio/             # Utilidades para Raider.io (Progreso)
+ └─ types/                    # Tipado global de Supabase y WoW
 ```
 
 ---
 
-## 🔐 Autenticación
+## 🌟 Funcionalidades Implementadas
 
-La autenticación usa **NextAuth** con el proveedor **Discord** y obtiene automáticamente los roles del usuario en el servidor de la hermandad:
+### 📅 Planificación Avanzada de Raids
+- **Calendario Mensual**: Visualización interactiva de eventos programados, con horas y contadores de asistentes.
+- **Horarios Recurrentes (Schedules)**: Configuración automática de días de raideo (Lunes a Domingo) que sincroniza y genera eventos para el roster automáticamente.
+- **Editor Drag & Drop**: Gestión fluida de los asistentes arrastrándolos entre las columnas de *Activos* y *En Cola* (`dnd-kit`).
+- **Seguimiento de Buffs**: Panel integrado al editor para ver qué bufos obligatorios de banda te faltan según la composición actual del roster.
+- **Selección de Bosses**: Especifica qué bosses concretos se van a intentar abatir en cada evento.
 
-- `guilds.members.read` permite comprobar si el usuario pertenece al servidor de Discord de la hermandad.  
-- El nivel de rol (`gm`, `officer`, `raider`) se asigna en base al rol que tenga dentro del servidor.  
-- Los datos del perfil se guardan en la tabla `profiles` de Supabase.
+### 👥 Gestión de Roster
+- **Sincronización BNet**: Importación masiva de miembros desde Battle.net Automáticamente.
+- **Personalización de Rangos**: Cambia los nombres de los rangos (0-9) y su visibilidad en el calendario.
+- **Filtros Inteligentes**: Oculta rangos irrelevantes o alters en tiempo real.
+- **Edición en Línea**: Modifica roles predeterminados (Tanque, Healer, DPS) y añade notas privadas al instante.
 
-> ⚠️ La clave `SUPABASE_SERVICE_ROLE_KEY` **solo se usa en el backend** (rutas con `runtime = "nodejs"`).  
-> No debe ser accesible desde el cliente.
+### ⚖️ Privacidad y Seguridad (RGPD / LOPD)
+- **Gestión Avanzada de Cookies**: Integración con `vanilla-cookieconsent` nativo para permitir opciones granulares y legales de privacidad.
+- **Protección de Sesiones**: Cumplimiento del nivel estricto LOPD reduciendo el tiempo máximo de sesión (`maxAge`) a 24 horas para garantizar la seguridad de la cuenta logueada con Battle.net/Discord.
+
+### 🔗 Integraciones
+- **Discord OAuth2**: Identificación segura vinculada a tu servidor.
+- **Battle.net OAuth2**: Sincroniza tus propios personajes con tu cuenta de usuario.
 
 ---
 
-## 🧾 Variables de entorno
+## 🔐 Variables de Entorno
 
-Crea un archivo `.env.local` en la raíz del proyecto con el siguiente contenido:
+Copia `.env.local.sample` como `.env.local` y rellena los campos:
 
 ```env
 # --- NEXTAUTH ---
 NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=changeme
+NEXTAUTH_SECRET=                  # Generar con openssl rand -base64 32
 
 # --- DISCORD ---
-DISCORD_CLIENT_ID=xxxxxxxxxxxxxxxxxx
-DISCORD_CLIENT_SECRET=xxxxxxxxxxxxxxxxxx
-DISCORD_GUILD_ID=xxxxxxxxxxxxxxxxxx
-DISCORD_REQUESTED_SCOPES=identify guilds guilds.members.read
+DISCORD_CLIENT_ID=
+DISCORD_CLIENT_SECRET=
+DISCORD_GUILD_ID=
+
+# --- BATTLE.NET ---
+BNET_CLIENT_ID=
+BNET_CLIENT_SECRET=
 
 # --- SUPABASE ---
-NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=xxxxx
-SUPABASE_SERVICE_ROLE_KEY=xxxxx
-```
-
-> 💡 Ejemplo en el repo: `.env.local.sample`  
-> **Nunca comitees `.env.local`** con valores reales.
-
----
-
-## 🚀 Puesta en marcha
-
-### 1️⃣ Instalar dependencias
-```bash
-npm install
-# o
-pnpm install
-```
-
-### 2️⃣ Ejecutar en desarrollo
-```bash
-npm run dev
-```
-Accede en: [http://localhost:3000](http://localhost:3000)
-
-### 3️⃣ Build de producción
-```bash
-npm run build
-npm run start
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=        # ¡Solo uso en servidor!
 ```
 
 ---
 
-## 🗃️ Base de datos (Supabase)
+## 🗃️ Base de Datos e Infraestructura
 
-### Tablas principales
-- **profiles:** Usuarios autenticados vinculados a Discord.
-- **discord_roles:** Catálogo de roles del servidor (FK de `profiles.discord_role_id`).
-- **guilds_managed:** Datos de la hermandad (nombre, región, realm, miembros, etc).
+El proyecto utiliza **Supabase CLI** para gestionar el esquema mediante migraciones progresivas:
 
-### Políticas RLS
-- Solo los **oficiales** y **GM** pueden ver y editar todos los perfiles.
-- Los **raiders** solo pueden ver su propio perfil.
+1. `npm install` para instalar dependencias.
+2. `npm run dev` para lanzar el servidor con Turbopack.
+3. `npm run db:push` para desplegar el esquema en tu instancia de Supabase.
 
-> Si alteras el tipo de columnas usadas en policies, **desactiva temporalmente la RLS** antes de ejecutar el `ALTER TABLE`.
-
-### Migraciones (Supabase CLI)
-
-El proyecto usa **Supabase CLI** para gestionar el esquema de base de datos con migraciones versionadas.
-
-```
-supabase/
-  ├─ config.toml                              # Configuración local
-  ├─ migrations/
-  │   └─ 20260221000000_initial_schema.sql    # Migración inicial
-  └─ seed.sql                                 # Datos iniciales
-```
-
-#### Configuración inicial (una sola vez)
-
-```bash
-# 1. Crear un Access Token en https://supabase.com/dashboard/account/tokens
-
-# 2. Configurar el token (PowerShell)
-$env:SUPABASE_ACCESS_TOKEN="tu-token-aquí"
-
-# 3. Enlazar con el proyecto remoto
-npx supabase link --project-ref vrniyndhfaawwqzcrqng
-```
-
-#### Comandos disponibles
-
-| Comando | Descripción |
-|---------|-------------|
-| `npm run db:push` | Aplica las migraciones pendientes al proyecto remoto. |
-| `npm run db:reset` | Resetea la base de datos y re-aplica todas las migraciones + seed. |
-| `npm run db:new nombre` | Crea un nuevo archivo de migración con timestamp. |
-| `npm run db:status` | Muestra el estado de las migraciones (aplicadas/pendientes). |
-
-#### Flujo para cambios en la base de datos
-
-```bash
-# 1. Crear una nueva migración
-npm run db:new add_events_table
-
-# 2. Editar el archivo generado en supabase/migrations/
-
-# 3. Aplicar al proyecto remoto
-npm run db:push
-```
-
-> ⚠️ **Nunca edites migraciones ya aplicadas.** Si necesitas corregir algo, crea una nueva migración con los cambios.
+### Estructura de tablas clave:
+- `profiles`: Datos de usuario vinculados por `discord_id`.
+- `guild_members`: Base de datos extendida de personajes de la hermandad.
+- `guild_events`: Almacén de raids y eventos sociales.
+- `guild_rank_visibility`: Mapeo de nombres y estados de visibilidad para los rangos WoW.
 
 ---
 
-## 🧩 Roles y permisos
+## 💬 Roadmap (Próximas funcionalidades)
 
-| Rol | Permisos |
-|------|-----------|
-| 🧙‍♂️ Guild Master (`gm`) | Acceso total al dashboard y configuración. |
-| 🛡️ Officer (`officer`) | Gestión de roster y miembros. |
-| ⚔️ Raider (`raider`) | Acceso de lectura a su propio perfil. |
-
----
-
-## 🧹 Mantenimiento
-
-- 🔄 **CRON Supabase:** Actualiza datos de Raider.io y sincroniza con Discord.
-- 🧽 **Purge automático de Storage:** Todos los miércoles (Europe/Madrid).
-- 🛠️ **Seed inicial:** Inserta roles base en `discord_roles` antes de conectar el auth.
-
----
-
-## 💬 Próximas funcionalidades
-
-- [ ] Integración con **Raider.io** (progreso de banda y M+).
-- [ ] Sistema de **Vault semanal**.
-- [ ] Gestión de **Roster** con permisos.
-- [ ] Panel de **reclutamiento** editable.
-- [ ] Sincronización automática de **ranks Discord ↔ roles Supabase**.
+- [ ] Integración de **Raider.io** para ver progreso de mítica+ y bandas en la tabla.
+- [ ] Sistema de **Asistencias** con confirmación desde Discord.
+- [ ] Panel de **Auditoría** (ver quién necesita piezas de equipo específicas).
+- [ ] **Vault Semanal**: Seguimiento de los personajes que han hecho sus piedras.
 
 ---
 
@@ -194,10 +129,3 @@ npm run db:push
 **Zatoshi**  
 Guild Master de *Artic Tempest (EU-Dun Modr)*  
 🌐 [www.artictempest.es](https://www.artictempest.es)
-
----
-
-## 🧱 Licencia
-
-Este proyecto es privado y de uso interno para la hermandad *Artic Tempest*.  
-No está destinado a distribución pública.

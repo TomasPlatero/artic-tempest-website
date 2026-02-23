@@ -12,7 +12,16 @@ import { IconUsersGroup } from "@tabler/icons-react"
 
 export const runtime = "nodejs"
 
-async function getDashboardData() {
+interface BnetCharacter {
+  id: string
+  name: string
+  realm: string
+  class_id: number
+  level: number
+}
+
+
+async function getDashboardData(userId: string | undefined) {
   // Get guild metrics base
   const { data: guild } = await sb
     .from("guilds_managed")
@@ -36,13 +45,39 @@ async function getDashboardData() {
   // Just picking the absolute next one
   const nextRaid = upcomingEvents?.[0] || null
 
+  // User specific data
+  let myCharacters: BnetCharacter[] = []
+  let isBnetLinked = false
+
+  if (userId) {
+    const { data: profile } = await sb
+      .from("profiles")
+      .select("battlenet_battletag")
+      .eq("user_id", userId)
+      .single()
+
+    isBnetLinked = !!profile?.battlenet_battletag
+
+    if (isBnetLinked) {
+      const { data: chars } = await sb
+        .from("bnet_characters")
+        .select("id, name, realm, class_id, level")
+        .eq("user_id", userId)
+        .order("level", { ascending: false })
+        .limit(5)
+      myCharacters = chars || []
+    }
+  }
+
   return {
     guildName: guild?.name ?? "Sin hermandad",
     realm: guild?.realm ?? "—",
     region: guild?.region ?? "eu",
     rosterCount: rosterCount ?? 0,
     nextRaid,
-    upcomingEvents: upcomingEvents || []
+    upcomingEvents: upcomingEvents || [],
+    myCharacters,
+    isBnetLinked
   }
 }
 
@@ -53,7 +88,7 @@ export default async function DashboardPage() {
   }
 
   const roleLevel = session.user?.roleLevel ?? "raider"
-  const dashboardData = await getDashboardData()
+  const dashboardData = await getDashboardData(session.user?.id)
 
   const style = {
     "--sidebar-width": "calc(var(--spacing) * 72)",
@@ -66,7 +101,7 @@ export default async function DashboardPage() {
       <SidebarInset>
         <SiteHeader />
         <div className="flex flex-1 flex-col py-6 max-w-7xl mx-auto w-full px-4 gap-6">
-          <DashboardClient data={dashboardData} />
+          <DashboardClient data={dashboardData} roleLevel={roleLevel} />
         </div>
       </SidebarInset>
     </SidebarProvider>

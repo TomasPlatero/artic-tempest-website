@@ -10,12 +10,15 @@ import { SidebarInset, SidebarProvider } from "@/components/common/sidebar"
 import { CalendarClient } from "@/components/calendar/calendar-client"
 
 export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
 
 async function getUpcomingEvents() {
     const { data } = await sb
         .from("guild_events")
-        .select("id, title, description, event_date, end_date, event_type, destination, difficulty, status, background_url")
-        // Instead of only upcoming, we might want the whole month's events, but for now we fetch recent ones
+        .select(`
+            id, title, description, event_date, end_date, event_type, destination, difficulty, status, background_url,
+            event_signups ( selection_status )
+        `)
         .gte("event_date", new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString())
         .order("event_date", { ascending: true })
 

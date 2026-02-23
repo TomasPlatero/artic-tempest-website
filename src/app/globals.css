@@ -116,7 +116,105 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Vanilla Cookie Consent Themes Overrides */
+html #cc-main,
+.dark #cc-main,
+:root {
+  --cc-font-family: var(--font-geist-sans), sans-serif;
+  --cc-bg: var(--card);
+  /* Navy blue background from site theme */
+  --cc-primary-color: #ffffff;
+  /* White title and main text */
+  --cc-secondary-color: #ffffff;
+  /* White description text */
+
+  /* Buttons: White background with navy text */
+  --cc-btn-primary-bg: #ffffff;
+  --cc-btn-primary-color: var(--card);
+  --cc-btn-primary-hover-bg: var(--background);
+  --cc-btn-primary-hover-color: #ffffff;
+  --cc-btn-primary-border-color: #ffffff;
+
+  --cc-btn-secondary-bg: var(--background);
+  --cc-btn-secondary-color: #ffffff;
+  --cc-btn-secondary-hover-bg: #e5e7eb;
+  --cc-btn-secondary-hover-color: var(--card);
+  --cc-btn-secondary-border-color: #ffffff;
+
+  /* Inner dividers and separators */
+  --cc-separator-border-color: transparent;
+  --cc-footer-border-color: transparent;
+  --cc-cookie-category-block-bg: var(--background);
+  --cc-cookie-category-block-border: var(--border);
+  --cc-cookie-category-block-hover-bg: var(--muted);
+  --cc-cookie-category-block-hover-border: var(--border);
+  --cc-cookie-category-expanded-block-bg: var(--background);
+  --cc-cookie-category-expanded-block-hover-bg: var(--muted);
+
+  --cc-toggle-on-bg: #ffffff;
+  --cc-toggle-off-bg: var(--muted);
+  --cc-toggle-on-knob-bg: var(--card);
+  --cc-toggle-off-knob-bg: #ffffff;
+  --cc-toggle-enabled-icon-color: var(--card);
+  --cc-toggle-disabled-icon-color: var(--card);
+  --cc-toggle-readonly-bg: var(--border);
+  --cc-toggle-readonly-knob-bg: var(--card);
+  --cc-toggle-readonly-knob-icon-color: var(--card);
+
+  --cc-overlay-bg: rgba(0, 0, 0, 0.7);
+  --cc-webkit-scrollbar-bg: var(--card);
+  --cc-webkit-scrollbar-hover-bg: var(--card);
+  --cc-footer-bg: var(--card);
+  --cc-footer-color: #ffffff;
+  --cc-btn-border-radius: var(--radius);
+  --cc-modal-border-radius: var(--radius);
+}
+
+/* Explicitly add the white border to the modals since --cc-modal-border doesn't exist natively */
+#cc-main .cm,
+#cc-main .pm {
+  border: 1px solid #ffffff !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  html #cc-main {
+    --cc-bg: var(--card);
+    --cc-primary-color: #ffffff;
+    --cc-secondary-color: #ffffff;
+    --cc-btn-primary-bg: #ffffff;
+    --cc-btn-primary-color: var(--card);
+    --cc-btn-primary-hover-bg: #e5e7eb;
+    --cc-btn-primary-hover-color: var(--card);
+    --cc-btn-primary-border-color: #ffffff;
+    --cc-btn-secondary-bg: #ffffff;
+    --cc-btn-secondary-color: var(--card);
+    --cc-btn-secondary-hover-bg: #e5e7eb;
+    --cc-btn-secondary-hover-color: var(--card);
+    --cc-btn-secondary-border-color: #ffffff;
+    --cc-separator-border-color: transparent;
+    --cc-footer-border-color: transparent;
+    --cc-cookie-category-block-bg: var(--background);
+    --cc-cookie-category-block-border: var(--border);
+    --cc-cookie-category-block-hover-bg: var(--muted);
+    --cc-cookie-category-block-hover-border: var(--border);
+    --cc-cookie-category-expanded-block-bg: var(--background);
+    --cc-cookie-category-expanded-block-hover-bg: var(--muted);
+    --cc-toggle-on-bg: #ffffff;
+    --cc-toggle-off-bg: var(--muted);
+    --cc-toggle-on-knob-bg: var(--card);
+    --cc-toggle-off-knob-bg: #ffffff;
+    --cc-toggle-readonly-bg: var(--border);
+    --cc-toggle-readonly-knob-bg: var(--card);
+    --cc-overlay-bg: rgba(0, 0, 0, 0.7);
+    --cc-webkit-scrollbar-bg: var(--card);
+    --cc-webkit-scrollbar-hover-bg: var(--card);
+    --cc-footer-bg: var(--card);
+    --cc-footer-color: #ffffff;
   }
 }

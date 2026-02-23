@@ -15,11 +15,29 @@ export const runtime = "nodejs"
 async function getRoster() {
     const { data } = await sb
         .from("guild_members")
-        .select("id, character_name, realm_slug, realm_name, class_id, race_id, level, rank, synced_at, note")
+        .select("id, character_name, realm_slug, realm_name, class_id, race_id, level, rank, synced_at, note, role")
         .order("rank", { ascending: true })
         .order("character_name", { ascending: true })
 
-    return data ?? []
+    const { data: rawVisibilities } = await sb
+        .from("guild_rank_visibility")
+        .select("rank_id, name, is_visible")
+
+    const defaultNames = ["Guild Master", "Officer", "Officer Alt", "Raider", "Trial", "Social", "Alt", "Initiate", "Recruit", "Member"]
+
+    const rankNames = Array.from({ length: 10 }, (_, i) => {
+        const found = rawVisibilities?.find(v => v.rank_id === i)
+        return found?.name || defaultNames[i]
+    })
+
+    const rankVisibility = Array.from({ length: 10 }, (_, i) => {
+        const found = rawVisibilities?.find(v => v.rank_id === i)
+        return found ? found.is_visible : false
+    })
+
+    const filteredRoster = (data ?? []).filter(m => rankVisibility[m.rank])
+
+    return { roster: filteredRoster, rankNames }
 }
 
 export default async function RosterPage() {
@@ -28,7 +46,7 @@ export default async function RosterPage() {
         redirect("/")
     }
 
-    const roster = await getRoster()
+    const { roster, rankNames } = await getRoster()
     const roleLevel = session.user?.roleLevel ?? "raider"
 
     const style = {
@@ -51,7 +69,7 @@ export default async function RosterPage() {
                         </div>
                     </div>
 
-                    <RosterClient members={roster} roleLevel={roleLevel} />
+                    <RosterClient members={roster} roleLevel={roleLevel} rankNames={rankNames} />
                 </div>
             </SidebarInset>
         </SidebarProvider>
