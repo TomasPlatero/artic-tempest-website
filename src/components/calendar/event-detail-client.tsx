@@ -123,7 +123,7 @@ export function EventDetailClient({
 
                             <div className="space-y-1 w-[140px]">
                                 <label className="text-muted-foreground text-xs">Difficulty</label>
-                                <Select value={event.difficulty?.toLowerCase() || "mythic"}>
+                                <Select value={event.difficulty?.toLowerCase() || "mythic"} disabled={!isOfficerOrGm}>
                                     <SelectTrigger className="h-9 bg-muted/20 border-border/30">
                                         <SelectValue />
                                     </SelectTrigger>
@@ -137,7 +137,7 @@ export function EventDetailClient({
 
                             <div className="space-y-1 w-[140px]">
                                 <label className="text-muted-foreground text-xs">Status</label>
-                                <Select value={event.status || "planned"}>
+                                <Select value={event.status || "planned"} disabled={!isOfficerOrGm}>
                                     <SelectTrigger className="h-9 bg-muted/20 border-border/30">
                                         <SelectValue />
                                     </SelectTrigger>
@@ -150,13 +150,15 @@ export function EventDetailClient({
                             </div>
 
                             <div className="space-y-1 flex items-center gap-2 mb-1.5">
-                                <input type="checkbox" className="size-4 rounded border-gray-300" />
+                                <input type="checkbox" className="size-4 rounded border-gray-300" disabled={!isOfficerOrGm} />
                                 <label className="text-muted-foreground text-xs">Optional</label>
                             </div>
 
-                            <Button variant="ghost" size="icon" className="mb-0.5 text-muted-foreground hover:text-destructive">
-                                <IconTrash className="size-4" />
-                            </Button>
+                            {isOfficerOrGm && (
+                                <Button variant="ghost" size="icon" className="mb-0.5 text-muted-foreground hover:text-destructive">
+                                    <IconTrash className="size-4" />
+                                </Button>
+                            )}
                         </div>
 
                         {/* Separator */}

@@ -211,9 +211,11 @@ export function RosterTable({
                 Name <SortIcon column="name" />
               </div>
             </TableHead>
-            <TableHead className="w-[100px] text-muted-foreground font-semibold text-right pr-4">
-              Ajustes
-            </TableHead>
+            {canViewNote && (
+              <TableHead className="w-[100px] text-muted-foreground font-semibold text-right pr-4">
+                Ajustes
+              </TableHead>
+            )}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -288,132 +290,136 @@ export function RosterTable({
                         </a>
                       </div>
 
-                      <div className="w-px h-4 bg-border/20 mx-1" />
+                      {canViewNote && (
+                        <>
+                          <div className="w-px h-4 bg-border/20 mx-1" />
 
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 text-muted-foreground hover:text-white hover:bg-muted"
-                          >
-                            <IconSettings className="size-4" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-md bg-[#1e1e24] border-border/20">
-                          <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2 text-lg">
-                              Ficha de Personaje
-                            </DialogTitle>
-                            <DialogDescription className="text-xs">
-                              Realiza ajustes al rol, rango o notas internas exclusivas de la web.
-                            </DialogDescription>
-                          </DialogHeader>
-                          <div className="space-y-4 py-4">
-                            <div className="flex items-center gap-3 bg-muted/20 p-3 rounded-md border border-border/10">
-                              {m.class_id ? (
-                                <img
-                                  src={`/assets/images/classes/${m.class_id}.jpg`}
-                                  alt={classNameStr}
-                                  className="size-9 rounded-full shadow-inner border border-border/30 object-cover"
-                                />
-                              ) : (
-                                <div className="size-9 rounded-full bg-[#1e1e24] flex items-center justify-center border border-border/30 shadow-inner">
-                                  <div className={`w-full h-full bg-current opacity-20 text-white`}></div>
-                                </div>
-                              )}
-                              <div>
-                                <div className={`${classColor} font-semibold text-lg drop-shadow-sm leading-none m-0`}>
-                                  {m.character_name}
-                                </div>
-                                <div className="text-muted-foreground text-xs mt-1">
-                                  {m.realm_name ?? m.realm_slug}
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Rol</label>
-                                <Select
-                                  defaultValue={(m.role || guessedRole).toLowerCase()}
-                                  onValueChange={(val) =>
-                                    handleRoleChange(m.id, m.character_name, val)
-                                  }
-                                >
-                                  <SelectTrigger className="w-full bg-[#1e1e24]/50 border-border/30 hover:bg-[#1e1e24] focus:ring-0 transition-colors">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="tank">Tank</SelectItem>
-                                    <SelectItem value="heal">Heal</SelectItem>
-                                    <SelectItem value="melee">Melee</SelectItem>
-                                    <SelectItem value="ranged">Ranged</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                              <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Rango</label>
-                                <Select
-                                  defaultValue={m.rank.toString()}
-                                  onValueChange={(val) =>
-                                    handleRankChange(m.id, m.character_name, val)
-                                  }
-                                >
-                                  <SelectTrigger className="w-full bg-[#1e1e24]/50 border-border/30 hover:bg-[#1e1e24] focus:ring-0 transition-colors">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((rankId) => (
-                                      <SelectItem key={rankId} value={rankId.toString()}>
-                                        {rankNames?.[rankId] || RANK_NAMES[rankId]}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                            </div>
-
-                            {canViewNote && (
-                              <div className="space-y-1.5 pt-2">
-                                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Notas Internas</label>
-                                <NoteCell memberId={m.id} initialNote={m.note} />
-                              </div>
-                            )}
-
-                            <Separator className="my-2 opacity-50" />
-
-                            <div className="flex justify-start">
+                          <Dialog>
+                            <DialogTrigger asChild>
                               <Button
                                 variant="ghost"
-                                size="sm"
-                                className="text-red-500 hover:text-red-400 hover:bg-red-500/10 text-xs px-2 h-7"
-                                onClick={async () => {
-                                  if (
-                                    confirm(
-                                      `¿Estás seguro de que quieres borrar a ${m.character_name}?`,
-                                    )
-                                  ) {
-                                    try {
-                                      const res = await fetch(
-                                        `/api/guild/members/${m.id}`,
-                                        { method: "DELETE" },
-                                      );
-                                      if (res.ok) {
-                                        window.location.reload();
-                                      }
-                                    } catch (e) {
-                                      console.error(e);
-                                    }
-                                  }
-                                }}
+                                size="icon"
+                                className="h-7 w-7 text-muted-foreground hover:text-white hover:bg-muted"
                               >
-                                <IconTrash className="size-3.5 mr-1" /> Remover personaje
+                                <IconSettings className="size-4" />
                               </Button>
-                            </div>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-md bg-[#1e1e24] border-border/20">
+                              <DialogHeader>
+                                <DialogTitle className="flex items-center gap-2 text-lg">
+                                  Ficha de Personaje
+                                </DialogTitle>
+                                <DialogDescription className="text-xs">
+                                  Realiza ajustes al rol, rango o notas internas exclusivas de la web.
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="space-y-4 py-4">
+                                <div className="flex items-center gap-3 bg-muted/20 p-3 rounded-md border border-border/10">
+                                  {m.class_id ? (
+                                    <img
+                                      src={`/assets/images/classes/${m.class_id}.jpg`}
+                                      alt={classNameStr}
+                                      className="size-9 rounded-full shadow-inner border border-border/30 object-cover"
+                                    />
+                                  ) : (
+                                    <div className="size-9 rounded-full bg-[#1e1e24] flex items-center justify-center border border-border/30 shadow-inner">
+                                      <div className={`w-full h-full bg-current opacity-20 text-white`}></div>
+                                    </div>
+                                  )}
+                                  <div>
+                                    <div className={`${classColor} font-semibold text-lg drop-shadow-sm leading-none m-0`}>
+                                      {m.character_name}
+                                    </div>
+                                    <div className="text-muted-foreground text-xs mt-1">
+                                      {m.realm_name ?? m.realm_slug}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Rol</label>
+                                    <Select
+                                      defaultValue={(m.role || guessedRole).toLowerCase()}
+                                      onValueChange={(val) =>
+                                        handleRoleChange(m.id, m.character_name, val)
+                                      }
+                                    >
+                                      <SelectTrigger className="w-full bg-[#1e1e24]/50 border-border/30 hover:bg-[#1e1e24] focus:ring-0 transition-colors">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="tank">Tank</SelectItem>
+                                        <SelectItem value="heal">Heal</SelectItem>
+                                        <SelectItem value="melee">Melee</SelectItem>
+                                        <SelectItem value="ranged">Ranged</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Rango</label>
+                                    <Select
+                                      defaultValue={m.rank.toString()}
+                                      onValueChange={(val) =>
+                                        handleRankChange(m.id, m.character_name, val)
+                                      }
+                                    >
+                                      <SelectTrigger className="w-full bg-[#1e1e24]/50 border-border/30 hover:bg-[#1e1e24] focus:ring-0 transition-colors">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((rankId) => (
+                                          <SelectItem key={rankId} value={rankId.toString()}>
+                                            {rankNames?.[rankId] || RANK_NAMES[rankId]}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                </div>
+
+                                {canViewNote && (
+                                  <div className="space-y-1.5 pt-2">
+                                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Notas Internas</label>
+                                    <NoteCell memberId={m.id} initialNote={m.note} />
+                                  </div>
+                                )}
+
+                                <Separator className="my-2 opacity-50" />
+
+                                <div className="flex justify-start">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-red-500 hover:text-red-400 hover:bg-red-500/10 text-xs px-2 h-7"
+                                    onClick={async () => {
+                                      if (
+                                        confirm(
+                                          `¿Estás seguro de que quieres borrar a ${m.character_name}?`,
+                                        )
+                                      ) {
+                                        try {
+                                          const res = await fetch(
+                                            `/api/guild/members/${m.id}`,
+                                            { method: "DELETE" },
+                                          );
+                                          if (res.ok) {
+                                            window.location.reload();
+                                          }
+                                        } catch (e) {
+                                          console.error(e);
+                                        }
+                                      }
+                                    }}
+                                  >
+                                    <IconTrash className="size-3.5 mr-1" /> Remover personaje
+                                  </Button>
+                                </div>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        </>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

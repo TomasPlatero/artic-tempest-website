@@ -150,7 +150,11 @@ export function CalendarClient({
                             key={evt.id}
                             onClick={(e) => {
                                 e.stopPropagation()
-                                router.push(`/dashboard/calendario/editor/${evt.id}`)
+                                if (isOfficerOrGm) {
+                                    router.push(`/dashboard/calendario/editor/${evt.id}`)
+                                } else {
+                                    router.push(`/dashboard/calendario/${evt.id}`)
+                                }
                             }}
                             className="relative flex flex-col justify-between rounded p-2 cursor-pointer text-[10px] text-white overflow-hidden bg-blue-600 hover:ring-2 ring-white transition-all bg-cover bg-center min-h-[60px] border border-white/20 shadow-lg"
                             style={bgStyle}

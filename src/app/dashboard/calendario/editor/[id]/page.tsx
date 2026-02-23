@@ -11,11 +11,15 @@ export default async function RaidEditorPage({
     searchParams: Promise<{ date?: string }>
 }) {
     const session = await getServerSession(authOptions)
+    const { id } = await params
+
     if (!session || (session.user?.roleLevel !== 'gm' && session.user?.roleLevel !== 'officer')) {
+        if (id) {
+            redirect(`/dashboard/calendario/${id}`)
+        }
         redirect("/dashboard/calendario")
     }
 
-    const { id } = await params
     const { date } = await searchParams
 
     let initialData = null
