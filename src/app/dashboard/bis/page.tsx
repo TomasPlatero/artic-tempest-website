@@ -32,13 +32,27 @@ async function getBisData(userId: string) {
         return { eligibleMembers: [] as EligibleMember[] }
     }
 
-    // Step 2: Find guild_members that match those names with rank <= 4
-    const { data: members } = await sb
+    // Step 2: Find guild_members that match those names with ranks marked as visible
+    const { data: visibleRanks } = await sb
+        .from("guild_rank_visibility")
+        .select("rank_id")
+        .eq("is_visible", true)
+
+    const visibleRankIds = (visibleRanks || []).map(r => r.rank_id)
+
+    let query = sb
         .from("guild_members")
         .select("id, character_name, realm_slug, class_id, rank")
         .in("character_name", charNames)
-        .lte("rank", 4)
-        .order("rank", { ascending: true })
+
+    if (visibleRankIds.length > 0) {
+        query = query.in("rank", visibleRankIds)
+    } else {
+        // Fallback for empty config, though unlikely
+        query = query.lte("rank", 4)
+    }
+
+    const { data: members } = await query.order("rank", { ascending: true })
 
     return {
         eligibleMembers: (members || []) as EligibleMember[],
