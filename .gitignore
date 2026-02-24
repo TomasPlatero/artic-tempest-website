@@ -102,7 +102,6 @@ temp_*.json
 dist/
  
 # ========================
-# Supabase / SQL
+# SQL Scripts
 # ========================
-supabase/
-sql/
+*.sql
