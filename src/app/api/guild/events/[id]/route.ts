@@ -9,12 +9,12 @@ export async function PATCH(
     try {
         const session = await getServerSession(authOptions)
         if (!session) {
-            return new NextResponse("Unauthorized", { status: 401 })
+            return new NextResponse("No autorizado", { status: 401 })
         }
 
         const roleLevel = session.user?.roleLevel
         if (roleLevel !== "gm" && roleLevel !== "officer") {
-            return new NextResponse("Forbidden", { status: 403 })
+            return new NextResponse("Sin permisos", { status: 403 })
         }
 
         const { id } = await params
@@ -63,7 +63,7 @@ export async function PATCH(
 
     } catch (e: any) {
         console.error("PATCH event error:", e)
-        return NextResponse.json({ error: e.message || "Internal server error" }, { status: 500 })
+        return NextResponse.json({ error: e.message || "Error interno del servidor" }, { status: 500 })
     }
 }
 
@@ -73,10 +73,10 @@ export async function DELETE(
 ) {
     try {
         const session = await getServerSession(authOptions)
-        if (!session) return new NextResponse("Unauthorized", { status: 401 })
+        if (!session) return new NextResponse("No autorizado", { status: 401 })
 
         const roleLevel = session.user?.roleLevel
-        if (roleLevel !== "gm" && roleLevel !== "officer") return new NextResponse("Forbidden", { status: 403 })
+        if (roleLevel !== "gm" && roleLevel !== "officer") return new NextResponse("Sin permisos", { status: 403 })
 
         const { id } = await params
         const { error } = await sb.from("guild_events").delete().eq("id", id)

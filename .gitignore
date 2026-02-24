@@ -106,3 +106,5 @@ dist/
 # ========================
 *.sql
 supabase/.temp
+supabase_types.d.ts
+debug-db.ts

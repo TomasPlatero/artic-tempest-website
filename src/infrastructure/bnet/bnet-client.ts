@@ -14,7 +14,7 @@ export async function getAccessToken(): Promise<string> {
 
     const creds = await getGuildCredentials()
     if (!creds.bnet_client_id || !creds.bnet_client_secret) {
-        throw new Error("Faltan credenciales de Battle.net (configúralas en Ajustes > Dashboard)")
+        throw new Error("Faltan credenciales de Battle.net (configúralas en Ajustes > General)")
     }
 
     const body = new URLSearchParams({
@@ -63,35 +63,35 @@ export const WOW_CLASSES: Record<number, string> = {
 
 /** WoW guild rank names (common defaults) */
 export const RANK_NAMES: Record<number, string> = {
-    0: "Guild Master",
-    1: "Officer",
-    2: "Officer Alt",
+    0: "Maestro de Hermandad",
+    1: "Oficial",
+    2: "Alter de Oficial",
     3: "Raider",
-    4: "Trial",
+    4: "Pruebas",
     5: "Social",
-    6: "Alt",
-    7: "Initiate",
+    6: "Alter",
+    7: "Iniciado",
 }
 
 const SPEC_TO_ROLE: Record<string, string> = {
     // Death Knight
-    "Blood": "Tank", "Frost": "Melee", "Unholy": "Melee",
+    "Blood": "Tanque", "Frost": "Melee", "Unholy": "Melee",
     // Demon Hunter
-    "Havoc": "Melee", "Vengeance": "Tank",
+    "Havoc": "Melee", "Vengeance": "Tanque",
     // Druid
-    "Balance": "Ranged", "Feral": "Melee", "Guardian": "Tank", "Restoration": "Heal",
+    "Balance": "Ranged", "Feral": "Melee", "Guardian": "Tanque", "Restoration": "Sanador",
     // Evoker
-    "Devastation": "Ranged", "Preservation": "Heal", "Augmentation": "Ranged",
+    "Devastation": "Ranged", "Preservation": "Sanador", "Augmentation": "Ranged",
     // Hunter
     "Beast Mastery": "Ranged", "Marksmanship": "Ranged", "Survival": "Melee",
     // Mage
     "Arcane": "Ranged", "Fire": "Ranged", // Frost is covered under DK, but mapped to Ranged if mage (handled via class if collision occurs, but we'll use a better approach)
     // Monk
-    "Brewmaster": "Tank", "Windwalker": "Melee", "Mistweaver": "Heal",
+    "Brewmaster": "Tanque", "Windwalker": "Melee", "Mistweaver": "Sanador",
     // Paladin
-    "Holy": "Heal", "Protection": "Tank", "Retribution": "Melee",
+    "Holy": "Sanador", "Protection": "Tanque", "Retribution": "Melee",
     // Priest
-    "Discipline": "Heal", "Shadow": "Ranged", // Holy is covered
+    "Discipline": "Sanador", "Shadow": "Ranged", // Holy is covered
     // Rogue
     "Assassination": "Melee", "Outlaw": "Melee", "Subtlety": "Melee",
     // Shaman

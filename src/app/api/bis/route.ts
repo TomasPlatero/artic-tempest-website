@@ -8,13 +8,13 @@ import { authOptions, sb } from "@/infrastructure/auth/auth-options"
 export async function GET(req: Request) {
     try {
         const session = await getServerSession(authOptions)
-        if (!session?.user) return new NextResponse("Unauthorized", { status: 401 })
+        if (!session?.user) return new NextResponse("No autorizado", { status: 401 })
 
         const url = new URL(req.url)
         const memberId = url.searchParams.get("member_id")
 
         if (!memberId) {
-            return NextResponse.json({ error: "member_id required" }, { status: 400 })
+            return NextResponse.json({ error: "Falta el member_id" }, { status: 400 })
         }
 
         // Verify the member belongs to the current user via bnet_characters name matching
@@ -50,20 +50,20 @@ export async function GET(req: Request) {
         return NextResponse.json(data || [])
     } catch (e: any) {
         console.error("BiS GET error:", e.message)
-        return new NextResponse("Internal Error", { status: 500 })
+        return new NextResponse("Error interno", { status: 500 })
     }
 }
 
 export async function POST(req: Request) {
     try {
         const session = await getServerSession(authOptions)
-        if (!session?.user) return new NextResponse("Unauthorized", { status: 401 })
+        if (!session?.user) return new NextResponse("No autorizado", { status: 401 })
 
         const body = await req.json()
         const { member_id, item_id, item_name, item_icon, slot, boss_name, priority, difficulty } = body
 
         if (!member_id || !item_id || !item_name || !slot) {
-            return NextResponse.json({ error: "Faltan campos requeridos" }, { status: 400 })
+            return NextResponse.json({ error: "Faltan campos obligatorios" }, { status: 400 })
         }
 
         // Verify ownership via bnet_characters
@@ -112,20 +112,20 @@ export async function POST(req: Request) {
         return NextResponse.json(data)
     } catch (e: any) {
         console.error("BiS POST error:", e.message)
-        return new NextResponse("Internal Error", { status: 500 })
+        return new NextResponse("Error interno", { status: 500 })
     }
 }
 
 export async function DELETE(req: Request) {
     try {
         const session = await getServerSession(authOptions)
-        if (!session?.user) return new NextResponse("Unauthorized", { status: 401 })
+        if (!session?.user) return new NextResponse("No autorizado", { status: 401 })
 
         const url = new URL(req.url)
         const selectionId = url.searchParams.get("id")
 
         if (!selectionId) {
-            return NextResponse.json({ error: "id required" }, { status: 400 })
+            return NextResponse.json({ error: "Falta el id" }, { status: 400 })
         }
 
         // Get the selection to verify ownership
@@ -136,7 +136,7 @@ export async function DELETE(req: Request) {
             .single()
 
         if (!selection) {
-            return NextResponse.json({ error: "Not found" }, { status: 404 })
+            return NextResponse.json({ error: "No encontrado" }, { status: 404 })
         }
 
         const { data: member } = await sb
@@ -166,6 +166,6 @@ export async function DELETE(req: Request) {
         return NextResponse.json({ success: true })
     } catch (e: any) {
         console.error("BiS DELETE error:", e.message)
-        return new NextResponse("Internal Error", { status: 500 })
+        return new NextResponse("Error interno", { status: 500 })
     }
 }

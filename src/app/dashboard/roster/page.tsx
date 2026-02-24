@@ -45,7 +45,7 @@ async function getRoster() {
         }
     }
 
-    const defaultNames = ["Guild Master", "Officer", "Officer Alt", "Raider", "Trial", "Social", "Alt", "Initiate", "Recruit", "Member"]
+    const defaultNames = ["Maestro de Hermandad", "Oficial", "Alter de Oficial", "Raider", "Pruebas", "Social", "Alter", "Iniciado", "Recluta", "Miembro"]
 
     // Build a map of rank visibility from the database
     const visibilityMap: Record<number, boolean> = {}

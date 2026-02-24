@@ -64,19 +64,19 @@ export type GuildMember = {
 };
 
 const WOW_CLASSES: Record<number, string> = {
-  1: "Warrior",
-  2: "Paladin",
-  3: "Hunter",
-  4: "Rogue",
-  5: "Priest",
+  1: "Guerrero",
+  2: "Paladín",
+  3: "Cazador",
+  4: "Pícaro",
+  5: "Sacerdote",
   6: "DK",
-  7: "Shaman",
-  8: "Mage",
-  9: "Warlock",
-  10: "Monk",
-  11: "Druid",
+  7: "Chamán",
+  8: "Mago",
+  9: "Brujo",
+  10: "Monje",
+  11: "Druida",
   12: "DH",
-  13: "Evoker",
+  13: "Evocador",
 };
 
 const WOW_CLASS_COLORS: Record<number, string> = {
@@ -96,33 +96,33 @@ const WOW_CLASS_COLORS: Record<number, string> = {
 };
 
 const RANK_NAMES: Record<number, string> = {
-  0: "GM",
-  1: "Officer",
-  2: "Officer Alt",
+  0: "Maestro de Hermandad",
+  1: "Oficial",
+  2: "Alter de Oficial",
   3: "Raider",
-  4: "Trial",
+  4: "Pruebas",
   5: "Social",
-  6: "Alt",
-  7: "Initiate",
-  8: "Recruit",
-  9: "Member",
+  6: "Alter",
+  7: "Iniciado",
+  8: "Recluta",
+  9: "Miembro",
 };
 
 // Dummy mapping to guess role based on class for visual purposes
 const CLASS_ROLE_MAPPING: Record<number, string> = {
-  1: "Tank",
-  2: "Heal",
+  1: "Tanque",
+  2: "Sanador",
   3: "Ranged",
   4: "Melee",
-  5: "Heal",
-  6: "Tank",
-  7: "Heal",
+  5: "Sanador",
+  6: "Tanque",
+  7: "Sanador",
   8: "Ranged",
   9: "Ranged",
-  10: "Monk",
-  11: "Heal",
+  10: "Monje",
+  11: "Sanador",
   12: "Melee",
-  13: "Heal",
+  13: "Sanador",
 };
 
 type SortColumn = "name" | "realm" | "role" | "rank";
@@ -209,7 +209,7 @@ export function RosterTable({
               onClick={() => onSort?.("name")}
             >
               <div className="flex items-center gap-2">
-                Name <SortIcon column="name" />
+                Nombre <SortIcon column="name" />
               </div>
             </TableHead>
             {canViewNote && (
@@ -224,7 +224,7 @@ export function RosterTable({
             members.map((m) => {
               const classColor =
                 WOW_CLASS_COLORS[m.class_id ?? 0] ?? "text-white";
-              const classNameStr = WOW_CLASSES[m.class_id ?? 0] ?? "Unknown";
+              const classNameStr = WOW_CLASSES[m.class_id ?? 0] ?? "Desconocido";
               const guessedRole =
                 CLASS_ROLE_MAPPING[m.class_id ?? 0] ?? "Ranged";
 
@@ -354,8 +354,8 @@ export function RosterTable({
                                         <SelectValue />
                                       </SelectTrigger>
                                       <SelectContent>
-                                        <SelectItem value="tank">Tank</SelectItem>
-                                        <SelectItem value="heal">Heal</SelectItem>
+                                        <SelectItem value="tank">Tanque</SelectItem>
+                                        <SelectItem value="heal">Sanador</SelectItem>
                                         <SelectItem value="melee">Melee</SelectItem>
                                         <SelectItem value="ranged">Ranged</SelectItem>
                                       </SelectContent>
@@ -525,7 +525,7 @@ function NoteCell({
   return (
     <div className="group/note flex items-center justify-between w-full min-w-[200px] gap-2">
       <div className="text-xs text-muted-foreground truncate" title={note}>
-        {note || <span className="opacity-50 italic">Add a note...</span>}
+        {note || <span className="opacity-50 italic">Añadir nota...</span>}
       </div>
       <Button
         variant="ghost"

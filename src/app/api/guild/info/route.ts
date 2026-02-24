@@ -6,7 +6,7 @@ export async function GET() {
     try {
         const session = await getServerSession(authOptions)
         if (!session) {
-            return new NextResponse("Unauthorized", { status: 401 })
+            return new NextResponse("No autorizado", { status: 401 })
         }
 
         const { data: guild, error } = await sb
@@ -24,6 +24,6 @@ export async function GET() {
 
     } catch (e: any) {
         console.error("API error:", e)
-        return NextResponse.json({ error: e.message || "Internal server error" }, { status: 500 })
+        return NextResponse.json({ error: e.message || "Error interno del servidor" }, { status: 500 })
     }
 }

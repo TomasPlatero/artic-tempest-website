@@ -56,7 +56,7 @@ const getRoleDisplay = (role: "gm" | "officer" | "raider" | "member") => {
     switch (role) {
         case "gm":
             return {
-                label: "Guild Master",
+                label: "Maestro de Hermandad",
                 badge: "bg-amber-500/10 text-amber-500 border-amber-500/20",
                 icon: <IconShield className="w-4 h-4 mr-2" />
             };
@@ -510,7 +510,7 @@ export function SettingsRolesClient({ initialProfiles, initialDiscordRoles, init
                                                         />
                                                     </div>
                                                     <div className="flex flex-col items-center">
-                                                        <Label className="text-[10px] text-muted-foreground mb-1 uppercase font-bold">Edit</Label>
+                                                        <Label className="text-[10px] text-muted-foreground mb-1 uppercase font-bold">Editar</Label>
                                                         <Switch
                                                             checked={hasPermission(role, app.id, 'can_edit')}
                                                             onCheckedChange={(v) => handlePermissionToggle(role, app.id, 'can_edit', v)}

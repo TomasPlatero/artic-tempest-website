@@ -13,7 +13,7 @@ export async function POST(req: Request) {
         const { discord_role_id, role_name, app_role } = body
 
         if (!discord_role_id || !role_name || !app_role) {
-            return NextResponse.json({ error: "Missing fields" }, { status: 400 })
+            return NextResponse.json({ error: "Faltan campos obligatorios" }, { status: 400 })
         }
 
         // Insert into DB using admin client to bypass RLS if needed, or normal client if RLS is setup for GM
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ mapping: data })
     } catch (error: any) {
         console.error("Error saving role mapping:", error)
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+        return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
     }
 }
 
@@ -53,7 +53,7 @@ export async function DELETE(req: Request) {
         const id = searchParams.get("id")
 
         if (!id) {
-            return NextResponse.json({ error: "Missing ID" }, { status: 400 })
+            return NextResponse.json({ error: "Falta el ID" }, { status: 400 })
         }
 
         const { error } = await sb
@@ -66,6 +66,6 @@ export async function DELETE(req: Request) {
         return NextResponse.json({ success: true })
     } catch (error: any) {
         console.error("Error deleting role mapping:", error)
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+        return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
     }
 }
