@@ -29,6 +29,14 @@ jest-report/
 test-results/
 playwright-report/
 
+
+# ========================
+# Lint Files
+# ========================
+lint_output.txt
+lint_results.json
+lint_results_*v2.json
+
 # ========================
 # Environment variables (todas las variantes comunes)
 # ========================
@@ -85,6 +93,8 @@ tsc_errors.log
 $Temp/
 tmp_*.json
 temp_*.json
+*.bak
+*.bak2
 
 # ========================
 # Optional: build outputs adicionales

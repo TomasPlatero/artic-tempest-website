@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import {
   IconSettings,
   IconTrash,
@@ -236,9 +237,11 @@ export function RosterTable({
                   <TableCell className="font-medium pl-4 py-2">
                     <div className="flex items-center gap-3">
                       {m.class_id ? (
-                        <img
+                        <Image
                           src={`/assets/images/classes/${m.class_id}.jpg`}
                           alt={classNameStr}
+                          width={24}
+                          height={24}
                           className="size-6 rounded-full shadow-inner border border-border/30 object-cover"
                         />
                       ) : (
@@ -268,7 +271,7 @@ export function RosterTable({
                           className="p-1 hover:bg-muted rounded transition-colors w-10"
                           title="Armería de WoW"
                         >
-                          <img src="/assets/images/icons/armory.png" className="size-5 opacity-80 hover:opacity-100 transition-all object-contain" alt="Armería" />
+                          <Image src="/assets/images/icons/armory.png" width={20} height={20} className="size-5 opacity-80 hover:opacity-100 transition-all object-contain" alt="Armería" />
                         </a>
                         <a
                           href={`https://www.warcraftlogs.com/character/eu/${m.realm_slug}/${m.character_name.toLowerCase()}`}
@@ -277,7 +280,7 @@ export function RosterTable({
                           className="p-1 hover:bg-muted rounded transition-colors w-10"
                           title="WarcraftLogs"
                         >
-                          <img src="/assets/images/icons/wcl.png" className="size-5 opacity-80 hover:opacity-100 transition-all object-contain" alt="WCL" />
+                          <Image src="/assets/images/icons/wcl.png" width={20} height={20} className="size-5 opacity-80 hover:opacity-100 transition-all object-contain" alt="WCL" />
                         </a>
                         <a
                           href={`https://raider.io/characters/eu/${m.realm_slug}/${m.character_name.toLowerCase()}`}
@@ -286,7 +289,7 @@ export function RosterTable({
                           className="p-1 hover:bg-muted rounded transition-colors w-10"
                           title="Raider.io"
                         >
-                          <img src="/assets/images/icons/raiderio.png" className="size-5 opacity-80 hover:opacity-100 transition-all object-contain" alt="RIO" />
+                          <Image src="/assets/images/icons/raiderio.png" width={20} height={20} className="size-5 opacity-80 hover:opacity-100 transition-all object-contain" alt="RIO" />
                         </a>
                       </div>
 
@@ -316,9 +319,11 @@ export function RosterTable({
                               <div className="space-y-4 py-4">
                                 <div className="flex items-center gap-3 bg-muted/20 p-3 rounded-md border border-border/10">
                                   {m.class_id ? (
-                                    <img
+                                    <Image
                                       src={`/assets/images/classes/${m.class_id}.jpg`}
                                       alt={classNameStr}
+                                      width={36}
+                                      height={36}
                                       className="size-9 rounded-full shadow-inner border border-border/30 object-cover"
                                     />
                                   ) : (

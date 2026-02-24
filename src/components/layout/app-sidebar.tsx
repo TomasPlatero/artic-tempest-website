@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Image from "next/image"
 import {
   IconChartBar,
   IconDashboard,
@@ -132,7 +133,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <div className="flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm h-12">
               <div className="flex items-center gap-2 text-sidebar-foreground">
                 {iconUrl ? (
-                  <img src={iconUrl} alt="Guild Logo" className="size-5 rounded-full object-cover shrink-0 border border-border/30" />
+                  <Image src={iconUrl} alt="Guild Logo" width={20} height={20} className="size-5 rounded-full object-cover shrink-0 border border-border/30" />
                 ) : (
                   <IconInnerShadowTop className="size-5 shrink-0" />
                 )}

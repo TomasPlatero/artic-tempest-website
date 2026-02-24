@@ -6,6 +6,39 @@ import { IconSearch, IconShield, IconHeart, IconSword, IconBow } from "@tabler/i
 import { RosterTable } from "@/components/common/roster-table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+// Mappings moved outside to ensure stability and satisfy Hook dependency rules
+const WOW_CLASSES: Record<number, string> = {
+  1: "Guerrero",
+  2: "Paladín",
+  3: "Cazador",
+  4: "Pícaro",
+  5: "Sacerdote",
+  6: "DK",
+  7: "Chamán",
+  8: "Mago",
+  9: "Brujo",
+  10: "Monje",
+  11: "Druida",
+  12: "DH",
+  13: "Evocador",
+};
+
+const CLASS_ROLE_MAPPING: Record<number, string> = {
+  1: "Tank",
+  2: "Heal",
+  3: "Ranged",
+  4: "Melee",
+  5: "Heal",
+  6: "Tank",
+  7: "Heal",
+  8: "Ranged",
+  9: "Ranged",
+  10: "Melee",
+  11: "Heal",
+  12: "Melee",
+  13: "Heal",
+};
+
 export function RosterClient({
   members,
   roleLevel,
@@ -19,39 +52,6 @@ export function RosterClient({
 
   const handleSort = () => {
     // Legacy sort prop for RosterTable, no longer active but required by typing
-  };
-
-  // Exact same WOW_CLASSES mapping from roster-table to populate the select
-  const WOW_CLASSES: Record<number, string> = {
-    1: "Guerrero",
-    2: "Paladín",
-    3: "Cazador",
-    4: "Pícaro",
-    5: "Sacerdote",
-    6: "DK",
-    7: "Chamán",
-    8: "Mago",
-    9: "Brujo",
-    10: "Monje",
-    11: "Druida",
-    12: "DH",
-    13: "Evocador",
-  };
-
-  const CLASS_ROLE_MAPPING: Record<number, string> = {
-    1: "Tank",
-    2: "Heal",
-    3: "Ranged",
-    4: "Melee",
-    5: "Heal",
-    6: "Tank",
-    7: "Heal",
-    8: "Ranged",
-    9: "Ranged",
-    10: "Melee",
-    11: "Heal",
-    12: "Melee",
-    13: "Heal",
   };
 
   const filteredMembers = useMemo(() => {
