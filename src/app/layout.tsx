@@ -17,10 +17,27 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "GuildBoard – Artic Tempest",
-  description: "Dashboard de hermandad para World of Warcraft",
-};
+import { sb } from "@/infrastructure/auth/auth-options";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { data: guild } = await sb
+    .from("guilds_managed")
+    .select("name, icon_url")
+    .limit(1)
+    .single();
+
+  const title = guild ? `GuildBoard – ${guild.name}` : "GuildBoard";
+  const icon = guild?.icon_url || "/favicon.ico";
+
+  return {
+    title,
+    description: "Dashboard de hermandad para World of Warcraft",
+    icons: {
+      icon,
+      apple: icon,
+    },
+  };
+}
 
 export default function RootLayout({
   children,
