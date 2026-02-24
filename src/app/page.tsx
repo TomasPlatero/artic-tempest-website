@@ -46,10 +46,11 @@ export default function HomePage() {
           <CardContent className="flex flex-col items-center gap-6 p-8">
             {/* Logo + nombre */}
             <div className="flex flex-col items-center gap-3">
+              <h1 className="sr-only">GuildBoard - Dashboard de Hermandad para World of Warcraft</h1>
               <div className="relative h-30 w-100">
                 <Image
                   src="/assets/brand/logo-texto.png"
-                  alt="Artic Tempest"
+                  alt="Logo de GuildBoard - Artic Tempest"
                   fill
                   priority
                 />
