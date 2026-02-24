@@ -494,44 +494,6 @@ export function RaidEditorClient({
                 </div>
             </div>
 
-            {/* Personal Presence Row (Visible for everyone, but mainly for Raiders) */}
-            <div className="bg-card/50 border border-border/40 rounded-xl p-4 shadow-sm">
-                <div className="flex flex-wrap gap-4 items-end text-sm">
-                    <div className="space-y-1 w-[160px]">
-                        <Label className="text-muted-foreground text-[10px] uppercase font-bold">Tu Asistencia</Label>
-                        <Select value={presence} onValueChange={setPresence}>
-                            <SelectTrigger className="h-9 bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="present">Presente</SelectItem>
-                                <SelectItem value="absent">Ausente</SelectItem>
-                                <SelectItem value="tentativo">Tentativo</SelectItem>
-                                <SelectItem value="late">Tarde</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-
-                    <div className="space-y-1 flex-1 min-w-[200px]">
-                        <Label className="text-muted-foreground text-[10px] uppercase font-bold">Comentario</Label>
-                        <Input
-                            placeholder="Ej. Llego 10 min tarde"
-                            className="h-9 bg-background border-border/20"
-                            value={comment}
-                            onChange={(e) => setComment(e.target.value)}
-                        />
-                    </div>
-
-                    <Button
-                        variant="secondary"
-                        className="h-9 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20"
-                        onClick={handleSavePresence}
-                        disabled={isSaving}
-                    >
-                        {isSaving ? "Guardando..." : "Inscribirse / Actualizar"}
-                    </Button>
-                </div>
-            </div>
 
             {/* Main Planning Area */}
             {!hasMounted ? (

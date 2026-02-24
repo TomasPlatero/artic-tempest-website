@@ -12,6 +12,7 @@ import { RosterClient } from "@/components/roster/roster-client"
 import { SyncRosterButton } from "@/components/common/sync-roster-button"
 
 export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
 
 async function getRoster() {
     const { data } = await sb
@@ -20,30 +21,52 @@ async function getRoster() {
         .order("rank", { ascending: true })
         .order("character_name", { ascending: true })
 
-    const { data: visibleRanks } = await sb
-        .from("guild_ranks")
-        .select("rank")
-        .eq("is_visible", true)
-
-    const visibleRankIds = (visibleRanks || []).map(r => r.rank)
-
-    const { data: rawRanks } = await sb
+    // Try guild_ranks first
+    let { data: rawRanks, error: ranksError } = await sb
         .from("guild_ranks")
         .select("rank, name, is_visible")
 
+    // Fallback if table doesn't exist, cache is stale, OR it's empty
+    const shouldFallback = (ranksError && (ranksError.code === 'PGRST204' || ranksError.message.includes("schema cache")))
+        || (!ranksError && (!rawRanks || rawRanks.length === 0));
+
+    if (shouldFallback) {
+        console.log("[ROSTER PAGE] Falling back to guild_rank_visibility query (Error or Empty)...");
+        const { data: fallbackRanks } = await sb
+            .from("guild_rank_visibility")
+            .select("rank_id, name, is_visible")
+
+        if (fallbackRanks && fallbackRanks.length > 0) {
+            rawRanks = fallbackRanks.map(r => ({
+                rank: (r as any).rank_id ?? (r as any).rank,
+                name: r.name,
+                is_visible: r.is_visible
+            }))
+        }
+    }
+
     const defaultNames = ["Guild Master", "Officer", "Officer Alt", "Raider", "Trial", "Social", "Alt", "Initiate", "Recruit", "Member"]
 
-    const rankNames = Array.from({ length: 10 }, (_, i) => {
-        const found = rawRanks?.find(v => v.rank === i)
-        return found?.name || defaultNames[i]
+    // Build a map of rank visibility from the database
+    const visibilityMap: Record<number, boolean> = {}
+    rawRanks?.forEach(r => {
+        visibilityMap[r.rank] = r.is_visible
     })
 
-    const rankVisibility = Array.from({ length: 10 }, (_, i) => {
+    // Prepare rank names supporting up to 10 ranks (0-9)
+    const maxRank = 9
+    const rankNames: string[] = []
+    for (let i = 0; i <= maxRank; i++) {
         const found = rawRanks?.find(v => v.rank === i)
-        return found ? found.is_visible : false
-    })
+        rankNames[i] = found?.name || defaultNames[i] || `Rank ${i}`
+    }
 
-    const filteredRoster = (data ?? []).filter(m => rankVisibility[m.rank])
+    // Filter members based on the visibility map (default to true if not configured)
+    const filteredRoster = (data ?? []).filter(m => {
+        const rankValue = Number(m.rank);
+        const isVisible = visibilityMap[rankValue] ?? true;
+        return isVisible;
+    })
 
     return { roster: filteredRoster, rankNames }
 }

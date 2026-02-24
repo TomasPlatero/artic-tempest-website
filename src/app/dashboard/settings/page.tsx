@@ -5,14 +5,14 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
-import { IconSettings, IconDeviceGamepad, IconUsers, IconApi } from "@tabler/icons-react"
+import { IconSettings, IconDeviceGamepad, IconUsers, IconApi, IconBuildingStore, IconLayoutCards } from "@tabler/icons-react"
 
 export default function SettingsHubPage() {
     const categories = [
         {
             title: "Configuración del Dashboard",
             description: "Información de la hermandad, logotipo y visibilidad de rangos de World of Warcraft.",
-            icon: IconSettings,
+            icon: IconBuildingStore,
             href: "/dashboard/settings/general",
             color: "text-blue-500",
             bg: "bg-blue-500/10"
@@ -32,6 +32,14 @@ export default function SettingsHubPage() {
             href: "/dashboard/settings/roles",
             color: "text-green-500",
             bg: "bg-green-500/10"
+        },
+        {
+            title: "Configuración de Apps",
+            description: "Ajustes específicos para cada módulo del dashboard (Roster, Calendario, etc.).",
+            icon: IconLayoutCards,
+            href: "/dashboard/settings/apps",
+            color: "text-emerald-500",
+            bg: "bg-emerald-500/10"
         },
         {
             title: "Documentación API",

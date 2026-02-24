@@ -29,16 +29,37 @@ export async function PATCH(request: Request) {
             payload.app_role = appRole
         }
 
-        const { error } = await sb
+        let { error } = await sb
             .from("guild_ranks")
             .upsert(
                 payload,
                 { onConflict: "rank" }
             )
 
+        // Fallback if table doesn't exist or cache is stale
+        if (error && (error.code === 'PGRST204' || error.message.includes("schema cache"))) {
+            console.log("[RANK API] Falling back to guild_rank_visibility...");
+            const fallbackPayload = {
+                rank_id: rankId,
+                is_visible: isVisible,
+                name: payload.name
+            };
+            const { error: fallbackError } = await sb
+                .from("guild_rank_visibility")
+                .upsert(fallbackPayload, { onConflict: "rank_id" });
+
+            error = fallbackError;
+        }
+
         if (error) {
-            console.error("[RANK VISIBILITY UPSERT ERROR]", error)
-            throw error
+            console.error("[RANK VISIBILITY UPSERT ERROR]", {
+                payload,
+                error
+            })
+            return NextResponse.json({
+                error: "Error al actualizar la base de datos",
+                details: error.message
+            }, { status: 500 })
         }
 
         return NextResponse.json({ success: true })

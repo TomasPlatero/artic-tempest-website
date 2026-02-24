@@ -19,17 +19,20 @@ async function getGeneralData() {
 
     const defaultNames = ["Guild Master", "Officer", "Officer Alt", "Raider", "Trial", "Social", "Alt", "Initiate", "Recruit", "Member"]
 
-    const rankVisibility = Array.from({ length: 10 }, (_, i) => {
+    const maxRank = Math.max(10, ...(rawRanks?.map(r => r.rank) || []))
+    const rankIndices = Array.from({ length: maxRank + 1 }, (_, i) => i)
+
+    const rankVisibility = rankIndices.map(i => {
         const found = rawRanks?.find(v => v.rank === i)
         return found ? found.is_visible : false
     })
 
-    const rankNames = Array.from({ length: 10 }, (_, i) => {
+    const rankNames = rankIndices.map(i => {
         const found = rawRanks?.find(v => v.rank === i)
-        return found?.name || defaultNames[i]
+        return found?.name || defaultNames[i] || `Rank ${i}`
     })
 
-    const rankRoles = Array.from({ length: 10 }, (_, i) => {
+    const rankRoles = rankIndices.map(i => {
         const found = rawRanks?.find(v => v.rank === i)
         return found?.app_role || 'raider'
     })

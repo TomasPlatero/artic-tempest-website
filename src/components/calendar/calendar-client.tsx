@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
-import { IconChevronLeft, IconChevronRight, IconPlus, IconCalendarEvent, IconSettings } from "@tabler/icons-react"
+import { IconChevronLeft, IconChevronRight, IconPlus, IconCalendarEvent } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { cn } from "@/infrastructure/tailwind/tailwind-utils"
@@ -163,8 +163,15 @@ export function CalendarClient({
                                 <div className="font-bold truncate drop-shadow-md flex-1">
                                     {evt.destination || evt.title}
                                 </div>
-                                <div className="bg-black/60 backdrop-blur-sm px-1.5 py-0.5 rounded text-[9px] font-bold border border-white/10 shrink-0 shadow-sm ml-2">
-                                    <span className={selectedCount >= maxActive ? "text-red-400" : "text-emerald-400"}>{selectedCount}</span> / <span className="text-white/80">{maxActive}</span>
+                                <div className="flex flex-col items-end gap-1 shrink-0 ml-2">
+                                    <div className="bg-black/60 backdrop-blur-sm px-1.5 py-0.5 rounded text-[9px] font-bold border border-white/10 shadow-sm">
+                                        <span className={selectedCount >= maxActive ? "text-red-400" : "text-emerald-400"}>{selectedCount}</span> / <span className="text-white/80">{maxActive}</span>
+                                    </div>
+                                    {evt.difficulty && (
+                                        <div className="bg-primary/40 backdrop-blur-sm px-1.5 py-0.5 rounded text-[8px] font-bold border border-primary/20 shadow-sm uppercase">
+                                            {evt.difficulty.split(' ')[0]}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -221,17 +228,7 @@ export function CalendarClient({
                         {month === 11 ? monthNames[0] : monthNames[month + 1]}
                         <IconChevronRight className="size-4 ml-1" />
                     </Button>
-                    {isOfficerOrGm && (
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => router.push("/dashboard/calendario/ajustes")}
-                            className="text-muted-foreground hover:bg-muted/30 ml-2 border border-border/50 bg-[#1e1e24]/40"
-                            title="Ajustes de Horario"
-                        >
-                            <IconSettings className="size-4" />
-                        </Button>
-                    )}
+                    {/* No settings button here, moved to Apps hub */}
                 </div>
             </div>
 

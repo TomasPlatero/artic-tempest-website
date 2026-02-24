@@ -11,6 +11,7 @@ import { SidebarInset, SidebarProvider } from "@/components/common/sidebar"
 import { BisClient } from "@/components/bis/bis-client"
 
 export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
 
 type EligibleMember = {
     id: string
@@ -33,13 +34,28 @@ async function getBisData(userId: string) {
         return { eligibleMembers: [] as EligibleMember[] }
     }
 
-    // 2. Fetch plannable members (those with visible ranks)
-    const { data: visibleRanks } = await sb
+    // 2. Fetch visible ranks with fallback
+    let { data: rawRanks, error: ranksError } = await sb
         .from("guild_ranks")
-        .select("rank")
-        .eq("is_visible", true)
+        .select("rank, is_visible")
 
-    const visibleRankIds = (visibleRanks || []).map(r => r.rank)
+    // Fallback if table doesn't exist or cache is stale
+    if (ranksError && (ranksError.code === 'PGRST204' || ranksError.message.includes("schema cache"))) {
+        const { data: fallbackRanks } = await sb
+            .from("guild_rank_visibility")
+            .select("rank_id, is_visible")
+
+        if (fallbackRanks) {
+            rawRanks = fallbackRanks.map(r => ({
+                rank: (r as any).rank_id,
+                is_visible: r.is_visible
+            }))
+        }
+    }
+
+    const visibleRankIds = (rawRanks || [])
+        .filter(r => r.is_visible)
+        .map(r => Number(r.rank))
 
     let query = sb
         .from("guild_members")
@@ -48,8 +64,11 @@ async function getBisData(userId: string) {
 
     if (visibleRankIds.length > 0) {
         query = query.in("rank", visibleRankIds)
+    } else if (rawRanks && rawRanks.length > 0) {
+        // Ranks are configured but NONE are visible (edge case)
+        return { eligibleMembers: [] }
     } else {
-        // Fallback for empty config, though unlikely
+        // Fallback for empty config
         query = query.lte("rank", 4)
     }
 
