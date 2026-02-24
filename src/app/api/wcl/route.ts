@@ -3,7 +3,7 @@ import { sb } from "@/infrastructure/auth/auth-options";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/infrastructure/auth/auth-options";
 
-export async function GET(req: Request) {
+export async function GET(_req: Request) {
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user) {

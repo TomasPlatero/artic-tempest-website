@@ -11,7 +11,6 @@ import {
   IconArrowUp,
   IconArrowDown,
   IconArrowsSort,
-  IconCalendarEvent,
 } from "@tabler/icons-react";
 import { cn } from "@/infrastructure/tailwind/tailwind-utils"
 import { sileo } from "sileo";

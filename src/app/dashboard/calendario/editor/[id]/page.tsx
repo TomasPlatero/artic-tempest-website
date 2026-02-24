@@ -28,6 +28,12 @@ export default async function RaidEditorPage({
         redirect("/dashboard/calendario")
     }
 
+    const { data: currentMember } = await sb
+        .from("guild_members")
+        .select("id")
+        .eq("profile_id", session.user.id)
+        .single()
+
     const { date } = await searchParams
 
     let initialData = null
@@ -76,6 +82,7 @@ export default async function RaidEditorPage({
                 initialSignups={signups}
                 plannableMembers={members || []}
                 preselectedDate={date}
+                currentMemberId={currentMember?.id}
             />
         </div>
     )

@@ -4,7 +4,7 @@ import { authOptions, sb } from "@/infrastructure/auth/auth-options"
 
 export const dynamic = "force-dynamic"
 
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
     try {
         const session = await getServerSession(authOptions)
         if (!session) return new NextResponse("Unauthorized", { status: 401 })

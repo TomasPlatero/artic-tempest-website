@@ -1,17 +1,12 @@
-"use client";
 import { IconArrowLeft, IconApi } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import {
     Card,
     CardContent,
-    CardDescription,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { sileo } from "sileo";
-import { useState } from "react";
 import Link from "next/link";
 // Mock data for the Swagger-style documentation
 const endpoints = [

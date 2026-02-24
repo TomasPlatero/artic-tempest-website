@@ -7,13 +7,10 @@ import {
   IconDashboard,
   IconHelp,
   IconInnerShadowTop,
-  IconSearch,
   IconSettings,
   IconUsers,
   IconCalendarEvent,
   IconListCheck,
-  IconPlus,
-  IconMail,
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav/nav-main"
@@ -26,10 +23,8 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/common/sidebar"
-import { Button } from "@/components/ui/button"
 
 const data = {
   navMain: [

@@ -4,8 +4,6 @@ import { useState, useMemo, useEffect } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import {
-    IconChevronLeft,
-    IconChevronRight,
     IconCalendar,
     IconClock,
     IconUsers,
@@ -32,7 +30,6 @@ import {
     useSensor,
     useSensors,
     DragOverlay,
-    defaultDropAnimationSideEffects,
 } from "@dnd-kit/core"
 import {
     arrayMove,
@@ -45,8 +42,6 @@ import {
 import { CSS } from "@dnd-kit/utilities"
 import {
     pointerWithin,
-    getFirstCollision,
-    closestCorners,
     useDroppable,
 } from "@dnd-kit/core"
 
@@ -186,10 +181,10 @@ export function RaidEditorClient({
         return merged
     })
 
-    const [mounted, setMounted] = useState(false)
+    const [hasMounted, setHasMounted] = useState(false)
     useEffect(() => {
-        if (!mounted) setMounted(true)
-    }, [mounted])
+        setHasMounted(true)
+    }, [])
 
     const initialDuration = initialRaid?.end_date && initialRaid?.event_date
         ? Math.max(1, Math.round((new Date(initialRaid.end_date).getTime() - new Date(initialRaid.event_date).getTime()) / 3600000))
@@ -197,7 +192,6 @@ export function RaidEditorClient({
     const [duration, setDuration] = useState(initialDuration.toString())
 
     const [isSaving, setIsSaving] = useState(false)
-    const [hasMounted, setHasMounted] = useState(false)
 
     // Personal presence state (for raiders/viewers)
     const [presence, setPresence] = useState(() => {
@@ -236,13 +230,8 @@ export function RaidEditorClient({
 
 
     useEffect(() => {
-        setHasMounted(true)
-        console.log("RaidEditorClient Mounted")
-        console.log("initialRaid:", initialRaid)
-        console.log("initialSignups length:", initialSignups.length)
-        console.log("plannableMembers length:", plannableMembers.length)
-        console.log("Internal signups length:", signups.length)
-    }, [initialRaid, initialSignups.length, plannableMembers.length, signups.length])
+        // Initialization/logging if needed
+    }, [])
 
     // Custom collision detection strategy
     const customCollisionDetection = (args: any) => {
@@ -516,58 +505,94 @@ export function RaidEditorClient({
                         opacity: 0.3
                     }}
                 />
-                <div className="flex flex-col md:flex-row md:items-end flex-wrap gap-6 relative z-10">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
                     <div className="flex flex-col gap-1.5">
-                        <Label className="text-xs text-muted-foreground uppercase tracking-wider">Fecha y Hora</Label>
-                        <Input
-                            type="datetime-local"
-                            value={raid.event_date.slice(0, 16)}
-                            onChange={e => setRaid({ ...raid, event_date: e.target.value })}
-                            className="bg-background border-border/20"
-                            readOnly={isReadOnly}
-                        />
+                        <Label className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em]">Fecha y Hora</Label>
+                        {isReadOnly ? (
+                            <div className="flex items-center gap-2 h-10 px-0 text-amber-200/90 font-medium">
+                                <IconCalendar className="size-4 opacity-50" />
+                                <span className="text-sm">{new Date(raid.event_date).toLocaleString('es-ES', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                            </div>
+                        ) : (
+                            <Input
+                                type="datetime-local"
+                                value={raid.event_date}
+                                onChange={(e) => setRaid({ ...raid, event_date: e.target.value })}
+                                className="bg-background/50 border-border/20 focus:border-primary/50 transition-colors h-10"
+                            />
+                        )}
                     </div>
                     <div className="flex flex-col gap-1.5">
-                        <Label className="text-xs text-muted-foreground uppercase tracking-wider">Destino (Midnight)</Label>
-                        <Select value={raid.destination || ""} onValueChange={v => setRaid({ ...raid, destination: v })} disabled={isReadOnly}>
-                            <SelectTrigger className="bg-background border-border/20">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {MIDNIGHT_RAIDS.map(r => (
-                                    <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <Label className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em]">Destino (Midnight)</Label>
+                        {isReadOnly ? (
+                            <div className="flex items-center gap-2 h-10 px-0 text-white font-bold tracking-tight">
+                                <span className="text-sm">{MIDNIGHT_RAIDS.find(r => r.id === raid.destination)?.name || raid.destination}</span>
+                            </div>
+                        ) : (
+                            <Select
+                                value={raid.destination}
+                                onValueChange={(val) => setRaid({ ...raid, destination: val })}
+                            >
+                                <SelectTrigger className="bg-background/50 border-border/20 h-10">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="bg-popover border-border/20">
+                                    {MIDNIGHT_RAIDS.map(r => (
+                                        <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        )}
                     </div>
                     <div className="flex flex-col gap-1.5">
-                        <Label className="text-xs text-muted-foreground uppercase tracking-wider">Dificultad</Label>
-                        <Select value={raid.difficulty} onValueChange={v => setRaid({ ...raid, difficulty: v })} disabled={isReadOnly}>
-                            <SelectTrigger className="bg-background border-border/20">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Normal (30)">Normal (30)</SelectItem>
-                                <SelectItem value="Heroic (30)">Heroico (30)</SelectItem>
-                                <SelectItem value="Mythic (20)">Mítico (20)</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <Label className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em]">Dificultad</Label>
+                        {isReadOnly ? (
+                            <div className="flex items-center gap-2 h-10 px-0">
+                                <span className={cn(
+                                    "text-xs font-black uppercase tracking-widest px-2.5 py-1 rounded-md",
+                                    raid.difficulty.includes("Mítico") ? "bg-purple-500/10 text-purple-400 border border-purple-500/20" : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                                )}>
+                                    {raid.difficulty}
+                                </span>
+                            </div>
+                        ) : (
+                            <Select
+                                value={raid.difficulty}
+                                onValueChange={(val) => setRaid({ ...raid, difficulty: val })}
+                            >
+                                <SelectTrigger className="bg-background/50 border-border/20 h-10">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="bg-popover border-border/20">
+                                    <SelectItem value="Normal (30)">Normal (30)</SelectItem>
+                                    <SelectItem value="Heroic (30)">Heroico (30)</SelectItem>
+                                    <SelectItem value="Mythic (20)">Mítico (20)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        )}
                     </div>
                     <div className="flex flex-col gap-1.5">
-                        <Label className="text-xs text-muted-foreground uppercase tracking-wider">Duración</Label>
-                        <Select value={duration} onValueChange={setDuration} disabled={isReadOnly}>
-                            <SelectTrigger className="bg-background border-border/20">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="1">1 Hora</SelectItem>
-                                <SelectItem value="1.5">1.5 Horas</SelectItem>
-                                <SelectItem value="2">2 Horas</SelectItem>
-                                <SelectItem value="2.5">2.5 Horas</SelectItem>
-                                <SelectItem value="3">3 Horas</SelectItem>
-                                <SelectItem value="4">4 Horas</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <Label className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em]">Duración</Label>
+                        {isReadOnly ? (
+                            <div className="flex items-center gap-2 h-10 px-0 text-muted-foreground font-medium">
+                                <IconClock className="size-4 opacity-50" />
+                                <span className="text-sm">{duration} Horas</span>
+                            </div>
+                        ) : (
+                            <Select value={duration} onValueChange={setDuration}>
+                                <SelectTrigger className="bg-background/50 border-border/20 h-10">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="bg-popover border-border/20">
+                                    <SelectItem value="1">1 Hora</SelectItem>
+                                    <SelectItem value="1.5">1.5 Horas</SelectItem>
+                                    <SelectItem value="2">2 Horas</SelectItem>
+                                    <SelectItem value="2.5">2.5 Horas</SelectItem>
+                                    <SelectItem value="3">3 Horas</SelectItem>
+                                    <SelectItem value="4">4 Horas</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        )}
                     </div>
                 </div>
 
@@ -599,6 +624,66 @@ export function RaidEditorClient({
                 )}
             </div>
 
+            {/* Personal Inscription (for Raiders/Members to set their own status) */}
+            <div className="bg-card/30 border border-border/20 rounded-xl p-4 md:p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
+                <div className="flex flex-col gap-1">
+                    <h2 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+                        <IconUsers className="size-4" />
+                        Tu Inscripción
+                    </h2>
+                    <p className="text-xs text-muted-foreground">Indica tu disponibilidad para este evento.</p>
+                </div>
+
+                <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 flex-1 max-w-2xl">
+                    <div className="flex bg-muted/30 p-1 rounded-xl border border-border/20 flex-1">
+                        <button
+                            onClick={() => setPresence("present")}
+                            className={cn(
+                                "flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all uppercase tracking-tighter",
+                                presence === "present" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "text-muted-foreground hover:bg-muted/50"
+                            )}
+                        >
+                            <IconCheck className="size-4" />
+                            Presente
+                        </button>
+                        <button
+                            onClick={() => setPresence("late")}
+                            className={cn(
+                                "flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all uppercase tracking-tighter",
+                                presence === "late" ? "bg-amber-500/20 text-amber-400 border border-amber-500/30" : "text-muted-foreground hover:bg-muted/50"
+                            )}
+                        >
+                            <IconClock className="size-4" />
+                            Tarde
+                        </button>
+                        <button
+                            onClick={() => setPresence("absent")}
+                            className={cn(
+                                "flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all uppercase tracking-tighter",
+                                presence === "absent" ? "bg-red-500/20 text-red-400 border border-red-500/30" : "text-muted-foreground hover:bg-muted/50"
+                            )}
+                        >
+                            <IconUserOff className="size-4" />
+                            Ausente
+                        </button>
+                    </div>
+
+                    <Input
+                        placeholder="Comentario (opcional)..."
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        className="bg-background/50 border-border/20 h-10 md:w-64"
+                    />
+
+                    <Button
+                        onClick={handleSavePresence}
+                        disabled={isSaving}
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-10 md:px-6 rounded-lg uppercase text-[10px] tracking-widest transition-all shadow-lg shadow-primary/10"
+                    >
+                        {isSaving ? "Cargando..." : "Confirmar Mi Asistencia"}
+                    </Button>
+                </div>
+            </div>
 
             {/* Main Planning Area */}
             {
@@ -618,57 +703,51 @@ export function RaidEditorClient({
                     >
                         <div className="w-full">
                             <div className="flex-1 overflow-hidden">
-                                {!mounted ? (
-                                    <div className="h-[600px] flex items-center justify-center">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                                    </div>
-                                ) : (
-                                    <Tabs defaultValue="active" className="lg:hidden w-full">
-                                        <TabsList className="grid grid-cols-3 mb-4 w-full h-11 p-1">
-                                            <TabsTrigger value="active">Activos</TabsTrigger>
-                                            <TabsTrigger value="queued">Cola</TabsTrigger>
-                                            <TabsTrigger value="buffs">Buffs</TabsTrigger>
-                                        </TabsList>
+                                <Tabs defaultValue="active" className="lg:hidden w-full">
+                                    <TabsList className="grid grid-cols-3 mb-4 w-full h-11 p-1">
+                                        <TabsTrigger value="active">Activos</TabsTrigger>
+                                        <TabsTrigger value="queued">Cola</TabsTrigger>
+                                        <TabsTrigger value="buffs">Buffs</TabsTrigger>
+                                    </TabsList>
 
-                                        <TabsContent value="active">
-                                            <div className="flex flex-col gap-4">
-                                                <h3 className="text-sm font-bold text-emerald-500 uppercase tracking-widest">Activos ({activeMembers.length})</h3>
-                                                <DroppableContainer
-                                                    id="active-container-mobile"
-                                                    items={activeMembers.map(s => s.member_id)}
-                                                    strategy={verticalListSortingStrategy}
-                                                    className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-4 flex flex-col gap-4"
-                                                >
-                                                    <RosterGroup title="Tanques" icon="🛡️" color="text-emerald-500" signups={activeByRole.tanks} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                                    <RosterGroup title="Sanadores" icon="➕" color="text-emerald-500" signups={activeByRole.heals} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                                    <RosterGroup title="Melee DPS" icon="⚔️" color="text-emerald-500" signups={activeByRole.melee} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                                    <RosterGroup title="Ranged DPS" icon="🏹" color="text-emerald-500" signups={activeByRole.ranged} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                                </DroppableContainer>
-                                            </div>
-                                        </TabsContent>
+                                    <TabsContent value="active">
+                                        <div className="flex flex-col gap-4">
+                                            <h3 className="text-sm font-bold text-emerald-500 uppercase tracking-widest">Activos ({activeMembers.length})</h3>
+                                            <DroppableContainer
+                                                id="active-container-mobile"
+                                                items={activeMembers.map(s => s.member_id)}
+                                                strategy={verticalListSortingStrategy}
+                                                className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-4 flex flex-col gap-4"
+                                            >
+                                                <RosterGroup title="Tanques" icon="🛡️" color="text-emerald-500" signups={activeByRole.tanks} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
+                                                <RosterGroup title="Sanadores" icon="➕" color="text-emerald-500" signups={activeByRole.heals} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
+                                                <RosterGroup title="Melee DPS" icon="⚔️" color="text-emerald-500" signups={activeByRole.melee} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
+                                                <RosterGroup title="Ranged DPS" icon="🏹" color="text-emerald-500" signups={activeByRole.ranged} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
+                                            </DroppableContainer>
+                                        </div>
+                                    </TabsContent>
 
-                                        <TabsContent value="queued">
-                                            <div className="flex flex-col gap-4">
-                                                <h3 className="text-sm font-bold text-amber-500 uppercase tracking-widest">En Cola ({reserveMembers.length})</h3>
-                                                <DroppableContainer
-                                                    id="queue-container-mobile"
-                                                    items={reserveMembers.map(s => s.member_id)}
-                                                    strategy={verticalListSortingStrategy}
-                                                    className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 flex flex-col gap-4"
-                                                >
-                                                    <RosterGroup title="Tanques" color="text-amber-500" signups={reserveByRole.tanks} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                                    <RosterGroup title="Sanadores" color="text-amber-500" signups={reserveByRole.heals} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                                    <RosterGroup title="Melee DPS" color="text-amber-500" signups={reserveByRole.melee} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                                    <RosterGroup title="Ranged DPS" color="text-amber-500" signups={reserveByRole.ranged} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                                </DroppableContainer>
-                                            </div>
-                                        </TabsContent>
+                                    <TabsContent value="queued">
+                                        <div className="flex flex-col gap-4">
+                                            <h3 className="text-sm font-bold text-amber-500 uppercase tracking-widest">En Cola ({reserveMembers.length})</h3>
+                                            <DroppableContainer
+                                                id="queue-container-mobile"
+                                                items={reserveMembers.map(s => s.member_id)}
+                                                strategy={verticalListSortingStrategy}
+                                                className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 flex flex-col gap-4"
+                                            >
+                                                <RosterGroup title="Tanques" color="text-amber-500" signups={reserveByRole.tanks} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
+                                                <RosterGroup title="Sanadores" color="text-amber-500" signups={reserveByRole.heals} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
+                                                <RosterGroup title="Melee DPS" color="text-amber-500" signups={reserveByRole.melee} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
+                                                <RosterGroup title="Ranged DPS" color="text-amber-500" signups={reserveByRole.ranged} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
+                                            </DroppableContainer>
+                                        </div>
+                                    </TabsContent>
 
-                                        <TabsContent value="buffs">
-                                            <BuffsCard activeClassIds={activeClassIds} className="h-auto" />
-                                        </TabsContent>
-                                    </Tabs>
-                                )}
+                                    <TabsContent value="buffs">
+                                        <BuffsCard activeClassIds={activeClassIds} className="h-auto" />
+                                    </TabsContent>
+                                </Tabs>
                             </div>
 
                             {/* Desktop Layout (hidden on small screens) */}
@@ -685,10 +764,10 @@ export function RaidEditorClient({
                                         strategy={rectSortingStrategy}
                                         className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-4 min-h-[600px] grid grid-cols-1 xl:grid-cols-2 gap-4"
                                     >
-                                        <RosterGroup title="Tanques" icon="🛡️" color="text-emerald-500" signups={activeByRole.tanks} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                        <RosterGroup title="Sanadores" icon="➕" color="text-emerald-500" signups={activeByRole.heals} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                        <RosterGroup title="Melee DPS" icon="⚔️" color="text-emerald-500" signups={activeByRole.melee} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                        <RosterGroup title="Ranged DPS" icon="🏹" color="text-emerald-500" signups={activeByRole.ranged} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
+                                        <RosterGroup title="Tanques" icon="🛡️" color="text-emerald-500" signups={activeByRole.tanks} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
+                                        <RosterGroup title="Sanadores" icon="➕" color="text-emerald-500" signups={activeByRole.heals} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
+                                        <RosterGroup title="Melee DPS" icon="⚔️" color="text-emerald-500" signups={activeByRole.melee} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
+                                        <RosterGroup title="Ranged DPS" icon="🏹" color="text-emerald-500" signups={activeByRole.ranged} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
                                     </DroppableContainer>
                                 </div>
 
@@ -704,10 +783,10 @@ export function RaidEditorClient({
                                         strategy={rectSortingStrategy}
                                         className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 min-h-[600px] grid grid-cols-1 xl:grid-cols-2 gap-4"
                                     >
-                                        <RosterGroup title="Tanques" color="text-amber-500" signups={reserveByRole.tanks} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                        <RosterGroup title="Sanadores" color="text-amber-500" signups={reserveByRole.heals} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                        <RosterGroup title="Melee DPS" color="text-amber-500" signups={reserveByRole.melee} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                        <RosterGroup title="Ranged DPS" color="text-amber-500" signups={reserveByRole.ranged} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
+                                        <RosterGroup title="Tanques" color="text-amber-500" signups={reserveByRole.tanks} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
+                                        <RosterGroup title="Sanadores" color="text-amber-500" signups={reserveByRole.heals} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
+                                        <RosterGroup title="Melee DPS" color="text-amber-500" signups={reserveByRole.melee} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
+                                        <RosterGroup title="Ranged DPS" color="text-amber-500" signups={reserveByRole.ranged} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
                                     </DroppableContainer>
                                 </div>
 
@@ -728,7 +807,6 @@ export function RaidEditorClient({
                                     <MemberItem
                                         signup={signups.find(s => s.member_id === activeId)!}
                                         onToggle={() => { }}
-                                        onChangeRole={() => { }}
                                         onToggleAbsent={() => { }}
                                         onToggleLate={() => { }}
                                         onResetStatus={() => { }}
@@ -744,7 +822,7 @@ export function RaidEditorClient({
     )
 }
 
-function MemberItem({ signup, onToggle, onChangeRole, onToggleAbsent, onToggleLate, onResetStatus, isReadOnly = false, changeRole }: { signup: Signup, onToggle: () => void, onChangeRole: () => void, onToggleAbsent: () => void, onToggleLate: () => void, onResetStatus: () => void, isReadOnly?: boolean, changeRole: (id: string, role: string) => void }) {
+function MemberItem({ signup, onToggle, onToggleAbsent, onToggleLate, onResetStatus, isReadOnly = false, changeRole }: { signup: Signup, onToggle: () => void, onToggleAbsent: () => void, onToggleLate: () => void, onResetStatus: () => void, isReadOnly?: boolean, changeRole: (id: string, role: string) => void }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
         id: signup.member_id,
         disabled: isReadOnly || signup.is_absent || signup.is_late
@@ -807,7 +885,11 @@ function MemberItem({ signup, onToggle, onChangeRole, onToggleAbsent, onToggleLa
             </div>
 
             <div className="flex items-center gap-1.5 shrink-0" onClick={e => e.stopPropagation()}>
-                {!isReadOnly && (
+                {isReadOnly ? (
+                    <div className="px-2 py-0.5 rounded bg-muted/30 border border-border/30 text-[9px] uppercase font-black tracking-tighter text-muted-foreground/70">
+                        {signup.event_role}
+                    </div>
+                ) : (
                     <>
                         <Select
                             value={signup.event_role}
@@ -853,17 +935,12 @@ function MemberItem({ signup, onToggle, onChangeRole, onToggleAbsent, onToggleLa
                                     e.stopPropagation()
                                     onToggleAbsent()
                                 }}
-                                title={signup.is_absent ? "Quitar ausencia" : "Marcar como ausente"}
+                                title={signup.is_absent ? "Quitar ausencia" : "Marcar ausencia"}
                             >
                                 <IconUserOff className="size-3.5" />
                             </Button>
                         </div>
                     </>
-                )}
-                {isReadOnly && (
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground/40 w-20 text-center py-1 bg-muted/20 rounded">
-                        {signup.event_role}
-                    </span>
                 )}
             </div>
         </div>
@@ -899,7 +976,7 @@ const CLASS_COUNTS = (active: Signup[]) => {
     return counts
 }
 
-function RosterGroup({ title, icon, color, signups, onToggle, onChangeRole, onToggleAbsent, onToggleLate, onResetStatus, isReadOnly, changeRole }: { title: string, icon?: string, color: string, signups: Signup[], onToggle: (id: string) => void, onChangeRole: (id: string) => void, onToggleAbsent: (id: string) => void, onToggleLate: (id: string) => void, onResetStatus: (id: string) => void, isReadOnly: boolean, changeRole: (id: string, role: string) => void }) {
+function RosterGroup({ title, icon, color, signups, onToggle, onToggleAbsent, onToggleLate, onResetStatus, isReadOnly, changeRole }: { title: string, icon?: string, color: string, signups: Signup[], onToggle: (id: string) => void, onToggleAbsent: (id: string) => void, onToggleLate: (id: string) => void, onResetStatus: (id: string) => void, isReadOnly: boolean, changeRole: (id: string, role: string) => void }) {
     return (
         <div className="flex flex-col gap-2">
             <h4 className={cn("text-[10px] font-bold uppercase pl-1 flex items-center gap-1", color + "/60")}>
@@ -911,7 +988,6 @@ function RosterGroup({ title, icon, color, signups, onToggle, onChangeRole, onTo
                     key={s.member_id}
                     signup={s}
                     onToggle={() => onToggle(s.member_id)}
-                    onChangeRole={() => onChangeRole(s.member_id)}
                     onToggleAbsent={() => onToggleAbsent(s.member_id)}
                     onToggleLate={() => onToggleLate(s.member_id)}
                     onResetStatus={() => onResetStatus(s.member_id)}
