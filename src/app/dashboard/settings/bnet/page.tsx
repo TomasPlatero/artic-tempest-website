@@ -18,7 +18,7 @@ async function getBnetData() {
 
     const { data: guild } = await sb
         .from("guilds_managed")
-        .select("id")
+        .select("guild_id")
         .limit(1)
         .single()
 
