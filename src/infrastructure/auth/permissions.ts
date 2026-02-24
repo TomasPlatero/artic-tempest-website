@@ -26,6 +26,9 @@ export async function getAppPermission(roleLevel: string, appId: AppId) {
         if (appId === 'bis') return { canView: true, canEdit: true }
         return { canView: true, canEdit: false }
     }
+    if (roleLevel === 'member') {
+        return { canView: true, canEdit: false }
+    }
 
     return { canView: false, canEdit: false }
 }

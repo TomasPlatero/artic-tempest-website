@@ -117,7 +117,7 @@ export function SettingsRolesClient({ initialProfiles, initialDiscordRoles, init
         setNewRoleLevel("raider");
     };
 
-    const handleRoleChange = async (userId: string, newRole: "gm" | "officer" | "raider") => {
+    const handleRoleChange = async (userId: string, newRole: "gm" | "officer" | "raider" | "member") => {
         setUpdating(userId);
 
         try {
@@ -337,6 +337,11 @@ export function SettingsRolesClient({ initialProfiles, initialDiscordRoles, init
                                                             <SelectItem value="raider">
                                                                 <div className="flex items-center text-green-500 whitespace-nowrap">
                                                                     <IconSword className="w-4 h-4 mr-2" /> Raider (Básico)
+                                                                </div>
+                                                            </SelectItem>
+                                                            <SelectItem value="member">
+                                                                <div className="flex items-center text-gray-400 whitespace-nowrap">
+                                                                    <IconUser className="w-4 h-4 mr-2" /> Miembro (Básico)
                                                                 </div>
                                                             </SelectItem>
                                                         </SelectContent>

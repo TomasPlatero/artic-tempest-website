@@ -21,7 +21,7 @@ export async function PATCH(request: Request) {
             return NextResponse.json({ error: "Faltan parámetros requeridos" }, { status: 400 })
         }
 
-        const validRoles = ["gm", "officer", "raider"]
+        const validRoles = ["gm", "officer", "raider", "member"]
         if (!validRoles.includes(newRoleLevel)) {
             return NextResponse.json({ error: "Nivel de rol inválido" }, { status: 400 })
         }
