@@ -1,5 +1,11 @@
 # 🧭 GuildBoard – Dashboard de Hermandad para World of Warcraft
 
+[![Lint](https://github.com/TomasPlatero/guildboard/actions/workflows/lint.yml/badge.svg)](https://github.com/TomasPlatero/guildboard/actions/workflows/lint.yml)
+[![Vercel Deployment](https://deploy-badge.vercel.app/api/TomasPlatero/guildboard)](https://guildboard.vercel.app)
+[![Next.js](https://img.shields.io/badge/Next.js-16.1.6-black?logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.2.4-61DAFB?logo=react)](https://react.dev/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 **GuildBoard** es un panel web avanzado diseñado para hermandades de *World of Warcraft*. Permite centralizar la gestión del roster, la planificación de raids, y la sincronización de personajes mediante la API de **Battle.net**, proporcionando una interfaz moderna, rápida y personalizada.
 
 ---

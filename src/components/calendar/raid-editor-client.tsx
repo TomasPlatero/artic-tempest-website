@@ -189,7 +189,7 @@ export function RaidEditorClient({
         console.log("initialSignups length:", initialSignups.length)
         console.log("plannableMembers length:", plannableMembers.length)
         console.log("Internal signups length:", signups.length)
-    }, [])
+    }, [initialRaid, initialSignups.length, plannableMembers.length, signups.length])
 
     // Custom collision detection strategy
     const customCollisionDetection = (args: any) => {

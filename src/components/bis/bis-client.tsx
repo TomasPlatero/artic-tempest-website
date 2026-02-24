@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import {
     IconSword, IconShield, IconCheck, IconX, IconRefresh,
     IconListCheck, IconLayoutGrid, IconUser, IconFilter,
@@ -182,7 +182,7 @@ function LootItemCard({
             `}
         >
             {item.icon ? (
-                <img src={item.icon} alt="" className="size-9 rounded border border-border/50 shadow-sm shrink-0" />
+                <Image src={item.icon} alt="" width={36} height={36} className="rounded border border-border/50 shadow-sm shrink-0" />
             ) : (
                 <div className="size-9 rounded bg-muted border border-border/50 flex items-center justify-center shrink-0">
                     <IconShield className="size-4 text-muted-foreground" />
@@ -220,16 +220,7 @@ export function BisClient({ eligibleMembers }: { eligibleMembers: EligibleMember
         }
     }, [bosses, selections, viewMode])
 
-    // Fetch loot when difficulty or member changes
-    useEffect(() => {
-        fetchLoot()
-    }, [difficulty])
-
-    useEffect(() => {
-        if (selectedMemberId) fetchSelections()
-    }, [selectedMemberId])
-
-    async function fetchLoot(forceRefresh = false) {
+    const fetchLoot = useCallback(async (forceRefresh = false) => {
         setLoading(true)
         try {
             const res = await fetch(`/api/loot/raid?difficulty=${difficulty}${forceRefresh ? "&refresh=true" : ""}`)
@@ -245,9 +236,9 @@ export function BisClient({ eligibleMembers }: { eligibleMembers: EligibleMember
         } finally {
             setLoading(false)
         }
-    }
+    }, [difficulty])
 
-    async function fetchSelections() {
+    const fetchSelections = useCallback(async () => {
         setLoadingSelections(true)
         try {
             const res = await fetch(`/api/bis?member_id=${selectedMemberId}`)
@@ -258,7 +249,16 @@ export function BisClient({ eligibleMembers }: { eligibleMembers: EligibleMember
         } finally {
             setLoadingSelections(false)
         }
-    }
+    }, [selectedMemberId])
+
+    // Fetch loot when difficulty or member changes
+    useEffect(() => {
+        fetchLoot()
+    }, [difficulty, fetchLoot])
+
+    useEffect(() => {
+        if (selectedMemberId) fetchSelections()
+    }, [selectedMemberId, fetchSelections])
 
     const isSelected = (itemId: number) => selections.some(s => s.item_id === itemId)
 
@@ -540,10 +540,11 @@ export function BisClient({ eligibleMembers }: { eligibleMembers: EligibleMember
                                             }}
                                         >
                                             {sel.item_icon && (
-                                                <img
+                                                <Image
                                                     src={sel.item_icon}
                                                     alt=""
-                                                    className="size-8 rounded border border-border/50 shadow-sm"
+                                                    width={32} height={32}
+                                                    className="rounded border border-border/50 shadow-sm"
                                                 />
                                             )}
                                             <div className="flex-1 min-w-0">

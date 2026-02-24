@@ -7,7 +7,7 @@
     "dev:debug": "cross-env NODE_OPTIONS=--inspect next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "type-check": "tsc -b",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "db:push": "npx supabase db push",
@@ -55,7 +55,7 @@
     "zod": "^4.1.8"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^0.1.0",
+    "@eslint/eslintrc": "^3.3.4",
     "@tailwindcss/postcss": "^4.1.13",
     "@types/node": "^24.3.3",
     "@types/react": "^19.1.13",

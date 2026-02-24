@@ -6,7 +6,7 @@ export default function CookiesPolicyPage() {
         <div className="min-h-screen bg-background relative overflow-hidden flex flex-col">
             {/* Background elements */}
             <div className="fixed inset-0 z-0 bg-[url('/assets/images/wow-raid-hero.jpg')] bg-cover bg-center bg-no-repeat opacity-20 pointer-events-none" />
-            <div className="fixed inset-0 z-0 bg-gradient-to-t from-background via-background/80 to-transparent pointer-events-none" />
+            <div className="fixed inset-0 z-0 bg-linear-to-t from-background via-background/80 to-transparent pointer-events-none" />
 
             <div className="relative z-10 flex-1 container mx-auto max-w-4xl p-6 md:p-12">
                 <header className="mb-10 flex items-center gap-4">
@@ -60,7 +60,7 @@ export default function CookiesPolicyPage() {
                     <section className="bg-white/5 p-6 rounded-lg border border-white/10 shadow-lg backdrop-blur-sm">
                         <h2 className="text-2xl font-semibold mb-4 text-white">3. Cómo gestionar o rechazar las cookies</h2>
                         <p className="text-muted-foreground leading-relaxed">
-                            En el momento en que entras a la aplicación, se te mostrará un aviso permitiéndote "Aceptar todas" o usar "Solo Esenciales". Al guardar "Solo esenciales", el sistema memorizará en tu navegador que has declinado todo lo que no sea necesario para logearte. Si deseas revocar este consentimiento en el futuro, puedes simplemente limpiar el almacenamiento local o las cookies desde las configuraciones de seguridad de tu propio navegador web.
+                            En el momento en que entras a la aplicación, se te mostrará un aviso permitiéndote &quot;Aceptar todas&quot; o usar &quot;Solo Esenciales&quot;. Al guardar &quot;Solo esenciales&quot;, el sistema memorizará en tu navegador que has declinado todo lo que no sea necesario para logearte. Si deseas revocar este consentimiento en el futuro, puedes simplemente limpiar el almacenamiento local o las cookies desde las configuraciones de seguridad de tu propio navegador web.
                         </p>
                     </section>
                 </main>
