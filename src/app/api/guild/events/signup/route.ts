@@ -6,14 +6,14 @@ export async function POST(req: Request) {
     try {
         const session = await getServerSession(authOptions)
         if (!session) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+            return NextResponse.json({ error: "No autorizado" }, { status: 401 })
         }
 
         const body = await req.json()
         const { event_id, status, comment, role_preference } = body
 
         if (!event_id || !status) {
-            return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+            return NextResponse.json({ error: "Faltan campos obligatorios" }, { status: 400 })
         }
 
         // 1. Get the guild member ID for the current user
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
             .single()
 
         if (memberErr || !memberData) {
-            return NextResponse.json({ error: "No guild member associated with this profile" }, { status: 400 })
+            return NextResponse.json({ error: "No hay ningún miembro de hermandad asociado a este perfil" }, { status: 400 })
         }
 
         const member_id = memberData.id
@@ -52,6 +52,6 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: true, data })
     } catch (error: any) {
         console.error("Error saving event signup:", error)
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+        return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
     }
 }

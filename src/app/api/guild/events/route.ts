@@ -8,30 +8,30 @@ export async function POST(request: Request) {
     try {
         const session = await getServerSession(authOptions)
         if (!session) {
-            return new NextResponse("Unauthorized", { status: 401 })
+            return new NextResponse("No autorizado", { status: 401 })
         }
 
         const roleLevel = session.user?.roleLevel
         if (roleLevel !== "gm" && roleLevel !== "officer") {
-            return new NextResponse("Forbidden", { status: 403 })
+            return new NextResponse("Sin permisos", { status: 403 })
         }
 
         const body = await request.json()
         const { title, destination, event_date, end_date, difficulty, selected_bosses } = body
 
         if (!event_date || !destination) {
-            return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+            return NextResponse.json({ error: "Faltan campos obligatorios" }, { status: 400 })
         }
 
         // Fake standard backgrounds based on destination
         let background_url = null
         const destLower = destination.toLowerCase()
         if (destLower.includes("voidspire")) {
-            background_url = "https://www.nerdsquare.eu/wp-content/uploads/2025/08/nerdsquare-wow-midnight-raid-voidspire-700x394.jpg"
+            background_url = "/assets/images/raids/voidspire.jpg"
         } else if (destLower.includes("dreamrift")) {
-            background_url = "https://www.nerdsquare.eu/wp-content/uploads/2025/08/nerdsquare-wow-midnight-raid-dreamrift-700x394.jpg"
+            background_url = "/assets/images/raids/dreamrift.jpg"
         } else if (destLower.includes("quel'danas") || destLower.includes("sunwell")) {
-            background_url = "https://www.nerdsquare.eu/wp-content/uploads/2025/08/nerdsquare-wow-midnight-raid-marchonqueldanas-700x394.jpg"
+            background_url = "/assets/images/raids/marchonqueldanas.jpg"
         }
 
         // Get the first guild ID (since the app manages one guild for now)
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
 
         if (guildError || !guildData) {
             console.error("POST /api/guild/events - Guild fetch error:", guildError)
-            return NextResponse.json({ error: "Guild not found" }, { status: 500 })
+            return NextResponse.json({ error: "Hermandad no encontrada" }, { status: 500 })
         }
 
         const { data, error } = await sb
@@ -74,6 +74,6 @@ export async function POST(request: Request) {
 
     } catch (e: any) {
         console.error("API error:", e)
-        return NextResponse.json({ error: e.message || "Internal server error" }, { status: 500 })
+        return NextResponse.json({ error: e.message || "Error interno del servidor" }, { status: 500 })
     }
 }

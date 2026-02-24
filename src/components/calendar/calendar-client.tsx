@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
-import { IconChevronLeft, IconChevronRight, IconPlus, IconCalendarEvent } from "@tabler/icons-react"
+import { IconChevronLeft, IconChevronRight, IconPlus, IconCalendarEvent, IconLayoutGrid, IconList } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { cn } from "@/infrastructure/tailwind/tailwind-utils"
@@ -52,6 +52,17 @@ export function CalendarClient({
         return new Date(d.getFullYear(), d.getMonth(), 1)
     })
 
+    const [viewMode, setViewMode] = useState<"grid" | "list">("list")
+    const [mounted, setMounted] = useState(false)
+
+    // Detect mobile for default view on mount
+    useEffect(() => {
+        setMounted(prev => prev ? prev : true)
+        if (window.innerWidth > 768) {
+            setViewMode(prev => prev === "grid" ? prev : "grid")
+        }
+    }, [])
+
     // Calendar math
     const year = currentDate.getFullYear()
     const month = currentDate.getMonth()
@@ -59,10 +70,10 @@ export function CalendarClient({
     const firstDay = getFirstDayOfMonth(year, month)
 
     const monthNames = [
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
     ]
-    const dayNames = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
+    const dayNames = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sá", "Do"]
 
     const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1))
     const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1))
@@ -109,14 +120,14 @@ export function CalendarClient({
                     }
                 }}
                 className={cn(
-                    "min-h-[120px] p-1 border-t border-r border-border/50 flex flex-col gap-1 relative group transition-colors cursor-pointer hover:bg-muted/5",
+                    "min-h-[120px] min-w-[120px] p-1 border-t border-r border-border/50 flex flex-col gap-1 relative group transition-colors cursor-pointer hover:bg-muted/5",
                     isToday && "bg-muted/10"
                 )}
             >
                 <div className="flex justify-between items-start">
                     {isOfficerOrGm && dayEvents.length === 0 && (
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-primary/20 text-primary text-[10px] px-1.5 py-0.5 rounded border border-primary/30 ml-1 mt-1 font-bold">
-                            create
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-primary/20 text-primary text-[10px] px-1.5 py-0.5 rounded border border-primary/30 ml-1 mt-1 font-bold lowercase">
+                            crear
                         </div>
                     )}
                     <span className={cn(
@@ -195,26 +206,54 @@ export function CalendarClient({
         }
     }
 
+    // Get flat list of events for the month (Agenda View)
+    const sortedEvents = useMemo(() => {
+        return Object.keys(eventsByDay)
+            .map(Number)
+            .sort((a, b) => a - b)
+            .flatMap(day => eventsByDay[day])
+    }, [eventsByDay])
+
     return (
         <div className="flex flex-col gap-4 bg-background h-fit mb-8">
             {/* Header Toolbar */}
             <div className="flex items-center justify-between">
-                {/* Title */}
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <IconCalendarEvent className="size-6 text-muted-foreground" />
-                        Calendar
+                        Calendario
                     </h1>
-                    <p className="text-sm text-muted-foreground">Raids - Team raiders</p>
+                    <p className="text-sm text-muted-foreground">Bandas - Equipo raider</p>
+                </div>
+
+                {/* View Toggles */}
+                <div className="flex bg-muted/20 p-1 rounded-lg border border-border/40">
+                    <Button
+                        variant={viewMode === "grid" ? "secondary" : "ghost"}
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => setViewMode("grid")}
+                    >
+                        <IconLayoutGrid className="size-4" />
+                    </Button>
+                    <Button
+                        variant={viewMode === "list" ? "secondary" : "ghost"}
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => setViewMode("list")}
+                    >
+                        <IconList className="size-4" />
+                    </Button>
                 </div>
             </div>
-            <div className="flex items-center justify-between py-2 border-b border-border/50 mt-4">
-                <Button variant="ghost" size="sm" onClick={prevMonth} className="text-muted-foreground">
+
+            <div className="flex flex-col sm:flex-row items-center justify-between py-2 border-b border-border/50 mt-4 gap-4">
+                <Button variant="ghost" size="sm" onClick={prevMonth} className="text-muted-foreground w-full sm:w-auto justify-between sm:justify-start">
                     <IconChevronLeft className="size-4 mr-1" />
                     {month === 0 ? monthNames[11] : monthNames[month - 1]}
                 </Button>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 w-full sm:w-auto justify-center">
                     <div className="px-3 py-1 bg-muted/30 rounded text-sm cursor-pointer hover:bg-muted/50 border border-border/50 flex items-center gap-2 font-medium">
                         {monthNames[month]} <IconChevronLeft className="size-3 -rotate-90" />
                     </div>
@@ -223,31 +262,116 @@ export function CalendarClient({
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" onClick={nextMonth} className="text-muted-foreground">
-                        {month === 11 ? monthNames[0] : monthNames[month + 1]}
-                        <IconChevronRight className="size-4 ml-1" />
-                    </Button>
-                    {/* No settings button here, moved to Apps hub */}
-                </div>
+                <Button variant="ghost" size="sm" onClick={nextMonth} className="text-muted-foreground w-full sm:w-auto justify-between sm:justify-end">
+                    {month === 11 ? monthNames[0] : monthNames[month + 1]}
+                    <IconChevronRight className="size-4 ml-1" />
+                </Button>
             </div>
 
-            {/* Calendar Grid */}
-            <div className="bg-[#1e1e24]/20 border-l border-b border-border/30 rounded-lg overflow-hidden h-fit shadow-sm">
-                {/* Days of week header */}
-                <div className="grid grid-cols-7 border-b border-border/50">
-                    {dayNames.map(d => (
-                        <div key={d} className="text-center py-2 text-xs font-semibold text-muted-foreground">
-                            {d}
+            {/* Calendar View Area */}
+            {viewMode === "grid" ? (
+                <div className="bg-[#1e1e24]/20 border-l border-b border-border/30 rounded-lg overflow-x-auto h-fit shadow-sm scrollbar-thin scrollbar-thumb-muted-foreground/20">
+                    <div className="min-w-[800px] w-full">
+                        <div className="grid grid-cols-7 border-b border-border/50">
+                            {dayNames.map(d => (
+                                <div key={d} className="text-center py-2 text-xs font-semibold text-muted-foreground bg-muted/5">
+                                    {d}
+                                </div>
+                            ))}
                         </div>
-                    ))}
+                        <div className="grid grid-cols-7 border-l border-border/50">
+                            {cells}
+                        </div>
+                    </div>
                 </div>
+            ) : (
+                <div className="flex flex-col gap-3">
+                    {sortedEvents.length > 0 ? (
+                        sortedEvents.map(evt => {
+                            const date = new Date(evt.event_date)
+                            const isToday = new Date().toDateString() === date.toDateString()
+                            const dayNum = date.getDate()
+                            const dayName = dayNames[getFirstDayOfMonth(date.getFullYear(), date.getMonth()) + dayNum - 2 % 7] // Simplified day name
 
-                {/* Days Grid */}
-                <div className="grid grid-cols-7 border-l border-border/50">
-                    {cells}
+                            const bgStyle = evt.background_url
+                                ? { backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, rgba(30,30,36,0.9) 100%), url(${evt.background_url})` }
+                                : {}
+
+                            const signups = evt.event_signups || []
+                            const selectedCount = signups.filter((s: any) => s.selection_status === 'selected').length
+                            const diffGroups = (evt.difficulty || "").match(/\((\d+)\)/)
+                            const maxActive = diffGroups ? parseInt(diffGroups[1], 10) : 30
+
+                            return (
+                                <div
+                                    key={evt.id}
+                                    onClick={() => {
+                                        if (isOfficerOrGm) {
+                                            router.push(`/dashboard/calendario/editor/${evt.id}`)
+                                        } else {
+                                            router.push(`/dashboard/calendario/${evt.id}`)
+                                        }
+                                    }}
+                                    className={cn(
+                                        "group relative flex items-center gap-4 rounded-xl border border-border/40 p-4 hover:bg-muted/5 transition-all cursor-pointer overflow-hidden bg-[#1e1e24]/10",
+                                        isToday && "ring-1 ring-primary/40 bg-primary/5 shadow-[0_0_15px_rgba(59,130,246,0.05)]"
+                                    )}
+                                >
+                                    {/* Date Column */}
+                                    <div className="flex flex-col items-center justify-center min-w-[50px] border-r border-border/50 pr-4">
+                                        <span className="text-2xl font-black text-foreground/90">{dayNum < 10 ? `0${dayNum}` : dayNum}</span>
+                                        <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">{monthNames[month].substring(0, 3)}</span>
+                                    </div>
+
+                                    {/* Event Info */}
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-start justify-between gap-2">
+                                            <div>
+                                                <h3 className="font-bold text-lg truncate group-hover:text-primary transition-colors">
+                                                    {evt.destination || evt.title}
+                                                </h3>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    {evt.difficulty && (
+                                                        <span className="bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded-full font-bold uppercase border border-primary/20">
+                                                            {evt.difficulty}
+                                                        </span>
+                                                    )}
+                                                    <span className="text-xs text-muted-foreground font-medium">
+                                                        {date.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex flex-col items-end gap-1">
+                                                <div className="bg-background/80 backdrop-blur-sm px-2 py-1 rounded-lg text-sm font-bold border border-border/60 shadow-sm flex items-center gap-1.5">
+                                                    <span className={selectedCount >= maxActive ? "text-red-400" : "text-emerald-400"}>{selectedCount}</span>
+                                                    <span className="text-muted-foreground/50 font-normal text-xs">/</span>
+                                                    <span className="text-foreground/60">{maxActive}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Background Decor */}
+                                    {evt.background_url && (
+                                        <div
+                                            className="absolute inset-0 -z-10 opacity-[0.08] group-hover:opacity-[0.12] transition-opacity bg-cover bg-center"
+                                            style={{ backgroundImage: `url(${evt.background_url})` }}
+                                        />
+                                    )}
+
+                                    <IconChevronRight className="size-5 text-muted-foreground/30 group-hover:text-primary transition-all translate-x-0 group-hover:translate-x-1" />
+                                </div>
+                            )
+                        })
+                    ) : (
+                        <div className="flex flex-col items-center justify-center py-20 bg-muted/5 rounded-2xl border border-dashed border-border/60">
+                            <IconCalendarEvent className="size-12 text-muted-foreground/20 mb-3" />
+                            <p className="text-muted-foreground font-medium">No hay eventos programados para este mes</p>
+                        </div>
+                    )}
                 </div>
-            </div>
+            )}
         </div>
     )
 }

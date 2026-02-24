@@ -86,6 +86,7 @@ push_error_log.txt
 temp_images.txt
 tsc_errors.log
 *.log
+*.txt
 
 # ========================
 # Temporary Files
@@ -106,3 +107,5 @@ dist/
 # ========================
 *.sql
 supabase/.temp
+supabase_types.d.ts
+debug-db.ts

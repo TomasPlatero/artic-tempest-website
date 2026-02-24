@@ -59,7 +59,7 @@ export function StatsClient({ members, rioData }: { members: any[], rioData?: an
                 const res = await fetch("/api/wcl")
                 const data = await res.json()
                 if (!res.ok) {
-                    throw new Error(data.error || "Failed to load WCL data")
+                    throw new Error(data.error || "Error al cargar datos de WCL")
                 }
                 if (data?.reportData?.reports?.data) {
                     setWclReports(data.reportData.reports.data)
@@ -189,7 +189,7 @@ export function StatsClient({ members, rioData }: { members: any[], rioData?: an
                                                 <div className="space-y-1">
                                                     <div className="flex justify-between text-sm">
                                                         <span className="font-medium">
-                                                            {currentKills} / {total} Bosses
+                                                            {currentKills} / {total} Jefes
                                                         </span>
                                                         <span className="text-muted-foreground">
                                                             {Math.round(progressPercent)}%

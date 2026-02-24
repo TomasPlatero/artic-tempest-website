@@ -6,14 +6,14 @@ export async function POST(request: Request) {
     try {
         const session = await getServerSession(authOptions)
         if (!session || session.user?.roleLevel !== "gm") {
-            return new NextResponse("Unauthorized", { status: 401 })
+            return new NextResponse("No autorizado", { status: 401 })
         }
 
         const formData = await request.formData()
         const file = formData.get("file") as File | null
 
         if (!file) {
-            return NextResponse.json({ error: "No file provided" }, { status: 400 })
+            return NextResponse.json({ error: "No se ha proporcionado ningún archivo" }, { status: 400 })
         }
 
         // Get guild info to update its icon
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
 
         if (guildResError || !guild) {
             console.error("Guild fetch error:", guildResError)
-            return NextResponse.json({ error: "No guild configured" }, { status: 400 })
+            return NextResponse.json({ error: "No hay ninguna hermandad configurada" }, { status: 400 })
         }
 
         const fileExt = file.name.split('.').pop()
@@ -63,6 +63,6 @@ export async function POST(request: Request) {
 
     } catch (e: any) {
         console.error("API error:", e)
-        return NextResponse.json({ error: e.message || "Internal server error" }, { status: 500 })
+        return NextResponse.json({ error: e.message || "Error interno del servidor" }, { status: 500 })
     }
 }

@@ -7,7 +7,7 @@ export async function GET(req: Request) {
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user) {
-            return new NextResponse("Unauthorized", { status: 401 });
+            return new NextResponse("No autorizado", { status: 401 });
         }
 
         // Fetch WCL credentials from the guild settings
@@ -18,7 +18,7 @@ export async function GET(req: Request) {
             .single();
 
         if (!guild?.wcl_client_id || !guild?.wcl_client_secret) {
-            return NextResponse.json({ error: "No WCL credentials configured" }, { status: 400 });
+            return NextResponse.json({ error: "No se han configurado credenciales de WCL" }, { status: 400 });
         }
 
         const clientId = guild.wcl_client_id;
@@ -40,7 +40,7 @@ export async function GET(req: Request) {
 
         if (!tokenRes.ok) {
             console.error("WCL Token error:", await tokenRes.text());
-            return NextResponse.json({ error: "Failed to authenticate with WarcraftLogs" }, { status: 502 });
+            return NextResponse.json({ error: "Error al autenticar con WarcraftLogs" }, { status: 502 });
         }
 
         const tokenData = await tokenRes.json();
@@ -73,7 +73,7 @@ export async function GET(req: Request) {
 
         if (!gqlRes.ok) {
             console.error("WCL GraphQL error:", await gqlRes.text());
-            return NextResponse.json({ error: "Failed to fetch reports from WarcraftLogs" }, { status: 502 });
+            return NextResponse.json({ error: "Error al obtener informes de WarcraftLogs" }, { status: 502 });
         }
 
         const responseData = await gqlRes.json();
@@ -81,6 +81,6 @@ export async function GET(req: Request) {
 
     } catch (e: any) {
         console.error("WCL API Error:", e.message);
-        return new NextResponse("Internal server error", { status: 500 });
+        return new NextResponse("Error interno del servidor", { status: 500 });
     }
 }

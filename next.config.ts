@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "vrniyndhfaawwqzcrqng.supabase.co",
       },
+      {
+        protocol: "https",
+        hostname: "render.worldofwarcraft.com",
+      },
     ],
   },
 };

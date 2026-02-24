@@ -8,7 +8,7 @@ export async function PATCH(req: Request) {
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user) {
-            return new NextResponse("Unauthorized", { status: 401 });
+            return new NextResponse("No autorizado", { status: 401 });
         }
 
         // Verify GM role
@@ -19,7 +19,7 @@ export async function PATCH(req: Request) {
             .single();
 
         if (profile?.role_level !== "gm") {
-            return new NextResponse("Forbidden", { status: 403 });
+            return new NextResponse("Sin permisos", { status: 403 });
         }
 
         const body = await req.json();
@@ -64,7 +64,7 @@ export async function PATCH(req: Request) {
 
         if (error) {
             console.error(error);
-            return new NextResponse("Database Error", { status: 500 });
+            return new NextResponse("Error de base de datos", { status: 500 });
         }
 
         // Clear the in-memory credentials cache so next read picks up new values
@@ -73,6 +73,6 @@ export async function PATCH(req: Request) {
         return NextResponse.json({ success: true });
     } catch (e: any) {
         console.error("Error saving credentials:", e.message);
-        return new NextResponse("Internal Error", { status: 500 });
+        return new NextResponse("Error interno", { status: 500 });
     }
 }

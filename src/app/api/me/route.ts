@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic"
 export async function GET() {
   const session = await getServerSession(authOptions)
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 })
   }
 
   const {
@@ -23,7 +23,7 @@ export async function GET() {
   } = session
 
   if (!discordId) {
-    return NextResponse.json({ error: "No discord id in session" }, { status: 400 })
+    return NextResponse.json({ error: "Falta el ID de Discord en la sesión" }, { status: 400 })
   }
 
   const { data, error } = await sb

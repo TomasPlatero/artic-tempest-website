@@ -179,7 +179,7 @@ export function SettingsApiClient({
                 </Link>
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
-                        API Documentation <IconApi className="w-6 h-6 text-purple-500" />
+                        Documentación de la API <IconApi className="w-6 h-6 text-purple-500" />
                     </h1>
                     <p className="text-sm text-muted-foreground mt-1">
                         Documentación técnica de los endpoints internos de GuildBoard.
@@ -209,7 +209,7 @@ export function SettingsApiClient({
                                 </p>
                                 {ep.body !== "N/A" && (
                                     <div className="mt-3 flex flex-col gap-1">
-                                        <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground/60">Payload (Body)</span>
+                                        <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground/60">Cuerpo de la petición (Body)</span>
                                         <pre className="text-[11px] font-mono bg-[#1a1b1e] text-gray-400 p-2 rounded border border-border/30 overflow-x-auto">
                                             {ep.body}
                                         </pre>

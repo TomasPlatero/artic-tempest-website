@@ -34,7 +34,7 @@ import { Button } from "@/components/ui/button"
 const data = {
   navMain: [
     {
-      title: "Dashboard",
+      title: "Inicio",
       url: "/dashboard",
       icon: IconDashboard,
     },
