@@ -68,8 +68,6 @@ export function SettingsGeneralClient({
 }: SettingsGeneralClientProps) {
     const [uploading, setUploading] = useState(false);
     const [ranks, setRanks] = useState<boolean[]>(initialRankVisibility);
-    const [names, setNames] = useState<string[]>(initialRankNames);
-    const [roles, setRoles] = useState<string[]>(initialRankRoles);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Credentials state
@@ -124,82 +122,7 @@ export function SettingsGeneralClient({
         }
     };
 
-    const handleToggleRank = async (rankId: number, isVisible: boolean) => {
-        const orig = [...ranks];
-        const next = [...ranks];
-        next[rankId] = isVisible;
-        setRanks(next);
 
-        try {
-            const res = await fetch("/api/guild/ranks", {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ rankId, isVisible, name: names[rankId] }),
-            });
-            if (!res.ok) throw new Error("API error");
-        } catch {
-            sileo.error({
-                title: "Error",
-                description: "No se pudo guardar la configuración del rango.",
-            });
-            setRanks(orig);
-        }
-    };
-
-    const handleSaveName = async (rankId: number, newName: string) => {
-        try {
-            const res = await fetch("/api/guild/ranks", {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    rankId,
-                    isVisible: ranks[rankId],
-                    name: newName,
-                    appRole: roles[rankId]
-                }),
-            });
-            if (!res.ok) throw new Error("API error");
-            sileo.success({
-                title: "Guardado",
-                description: "Nombre de rango actualizado.",
-            });
-        } catch {
-            sileo.error({
-                title: "Error",
-                description: "No se pudo actualizar el nombre del rango.",
-            });
-        }
-    };
-
-    const handleSaveRole = async (rankId: number, newRole: string) => {
-        const nextRoles = [...roles];
-        nextRoles[rankId] = newRole;
-        setRoles(nextRoles);
-
-        try {
-            const res = await fetch("/api/guild/ranks", {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    rankId,
-                    isVisible: ranks[rankId],
-                    name: names[rankId],
-                    appRole: newRole
-                }),
-            });
-            if (!res.ok) throw new Error("API error");
-            sileo.success({
-                title: "Guardado",
-                description: "Permiso base del rango actualizado.",
-            });
-        } catch {
-            setRoles([...roles]);
-            sileo.error({
-                title: "Error",
-                description: "No se pudo actualizar el permiso del rango.",
-            });
-        }
-    };
 
     return (
         <div className="flex flex-col gap-6 p-4 md:p-6">
@@ -212,7 +135,7 @@ export function SettingsGeneralClient({
                 <div>
                     <h1 className="text-2xl font-bold">Configuración del Dashboard</h1>
                     <p className="text-sm text-muted-foreground mt-1">
-                        Información de la hermandad y visibilidad de los rangos.
+                        Información básica de la hermandad y nombres de los rangos.
                     </p>
                 </div>
             </div>
@@ -290,69 +213,6 @@ export function SettingsGeneralClient({
                 </CardContent>
             </Card>
 
-            {guild && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Rangos Visibles</CardTitle>
-                        <CardDescription>
-                            Personaliza los nombres y la visibilidad de los 10 rangos originales de WoW.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                            {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((rankId) => {
-                                return (
-                                    <div
-                                        key={rankId}
-                                        className="flex flex-row items-center gap-4 p-3 border rounded-md hover:bg-muted/40 transition-colors"
-                                    >
-                                        <div className="flex items-center gap-2 flex-1">
-                                            <span className="text-muted-foreground text-xs font-mono w-4">{rankId}</span>
-                                            <Input
-                                                value={names[rankId]}
-                                                onChange={(e) => {
-                                                    const next = [...names];
-                                                    next[rankId] = e.target.value;
-                                                    setNames(next);
-                                                }}
-                                                onBlur={(e) => handleSaveName(rankId, e.target.value)}
-                                                className="h-8 max-w-[200px] text-sm bg-background"
-                                                placeholder={`Rango ${rankId}`}
-                                            />
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="size-8 text-muted-foreground hover:text-primary shrink-0"
-                                                onClick={() => handleSaveName(rankId, names[rankId])}
-                                                title="Guardar nombre"
-                                            >
-                                                <IconDeviceFloppy className="size-4" />
-                                            </Button>
-                                            <Select
-                                                value={roles[rankId]}
-                                                onValueChange={(val: string) => handleSaveRole(rankId, val)}
-                                            >
-                                                <SelectTrigger className="w-[120px] h-8 text-xs bg-background">
-                                                    <SelectValue placeholder="Permiso" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="gm">Guild Master</SelectItem>
-                                                    <SelectItem value="officer">Oficial</SelectItem>
-                                                    <SelectItem value="raider">Raider / Básico</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <Switch
-                                            checked={ranks[rankId]}
-                                            onCheckedChange={(val: boolean) => handleToggleRank(rankId, val)}
-                                        />
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
 
             {/* Integraciones Externas */}
             <Card>

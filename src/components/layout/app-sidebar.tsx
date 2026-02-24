@@ -41,22 +41,26 @@ const data = {
       title: "Roster",
       url: "/dashboard/roster",
       icon: IconUsers,
+      appId: "roster",
     },
     {
       title: "Estadísticas",
       url: "/dashboard/estadisticas",
       icon: IconChartBar,
+      appId: "stats",
     },
 
     {
       title: "Calendario",
       url: "/dashboard/calendario",
       icon: IconCalendarEvent,
+      appId: "calendar",
     },
     {
       title: "Lista de Deseos de BiS",
       url: "/dashboard/bis",
       icon: IconListCheck,
+      appId: "bis",
     },
   ],
   navSecondary: [
@@ -76,12 +80,37 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession()
-  const roleLevel = session?.user?.roleLevel ?? "raider"
+  const roleLevel = session?.user?.roleLevel ?? "member"
   const [iconUrl, setIconUrl] = React.useState<string | null>(null)
+  const [permissions, setPermissions] = React.useState<any[]>([])
+
+  React.useEffect(() => {
+    fetch("/api/guild/permissions")
+      .then(res => res.json())
+      .then(data => setPermissions(data))
+      .catch(err => console.error("Failed to fetch permissions:", err))
+  }, [])
+
+  const hasViewPermission = (appId: string) => {
+    if (roleLevel === 'gm') return true
+    const p = permissions.find(p => p.role_level === roleLevel && p.app_id === appId)
+    if (!p) {
+      // Fallbacks
+      if (roleLevel === 'officer') return true
+      if (roleLevel === 'raider') return true
+      return false
+    }
+    return p.can_view
+  }
+
+  const filteredMain = data.navMain.filter(item => {
+    if ((item as any).appId) return hasViewPermission((item as any).appId)
+    return true
+  })
 
   const filteredSecondary = data.navSecondary.filter(item => {
-    if (!item.roles) return true
-    return item.roles.includes(roleLevel)
+    if (!(item as any).roles) return true
+    return (item as any).roles.includes(roleLevel)
   })
 
   React.useEffect(() => {
@@ -114,7 +143,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={filteredMain} />
         <NavSecondary items={filteredSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

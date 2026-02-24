@@ -11,6 +11,7 @@ import { StatsClient } from "@/components/stats/stats-client"
 import { fetchGuildProgression } from "@/infrastructure/raiderio/raiderio-client"
 
 export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
 
 async function getProgressionData() {
     const { data: guild } = await sb
@@ -27,21 +28,65 @@ async function getProgressionData() {
 }
 
 async function getRoster() {
-    const { data } = await sb
+    const { data: members } = await sb
         .from("guild_members")
-        .select("id, character_name, realm_slug, class_id, role")
+        .select("id, character_name, realm_slug, class_id, role, rank")
         .order("character_name", { ascending: true })
 
-    return (data ?? []).map(m => ({
+    // Try guild_ranks first
+    let { data: rawRanks, error: ranksError } = await sb
+        .from("guild_ranks")
+        .select("rank, is_visible")
+
+    // Fallback if table doesn't exist, cache is stale, OR it's empty
+    const shouldFallback = (ranksError && (ranksError.code === 'PGRST204' || ranksError.message.includes("schema cache")))
+        || (!ranksError && (!rawRanks || rawRanks.length === 0));
+
+    if (shouldFallback) {
+        const { data: fallbackRanks } = await sb
+            .from("guild_rank_visibility")
+            .select("rank_id, is_visible")
+
+        if (fallbackRanks && fallbackRanks.length > 0) {
+            rawRanks = fallbackRanks.map(r => ({
+                rank: (r as any).rank_id ?? (r as any).rank,
+                is_visible: r.is_visible
+            }))
+        }
+    }
+
+    // Build a map of rank visibility from the database
+    const visibilityMap: Record<number, boolean> = {}
+    rawRanks?.forEach(r => {
+        visibilityMap[r.rank] = r.is_visible
+    })
+
+    // Filter members based on the visibility map (default to true if not configured)
+    const filteredRoster = (members ?? []).filter(m => {
+        const rankValue = Number(m.rank);
+        const isVisible = visibilityMap[rankValue] ?? true;
+        return isVisible;
+    })
+
+    return filteredRoster.map(m => ({
         ...m,
         character_realm: m.realm_slug,
     }))
 }
 
+import { getAppPermission } from "@/infrastructure/auth/permissions"
+
 export default async function EstadisticasPage() {
     const session = await getServerSession(authOptions)
     if (!session) {
         redirect("/")
+    }
+
+    const roleLevel = session.user?.roleLevel ?? "member"
+    const { canView } = await getAppPermission(roleLevel, 'stats')
+
+    if (!canView) {
+        redirect("/dashboard")
     }
 
     const roster = await getRoster()

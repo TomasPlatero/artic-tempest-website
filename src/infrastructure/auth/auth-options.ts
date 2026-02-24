@@ -5,8 +5,8 @@ import { createClient } from "@supabase/supabase-js"
 import { getGuildCredentials } from "@/infrastructure/auth/credentials"
 
 /** ==== Tipos propios ==== */
-type RoleLevel = "gm" | "officer" | "raider"
-const ROLE_ORDER: RoleLevel[] = ["raider", "officer", "gm"]
+type RoleLevel = "gm" | "officer" | "raider" | "member"
+const ROLE_ORDER: RoleLevel[] = ["member", "raider", "officer", "gm"]
 
 type GuildboardMeta = {
   profileId: string
@@ -40,7 +40,7 @@ export const sb = createClient(NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_K
 })
 
 /** ==== Utilidades ==== */
-const rank = (r?: RoleLevel | null) => ROLE_ORDER.indexOf((r ?? "raider") as RoleLevel)
+const rank = (r?: RoleLevel | null) => ROLE_ORDER.indexOf((r ?? "member") as RoleLevel)
 
 function discordAvatarURL(userId: string, avatar?: string | null) {
   return avatar ? `https://cdn.discordapp.com/avatars/${userId}/${avatar}.png` : null
@@ -73,7 +73,7 @@ async function pickTopDiscordRole(roleIds: string[]): Promise<{ roleId: string; 
 const pickMax = (a: RoleLevel | null, b: RoleLevel | null): RoleLevel => {
   const ra = rank(a)
   const rb = rank(b)
-  return ra >= rb ? (a ?? "raider") : (b ?? "raider")
+  return ra >= rb ? (a ?? "member") : (b ?? "member")
 }
 
 /** ==== NextAuth ==== */
@@ -118,8 +118,8 @@ export const authOptions: NextAuthOptions = {
         .eq("discord_user_id", userId)
         .maybeSingle()
 
-      const dbLevel = (existing?.role_level as RoleLevel | null) ?? "raider"
-      const newLevel = topRole?.level ?? "raider"
+      const dbLevel = (existing?.role_level as RoleLevel | null) ?? "member"
+      const newLevel = topRole?.level ?? "member"
       const finalLevel = pickMax(dbLevel, newLevel)
 
       const { data, error } = await sb
@@ -173,7 +173,7 @@ export const authOptions: NextAuthOptions = {
         discordId: (token.discordId as string) ?? "",
         username: (token.username as string | null) ?? null,
         avatarUrl: (token.avatarUrl as string | null) ?? null,
-        roleLevel: (token.roleLevel as RoleLevel) ?? "raider",
+        roleLevel: (token.roleLevel as RoleLevel) ?? "member",
       }
       session.checkedAt = (token.checkedAt as string) ?? new Date().toISOString()
       return session as Session

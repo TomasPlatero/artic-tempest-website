@@ -17,5 +17,13 @@ export default async function SettingsRolesPage() {
         .from("discord_roles")
         .select("role_id, name, level");
 
-    return <SettingsRolesClient initialProfiles={profiles ?? []} initialDiscordRoles={discordRoles ?? []} />;
+    const { data: permissions } = await sb
+        .from("app_permissions")
+        .select("*");
+
+    return <SettingsRolesClient
+        initialProfiles={profiles ?? []}
+        initialDiscordRoles={discordRoles ?? []}
+        initialPermissions={permissions ?? []}
+    />;
 }

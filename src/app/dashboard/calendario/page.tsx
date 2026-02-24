@@ -3,6 +3,7 @@ import type React from "react"
 import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
 import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { getAppPermission } from "@/infrastructure/auth/permissions"
 
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { SiteHeader } from "@/components/layout/site-header"
@@ -32,7 +33,12 @@ export default async function CalendarioPage() {
     }
 
     const events = await getUpcomingEvents()
-    const roleLevel = session.user?.roleLevel ?? "raider"
+    const roleLevel = session.user?.roleLevel ?? "member"
+    const { canView } = await getAppPermission(roleLevel, 'calendar')
+
+    if (!canView) {
+        redirect("/dashboard")
+    }
 
     const style = {
         "--sidebar-width": "calc(var(--spacing) * 72)",

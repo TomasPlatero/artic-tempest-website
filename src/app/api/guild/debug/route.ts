@@ -7,11 +7,11 @@ export async function GET() {
     try {
         console.log("DEBUG ENDPOINT: fetch visible ranks")
         const { data: visibleRanks, error: vrError } = await sb
-            .from("guild_rank_visibility")
-            .select("rank_id")
+            .from("guild_ranks")
+            .select("rank")
             .eq("is_visible", true)
 
-        const visibleRankIds = (visibleRanks || []).map(r => r.rank_id)
+        const visibleRankIds = (visibleRanks || []).map(r => r.rank)
 
         console.log("DEBUG ENDPOINT: fetch members")
         let query = sb.from("guild_members").select("*")

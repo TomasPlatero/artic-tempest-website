@@ -87,7 +87,7 @@ export async function POST() {
       .from('guild_ranks')
       .select('rank, app_role')
 
-    const ROLE_RANKS = { gm: 3, officer: 2, raider: 1 }
+    const ROLE_RANKS = { gm: 3, officer: 2, raider: 1, member: 0 }
 
     if (linkedProfiles && ranksConfig) {
       for (const profile of linkedProfiles) {
