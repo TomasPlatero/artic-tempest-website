@@ -186,6 +186,11 @@ export function RaidEditorClient({
         return merged
     })
 
+    const [mounted, setMounted] = useState(false)
+    useEffect(() => {
+        setMounted(true)
+    }, [])
+
     const initialDuration = initialRaid?.end_date && initialRaid?.event_date
         ? Math.max(1, Math.round((new Date(initialRaid.end_date).getTime() - new Date(initialRaid.event_date).getTime()) / 3600000))
         : 2
@@ -612,52 +617,59 @@ export function RaidEditorClient({
                         onDragEnd={canDrag ? handleDragEnd : undefined}
                     >
                         <div className="w-full">
-                            {/* Mobile Tabs Wrapper */}
-                            <Tabs defaultValue="active" className="lg:hidden w-full">
-                                <TabsList className="grid grid-cols-3 mb-4 w-full h-11 p-1">
-                                    <TabsTrigger value="active">Activos</TabsTrigger>
-                                    <TabsTrigger value="queued">Cola</TabsTrigger>
-                                    <TabsTrigger value="buffs">Buffs</TabsTrigger>
-                                </TabsList>
-
-                                <TabsContent value="active">
-                                    <div className="flex flex-col gap-4">
-                                        <h3 className="text-sm font-bold text-emerald-500 uppercase tracking-widest">Activos ({activeMembers.length})</h3>
-                                        <DroppableContainer
-                                            id="active-container-mobile"
-                                            items={activeMembers.map(s => s.member_id)}
-                                            strategy={verticalListSortingStrategy}
-                                            className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-4 flex flex-col gap-4"
-                                        >
-                                            <RosterGroup title="Tanques" icon="🛡️" color="text-emerald-500" signups={activeByRole.tanks} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                            <RosterGroup title="Sanadores" icon="➕" color="text-emerald-500" signups={activeByRole.heals} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                            <RosterGroup title="Melee DPS" icon="⚔️" color="text-emerald-500" signups={activeByRole.melee} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                            <RosterGroup title="Ranged DPS" icon="🏹" color="text-emerald-500" signups={activeByRole.ranged} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                        </DroppableContainer>
+                            <div className="flex-1 overflow-hidden">
+                                {!mounted ? (
+                                    <div className="h-[600px] flex items-center justify-center">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                                     </div>
-                                </TabsContent>
+                                ) : (
+                                    <Tabs defaultValue="active" className="lg:hidden w-full">
+                                        <TabsList className="grid grid-cols-3 mb-4 w-full h-11 p-1">
+                                            <TabsTrigger value="active">Activos</TabsTrigger>
+                                            <TabsTrigger value="queued">Cola</TabsTrigger>
+                                            <TabsTrigger value="buffs">Buffs</TabsTrigger>
+                                        </TabsList>
 
-                                <TabsContent value="queued">
-                                    <div className="flex flex-col gap-4">
-                                        <h3 className="text-sm font-bold text-amber-500 uppercase tracking-widest">En Cola ({reserveMembers.length})</h3>
-                                        <DroppableContainer
-                                            id="queue-container-mobile"
-                                            items={reserveMembers.map(s => s.member_id)}
-                                            strategy={verticalListSortingStrategy}
-                                            className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 flex flex-col gap-4"
-                                        >
-                                            <RosterGroup title="Tanques" color="text-amber-500" signups={reserveByRole.tanks} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                            <RosterGroup title="Sanadores" color="text-amber-500" signups={reserveByRole.heals} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                            <RosterGroup title="Melee DPS" color="text-amber-500" signups={reserveByRole.melee} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                            <RosterGroup title="Ranged DPS" color="text-amber-500" signups={reserveByRole.ranged} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                        </DroppableContainer>
-                                    </div>
-                                </TabsContent>
+                                        <TabsContent value="active">
+                                            <div className="flex flex-col gap-4">
+                                                <h3 className="text-sm font-bold text-emerald-500 uppercase tracking-widest">Activos ({activeMembers.length})</h3>
+                                                <DroppableContainer
+                                                    id="active-container-mobile"
+                                                    items={activeMembers.map(s => s.member_id)}
+                                                    strategy={verticalListSortingStrategy}
+                                                    className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-4 flex flex-col gap-4"
+                                                >
+                                                    <RosterGroup title="Tanques" icon="🛡️" color="text-emerald-500" signups={activeByRole.tanks} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
+                                                    <RosterGroup title="Sanadores" icon="➕" color="text-emerald-500" signups={activeByRole.heals} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
+                                                    <RosterGroup title="Melee DPS" icon="⚔️" color="text-emerald-500" signups={activeByRole.melee} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
+                                                    <RosterGroup title="Ranged DPS" icon="🏹" color="text-emerald-500" signups={activeByRole.ranged} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
+                                                </DroppableContainer>
+                                            </div>
+                                        </TabsContent>
 
-                                <TabsContent value="buffs">
-                                    <BuffsCard activeClassIds={activeClassIds} className="h-auto" />
-                                </TabsContent>
-                            </Tabs>
+                                        <TabsContent value="queued">
+                                            <div className="flex flex-col gap-4">
+                                                <h3 className="text-sm font-bold text-amber-500 uppercase tracking-widest">En Cola ({reserveMembers.length})</h3>
+                                                <DroppableContainer
+                                                    id="queue-container-mobile"
+                                                    items={reserveMembers.map(s => s.member_id)}
+                                                    strategy={verticalListSortingStrategy}
+                                                    className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 flex flex-col gap-4"
+                                                >
+                                                    <RosterGroup title="Tanques" color="text-amber-500" signups={reserveByRole.tanks} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
+                                                    <RosterGroup title="Sanadores" color="text-amber-500" signups={reserveByRole.heals} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
+                                                    <RosterGroup title="Melee DPS" color="text-amber-500" signups={reserveByRole.melee} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
+                                                    <RosterGroup title="Ranged DPS" color="text-amber-500" signups={reserveByRole.ranged} onToggle={toggleStatus} onChangeRole={changeRole} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
+                                                </DroppableContainer>
+                                            </div>
+                                        </TabsContent>
+
+                                        <TabsContent value="buffs">
+                                            <BuffsCard activeClassIds={activeClassIds} className="h-auto" />
+                                        </TabsContent>
+                                    </Tabs>
+                                )}
+                            </div>
 
                             {/* Desktop Layout (hidden on small screens) */}
                             <div className="hidden lg:flex flex-row gap-6 items-start">
