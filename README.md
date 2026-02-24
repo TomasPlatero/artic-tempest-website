@@ -1,7 +1,7 @@
 # 🧭 GuildBoard – Dashboard de Hermandad para World of Warcraft
 
-[![Lint](https://github.com/TomasPlatero/guildboard/actions/workflows/lint.yml/badge.svg)](https://github.com/TomasPlatero/guildboard/actions/workflows/lint.yml)
-[![Vercel Deployment](https://deploy-badge.vercel.app/api/TomasPlatero/guildboard)](https://guildboard.vercel.app)
+[![Lint](https://github.com/TomasPlatero/guildboard/actions/workflows/lint.yml/badge.svg?branch=Develop)](https://github.com/TomasPlatero/guildboard/actions/workflows/lint.yml)
+[![Vercel Deployment](https://img.shields.io/vercel/deploy/TomasPlatero/guildboard?label=Vercel&logo=vercel)](https://guildboard.vercel.app)
 [![Next.js](https://img.shields.io/badge/Next.js-16.1.6-black?logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.2.4-61DAFB?logo=react)](https://react.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
