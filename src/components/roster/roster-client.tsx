@@ -4,7 +4,6 @@ import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { IconSearch, IconShield, IconHeart, IconSword, IconBow } from "@tabler/icons-react";
 import { RosterTable } from "@/components/common/roster-table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 // Mappings moved outside to ensure stability and satisfy Hook dependency rules
 const WOW_CLASSES: Record<number, string> = {

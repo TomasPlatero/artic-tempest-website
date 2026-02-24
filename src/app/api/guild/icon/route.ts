@@ -32,7 +32,7 @@ export async function POST(request: Request) {
         const fileName = `icons/guild-logo-${Date.now()}.${fileExt}`
 
         // Upload to Supabase Storage
-        const { data: uploadData, error: uploadError } = await sb
+        const { error: uploadError } = await sb
             .storage
             .from("guild_assets")
             .upload(fileName, file, { upsert: true })

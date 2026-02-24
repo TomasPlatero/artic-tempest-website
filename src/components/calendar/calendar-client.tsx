@@ -1,16 +1,11 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
-import { IconChevronLeft, IconChevronRight, IconPlus, IconCalendarEvent, IconLayoutGrid, IconList } from "@tabler/icons-react"
+import { IconChevronLeft, IconChevronRight, IconCalendarEvent, IconLayoutGrid, IconList } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { cn } from "@/infrastructure/tailwind/tailwind-utils"
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { sileo } from "sileo"
 
 export type GuildEvent = {
     id: string

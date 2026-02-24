@@ -11,7 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { IconChartBar, IconTrophy, IconSwords, IconBrandDiscord } from "@tabler/icons-react"
+import { IconChartBar, IconTrophy, IconSwords } from "@tabler/icons-react"
 
 export function StatsClient({ members, rioData }: { members: any[], rioData?: any }) {
     const WOW_CLASSES: Record<number, string> = {

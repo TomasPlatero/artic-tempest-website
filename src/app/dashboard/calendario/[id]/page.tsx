@@ -70,18 +70,11 @@ export default async function EventDetailPage({ params }: { params: { id: string
         notFound()
     }
 
-    const { data: profile } = await sb
-        .from("profiles")
-        .select("id, character_name, character_realm")
-        .eq("user_id", session.user.id)
-        .single()
-
-    const { data: currentMember } = profile ? await sb
+    const { data: currentMember } = await sb
         .from("guild_members")
         .select("id")
-        .eq("character_name", profile.character_name)
-        .eq("realm_slug", profile.character_realm)
-        .single() : { data: null }
+        .eq("profile_id", session.user.id)
+        .single()
 
     const style = {
         "--sidebar-width": "calc(var(--spacing) * 72)",
@@ -99,7 +92,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
                         initialSignups={details.signups}
                         plannableMembers={details.plannableMembers}
                         isReadOnly={!canEdit}
-                        currentMemberId={userId}
+                        currentMemberId={currentMember?.id}
                     />
                 </div>
             </SidebarInset>

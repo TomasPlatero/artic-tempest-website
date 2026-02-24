@@ -6,18 +6,10 @@ import {
     IconArrowLeft,
     IconUsers,
     IconDeviceFloppy,
-    IconRefresh,
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue
-} from "@/components/ui/select";
 import {
     Card,
     CardContent,
