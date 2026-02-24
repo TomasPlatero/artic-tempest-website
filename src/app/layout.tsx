@@ -43,6 +43,7 @@ export default function RootLayout({
           </SessionProvider>
           <CookieConsentLoader />
           <ThemedToaster />
+          <Analytics />
         </ThemeProvider>
         <Analytics />
       </body>
