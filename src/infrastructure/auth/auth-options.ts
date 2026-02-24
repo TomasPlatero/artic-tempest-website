@@ -119,8 +119,12 @@ export const authOptions: NextAuthOptions = {
         .maybeSingle()
 
       const dbLevel = (existing?.role_level as RoleLevel | null) ?? "member"
-      const newLevel = topRole?.level ?? "member"
-      const finalLevel = pickMax(dbLevel, newLevel)
+      const discordLevel = topRole?.level ?? "member"
+
+      // LOGIC: If the user is already above "member" in our DB, they've been manually 
+      // managed or previously synced. We only auto-promote if they are currently a "member".
+      // This allows an admin to demote someone to "raider" even if they have an "officer" Discord role.
+      const finalLevel = dbLevel === "member" ? pickMax(dbLevel, discordLevel) : dbLevel
 
       const { data, error } = await sb
         .from("profiles")
@@ -142,7 +146,7 @@ export const authOptions: NextAuthOptions = {
       const meta: GuildboardMeta = {
         profileId: data.user_id,
         discordId: userId,
-        roleLevel: dbLevel,
+        roleLevel: finalLevel, // Use finalLevel, not stale dbLevel
         username,
         avatarUrl,
         checkedAt: new Date().toISOString(),

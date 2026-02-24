@@ -15,7 +15,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Faltan parámetros" }, { status: 400 })
         }
 
-        const validLevels = ["gm", "officer", "raider"]
+        const validLevels = ["gm", "officer", "raider", "member"]
         if (!validLevels.includes(level)) {
             return NextResponse.json({ error: "Nivel de permiso inválido" }, { status: 400 })
         }
@@ -78,7 +78,7 @@ export async function PUT(request: Request) {
             return NextResponse.json({ error: "Faltan parámetros" }, { status: 400 })
         }
 
-        const validLevels = ["gm", "officer", "raider"]
+        const validLevels = ["gm", "officer", "raider", "member"]
         if (!validLevels.includes(level)) {
             return NextResponse.json({ error: "Nivel de permiso inválido" }, { status: 400 })
         }
