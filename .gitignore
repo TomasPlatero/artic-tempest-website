@@ -67,6 +67,26 @@ pnpm-debug.log*
 .eslintcache
 
 # ========================
+# Build Outputs and Logs
+# ========================
+build_error.txt
+build_output.log
+build_output.txt
+lint_output.txt
+push_error.txt
+push_error_log.txt
+temp_images.txt
+tsc_errors.log
+*.log
+
+# ========================
+# Temporary Files
+# ========================
+$Temp/
+tmp_*.json
+temp_*.json
+
+# ========================
 # Optional: build outputs adicionales
 # ========================
 dist/
