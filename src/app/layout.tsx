@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/layout/theme-provider"
 import { ThemedToaster } from "@/components/ui/sonner"
 import { SessionProvider } from "@/components/layout/session-provider"
 import { CookieConsentLoader } from "@/components/common/cookie-consent"
+import { Analytics } from "@vercel/analytics/next"
 import "./globals.css";
 
 const geistSans = Geist({
@@ -59,7 +60,9 @@ export default function RootLayout({
           </SessionProvider>
           <CookieConsentLoader />
           <ThemedToaster />
+          <Analytics />
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
