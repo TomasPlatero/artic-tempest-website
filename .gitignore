@@ -100,3 +100,9 @@ temp_*.json
 # Optional: build outputs adicionales
 # ========================
 dist/
+ 
+# ========================
+# Supabase / SQL
+# ========================
+supabase/
+sql/
