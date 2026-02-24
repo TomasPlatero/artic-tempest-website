@@ -105,3 +105,4 @@ dist/
 # SQL Scripts
 # ========================
 *.sql
+supabase/.temp

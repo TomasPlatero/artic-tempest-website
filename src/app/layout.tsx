@@ -33,8 +33,18 @@ export async function generateMetadata(): Promise<Metadata> {
     title,
     description: "Dashboard de hermandad para World of Warcraft",
     icons: {
-      icon,
-      apple: icon,
+      icon: [
+        {
+          url: icon,
+          href: icon,
+        }
+      ],
+      apple: [
+        {
+          url: icon,
+          href: icon,
+        }
+      ],
     },
   };
 }
