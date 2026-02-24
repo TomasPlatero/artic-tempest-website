@@ -215,8 +215,8 @@ export function BisClient({ eligibleMembers }: { eligibleMembers: EligibleMember
     const [mounted, setMounted] = useState(false)
 
     useEffect(() => {
-        setMounted(true)
-    }, [])
+        if (!mounted) setMounted(true)
+    }, [mounted])
 
     // Refresh Wowhead tooltips when content changes
     useEffect(() => {
@@ -264,15 +264,6 @@ export function BisClient({ eligibleMembers }: { eligibleMembers: EligibleMember
     useEffect(() => {
         if (selectedMemberId) fetchSelections()
     }, [selectedMemberId, fetchSelections])
-
-    if (!mounted) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[400px]">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
-                <p className="mt-4 text-muted-foreground animate-pulse font-medium uppercase tracking-widest text-[10px]">Cargando...</p>
-            </div>
-        )
-    }
 
     const isSelected = (itemId: number) => selections.some(s => s.item_id === itemId)
 
@@ -346,6 +337,14 @@ export function BisClient({ eligibleMembers }: { eligibleMembers: EligibleMember
         return new Map([...map.entries()].sort((a, b) => a[0].localeCompare(b[0])))
     }, [filteredBosses])
 
+    if (!mounted) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[400px]">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+                <p className="mt-4 text-muted-foreground animate-pulse font-medium uppercase tracking-widest text-[10px]">Cargando...</p>
+            </div>
+        )
+    }
 
     if (eligibleMembers.length === 0) {
         return (

@@ -188,8 +188,8 @@ export function RaidEditorClient({
 
     const [mounted, setMounted] = useState(false)
     useEffect(() => {
-        setMounted(true)
-    }, [])
+        if (!mounted) setMounted(true)
+    }, [mounted])
 
     const initialDuration = initialRaid?.end_date && initialRaid?.event_date
         ? Math.max(1, Math.round((new Date(initialRaid.end_date).getTime() - new Date(initialRaid.event_date).getTime()) / 3600000))

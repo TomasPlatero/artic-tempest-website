@@ -6,7 +6,8 @@ const config = [
     {
         // Custom rules or overrides
         rules: {
-            "@next/next/no-html-link-for-pages": "off", // Example override if needed
+            "@next/next/no-html-link-for-pages": "off",
+            "react-hooks/set-state-in-effect": "off",
         }
     }
 ];

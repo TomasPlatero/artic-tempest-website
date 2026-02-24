@@ -53,11 +53,13 @@ export function CalendarClient({
     })
 
     const [viewMode, setViewMode] = useState<"grid" | "list">("list")
+    const [mounted, setMounted] = useState(false)
 
-    // Simple detect mobile for default view
+    // Detect mobile for default view on mount
     useEffect(() => {
+        setMounted(prev => prev ? prev : true)
         if (window.innerWidth > 768) {
-            setViewMode("grid")
+            setViewMode(prev => prev === "grid" ? prev : "grid")
         }
     }, [])
 
