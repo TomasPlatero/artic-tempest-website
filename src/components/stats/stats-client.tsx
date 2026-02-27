@@ -32,9 +32,7 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
         if (!rioData || !rioData.raid_progression) return []
 
         return Object.keys(rioData.raid_progression).map((key) => {
-            let name = key.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
-            if (key === "nerubar-palace") name = "Nerub-ar Palace"
-
+            const name = key.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
             return { key, name }
         })
     }, [rioData])
