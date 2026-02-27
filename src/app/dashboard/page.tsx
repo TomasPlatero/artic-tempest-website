@@ -11,6 +11,7 @@ import { DashboardClient } from "@/components/dashboard/dashboard-client"
 import { IconUsersGroup } from "@tabler/icons-react"
 
 export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
 
 interface BnetCharacter {
   id: string
@@ -25,15 +26,13 @@ async function getDashboardData(userId: string | undefined) {
   // Get guild metrics base
   const { data: guild } = await sb
     .from("guilds_managed")
-    .select("name, region, realm, faction")
+    .select("name, region, realm, faction, last_bnet_sync")
     .limit(1)
     .single()
 
   const { count: rosterCount } = await sb
     .from("guild_members")
     .select("*", { count: "exact", head: true })
-    // Simple filter simulating those tracked in "Team raiders"
-    .lte("rank", 4)
 
   const { data: upcomingEvents } = await sb
     .from("guild_events")
@@ -75,6 +74,7 @@ async function getDashboardData(userId: string | undefined) {
     region: guild?.region ?? "eu",
     faction: guild?.faction ?? "horde",
     rosterCount: rosterCount ?? 0,
+    lastBnetSync: guild?.last_bnet_sync ?? null,
     nextRaid,
     upcomingEvents: upcomingEvents || [],
     myCharacters,

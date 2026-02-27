@@ -15,8 +15,6 @@ function getBackgroundUrl(destination: string) {
     if (destLower.includes("voidspire")) return "https://www.nerdsquare.eu/wp-content/uploads/2025/08/nerdsquare-wow-midnight-raid-voidspire-700x394.jpg"
     if (destLower.includes("dreamrift")) return "https://www.nerdsquare.eu/wp-content/uploads/2025/08/nerdsquare-wow-midnight-raid-dreamrift-700x394.jpg"
     if (destLower.includes("quel'danas") || destLower.includes("sunwell")) return "https://www.nerdsquare.eu/wp-content/uploads/2025/08/nerdsquare-wow-midnight-raid-marchonqueldanas-700x394.jpg"
-    if (destLower.includes("undermine")) return "https://wow.zamimg.com/uploads/screenshots/normal/1183186-undermine.jpg"
-    if (destLower.includes("nerub-ar") || destLower.includes("nerubar")) return "https://wow.zamimg.com/uploads/screenshots/normal/1175652-nerub-ar-palace.jpg"
     return null
 }
 

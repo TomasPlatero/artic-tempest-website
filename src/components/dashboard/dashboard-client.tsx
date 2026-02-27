@@ -184,7 +184,21 @@ export function DashboardClient({ data, roleLevel }: { data: any, roleLevel: str
                             </div>
                             <p className="text-sm text-muted-foreground mt-1">Tu base de datos de miembros rastrea un total de <span className="text-foreground font-semibold">{data.rosterCount}</span> personajes.</p>
                             <div className="text-xl font-semibold my-1 text-foreground">
-                                Actualizada
+                                {data.lastBnetSync ? (
+                                    <div className="flex flex-col items-center">
+                                        <span>Actualizada</span>
+                                        <span className="text-[10px] text-muted-foreground font-normal">
+                                            {new Date(data.lastBnetSync).toLocaleDateString("es-ES", {
+                                                day: "numeric",
+                                                month: "short",
+                                                hour: "2-digit",
+                                                minute: "2-digit"
+                                            })}
+                                        </span>
+                                    </div>
+                                ) : (
+                                    "Actualizada"
+                                )}
                             </div>
                             <p className="text-sm text-muted-foreground">
                                 Puedes ir a la <span className="text-primary cursor-pointer hover:underline" onClick={() => router.push('/dashboard/roster')}>página de roster</span> para forzar una sincronización y ver la actividad.

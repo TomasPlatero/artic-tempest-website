@@ -145,22 +145,7 @@ async function discoverLatestRaid(token: string, region: string): Promise<number
 
     const raids = tierData.raids || []
     if (raids.length === 0) {
-        // Fallback: if no raids yet (Midnight pre-Season 1), try TWW raids
-        const prevExpansion = tiers[tiers.length - 2]
-        if (prevExpansion) {
-            const prevRes = await fetch(
-                `https://${region}.api.blizzard.com/data/wow/journal-expansion/${prevExpansion.id}?namespace=static-${region}&locale=es_ES`,
-                { headers: { Authorization: `Bearer ${token}` } }
-            )
-            if (prevRes.ok) {
-                const prevData = await prevRes.json()
-                const prevRaids = prevData.raids || []
-                if (prevRaids.length > 0) {
-                    return prevRaids[prevRaids.length - 1].id
-                }
-            }
-        }
-        throw new Error("No raids found in any expansion")
+        throw new Error("No se han encontrado bandas en la expansión Midnight.")
     }
 
     // Return the last raid in the expansion (usually the current tier)
