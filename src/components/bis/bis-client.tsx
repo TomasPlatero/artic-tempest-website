@@ -346,7 +346,7 @@ export function BisClient({ eligibleMembers }: { eligibleMembers: EligibleMember
         } finally {
             setLoading(false)
         }
-    }, [difficulty])
+    }, [difficulty, selectedRaidId])
 
     const fetchSelections = useCallback(async () => {
         if (!selectedMemberId || !resolvedInstanceId) return

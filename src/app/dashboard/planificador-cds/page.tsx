@@ -1,5 +1,4 @@
-"use client"
-
+import { Suspense } from "react"
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { SiteHeader } from "@/components/layout/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/common/sidebar"
@@ -17,7 +16,9 @@ export default function PlanificadorCdsPage() {
             <SidebarInset>
                 <SiteHeader />
                 <div className="flex flex-1 flex-col py-6 max-w-[1600px] mx-auto w-full px-4 gap-6">
-                    <PlanificadorCdsClient />
+                    <Suspense fallback={<div className="flex items-center justify-center min-h-[400px]">Cargando planificador...</div>}>
+                        <PlanificadorCdsClient />
+                    </Suspense>
                 </div>
             </SidebarInset>
         </SidebarProvider>
