@@ -12,7 +12,8 @@ import {
   IconCalendarEvent,
   IconListCheck,
   IconStethoscope,
-  IconBell
+  IconBell,
+  IconWorld
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav/nav-main"
@@ -76,6 +77,11 @@ const data = {
       roles: ["gm", "officer"]
     },
     {
+      title: "Volver a la web",
+      url: "/",
+      icon: IconWorld,
+    },
+    {
       title: "Ayuda",
       url: "#",
       icon: IconHelp,
@@ -102,8 +108,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     if (roleLevel === 'gm') return true
     const p = permissions.find(p => p.role_level === roleLevel && p.app_id === appId)
     if (!p) {
-      if (roleLevel === 'officer') return true
-      if (roleLevel === 'raider') return true
+      // Por defecto, Officer, Raider y Member ven las apps básicas si no hay configuración
+      if (['officer', 'raider', 'member'].includes(roleLevel)) return true
       return false
     }
     return p.can_view

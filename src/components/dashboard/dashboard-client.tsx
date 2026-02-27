@@ -28,11 +28,6 @@ export function DashboardClient({ data, roleLevel }: { data: any, roleLevel: str
                 <div className="relative z-20 flex flex-col items-start justify-center h-full p-6 sm:p-10">
                     <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2 drop-shadow-md flex items-center gap-3">
                         ¡Bienvenido a <span className="text-blue-300">{data.guildName}</span>!
-                        {data.faction && (
-                            <Badge className={`${data.faction.toLowerCase() === 'horde' ? 'bg-rose-600/20 text-rose-400 border-rose-500/30' : 'bg-blue-600/20 text-blue-400 border-blue-500/30'} text-[10px] uppercase font-black px-2 py-0.5`}>
-                                {data.faction === 'horde' ? 'Horda' : 'Alianza'}
-                            </Badge>
-                        )}
                     </h1>
                     <p className="text-blue-50/90 max-w-lg text-sm sm:text-base drop-shadow-sm">
                         Comprueba tus personajes, mantente al día de las próximas raids en el calendario y revisa el estado de reclutamiento de la hermandad.

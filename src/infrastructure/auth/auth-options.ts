@@ -5,8 +5,8 @@ import { createClient } from "@supabase/supabase-js"
 import { getGuildCredentials } from "@/infrastructure/auth/credentials"
 
 /** ==== Tipos propios ==== */
-type RoleLevel = "gm" | "officer" | "raider" | "member"
-const ROLE_ORDER: RoleLevel[] = ["member", "raider", "officer", "gm"]
+type RoleLevel = "gm" | "officer" | "raider" | "member" | "invitado"
+const ROLE_ORDER: RoleLevel[] = ["invitado", "member", "raider", "officer", "gm"]
 
 type GuildboardMeta = {
   profileId: string
@@ -27,7 +27,7 @@ const {
   NEXTAUTH_SECRET,
   DISCORD_CLIENT_ID = "",
   DISCORD_CLIENT_SECRET = "",
-  DISCORD_REQUESTED_SCOPES = "identify guilds guilds.members.read",
+  DISCORD_REQUESTED_SCOPES = "identify guilds guilds.members.read email",
   NEXT_PUBLIC_SUPABASE_URL,
   SUPABASE_SERVICE_ROLE_KEY,
 } = process.env
@@ -40,7 +40,7 @@ export const sb = createClient(NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_K
 })
 
 /** ==== Utilidades ==== */
-const rank = (r?: RoleLevel | null) => ROLE_ORDER.indexOf((r ?? "member") as RoleLevel)
+const rank = (r?: RoleLevel | null) => ROLE_ORDER.indexOf((r ?? "invitado") as RoleLevel)
 
 function discordAvatarURL(userId: string, avatar?: string | null) {
   return avatar ? `https://cdn.discordapp.com/avatars/${userId}/${avatar}.png` : null
@@ -73,7 +73,7 @@ async function pickTopDiscordRole(roleIds: string[]): Promise<{ roleId: string; 
 const pickMax = (a: RoleLevel | null, b: RoleLevel | null): RoleLevel => {
   const ra = rank(a)
   const rb = rank(b)
-  return ra >= rb ? (a ?? "member") : (b ?? "member")
+  return ra >= rb ? (a ?? "invitado") : (b ?? "invitado")
 }
 
 /** ==== NextAuth ==== */
@@ -81,7 +81,7 @@ export const authOptions: NextAuthOptions = {
   secret: NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
-    maxAge: 24 * 60 * 60, // 24 hours (LOPD/GDPR compliance for strict necessity)
+    maxAge: 30 * 24 * 60 * 60, // 30 days for better public experience
   },
   providers: [
     DiscordProvider({
@@ -93,39 +93,39 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ account, profile }) {
       const accessToken = account?.access_token
+      const refreshToken = account?.refresh_token
       if (!accessToken) return false
 
       const userId = profile?.sub ?? (profile as any)?.id
       const dProfile = profile as DiscordProfile | null
 
-      const username =
-        dProfile?.global_name ?? dProfile?.username ?? null
+      const username = dProfile?.global_name ?? dProfile?.username ?? null
+      const avatarUrl = discordAvatarURL(userId, dProfile?.avatar ?? null)
 
-      const avatarUrl = discordAvatarURL(
-        userId,
-        dProfile?.avatar ?? null
-      )
-
-      // Read Discord Guild ID from DB (with env fallback)
+      // 1. Basic Membership Check via Discord
       const creds = await getGuildCredentials()
       const member = await fetchDiscordMember(accessToken, creds.discord_guild_id)
       const topRole = member ? await pickTopDiscordRole(member.roles) : null
 
-      // Lee el rol persistente de la BD.
+      // 2. Load existing profile
       const { data: existing } = await sb
         .from("profiles")
         .select("user_id, role_level")
         .eq("discord_user_id", userId)
         .maybeSingle()
 
-      const dbLevel = (existing?.role_level as RoleLevel | null) ?? "member"
-      const discordLevel = topRole?.level ?? "member"
+      const dbLevel = (existing?.role_level as RoleLevel | null) ?? "invitado"
 
-      // LOGIC: If the user is already above "member" in our DB, they've been manually 
-      // managed or previously synced. We only auto-promote if they are currently a "member".
-      // This allows an admin to demote someone to "raider" even if they have an "officer" Discord role.
-      const finalLevel = dbLevel === "member" ? pickMax(dbLevel, discordLevel) : dbLevel
+      // If they are in the Discord Guild, they are at least 'member'
+      // If we found a mapped role (officer/gm), we use that.
+      const discordLevel: RoleLevel = topRole?.level ?? (member ? "member" : "invitado")
 
+      // LOGIC: We promote automatically up to 'member'. 
+      // Higher roles (officer, gm, raider) are usually manually assigned or synced with specific mappings.
+      // But if we have a topRole mapping, we respect it.
+      let finalLevel = pickMax(dbLevel, discordLevel)
+
+      // 3. Save / Update Profile
       const { data, error } = await sb
         .from("profiles")
         .upsert(
@@ -133,6 +133,7 @@ export const authOptions: NextAuthOptions = {
             discord_user_id: userId,
             discord_username: username,
             discord_avatar: avatarUrl,
+            discord_refresh_token: refreshToken, // Save for Cron
             role_level: finalLevel,
             last_role_check: new Date().toISOString(),
           },
@@ -146,14 +147,14 @@ export const authOptions: NextAuthOptions = {
       const meta: GuildboardMeta = {
         profileId: data.user_id,
         discordId: userId,
-        roleLevel: finalLevel, // Use finalLevel, not stale dbLevel
+        roleLevel: finalLevel,
         username,
         avatarUrl,
         checkedAt: new Date().toISOString(),
       }
 
-        // Anclar metadatos tipados al objeto account sin usar any
-        ; (account as Account & { __guildboard?: GuildboardMeta }).__guildboard = meta
+        // Tipado ad-hoc del meta
+        ; (account as any).__guildboard = meta
 
       return true
     },

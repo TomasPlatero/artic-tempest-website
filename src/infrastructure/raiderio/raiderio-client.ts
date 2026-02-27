@@ -46,3 +46,21 @@ export async function fetchGuildProgression(
         return null
     }
 }
+
+/** Fetch character mythic plus and raid progression from Raider.io */
+export async function fetchCharacterRIO(
+    name: string,
+    realm: string,
+    region: string = "eu"
+): Promise<any | null> {
+    const url = `https://raider.io/api/v1/characters/profile?region=${region}&realm=${realm}&name=${encodeURIComponent(name)}&fields=mythic_plus_scores_by_season:current,raid_progression`
+
+    try {
+        const res = await fetch(url, { next: { revalidate: 3600 } })
+        if (!res.ok) return null
+        return await res.json()
+    } catch (error) {
+        console.error("Failed to fetch Character RIO:", error)
+        return null
+    }
+}
