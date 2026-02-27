@@ -25,7 +25,7 @@ async function getDashboardData(userId: string | undefined) {
   // Get guild metrics base
   const { data: guild } = await sb
     .from("guilds_managed")
-    .select("name, region, realm")
+    .select("name, region, realm, faction")
     .limit(1)
     .single()
 
@@ -73,6 +73,7 @@ async function getDashboardData(userId: string | undefined) {
     guildName: guild?.name ?? "Sin hermandad",
     realm: guild?.realm ?? "—",
     region: guild?.region ?? "eu",
+    faction: guild?.faction ?? "horde",
     rosterCount: rosterCount ?? 0,
     nextRaid,
     upcomingEvents: upcomingEvents || [],
@@ -91,7 +92,7 @@ export default async function DashboardPage() {
   const dashboardData = await getDashboardData(session.user?.id)
 
   const style = {
-    "--sidebar-width": "calc(var(--spacing) * 72)",
+    "--sidebar-width": "calc(var(--spacing) * 64)",
     "--header-height": "calc(var(--spacing) * 12)",
   } as React.CSSProperties
 

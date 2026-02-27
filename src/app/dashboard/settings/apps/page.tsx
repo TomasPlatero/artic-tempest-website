@@ -6,7 +6,11 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { IconArrowLeft, IconUsers, IconCalendar, IconChartBar, IconId } from "@tabler/icons-react"
+import { IconArrowLeft, IconUsers, IconCalendar, IconChartBar, IconId, IconStethoscope } from "@tabler/icons-react"
+import { AppSidebar } from "@/components/layout/app-sidebar"
+import { SiteHeader } from "@/components/layout/site-header"
+import { SidebarInset, SidebarProvider } from "@/components/common/sidebar"
+import React from "react"
 
 export default function AppsSettingsHubPage() {
     const apps = [
@@ -44,13 +48,22 @@ export default function AppsSettingsHubPage() {
             bg: "bg-purple-500/10",
             disabled: true
         },
+        {
+            title: "Planificador de CD's",
+            description: "Gestión de tiempos de sanación y configuración de notas para MRT.",
+            icon: IconStethoscope,
+            href: "/dashboard/settings/apps/planificador-cds",
+            color: "text-blue-400",
+            bg: "bg-blue-400/10",
+            disabled: true
+        },
     ]
 
     return (
-        <div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6">
+        <div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6 lg:px-8">
             <div className="flex items-center gap-4">
                 <Link href="/dashboard/settings">
-                    <Button variant="outline" size="icon" className="h-8 w-8">
+                    <Button variant="outline" size="icon" className="h-8 w-8 rounded-full border-border/40">
                         <IconArrowLeft className="h-4 w-4" />
                     </Button>
                 </Link>
@@ -62,16 +75,16 @@ export default function AppsSettingsHubPage() {
                 </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 mt-4">
+            <div className="grid gap-4 md:grid-cols-2 mt-4 max-w-5xl">
                 {apps.map((app) => {
                     const Icon = app.icon;
                     return app.disabled ? (
-                        <Card key={app.href} className="opacity-60 cursor-not-allowed border-dashed">
-                            <CardHeader className="flex flex-row items-center gap-4">
-                                <div className={`p-3 rounded-lg ${app.bg} ${app.color}`}>
-                                    <Icon className="w-8 h-8" />
+                        <Card key={app.href} className="opacity-60 cursor-not-allowed border-dashed bg-card/10">
+                            <CardHeader className="flex flex-row items-center gap-4 py-4 px-5">
+                                <div className={`p-2.5 rounded-xl ${app.bg} ${app.color} shrink-0`}>
+                                    <Icon className="w-6 h-6" />
                                 </div>
-                                <div className="flex flex-col">
+                                <div className="flex flex-col text-left">
                                     <div className="flex items-center gap-2">
                                         <CardTitle className="text-lg">{app.title}</CardTitle>
                                         <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded border border-border/50 uppercase font-bold text-muted-foreground tracking-wider">Próximamente</span>
@@ -84,12 +97,12 @@ export default function AppsSettingsHubPage() {
                         </Card>
                     ) : (
                         <Link href={app.href} key={app.href} className="transition-all hover:scale-[1.02]">
-                            <Card className="h-full hover:border-primary/50 cursor-pointer">
-                                <CardHeader className="flex flex-row items-center gap-4">
-                                    <div className={`p-3 rounded-lg ${app.bg} ${app.color}`}>
-                                        <Icon className="w-8 h-8" />
+                            <Card className="h-full hover:border-primary/50 cursor-pointer overflow-hidden border-border/40 bg-card/40 backdrop-blur-sm">
+                                <CardHeader className="flex flex-row items-center gap-4 py-4 px-5">
+                                    <div className={`p-2.5 rounded-xl ${app.bg} ${app.color} shrink-0 shadow-sm border border-white/5`}>
+                                        <Icon className="w-6 h-6" />
                                     </div>
-                                    <div className="flex flex-col">
+                                    <div className="flex flex-col text-left">
                                         <CardTitle className="text-lg">{app.title}</CardTitle>
                                         <CardDescription className="mt-1.5 leading-snug">
                                             {app.description}

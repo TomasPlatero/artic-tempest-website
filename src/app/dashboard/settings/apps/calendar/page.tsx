@@ -5,6 +5,10 @@ import { ScheduleFormClient } from "@/components/calendar/schedule-form-client"
 import { IconArrowLeft } from "@tabler/icons-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { AppSidebar } from "@/components/layout/app-sidebar"
+import { SiteHeader } from "@/components/layout/site-header"
+import { SidebarInset, SidebarProvider } from "@/components/common/sidebar"
+import React from "react"
 
 export const dynamic = "force-dynamic"
 
@@ -34,7 +38,7 @@ export default async function CalendarSettingsPage() {
         <div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6 pb-20">
             <div className="flex items-center gap-4 mb-4">
                 <Link href="/dashboard/settings/apps">
-                    <Button variant="outline" size="icon" className="h-8 w-8">
+                    <Button variant="outline" size="icon" className="h-8 w-8 rounded-full border-border/40">
                         <IconArrowLeft className="h-4 w-4" />
                     </Button>
                 </Link>

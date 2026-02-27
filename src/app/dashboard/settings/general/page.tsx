@@ -1,6 +1,10 @@
 // src/app/dashboard/settings/general/page.tsx
 import { sb } from "@/infrastructure/auth/auth-options"
 import { SettingsGeneralClient } from "@/components/settings/settings-general"
+import { AppSidebar } from "@/components/layout/app-sidebar"
+import { SiteHeader } from "@/components/layout/site-header"
+import { SidebarInset, SidebarProvider } from "@/components/common/sidebar"
+import React from "react"
 
 export const runtime = "nodejs"
 
@@ -58,4 +62,3 @@ export default async function SettingsGeneralPage() {
     const data = await getGeneralData()
     return <SettingsGeneralClient {...data} />
 }
-

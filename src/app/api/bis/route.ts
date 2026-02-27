@@ -12,6 +12,8 @@ export async function GET(req: Request) {
 
         const url = new URL(req.url)
         const memberId = url.searchParams.get("member_id")
+        const instanceId = url.searchParams.get("instance_id")
+        const difficulty = url.searchParams.get("difficulty")
 
         if (!memberId) {
             return NextResponse.json({ error: "Falta el member_id" }, { status: 400 })
@@ -41,11 +43,22 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: "No autorizado para este personaje" }, { status: 403 })
         }
 
-        const { data } = await sb
+        let query = sb
             .from("bis_selections")
             .select("*")
             .eq("member_id", memberId)
-            .order("slot")
+
+        if (difficulty) {
+            query = query.eq("difficulty", difficulty)
+        }
+        if (instanceId) {
+            const numericInstanceId = parseInt(instanceId, 10);
+            if (!isNaN(numericInstanceId) && numericInstanceId !== 0) {
+                query = query.eq("instance_id", numericInstanceId)
+            }
+        }
+
+        const { data } = await query.order("slot")
 
         return NextResponse.json(data || [])
     } catch (e: any) {
@@ -60,7 +73,7 @@ export async function POST(req: Request) {
         if (!session?.user) return new NextResponse("No autorizado", { status: 401 })
 
         const body = await req.json()
-        const { member_id, item_id, item_name, item_icon, slot, boss_name, priority, difficulty } = body
+        const { member_id, item_id, item_name, item_icon, slot, boss_name, priority, difficulty, instance_id } = body
 
         if (!member_id || !item_id || !item_name || !slot) {
             return NextResponse.json({ error: "Faltan campos obligatorios" }, { status: 400 })
@@ -100,6 +113,7 @@ export async function POST(req: Request) {
                 boss_name: boss_name || null,
                 priority: priority || 2,
                 difficulty: difficulty || "heroic",
+                instance_id: (instance_id && instance_id !== "default") ? parseInt(instance_id, 10) : 0,
             }, { onConflict: "member_id,item_id,difficulty" })
             .select()
             .single()

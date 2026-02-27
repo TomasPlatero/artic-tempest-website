@@ -92,6 +92,17 @@ export default async function EstadisticasPage() {
     const roster = await getRoster()
     const rioData = await getProgressionData()
 
+    // Fetch class colors
+    const { data: colorConstants } = await sb
+        .from("game_constants")
+        .select("key, value")
+        .eq("category", "wow_class_color")
+
+    const classColors: Record<number, string> = {}
+    colorConstants?.forEach(c => {
+        classColors[Number(c.key)] = c.value
+    })
+
     const style = {
         "--sidebar-width": "calc(var(--spacing) * 72)",
         "--header-height": "calc(var(--spacing) * 12)",
@@ -103,7 +114,7 @@ export default async function EstadisticasPage() {
             <SidebarInset>
                 <SiteHeader />
                 <div className="flex flex-1 flex-col py-6 gap-6">
-                    <StatsClient members={roster} rioData={rioData} />
+                    <StatsClient members={roster} rioData={rioData} classColors={classColors} />
                 </div>
             </SidebarInset>
         </SidebarProvider>

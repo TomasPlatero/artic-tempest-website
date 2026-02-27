@@ -1,10 +1,11 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
-import { IconChevronLeft, IconChevronRight, IconCalendarEvent, IconLayoutGrid, IconList } from "@tabler/icons-react"
+import { IconChevronLeft, IconChevronRight, IconCalendarEvent, IconLayoutGrid, IconList, IconRefresh } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { cn } from "@/infrastructure/tailwind/tailwind-utils"
+import { toast } from "sonner"
 
 
 export type GuildEvent = {
@@ -151,6 +152,12 @@ export function CalendarClient({
                     const diffGroups = (evt.difficulty || "").match(/\((\d+)\)/)
                     const maxActive = diffGroups ? parseInt(diffGroups[1], 10) : 30
 
+                    const now = new Date()
+                    const eventStart = new Date(evt.event_date)
+                    const eventEnd = new Date(evt.end_date || evt.event_date)
+                    const isPast = eventEnd < now
+                    const isInProgress = now >= eventStart && now <= eventEnd
+
                     return (
                         <div
                             key={evt.id}
@@ -162,9 +169,27 @@ export function CalendarClient({
                                     router.push(`/dashboard/calendario/${evt.id}`)
                                 }
                             }}
-                            className="relative flex flex-col justify-between rounded p-2 cursor-pointer text-[10px] text-white overflow-hidden bg-blue-600 hover:ring-2 ring-white transition-all bg-cover bg-center min-h-[60px] border border-white/20 shadow-lg"
+                            className={cn(
+                                "relative flex flex-col justify-between rounded p-2 cursor-pointer text-[10px] text-white overflow-hidden hover:ring-2 ring-white transition-all bg-cover bg-center min-h-[60px] border border-white/20 shadow-lg",
+                                isPast ? "opacity-60 grayscale-[0.5] hover:grayscale-0 hover:opacity-100" :
+                                    isInProgress ? "bg-emerald-600 ring-2 ring-emerald-400/50 shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "bg-blue-600"
+                            )}
                             style={bgStyle}
                         >
+                            {isPast && (
+                                <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/40 backdrop-blur-[1px]">
+                                    <span className="text-[14px] font-black uppercase tracking-[0.4em] -rotate-6 text-amber-500 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                                        Finalizado
+                                    </span>
+                                </div>
+                            )}
+                            {isInProgress && (
+                                <div className="absolute inset-0 flex items-center justify-center z-10 bg-emerald-500/20 backdrop-blur-[0.5px]">
+                                    <span className="text-[13px] font-black uppercase tracking-[0.3em] -rotate-12 text-emerald-400 drop-shadow-[0_2px_8px_rgba(16,185,129,0.8)] animate-pulse">
+                                        En curso
+                                    </span>
+                                </div>
+                            )}
                             <div className="flex justify-between items-start">
                                 <div className="font-bold truncate drop-shadow-md flex-1">
                                     {evt.destination || evt.title}
@@ -223,6 +248,17 @@ export function CalendarClient({
 
                 {/* View Toggles */}
                 <div className="flex bg-muted/20 p-1 rounded-lg border border-border/40">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground border border-border/20"
+                        onClick={() => {
+                            router.refresh()
+                            toast.success("Calendario Refrescado", { description: "Sincronizando eventos con el servidor..." })
+                        }}
+                    >
+                        <IconRefresh className="size-4" />
+                    </Button>
                     <Button
                         variant={viewMode === "grid" ? "secondary" : "ghost"}
                         size="icon"
@@ -286,16 +322,17 @@ export function CalendarClient({
                             const date = new Date(evt.event_date)
                             const isToday = new Date().toDateString() === date.toDateString()
                             const dayNum = date.getDate()
-                            const dayName = dayNames[getFirstDayOfMonth(date.getFullYear(), date.getMonth()) + dayNum - 2 % 7] // Simplified day name
-
-                            const bgStyle = evt.background_url
-                                ? { backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, rgba(30,30,36,0.9) 100%), url(${evt.background_url})` }
-                                : {}
 
                             const signups = evt.event_signups || []
                             const selectedCount = signups.filter((s: any) => s.selection_status === 'selected').length
                             const diffGroups = (evt.difficulty || "").match(/\((\d+)\)/)
                             const maxActive = diffGroups ? parseInt(diffGroups[1], 10) : 30
+
+                            const now = new Date()
+                            const eventStart = new Date(evt.event_date)
+                            const eventEnd = new Date(evt.end_date || evt.event_date)
+                            const isPast = eventEnd < now
+                            const isInProgress = now >= eventStart && now <= eventEnd
 
                             return (
                                 <div
@@ -309,7 +346,9 @@ export function CalendarClient({
                                     }}
                                     className={cn(
                                         "group relative flex items-center gap-4 rounded-xl border border-border/40 p-4 hover:bg-muted/5 transition-all cursor-pointer overflow-hidden bg-[#1e1e24]/10",
-                                        isToday && "ring-1 ring-primary/40 bg-primary/5 shadow-[0_0_15px_rgba(59,130,246,0.05)]"
+                                        isToday && !isInProgress && "ring-1 ring-primary/40 bg-primary/5 shadow-[0_0_15px_rgba(59,130,246,0.05)]",
+                                        isInProgress && "ring-2 ring-emerald-500/50 bg-emerald-500/5 shadow-[0_0_20px_rgba(16,185,129,0.1)]",
+                                        isPast && "opacity-70 grayscale-[0.3]"
                                     )}
                                 >
                                     {/* Date Column */}
@@ -321,19 +360,26 @@ export function CalendarClient({
                                     {/* Event Info */}
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-start justify-between gap-2">
-                                            <div>
+                                            <div className="flex flex-col gap-1">
                                                 <h3 className="font-bold text-lg truncate group-hover:text-primary transition-colors">
                                                     {evt.destination || evt.title}
                                                 </h3>
-                                                <div className="flex items-center gap-2 mt-1">
+                                                <div className="flex items-center gap-2">
                                                     {evt.difficulty && (
                                                         <span className="bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded-full font-bold uppercase border border-primary/20">
                                                             {evt.difficulty}
                                                         </span>
                                                     )}
-                                                    <span className="text-xs text-muted-foreground font-medium">
-                                                        {date.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
-                                                    </span>
+                                                    {isInProgress ? (
+                                                        <span className="bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-full font-black uppercase border border-emerald-400/30 animate-pulse flex items-center gap-1">
+                                                            <div className="size-1 bg-white rounded-full animate-ping" />
+                                                            En curso
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-xs text-muted-foreground font-medium">
+                                                            {date.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </div>
 
@@ -355,7 +401,18 @@ export function CalendarClient({
                                         />
                                     )}
 
+                                    {isInProgress && (
+                                        <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 blur-2xl -z-10 animate-pulse" />
+                                    )}
+
                                     <IconChevronRight className="size-5 text-muted-foreground/30 group-hover:text-primary transition-all translate-x-0 group-hover:translate-x-1" />
+                                    {isPast && (
+                                        <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/20 pointer-events-none">
+                                            <span className="text-[18px] md:text-[24px] font-black uppercase tracking-[0.5em] -rotate-3 text-amber-500/40 select-none">
+                                                Finalizado
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                             )
                         })

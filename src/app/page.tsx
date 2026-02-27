@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import { signIn, useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { sileo } from 'sileo'
+import { toast } from 'sonner'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -15,8 +15,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (status === 'authenticated' && session) {
-      sileo.success({
-        title: '¡Bienvenido!',
+      toast.success('¡Bienvenido!', {
         description: `Conectado como ${session.user?.username ?? 'Usuario'}`,
       })
       router.push('/dashboard')

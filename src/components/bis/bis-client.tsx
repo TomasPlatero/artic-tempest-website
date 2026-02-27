@@ -13,9 +13,16 @@ import {
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion"
+import { MIDNIGHT_RAIDS } from "@/infrastructure/constants/raids"
 import Image from "next/image"
 import Script from "next/script"
-import { sileo } from "sileo"
+import { toast } from "sonner"
 
 type EligibleMember = {
     id: string
@@ -55,6 +62,7 @@ type BisSelection = {
     boss_name: string | null
     priority: number
     difficulty: string
+    instance_id: string
 }
 
 const QUALITY_COLORS: Record<string, string> = {
@@ -144,7 +152,8 @@ const SLOT_TRANSLATIONS: Record<string, string> = {
     ONE_HAND: "Una Mano", TWO_HAND: "Dos Manos", MAIN_HAND: "Mano Principal",
     OFF_HAND: "Mano Secundaria", SHIELD: "Escudo", BACK: "Capa", CLOAK: "Capa",
     HELD_IN_OFF_HAND: "Sostener", RANGED: "A Distancia", THROWN: "Arrojadiza",
-    SHIRT: "Camisa",
+    SHIRT: "Camisa", HAND: "Guantes", HOLDABLE: "Sostener",
+    TWOHWEAPON: "Arma de 2 Manos", WEAPON: "Arma",
 }
 
 const translateSlot = (s: string) => SLOT_TRANSLATIONS[s.toUpperCase()] || s
@@ -203,15 +212,104 @@ function LootItemCard({
     )
 }
 
+function WishlistCard({
+    selectedMember,
+    difficulty,
+    selections,
+    loadingSelections,
+    translateSlot,
+    setSelections,
+}: {
+    selectedMember: EligibleMember | undefined
+    difficulty: string
+    selections: BisSelection[]
+    loadingSelections: boolean
+    translateSlot: (s: string) => string
+    setSelections: React.Dispatch<React.SetStateAction<BisSelection[]>>
+}) {
+    return (
+        <Card className="h-fit sticky top-20">
+            <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                    <IconListCheck className="size-5" />
+                    Tu Lista de Deseos
+                    {selections.length > 0 && (
+                        <Badge variant="secondary" className="ml-auto">{selections.length}</Badge>
+                    )}
+                </CardTitle>
+                <CardDescription>
+                    {selectedMember ? `${selectedMember.character_name} — ${difficulty === "heroic" ? "Heroico" : "Mítico"}` : "Selecciona un personaje"}
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                {loadingSelections ? (
+                    <div className="flex justify-center py-6">
+                        <IconRefresh className="size-4 animate-spin text-muted-foreground" />
+                    </div>
+                ) : selections.length === 0 ? (
+                    <div className="text-center text-muted-foreground text-sm py-8">
+                        <IconListCheck className="size-8 mx-auto mb-3 opacity-20" />
+                        <p>Sin ítems seleccionados.</p>
+                        <p className="text-xs mt-1">Haz clic en un ítem del panel para añadirlo.</p>
+                    </div>
+                ) : (
+                    <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
+                        {selections.map(sel => (
+                            <a
+                                key={sel.id}
+                                href={`https://www.wowhead.com/item=${sel.item_id}`}
+                                target="_blank"
+                                rel="nofollow"
+                                className="flex items-center gap-2.5 p-2 rounded-lg border border-border/50 bg-muted/20 hover:bg-muted/40 transition-colors group no-underline"
+                                data-wowhead={`item=${sel.item_id}`}
+                                onClick={(e) => {
+                                    // Prevent navigation if clicking on anything EXCEPT the delete button
+                                    const isDeleteBtn = (e.target as HTMLElement).closest('button');
+                                    if (!isDeleteBtn) e.preventDefault();
+                                }}
+                            >
+                                {sel.item_icon && (
+                                    <Image
+                                        src={sel.item_icon}
+                                        alt=""
+                                        width={32} height={32}
+                                        className="rounded border border-border/50 shadow-sm"
+                                    />
+                                )}
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-purple-400 truncate">{sel.item_name}</p>
+                                    <p className="text-xs text-muted-foreground truncate">{sel.boss_name} · {translateSlot(sel.slot)}</p>
+                                </div>
+                                <button
+                                    className="opacity-0 group-hover:opacity-100 text-destructive hover:bg-destructive/10 rounded p-1 transition-all"
+                                    onClick={async (e) => {
+                                        e.stopPropagation();
+                                        await fetch(`/api/bis?id=${sel.id}`, { method: "DELETE" })
+                                        setSelections(prev => prev.filter(s => s.id !== sel.id))
+                                    }}
+                                >
+                                    <IconX className="size-3.5" />
+                                </button>
+                            </a>
+                        ))}
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+    )
+}
+
 export function BisClient({ eligibleMembers }: { eligibleMembers: EligibleMember[] }) {
     const [selectedMemberId, setSelectedMemberId] = useState<string>(eligibleMembers[0]?.id || "")
     const [difficulty, setDifficulty] = useState<"heroic" | "mythic">("heroic")
     const [viewMode, setViewMode] = useState<"slot" | "boss">("slot")
+    const [selectedRaidId, setSelectedRaidId] = useState<string>("default")
     const [bosses, setBosses] = useState<Boss[]>([])
     const [selections, setSelections] = useState<BisSelection[]>([])
     const [loading, setLoading] = useState(false)
     const [loadingSelections, setLoadingSelections] = useState(false)
     const [raidName, setRaidName] = useState("")
+    const [resolvedInstanceId, setResolvedInstanceId] = useState<string>("")
     const [mounted, setMounted] = useState(false)
 
     useEffect(() => {
@@ -227,26 +325,34 @@ export function BisClient({ eligibleMembers }: { eligibleMembers: EligibleMember
 
     const fetchLoot = useCallback(async (forceRefresh = false) => {
         setLoading(true)
+        setBosses([]) // Clear old data to avoid visual mismatch
+        setRaidName("")
         try {
-            const res = await fetch(`/api/loot/raid?difficulty=${difficulty}${forceRefresh ? "&refresh=true" : ""}`)
+            let url = `/api/loot/raid?difficulty=${difficulty}${forceRefresh ? "&refresh=true" : ""}`
+            if (selectedRaidId !== "default") {
+                url += `&instance_id=${selectedRaidId}`
+            }
+            const res = await fetch(url)
             if (!res.ok) throw new Error("Failed to fetch loot")
             const data = await res.json()
             setBosses(data.bosses || [])
             setRaidName(data.instanceName || "")
+            setResolvedInstanceId(data.instanceId?.toString() || "")
             if (forceRefresh) {
-                sileo.success({ title: "Actualizado", description: "Loot de la raid refrescado desde Blizzard." })
+                toast.success("Actualizado", { description: "Loot de la raid refrescado desde Blizzard." })
             }
         } catch (e) {
-            sileo.error({ title: "Error", description: "No se pudo cargar el loot de la raid." })
+            toast.error("Error", { description: "No se pudo cargar el loot de la raid." })
         } finally {
             setLoading(false)
         }
     }, [difficulty])
 
     const fetchSelections = useCallback(async () => {
+        if (!selectedMemberId || !resolvedInstanceId) return
         setLoadingSelections(true)
         try {
-            const res = await fetch(`/api/bis?member_id=${selectedMemberId}`)
+            const res = await fetch(`/api/bis?member_id=${selectedMemberId}&difficulty=${difficulty}&instance_id=${resolvedInstanceId}`)
             if (!res.ok) throw new Error("Failed to fetch selections")
             setSelections(await res.json())
         } catch {
@@ -254,16 +360,16 @@ export function BisClient({ eligibleMembers }: { eligibleMembers: EligibleMember
         } finally {
             setLoadingSelections(false)
         }
-    }, [selectedMemberId])
+    }, [selectedMemberId, difficulty, resolvedInstanceId])
 
-    // Fetch loot when difficulty or member changes
+    // Fetch loot when difficulty, member or raid changes
     useEffect(() => {
         fetchLoot()
-    }, [difficulty, fetchLoot])
+    }, [difficulty, fetchLoot, selectedRaidId])
 
     useEffect(() => {
-        if (selectedMemberId) fetchSelections()
-    }, [selectedMemberId, fetchSelections])
+        if (selectedMemberId && resolvedInstanceId) fetchSelections()
+    }, [selectedMemberId, difficulty, resolvedInstanceId, fetchSelections])
 
     const isSelected = (itemId: number) => selections.some(s => s.item_id === itemId)
 
@@ -275,9 +381,9 @@ export function BisClient({ eligibleMembers }: { eligibleMembers: EligibleMember
             try {
                 await fetch(`/api/bis?id=${existing.id}`, { method: "DELETE" })
                 setSelections(prev => prev.filter(s => s.id !== existing.id))
-                sileo.success({ title: "Eliminado", description: `${item.name} eliminado de tu lista.` })
+                toast.success("Eliminado", { description: `${item.name} eliminado de tu lista.` })
             } catch {
-                sileo.error({ title: "Error", description: "No se pudo eliminar el ítem." })
+                toast.error("Error", { description: "No se pudo eliminar el ítem." })
             }
         } else {
             // Add selection
@@ -294,14 +400,15 @@ export function BisClient({ eligibleMembers }: { eligibleMembers: EligibleMember
                         boss_name: bossName,
                         priority: 2,
                         difficulty,
+                        instance_id: resolvedInstanceId,
                     }),
                 })
                 if (!res.ok) throw new Error("API error")
                 const newSel = await res.json()
                 setSelections(prev => [...prev, newSel])
-                sileo.success({ title: "Añadido", description: `${item.name} añadido a tu lista BiS.` })
+                toast.success("Añadido", { description: `${item.name} añadido a tu lista BiS.` })
             } catch {
-                sileo.error({ title: "Error", description: "No se pudo guardar la selección." })
+                toast.error("Error", { description: "No se pudo guardar la selección." })
             }
         }
     }
@@ -384,7 +491,7 @@ export function BisClient({ eligibleMembers }: { eligibleMembers: EligibleMember
                 <div className="flex items-center gap-3 flex-wrap">
                     {/* Character Selector */}
                     <Select value={selectedMemberId} onValueChange={setSelectedMemberId}>
-                        <SelectTrigger className="w-[200px] h-9 text-sm bg-background">
+                        <SelectTrigger className="w-[180px] h-9 text-sm bg-background border-border/40">
                             <IconUser className="size-4 mr-2 text-muted-foreground" />
                             <SelectValue placeholder="Personaje" />
                         </SelectTrigger>
@@ -400,6 +507,23 @@ export function BisClient({ eligibleMembers }: { eligibleMembers: EligibleMember
                                         />
                                         {m.character_name}
                                     </div>
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+
+                    {/* Raid Selector */}
+                    <Select value={selectedRaidId} onValueChange={setSelectedRaidId}>
+                        <SelectTrigger className="w-[220px] h-9 text-sm bg-background border-border/40">
+                            <IconFilter className="size-4 mr-2 text-muted-foreground" />
+                            <SelectValue placeholder="Seleccionar Banda" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="default">Tier Actual (Auto)</SelectItem>
+                            <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/30 mb-1">Midnight Raids</div>
+                            {MIDNIGHT_RAIDS.map(raid => (
+                                <SelectItem key={raid.id} value={raid.id}>
+                                    {raid.name}
                                 </SelectItem>
                             ))}
                         </SelectContent>
@@ -468,118 +592,85 @@ export function BisClient({ eligibleMembers }: { eligibleMembers: EligibleMember
                 <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
                     {/* Main Loot Grid */}
                     <div className="space-y-6">
+                        <div className="lg:hidden mb-6">
+                            <WishlistCard
+                                selectedMember={selectedMember}
+                                difficulty={difficulty}
+                                selections={selections}
+                                loadingSelections={loadingSelections}
+                                translateSlot={translateSlot}
+                                setSelections={setSelections}
+                            />
+                        </div>
+
                         {viewMode === "slot" ? (
                             // VIEW BY SLOT
-                            [...itemsBySlot.entries()].map(([slotName, entries]) => (
-                                <div key={slotName}>
-                                    <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-3">
-                                        {slotName}
-                                    </h3>
-                                    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                                        {entries.map(({ item, bossName }) => (
-                                            <LootItemCard
-                                                key={`${item.id}-${bossName}`}
-                                                item={item}
-                                                bossName={bossName}
-                                                selected={isSelected(item.id)}
-                                                onToggle={() => toggleItem(item, bossName)}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                            ))
+                            <Accordion type="multiple" className="space-y-4">
+                                {[...itemsBySlot.entries()].map(([slotName, entries]) => (
+                                    <AccordionItem key={slotName} value={slotName} className="border border-border/40 rounded-xl px-4 bg-muted/5">
+                                        <AccordionTrigger className="hover:no-underline py-4">
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-sm font-black uppercase tracking-widest text-blue-400">{slotName}</span>
+                                                <Badge variant="outline" className="text-[10px] border-blue-500/20 text-blue-400/60">{entries.length}</Badge>
+                                            </div>
+                                        </AccordionTrigger>
+                                        <AccordionContent className="pb-4">
+                                            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                                                {entries.map(({ item, bossName }) => (
+                                                    <LootItemCard
+                                                        key={`${item.id}-${bossName}`}
+                                                        item={item}
+                                                        bossName={bossName}
+                                                        selected={isSelected(item.id)}
+                                                        onToggle={() => toggleItem(item, bossName)}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                ))}
+                            </Accordion>
                         ) : (
                             // VIEW BY BOSS
-                            filteredBosses.map(boss => (
-                                <div key={boss.id}>
-                                    <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-3">
-                                        {boss.name}
-                                    </h3>
-                                    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                                        {boss.items.map(item => (
-                                            <LootItemCard
-                                                key={item.id}
-                                                item={item}
-                                                bossName={boss.name}
-                                                selected={isSelected(item.id)}
-                                                onToggle={() => toggleItem(item, boss.name)}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                            ))
+                            <Accordion type="multiple" className="space-y-4">
+                                {filteredBosses.map(boss => (
+                                    <AccordionItem key={boss.id} value={boss.id.toString()} className="border border-border/40 rounded-xl px-4 bg-muted/5">
+                                        <AccordionTrigger className="hover:no-underline py-4">
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-sm font-black uppercase tracking-widest text-amber-400">{boss.name}</span>
+                                                <Badge variant="outline" className="text-[10px] border-amber-500/20 text-amber-400/60">{boss.items.length}</Badge>
+                                            </div>
+                                        </AccordionTrigger>
+                                        <AccordionContent className="pb-4">
+                                            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                                                {boss.items.map(item => (
+                                                    <LootItemCard
+                                                        key={item.id}
+                                                        item={item}
+                                                        bossName={boss.name}
+                                                        selected={isSelected(item.id)}
+                                                        onToggle={() => toggleItem(item, boss.name)}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                ))}
+                            </Accordion>
                         )}
                     </div>
 
                     {/* Sidebar: My Wishlist */}
-                    <Card className="h-fit sticky top-20">
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-base flex items-center gap-2">
-                                <IconListCheck className="size-5" />
-                                Tu Lista de Deseos
-                                {selections.length > 0 && (
-                                    <Badge variant="secondary" className="ml-auto">{selections.length}</Badge>
-                                )}
-                            </CardTitle>
-                            <CardDescription>
-                                {selectedMember ? `${selectedMember.character_name} — ${difficulty === "heroic" ? "Heroico" : "Mítico"}` : "Selecciona un personaje"}
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            {loadingSelections ? (
-                                <div className="flex justify-center py-6">
-                                    <IconRefresh className="size-4 animate-spin text-muted-foreground" />
-                                </div>
-                            ) : selections.length === 0 ? (
-                                <div className="text-center text-muted-foreground text-sm py-8">
-                                    <IconListCheck className="size-8 mx-auto mb-3 opacity-20" />
-                                    <p>Sin ítems seleccionados.</p>
-                                    <p className="text-xs mt-1">Haz clic en un ítem del panel para añadirlo.</p>
-                                </div>
-                            ) : (
-                                <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
-                                    {selections.map(sel => (
-                                        <a
-                                            key={sel.id}
-                                            href={`https://www.wowhead.com/item=${sel.item_id}`}
-                                            target="_blank"
-                                            rel="nofollow"
-                                            className="flex items-center gap-2.5 p-2 rounded-lg border border-border/50 bg-muted/20 hover:bg-muted/40 transition-colors group no-underline"
-                                            data-wowhead={`item=${sel.item_id}`}
-                                            onClick={(e) => {
-                                                // Prevent navigation if clicking on anything EXCEPT the delete button
-                                                const isDeleteBtn = (e.target as HTMLElement).closest('button');
-                                                if (!isDeleteBtn) e.preventDefault();
-                                            }}
-                                        >
-                                            {sel.item_icon && (
-                                                <Image
-                                                    src={sel.item_icon}
-                                                    alt=""
-                                                    width={32} height={32}
-                                                    className="rounded border border-border/50 shadow-sm"
-                                                />
-                                            )}
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-medium text-purple-400 truncate">{sel.item_name}</p>
-                                                <p className="text-xs text-muted-foreground truncate">{sel.boss_name} · {translateSlot(sel.slot)}</p>
-                                            </div>
-                                            <button
-                                                className="opacity-0 group-hover:opacity-100 text-destructive hover:bg-destructive/10 rounded p-1 transition-all"
-                                                onClick={async (e) => {
-                                                    e.stopPropagation();
-                                                    await fetch(`/api/bis?id=${sel.id}`, { method: "DELETE" })
-                                                    setSelections(prev => prev.filter(s => s.id !== sel.id))
-                                                }}
-                                            >
-                                                <IconX className="size-3.5" />
-                                            </button>
-                                        </a>
-                                    ))}
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
+                    <div className="hidden lg:block">
+                        <WishlistCard
+                            selectedMember={selectedMember}
+                            difficulty={difficulty}
+                            selections={selections}
+                            loadingSelections={loadingSelections}
+                            translateSlot={translateSlot}
+                            setSelections={setSelections}
+                        />
+                    </div>
                 </div>
             )}
         </div>

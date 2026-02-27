@@ -11,30 +11,20 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { IconChartBar, IconTrophy, IconSwords } from "@tabler/icons-react"
+import { IconChartBar, IconTrophy, IconSwords, IconSearch, IconCrown, IconUser } from "@tabler/icons-react"
+import { Input } from "@/components/ui/input"
+import Image from "next/image"
+import { cn } from "@/infrastructure/tailwind/tailwind-utils"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
+import { IconCheck, IconX, IconExternalLink } from "@tabler/icons-react"
 
-export function StatsClient({ members, rioData }: { members: any[], rioData?: any }) {
-    const WOW_CLASSES: Record<number, string> = {
-        1: "Guerrero", 2: "Paladín", 3: "Cazador", 4: "Pícaro", 5: "Sacerdote",
-        6: "DK", 7: "Chamán", 8: "Mago", 9: "Brujo", 10: "Monje",
-        11: "Druida", 12: "DH", 13: "Evocador",
-    }
-
-    const WOW_CLASS_COLORS: Record<number, string> = {
-        1: "#C69B6D",  // Warrior
-        2: "#F48CBA",  // Paladin
-        3: "#AAD372",  // Hunter
-        4: "#FFF468",  // Rogue
-        5: "#FFFFFF",  // Priest
-        6: "#C41E3A",  // DK
-        7: "#0070DD",  // Shaman
-        8: "#3FC7EB",  // Mage
-        9: "#8788EE",  // Warlock
-        10: "#00FF98", // Monk
-        11: "#FF7C0A", // Druid
-        12: "#A330C9", // DH
-        13: "#33937F", // Evoker
-    }
+export function StatsClient({ members, rioData, classColors = {} }: { members: any[], rioData?: any, classColors?: Record<number, string> }) {
 
 
 
@@ -52,6 +42,34 @@ export function StatsClient({ members, rioData }: { members: any[], rioData?: an
     const [wclReports, setWclReports] = useState<any[]>([])
     const [isLoadingWcl, setIsLoadingWcl] = useState(true)
     const [wclError, setWclError] = useState<string | null>(null)
+    const [wclSearchQuery, setWclSearchQuery] = useState("")
+
+    const [selectedWclReport, setSelectedWclReport] = useState<any>(null)
+    const [wclReportDetails, setWclReportDetails] = useState<any>(null)
+    const [isFetchingWclDetail, setIsFetchingWclDetail] = useState(false)
+
+    const handleViewWclReport = async (report: any) => {
+        setSelectedWclReport(report)
+        setIsFetchingWclDetail(true)
+        try {
+            const res = await fetch(`/api/wcl?code=${report.code}`)
+            const data = await res.json()
+            if (data?.reportData?.report) {
+                setWclReportDetails(data.reportData.report)
+            }
+        } catch (e) {
+            console.error("Error fetching WCL details:", e)
+        } finally {
+            setIsFetchingWclDetail(false)
+        }
+    }
+
+    const filteredWclReports = useMemo(() => {
+        return wclReports.filter(report =>
+            report.title.toLowerCase().includes(wclSearchQuery.toLowerCase()) ||
+            report.zone?.name?.toLowerCase().includes(wclSearchQuery.toLowerCase())
+        )
+    }, [wclReports, wclSearchQuery])
 
     useEffect(() => {
         async function fetchWCL() {
@@ -73,17 +91,63 @@ export function StatsClient({ members, rioData }: { members: any[], rioData?: an
         fetchWCL()
     }, [])
 
+    const [searchQuery, setSearchQuery] = useState("")
+    const [topMembers, setTopMembers] = useState<any[]>([])
+    const [isLoadingTop, setIsLoadingTop] = useState(true)
+
+    // Filter members based on search
+    const filteredMembers = useMemo(() => {
+        return members
+            .filter(m => m.character_name.toLowerCase().includes(searchQuery.toLowerCase()))
+            .sort((a, b) => a.character_name.localeCompare(b.character_name))
+    }, [members, searchQuery])
+
     const [selectedMember, setSelectedMember] = useState<any>(null)
     const [characterData, setCharacterData] = useState<any>(null)
     const [isInspecting, setIsInspecting] = useState(false)
     const [inspectError, setInspectError] = useState<string | null>(null)
+
+    // Load Top 3 members by Score
+    useEffect(() => {
+        async function fetchTopMembers() {
+            setIsLoadingTop(true)
+            try {
+                // Fetch scores for all members (limited to keep it fast, or first N)
+                const membersToFetch = members.slice(0, 15) // Limit to top 15 for ranking lookup
+                const scores = await Promise.all(membersToFetch.map(async (m) => {
+                    try {
+                        const res = await fetch(`https://raider.io/api/v1/characters/profile?region=eu&realm=${m.realm_slug}&name=${m.character_name}&fields=mythic_plus_scores_by_season:current`)
+                        if (!res.ok) return null
+                        const data = await res.json()
+                        return {
+                            ...m,
+                            score: data.mythic_plus_scores_by_season?.[0]?.scores?.all || 0,
+                            color: data.mythic_plus_scores_by_season?.[0]?.segments?.all?.color || '#ffffff'
+                        }
+                    } catch { return null }
+                }))
+
+                const sorted = (scores.filter(Boolean) as any[])
+                    .sort((a, b) => b.score - a.score)
+                    .slice(0, 3)
+
+                setTopMembers(sorted)
+            } catch (err) {
+                console.error("Error fetching top members:", err)
+            } finally {
+                setIsLoadingTop(false)
+            }
+        }
+        if (members.length > 0) fetchTopMembers()
+    }, [members])
 
     const handleInspectMember = async (m: any) => {
         setSelectedMember(m)
         setIsInspecting(true)
         setInspectError(null)
         try {
-            const url = `https://raider.io/api/v1/characters/profile?region=eu&realm=${m.character_realm}&name=${m.character_name}&fields=mythic_plus_scores_by_season:current,mythic_plus_best_runs`
+            const realm = m.realm_slug || m.character_realm || 'zuljin'
+            const url = `https://raider.io/api/v1/characters/profile?region=eu&realm=${realm}&name=${m.character_name}&fields=mythic_plus_scores_by_season:current,mythic_plus_best_runs`
             const res = await fetch(url)
             const data = await res.json()
             if (!res.ok) {
@@ -110,15 +174,15 @@ export function StatsClient({ members, rioData }: { members: any[], rioData?: an
             </div>
 
             <Tabs defaultValue="progreso" className="w-full">
-                <TabsList className="mb-4">
-                    <TabsTrigger value="progreso" className="flex items-center gap-2">
-                        <IconTrophy className="size-4" /> Progreso de Banda
+                <TabsList className="mb-4 w-full justify-start overflow-x-auto h-auto min-h-10 bg-muted/20 p-1">
+                    <TabsTrigger value="progreso" className="flex-1 min-w-[120px] flex items-center gap-2 text-xs py-2">
+                        <IconTrophy className="size-3.5" /> Progreso
                     </TabsTrigger>
-                    <TabsTrigger value="wcl" className="flex items-center gap-2">
-                        <IconSwords className="size-4" /> Warcraft Logs
+                    <TabsTrigger value="wcl" className="flex-1 min-w-[120px] flex items-center gap-2 text-xs py-2">
+                        <IconSwords className="size-3.5" /> Logs
                     </TabsTrigger>
-                    <TabsTrigger value="inspector" className="flex items-center gap-2">
-                        <IconChartBar className="size-4" /> Armería M+
+                    <TabsTrigger value="inspector" className="flex-1 min-w-[120px] flex items-center gap-2 text-xs py-2">
+                        <IconChartBar className="size-3.5" /> Armería
                     </TabsTrigger>
                 </TabsList>
 
@@ -222,88 +286,276 @@ export function StatsClient({ members, rioData }: { members: any[], rioData?: an
                 </TabsContent>
 
                 {/* --- PESTAÑA: WARCRAFT LOGS --- */}
-                <TabsContent value="wcl" className="space-y-6 animate-in fade-in-50">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Rendimiento en WarcraftLogs</CardTitle>
-                            <CardDescription>
-                                Accede a los últimos parses y reportes de la hermandad. Próximamente integración nativa con la API de WCL.
-                            </CardDescription>
+                <TabsContent value="wcl" className="space-y-6 animate-in fade-in-50 mb-10">
+                    <Card className="border-border/40 shadow-sm bg-card/60">
+                        <CardHeader className="border-b bg-muted/20 pb-6">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2">
+                                        <CardTitle className="text-lg">Rendimiento en WarcraftLogs</CardTitle>
+                                    </div>
+                                    <CardDescription className="text-xs">
+                                        Accede a los últimos reportes y análisis de combate de la hermandad.
+                                    </CardDescription>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <a
+                                        href="https://www.warcraftlogs.com/guild/id/743623"
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="h-9 px-4 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-2 transition-colors shadow-lg shadow-blue-900/20"
+                                    >
+                                        <IconSwords className="size-4" />
+                                        Perfil de Hermandad
+                                    </a>
+                                    <div className="relative w-full md:w-64">
+                                        <IconSearch className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+                                        <Input
+                                            placeholder="Buscar reporte..."
+                                            className="pl-9 h-9 bg-background/50 border-border/40 text-xs"
+                                            value={wclSearchQuery}
+                                            onChange={(e) => setWclSearchQuery(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                         </CardHeader>
-                        <CardContent className="p-4 sm:p-6 min-h-[200px]">
+                        <CardContent className="p-4 sm:p-6 min-h-[400px]">
                             {isLoadingWcl ? (
-                                <div className="flex w-full h-full min-h-[150px] items-center justify-center text-sm text-muted-foreground animate-pulse">
+                                <div className="flex flex-col w-full h-full min-h-[300px] items-center justify-center text-sm text-muted-foreground gap-4 animate-pulse">
+                                    <div className="size-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
                                     Cargando reportes de WCL...
                                 </div>
                             ) : wclError ? (
-                                <div className="flex w-full h-full min-h-[150px] items-center justify-center text-sm text-red-500/80 bg-red-500/5 rounded-md border border-red-500/10 p-4 text-center">
+                                <div className="flex w-full h-full min-h-[300px] items-center justify-center text-sm text-red-500/80 bg-red-500/5 rounded-xl border border-red-500/10 p-8 text-center flex-col gap-2">
+                                    <IconUser className="size-10 opacity-20" />
                                     {wclError}
                                 </div>
-                            ) : wclReports.length === 0 ? (
-                                <div className="flex w-full h-full items-center justify-center text-sm text-muted-foreground">
-                                    No hay reportes recientes disponibles.
+                            ) : filteredWclReports.length === 0 ? (
+                                <div className="flex flex-col w-full h-full min-h-[300px] items-center justify-center text-sm text-muted-foreground gap-2">
+                                    <IconSearch className="size-10 opacity-10" />
+                                    <p className="italic">No se encontraron reportes{wclSearchQuery && ` para "${wclSearchQuery}"`}</p>
                                 </div>
                             ) : (
-                                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                                    {wclReports.map((report: any) => (
-                                        <a
+                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                    {filteredWclReports.map((report: any) => (
+                                        <div
                                             key={report.code}
-                                            href={`https://www.warcraftlogs.com/reports/${report.code}`}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="block group"
+                                            onClick={() => handleViewWclReport(report)}
+                                            className="block group cursor-pointer"
                                         >
-                                            <div className="flex flex-col gap-2 p-3 sm:p-4 rounded-lg border border-border/50 bg-muted/10 hover:bg-muted/30 hover:border-border transition-colors">
-                                                <div className="font-semibold text-sm group-hover:text-amber-500 transition-colors line-clamp-1">
+                                            <div className="flex flex-col gap-3 p-4 rounded-xl border border-border/30 bg-muted/10 hover:bg-blue-500/5 hover:border-blue-500/30 transition-all duration-300 relative overflow-hidden h-full">
+                                                <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <IconSwords className="size-4 text-blue-500/50" />
+                                                </div>
+                                                <div className="font-bold text-sm group-hover:text-blue-400 transition-colors line-clamp-2 min-h-[40px]">
                                                     {report.title}
                                                 </div>
-                                                <div className="flex items-center justify-between text-xs text-muted-foreground mt-1">
-                                                    <span className="truncate max-w-[120px]">{report.zone?.name || "Desconocido"}</span>
-                                                    <span>{new Date(report.startTime).toLocaleDateString()}</span>
+                                                <div className="mt-auto pt-3 border-t border-border/10 flex items-center justify-between">
+                                                    <Badge variant="secondary" className="bg-background/80 text-[10px] font-bold text-muted-foreground/80 py-0 px-1.5">
+                                                        {report.zone?.name || "Desconocido"}
+                                                    </Badge>
+                                                    <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-wider">
+                                                        {new Date(report.startTime).toLocaleDateString()}
+                                                    </span>
                                                 </div>
                                             </div>
-                                        </a>
+                                        </div>
                                     ))}
                                 </div>
                             )}
                         </CardContent>
                     </Card>
+
+                    {/* WCL REPORT MODAL */}
+                    <Dialog open={!!selectedWclReport} onOpenChange={(open) => !open && setSelectedWclReport(null)}>
+                        <DialogContent className="max-w-2xl bg-[#0a0a0c] border-border/40 max-h-[90vh] flex flex-col p-0 overflow-hidden">
+                            <DialogHeader className="p-6 pb-4 border-b border-border/10 bg-blue-500/5">
+                                <div className="flex items-center justify-between pr-4">
+                                    <div>
+                                        <DialogTitle className="text-xl font-black text-blue-400">
+                                            {selectedWclReport?.title}
+                                        </DialogTitle>
+                                        <DialogDescription className="text-xs mt-1">
+                                            {selectedWclReport?.zone?.name} • {selectedWclReport && new Date(selectedWclReport.startTime).toLocaleDateString()}
+                                        </DialogDescription>
+                                    </div>
+                                    {selectedWclReport && (
+                                        <a
+                                            href={`https://www.warcraftlogs.com/reports/${selectedWclReport.code}`}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="h-8 px-3 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-bold flex items-center gap-2 transition-all"
+                                        >
+                                            <IconExternalLink className="size-3" />
+                                            LOG COMPLETO
+                                        </a>
+                                    )}
+                                </div>
+                            </DialogHeader>
+
+                            <div className="flex-1 overflow-y-auto p-6 scrollbar-thin">
+                                {isFetchingWclDetail ? (
+                                    <div className="flex flex-col items-center justify-center py-12 gap-4 animate-pulse">
+                                        <div className="size-8 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
+                                        <p className="text-xs text-muted-foreground uppercase font-bold tracking-widest">Analizando combates...</p>
+                                    </div>
+                                ) : wclReportDetails ? (
+                                    <div className="space-y-6">
+                                        <div className="grid grid-cols-1 gap-2">
+                                            {wclReportDetails.fights && wclReportDetails.fights.length > 0 ? (
+                                                wclReportDetails.fights.map((fight: any, i: number) => (
+                                                    <div key={i} className="flex items-center justify-between p-3 rounded-lg border border-border/10 bg-background/40 group hover:border-blue-500/20 transition-all">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className={cn(
+                                                                "size-6 rounded-md flex items-center justify-center text-[10px] font-black",
+                                                                fight.kill ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"
+                                                            )}>
+                                                                {fight.kill ? <IconCheck className="size-3.5" /> : <IconX className="size-3.5" />}
+                                                            </div>
+                                                            <div className="flex flex-col">
+                                                                <span className="text-sm font-bold">{fight.name}</span>
+                                                                <span className="text-[10px] uppercase font-black text-muted-foreground/50 tracking-tighter">
+                                                                    {fight.difficulty === 3 ? "Normal" : fight.difficulty === 4 ? "Heroico" : fight.difficulty === 5 ? "Mítico" : "Buscador"}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex items-center gap-4">
+                                                            {!fight.kill && (
+                                                                <div className="flex flex-col items-end">
+                                                                    <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-tighter">Mejor Intento</span>
+                                                                    <span className="text-xs font-black text-red-400/80">{(fight.fightPercentage / 100).toFixed(1)}%</span>
+                                                                </div>
+                                                            )}
+                                                            {fight.kill && (
+                                                                <Badge className="bg-emerald-500/10 text-emerald-500 border-none text-[9px] font-black uppercase">Derrotado</Badge>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="text-center py-8 text-xs text-muted-foreground italic">No se encontraron combates registrados.</div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-12 text-sm text-red-400">Error al cargar el sumario.</div>
+                                )}
+                            </div>
+                        </DialogContent>
+                    </Dialog>
                 </TabsContent>
 
                 {/* --- PESTAÑA: INSPECTOR M+ --- */}
-                <TabsContent value="inspector" className="space-y-6 animate-in fade-in-50">
-                    <div className="grid gap-6 md:grid-cols-12">
+                <TabsContent value="inspector" className="space-y-6 animate-in fade-in-50 mb-10">
+
+                    {/* TOP 3 RANKING CARDS */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {isLoadingTop ? (
+                            Array.from({ length: 3 }).map((_, i) => (
+                                <Card key={i} className="bg-card/40 border-border/20 animate-pulse h-32 flex items-center justify-center">
+                                    <div className="text-xs text-muted-foreground">Cargando ranking...</div>
+                                </Card>
+                            ))
+                        ) : topMembers.length > 0 ? (
+                            topMembers.map((m, i) => (
+                                <Card
+                                    key={m.id}
+                                    className={cn(
+                                        "bg-gradient-to-br from-card to-background border-border/40 overflow-hidden group cursor-pointer hover:border-primary/50 transition-all",
+                                        i === 0 ? "border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.1)]" : ""
+                                    )}
+                                    onClick={() => handleInspectMember(m)}
+                                >
+                                    <CardContent className="p-4 flex items-center gap-4">
+                                        <div className={cn(
+                                            "size-12 rounded-full flex items-center justify-center shrink-0 border-2",
+                                            i === 0 ? "border-amber-500 bg-amber-500/10" :
+                                                i === 1 ? "border-slate-400 bg-slate-400/10" :
+                                                    "border-amber-700 bg-amber-700/10"
+                                        )}>
+                                            {i === 0 ? <IconCrown className="size-6 text-amber-500" /> : <span className="font-bold">{i + 1}</span>}
+                                        </div>
+                                        <div className="min-w-0">
+                                            <div
+                                                className={cn("font-bold text-lg truncate", !classColors[m.class_id]?.startsWith('#') && classColors[m.class_id])}
+                                                style={classColors[m.class_id]?.startsWith('#') ? { color: classColors[m.class_id] } : {}}
+                                            >
+                                                {m.character_name}
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-2xl font-black" style={{ color: m.color }}>{Math.round(m.score)}</span>
+                                                <Badge variant="outline" className="text-[9px] uppercase tracking-tighter py-0 px-1 opacity-60">
+                                                    Best in Guild
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))
+                        ) : null}
+                    </div>
+
+                    <div className="grid gap-6 md:grid-cols-12 items-start">
                         {/* Member Roster List */}
-                        <Card className="md:col-span-4 lg:col-span-3 border-border/40 shadow-sm bg-card/60 flex flex-col max-h-[600px]">
-                            <CardHeader className="py-4 border-b bg-muted/20 pb-3">
-                                <CardTitle className="text-base text-foreground/80">Roster</CardTitle>
-                                <CardDescription className="text-xs">
-                                    Selecciona un jugador para inspeccionar
-                                </CardDescription>
+                        <Card className="md:col-span-4 lg:col-span-3 border-border/40 shadow-sm bg-card/60 flex flex-col max-h-[700px]">
+                            <CardHeader className="py-4 border-b bg-muted/20 pb-3 space-y-3">
+                                <div className="flex flex-col gap-1">
+                                    <CardTitle className="text-base text-foreground/80">Roster</CardTitle>
+                                    <CardDescription className="text-xs">
+                                        Busca e inspecciona un jugador
+                                    </CardDescription>
+                                </div>
+                                <div className="relative">
+                                    <IconSearch className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+                                    <Input
+                                        placeholder="Buscar personaje..."
+                                        className="pl-9 h-9 bg-background/50 border-border/40 text-xs"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                    />
+                                </div>
                             </CardHeader>
-                            <CardContent className="p-0 flex-1 overflow-y-auto overflow-x-hidden">
+                            <CardContent className="p-0 flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin">
                                 <div className="flex flex-col">
-                                    {members.sort((a, b) => a.character_name.localeCompare(b.character_name)).map((m) => (
+                                    {filteredMembers.length > 0 ? filteredMembers.map((m) => (
                                         <button
                                             key={m.id || m.character_name}
                                             onClick={() => handleInspectMember(m)}
-                                            className={`flex items-center gap-3 px-4 py-3 text-left border-b border-border/40 hover:bg-muted/50 transition-colors ${selectedMember?.character_name === m.character_name ? "bg-primary/10 border-l-4 border-l-primary" : "border-l-4 border-l-transparent"
+                                            className={`flex items-center gap-3 px-4 py-3 text-left border-b border-border/20 hover:bg-muted/50 transition-all group ${selectedMember?.character_name === m.character_name ? "bg-primary/10 border-l-4 border-l-primary" : "border-l-4 border-l-transparent"
                                                 }`}
                                         >
-                                            <div className="flex flex-col">
-                                                <span className="font-medium text-sm" style={{ color: WOW_CLASS_COLORS[m.class_id ?? 0] || 'inherit' }}>
+                                            <div className="size-8 rounded-full border border-border/40 flex items-center justify-center bg-muted/30 group-hover:bg-primary/20 transition-colors shrink-0">
+                                                <Image
+                                                    src={`/assets/images/classes/${m.class_id}.jpg`}
+                                                    alt=""
+                                                    width={24}
+                                                    height={24}
+                                                    className="rounded-full"
+                                                />
+                                            </div>
+                                            <div className="flex flex-col min-w-0">
+                                                <span
+                                                    className={cn("font-bold text-sm truncate", !classColors[m.class_id ?? 0]?.startsWith('#') && classColors[m.class_id ?? 0])}
+                                                    style={classColors[m.class_id ?? 0]?.startsWith('#') ? { color: classColors[m.class_id ?? 0] } : {}}
+                                                >
                                                     {m.character_name}
                                                 </span>
-                                                <span className="text-xs text-muted-foreground">{m.role || "Desconocido"}</span>
+                                                <span className="text-[10px] uppercase font-bold text-muted-foreground/60">{m.role || m.character_realm}</span>
                                             </div>
                                         </button>
-                                    ))}
+                                    )) : (
+                                        <div className="p-8 text-center text-xs text-muted-foreground italic">
+                                            No se encontraron miembros
+                                        </div>
+                                    )}
                                 </div>
                             </CardContent>
                         </Card>
 
                         {/* Inspector Details View */}
-                        <Card className="md:col-span-8 lg:col-span-9 border-border/40 shadow-sm bg-card/60 flex flex-col min-h-[400px]">
+                        <Card className="md:col-span-8 lg:col-span-9 border-border/40 shadow-sm bg-card/60 flex flex-col min-h-[500px]">
                             <CardHeader className="py-4 border-b bg-muted/20">
                                 <div className="flex items-center justify-between">
                                     <div>
@@ -312,7 +564,7 @@ export function StatsClient({ members, rioData }: { members: any[], rioData?: an
                                             {selectedMember && <Badge variant="outline" className="text-xs ml-2 opacity-70 border-border/50">{selectedMember.character_realm}</Badge>}
                                         </CardTitle>
                                         <CardDescription className="text-xs mt-1">
-                                            {selectedMember ? "Datos extraídos en vivo de Raider.IO" : "Selecciona un jugador del panel izquierdo"}
+                                            {!selectedMember && "Selecciona un jugador del panel izquierdo"}
                                         </CardDescription>
                                     </div>
                                     {selectedMember && characterData && (

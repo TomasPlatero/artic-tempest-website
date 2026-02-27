@@ -5,7 +5,11 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
-import { IconSettings, IconDeviceGamepad, IconUsers, IconApi, IconBuildingStore, IconLayoutCards } from "@tabler/icons-react"
+import { IconBell, IconApi, IconBuildingStore, IconDeviceGamepad, IconUsers, IconLayoutCards } from "@tabler/icons-react"
+import { AppSidebar } from "@/components/layout/app-sidebar"
+import { SiteHeader } from "@/components/layout/site-header"
+import { SidebarInset, SidebarProvider } from "@/components/common/sidebar"
+import React from "react"
 
 export default function SettingsHubPage() {
     const categories = [
@@ -42,6 +46,14 @@ export default function SettingsHubPage() {
             bg: "bg-emerald-500/10"
         },
         {
+            title: "Notificaciones del Sistema",
+            description: "Envía comunicados y avisos globales a todos los usuarios de la plataforma.",
+            icon: IconBell,
+            href: "/dashboard/settings/notifications",
+            color: "text-rose-500",
+            bg: "bg-rose-500/10"
+        },
+        {
             title: "Documentación API",
             description: "Información técnica sobre los endpoints del sistema (estilo Swagger) para consultas externas.",
             icon: IconApi,
@@ -52,7 +64,7 @@ export default function SettingsHubPage() {
     ]
 
     return (
-        <div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6">
+        <div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6 lg:px-8">
             <div>
                 <h1 className="text-2xl font-bold">Ajustes</h1>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -60,17 +72,17 @@ export default function SettingsHubPage() {
                 </p>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 mt-4">
+            <div className="grid gap-4 md:grid-cols-2 mt-4 max-w-5xl">
                 {categories.map((category) => {
                     const Icon = category.icon;
                     return (
                         <Link href={category.href} key={category.href} className="transition-all hover:scale-[1.02]">
-                            <Card className="h-full hover:border-primary/50 cursor-pointer">
-                                <CardHeader className="flex flex-row items-center gap-4">
-                                    <div className={`p-3 rounded-lg ${category.bg} ${category.color}`}>
-                                        <Icon className="w-8 h-8" />
+                            <Card className="h-full hover:border-primary/50 cursor-pointer overflow-hidden border-border/40 bg-card/40 backdrop-blur-sm">
+                                <CardHeader className="flex flex-row items-center gap-4 py-4 px-5">
+                                    <div className={`p-2.5 rounded-xl ${category.bg} ${category.color} shrink-0 shadow-sm border border-white/5`}>
+                                        <Icon className="w-6 h-6" />
                                     </div>
-                                    <div className="flex flex-col">
+                                    <div className="flex flex-col text-left">
                                         <CardTitle className="text-lg">{category.title}</CardTitle>
                                         <CardDescription className="mt-1.5 leading-snug">
                                             {category.description}

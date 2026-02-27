@@ -3,7 +3,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions, sb } from '@/infrastructure/auth/auth-options';
-import { fetchGuildRoster, toSlug } from '@/infrastructure/bnet/bnet-client';
+import { fetchGuildRoster, fetchGuildSummary, toSlug } from '@/infrastructure/bnet/bnet-client';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -42,14 +42,36 @@ export async function POST() {
   const region = guild.region ?? 'eu';
 
   try {
-    // 3. Fetch roster from Blizzard
-    const members = await fetchGuildRoster(realmSlug, guildSlug, region);
+    // 3. Fetch Game Constants for Mappings
+    const { data: constantRows } = await sb
+      .from('game_constants')
+      .select('category, key, value')
+      .eq('category', 'spec_role');
+
+    const specRoleMapping: Record<string, string> = {};
+    constantRows?.forEach((row) => {
+      specRoleMapping[row.key] = row.value;
+    });
+
+    // 4. Fetch roster and summary from Blizzard
+    const [members, summary] = await Promise.all([
+      fetchGuildRoster(realmSlug, guildSlug, region, "es_ES", specRoleMapping),
+      fetchGuildSummary(realmSlug, guildSlug, region, "es_ES")
+    ]);
 
     if (!members.length) {
       return NextResponse.json(
         { error: 'El roster está vacío o la hermandad no se encontró' },
         { status: 404 },
       );
+    }
+
+    // Update guild faction if summary is available
+    if (summary?.faction?.type) {
+      await sb
+        .from('guilds_managed')
+        .update({ faction: summary.faction.type.toLowerCase() })
+        .eq('name', guild.name);
     }
 
     // 6. Upsert to DB
@@ -77,37 +99,51 @@ export async function POST() {
       );
     }
 
-    // 7. Auto-upgrade profile permissions based on WoW ranks
-    const { data: linkedProfiles } = await sb
-      .from('profiles')
-      .select('user_id, role_level, character_name, character_realm')
-      .not('character_name', 'is', null)
+    // 6b. PROPAGATION: Update roles in event_signups for members whose roles were just synced
+    // We fetch current members IDs for these names (since we need UUIDs for event_signups)
+    const { data: updatedMembers } = await sb
+      .from('guild_members')
+      .select('id, character_name, realm_slug, role')
+      .in('character_name', rows.map(r => r.character_name));
+
+    if (updatedMembers) {
+      for (const m of updatedMembers) {
+        if (m.role) {
+          await sb
+            .from('event_signups')
+            .update({ event_role: m.role.toLowerCase() })
+            .eq('member_id', m.id);
+        }
+      }
+    }
+
+    // 7. Auto-update profile permissions based on WoW ranks
+    // Fetch all members with a linked profile
+    const { data: linkedMembers } = await sb
+      .from('guild_members')
+      .select('profile_id, rank, profiles(role_level)')
+      .not('profile_id', 'is', null);
 
     const { data: ranksConfig } = await sb
       .from('guild_ranks')
-      .select('rank, app_role')
+      .select('rank, app_role');
 
-    const ROLE_RANKS = { gm: 3, officer: 2, raider: 1, member: 0 }
+    if (linkedMembers && ranksConfig) {
+      for (const member of linkedMembers) {
+        if (!member.profile_id || !member.profiles) continue;
 
-    if (linkedProfiles && ranksConfig) {
-      for (const profile of linkedProfiles) {
-        const member = members.find(
-          (m) => m.character.name === profile.character_name &&
-            m.character.realm.slug === profile.character_realm
-        )
+        const rankConfig = ranksConfig.find(r => r.rank === member.rank);
+        if (rankConfig) {
+          const currentLevel = (member.profiles as any).role_level;
+          const targetLevel = rankConfig.app_role;
 
-        if (member) {
-          const rankConfig = ranksConfig.find(r => r.rank === member.rank)
-          if (rankConfig) {
-            const currentLevel = ROLE_RANKS[profile.role_level as keyof typeof ROLE_RANKS] || 1
-            const newLevel = ROLE_RANKS[rankConfig.app_role as keyof typeof ROLE_RANKS] || 1
-
-            if (newLevel > currentLevel) {
-              await sb
-                .from('profiles')
-                .update({ role_level: rankConfig.app_role })
-                .eq('user_id', profile.user_id)
-            }
+          // Update if they differ
+          if (currentLevel !== targetLevel) {
+            console.log(`Syncing profile ${member.profile_id} permission: ${currentLevel} -> ${targetLevel} (Was Rank ${member.rank})`);
+            await sb
+              .from('profiles')
+              .update({ role_level: targetLevel })
+              .eq('user_id', member.profile_id);
           }
         }
       }

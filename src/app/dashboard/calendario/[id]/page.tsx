@@ -29,34 +29,85 @@ async function getEventDetails(eventId: string) {
         .eq("event_id", eventId)
 
     // 3. Fetch plannable members (those with visible ranks)
-    const { data: visibleRanks, error: vrError } = await sb
+    let { data: rawRanks, error: ranksError } = await sb
         .from("guild_ranks")
-        .select("rank")
-        .eq("is_visible", true)
+        .select("rank, name, is_visible, color") as { data: any[] | null, error: any }
 
-    const visibleRankIds = (visibleRanks || []).map(r => r.rank)
-
-    let query = sb.from("guild_members").select("*")
-    if (visibleRankIds.length > 0) {
-        query = query.in("rank", visibleRankIds)
+    // Handle missing color column gracefully
+    if (ranksError && (ranksError.code === 'PGRST204' || ranksError.message.toLowerCase().includes("color") || ranksError.message.toLowerCase().includes("schema cache"))) {
+        const { data: retryRanks } = await sb
+            .from("guild_ranks")
+            .select("rank, name, is_visible")
+        rawRanks = retryRanks
     }
 
-    const { data: plannableMembers } = await query.order("rank", { ascending: true })
+    const rankIndices = Array.from({ length: 10 }, (_, i) => i)
+    const rankColors = rankIndices.map(i => {
+        const found = rawRanks?.find(v => v.rank === i)
+        return found?.color || null
+    })
+
+    const visibleRankIds = (rawRanks || [])
+        .filter(r => r.is_visible)
+        .map(r => r.rank)
+
+    const { data: plannableMembers } = await sb
+        .from("guild_members")
+        .select("*")
+        .in("rank", visibleRankIds)
+        .order("rank", { ascending: true })
+
+    // 4. Fetch game constants
+    const { data: constants } = await sb
+        .from("game_constants")
+        .select("category, key, value, metadata")
+
+    // Process constants
+    const classRoles: Record<number, string> = {}
+    const raids: any[] = []
+    const buffs: any[] = [
+        { category: "Buffs / Debuffs", items: [] },
+        { category: "Utilidad", items: [] }
+    ]
+
+    constants?.forEach(c => {
+        if (c.category === 'class_role') {
+            classRoles[Number(c.key)] = c.value
+        }
+        if (c.category === 'wow_raid') {
+            raids.push({
+                id: c.key,
+                name: c.value,
+                background: c.metadata?.background,
+                bosses: c.metadata?.bosses || []
+            })
+        }
+        if (c.category === 'wow_buff') {
+            const item = { id: c.key, name: c.value, classId: c.metadata?.classId }
+            if (c.metadata?.type === 'buff') buffs[0].items.push(item)
+            else buffs[1].items.push(item)
+        }
+    })
 
     return {
         event,
         signups: signups || [],
-        plannableMembers: plannableMembers || []
+        plannableMembers: plannableMembers || [],
+        rankColors,
+        classRoles,
+        raids,
+        buffs
     }
 }
 
-export default async function EventDetailPage({ params }: { params: { id: string } }) {
+export default async function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const session = await getServerSession(authOptions)
+    const { id } = await params
+
     if (!session) {
         redirect("/")
     }
 
-    const userId = session.user.id
     const roleLevel = session.user?.roleLevel ?? "member"
     const { canView, canEdit } = await getAppPermission(roleLevel, 'calendar')
 
@@ -64,7 +115,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
         redirect("/dashboard")
     }
 
-    const details = await getEventDetails(params.id)
+    const details = await getEventDetails(id)
 
     if (!details) {
         notFound()
@@ -82,16 +133,20 @@ export default async function EventDetailPage({ params }: { params: { id: string
     } as React.CSSProperties
 
     return (
-        <SidebarProvider style={style}>
+        <SidebarProvider style={style} suppressHydrationWarning>
             <AppSidebar variant="inset" />
             <SidebarInset>
                 <SiteHeader />
-                <div className="flex flex-1 flex-col p-4 md:p-6 bg-[#16161a]">
+                <div className="flex flex-1 flex-col p-4 md:p-6">
                     <RaidEditorClient
                         initialRaid={details.event}
                         initialSignups={details.signups}
                         plannableMembers={details.plannableMembers}
-                        isReadOnly={!canEdit}
+                        rankColors={details.rankColors}
+                        classRoles={details.classRoles}
+                        raids={details.raids}
+                        buffs={details.buffs}
+                        isReadOnly={true}
                         currentMemberId={currentMember?.id}
                     />
                 </div>

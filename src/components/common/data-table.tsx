@@ -50,7 +50,7 @@ import {
   VisibilityState,
 } from "@tanstack/react-table"
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
-import { sileo } from "sileo"
+import { toast } from "sonner"
 import { z } from "zod"
 
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -208,10 +208,10 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
       <form
         onSubmit={(e) => {
           e.preventDefault()
-          sileo.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-            loading: { title: `Guardando ${row.original.header}` },
-            success: { title: "Guardado" },
-            error: { title: "Error al guardar" },
+          toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
+            loading: `Guardando ${row.original.header}`,
+            success: "Guardado",
+            error: "Error al guardar",
           })
         }}
       >
@@ -233,10 +233,10 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
       <form
         onSubmit={(e) => {
           e.preventDefault()
-          sileo.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-            loading: { title: `Guardando ${row.original.header}` },
-            success: { title: "Guardado" },
-            error: { title: "Error al guardar" },
+          toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
+            loading: `Guardando ${row.original.header}`,
+            success: "Guardado",
+            error: "Error al guardar",
           })
         }}
       >

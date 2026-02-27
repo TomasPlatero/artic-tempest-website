@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/layout/theme-provider"
 import { ThemedToaster } from "@/components/ui/sonner"
 import { SessionProvider } from "@/components/layout/session-provider"
 import { CookieConsentLoader } from "@/components/common/cookie-consent"
+import { NotificationToastListener } from "@/components/notifications/notification-toast-listener"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css";
 
@@ -113,13 +114,13 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <SessionProvider>
+            <NotificationToastListener />
             {children}
           </SessionProvider>
           <CookieConsentLoader />
           <ThemedToaster />
           <Analytics />
         </ThemeProvider>
-        <Analytics />
       </body>
     </html>
   );

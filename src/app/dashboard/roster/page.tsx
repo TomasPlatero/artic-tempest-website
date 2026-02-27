@@ -18,57 +18,78 @@ async function getRoster() {
     const { data } = await sb
         .from("guild_members")
         .select("id, character_name, realm_slug, realm_name, class_id, race_id, level, rank, synced_at, note, role")
-        .order("rank", { ascending: true })
         .order("character_name", { ascending: true })
 
-    // Try guild_ranks first
+    // Fetch rank configurations
     let { data: rawRanks, error: ranksError } = await sb
         .from("guild_ranks")
-        .select("rank, name, is_visible")
+        .select("rank, name, is_visible, color") as { data: any[] | null, error: any }
 
-    // Fallback if table doesn't exist, cache is stale, OR it's empty
-    const shouldFallback = (ranksError && (ranksError.code === 'PGRST204' || ranksError.message.includes("schema cache")))
-        || (!ranksError && (!rawRanks || rawRanks.length === 0));
-
-    if (shouldFallback) {
-        console.log("[ROSTER PAGE] Falling back to guild_rank_visibility query (Error or Empty)...");
-        const { data: fallbackRanks } = await sb
-            .from("guild_rank_visibility")
-            .select("rank_id, name, is_visible")
-
-        if (fallbackRanks && fallbackRanks.length > 0) {
-            rawRanks = fallbackRanks.map(r => ({
-                rank: (r as any).rank_id ?? (r as any).rank,
-                name: r.name,
-                is_visible: r.is_visible
-            }))
-        }
+    // Handle missing color column gracefully
+    if (ranksError && (ranksError.code === 'PGRST204' || ranksError.message.toLowerCase().includes("color") || ranksError.message.toLowerCase().includes("schema cache"))) {
+        console.warn("[ROSTER PAGE] 'color' column missing, retrying select without it...");
+        const { data: retryRanks } = await sb
+            .from("guild_ranks")
+            .select("rank, name, is_visible")
+        rawRanks = retryRanks
     }
 
-    const defaultNames = ["Maestro de Hermandad", "Oficial", "Alter de Oficial", "Raider", "Pruebas", "Social", "Alter", "Iniciado", "Recluta", "Miembro"]
+    if (ranksError && !rawRanks) {
+        console.error("[ROSTER PAGE] Error fetching ranks:", ranksError)
+    }
 
-    // Build a map of rank visibility from the database
+    console.log("[ROSTER PAGE] Loaded ranks count:", rawRanks?.length || 0)
+
     const visibilityMap: Record<number, boolean> = {}
-    rawRanks?.forEach(r => {
-        visibilityMap[r.rank] = r.is_visible
-    })
-
-    // Prepare rank names supporting up to 10 ranks (0-9)
-    const maxRank = 9
+    const rankColors: (string | null)[] = []
     const rankNames: string[] = []
+    const defaultNames = ["Guild Master", "Officer", "Officer Alt", "Raid Leader", "Artic Raider", "Raider", "Trial", "Social", "Alt", "Member"]
+
+    const maxRank = 9
     for (let i = 0; i <= maxRank; i++) {
         const found = rawRanks?.find(v => v.rank === i)
+        // Default to true if not found in DB yet
+        visibilityMap[i] = found ? found.is_visible : true
         rankNames[i] = found?.name || defaultNames[i] || `Rank ${i}`
+        rankColors[i] = found?.color || null
     }
 
-    // Filter members based on the visibility map (default to true if not configured)
-    const filteredRoster = (data ?? []).filter(m => {
-        const rankValue = Number(m.rank);
-        const isVisible = visibilityMap[rankValue] ?? true;
-        return isVisible;
+    // Fetch Game Constants (Classes, Role Mappings)
+    const { data: constants } = await sb
+        .from("game_constants")
+        .select("category, key, value, metadata")
+
+    const classNames: Record<number, string> = {}
+    const classColors: Record<number, string> = {}
+    const classRoleMapping: Record<number, string> = {}
+
+    constants?.forEach(c => {
+        if (c.category === 'wow_class') {
+            classNames[Number(c.key)] = c.value
+            if (c.metadata?.color) classColors[Number(c.key)] = c.metadata.color
+        }
+        if (c.category === 'class_role') {
+            classRoleMapping[Number(c.key)] = c.value
+        }
     })
 
-    return { roster: filteredRoster, rankNames }
+    // Filter members based on visibility
+    const filteredRoster = (data ?? []).filter(m => {
+        const r = Number(m.rank)
+        const isVisible = visibilityMap[r] ?? true
+        return isVisible
+    })
+
+    console.log("[ROSTER PAGE] Final filtered roster count:", filteredRoster.length)
+
+    return {
+        roster: filteredRoster,
+        rankNames,
+        rankColors,
+        classNames,
+        classColors,
+        classRoleMapping
+    }
 }
 
 export default async function RosterPage() {
@@ -84,15 +105,15 @@ export default async function RosterPage() {
         redirect("/dashboard")
     }
 
-    const { roster, rankNames } = await getRoster()
+    const { roster, rankNames, rankColors, classNames, classColors, classRoleMapping } = await getRoster()
 
     const style = {
-        "--sidebar-width": "calc(var(--spacing) * 72)",
+        "--sidebar-width": "calc(var(--spacing) * 64)",
         "--header-height": "calc(var(--spacing) * 12)",
     } as React.CSSProperties
 
     return (
-        <SidebarProvider style={style}>
+        <SidebarProvider style={style} suppressHydrationWarning>
             <AppSidebar variant="inset" />
             <SidebarInset>
                 <SiteHeader />
@@ -106,7 +127,15 @@ export default async function RosterPage() {
                         </div>
                     </div>
 
-                    <RosterClient members={roster} roleLevel={roleLevel} rankNames={rankNames} />
+                    <RosterClient
+                        members={roster}
+                        roleLevel={roleLevel}
+                        rankNames={rankNames}
+                        rankColors={rankColors}
+                        classNames={classNames}
+                        classColors={classColors}
+                        classRoleMapping={classRoleMapping}
+                    />
                 </div>
             </SidebarInset>
         </SidebarProvider>
