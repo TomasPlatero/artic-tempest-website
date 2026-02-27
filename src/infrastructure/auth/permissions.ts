@@ -1,6 +1,6 @@
 import { sb } from "./auth-options"
 
-export type AppId = 'roster' | 'stats' | 'calendar' | 'bis'
+export type AppId = 'roster' | 'stats' | 'calendar' | 'bis' | 'planificador-cds'
 
 export async function getAppPermission(roleLevel: string, appId: AppId) {
     if (roleLevel === 'gm') return { canView: true, canEdit: true }

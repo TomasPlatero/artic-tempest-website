@@ -2,6 +2,28 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions, sb } from "@/infrastructure/auth/auth-options"
 
+export async function GET(
+    _request: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const session = await getServerSession(authOptions)
+        if (!session) return new NextResponse("No autorizado", { status: 401 })
+
+        const { id } = await params
+        const { data, error } = await sb
+            .from("guild_events")
+            .select("*")
+            .eq("id", id)
+            .single()
+
+        if (error) throw error
+        return NextResponse.json(data)
+    } catch (e: any) {
+        return NextResponse.json({ error: e.message }, { status: 500 })
+    }
+}
+
 export async function PATCH(
     request: Request,
     { params }: { params: Promise<{ id: string }> }

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { sileo } from "sileo"
+import { toast } from "sonner"
 import { IconRefresh } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
 
@@ -21,23 +21,20 @@ export function SyncRosterButton({ roleLevel }: { roleLevel: string }) {
             const data = await res.json()
 
             if (!res.ok) {
-                sileo.error({
-                    title: "Error al sincronizar",
+                toast.error("Error al sincronizar", {
                     description: data.error ?? "Error desconocido",
                 })
                 return
             }
 
-            sileo.success({
-                title: "Roster sincronizado",
+            toast.success("Roster sincronizado", {
                 description: `${data.imported} personajes importados de ${data.guild}`,
             })
 
             // Reload to show updated data
             window.location.reload()
         } catch {
-            sileo.error({
-                title: "Error de conexión",
+            toast.error("Error de conexión", {
                 description: "No se pudo contactar con el servidor",
             })
         } finally {

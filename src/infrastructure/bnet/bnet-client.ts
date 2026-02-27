@@ -44,62 +44,35 @@ export async function getAccessToken(): Promise<string> {
 }
 
 
-/** WoW class names by ID */
-export const WOW_CLASSES: Record<number, string> = {
-    1: "Guerrero",
-    2: "Paladín",
-    3: "Cazador",
-    4: "Pícaro",
-    5: "Sacerdote",
-    6: "Caballero de la Muerte",
-    7: "Chamán",
-    8: "Mago",
-    9: "Brujo",
-    10: "Monje",
-    11: "Druida",
-    12: "Cazador de Demonios",
-    13: "Evocador",
-}
+/** Fetch a single character's active spec and deduce their role */
+export async function fetchCharacterRole(
+    realmSlug: string,
+    characterNameSlug: string,
+    region: string,
+    token: string,
+    specRoleMapping?: Record<string, string>
+): Promise<string | null> {
+    if (!specRoleMapping) return null;
 
-/** WoW guild rank names (common defaults) */
-export const RANK_NAMES: Record<number, string> = {
-    0: "Maestro de Hermandad",
-    1: "Oficial",
-    2: "Alter de Oficial",
-    3: "Raider",
-    4: "Pruebas",
-    5: "Social",
-    6: "Alter",
-    7: "Iniciado",
-}
+    const url = `https://${region}.api.blizzard.com/profile/wow/character/${realmSlug}/${characterNameSlug}?namespace=profile-${region}&locale=en_US`
 
-const SPEC_TO_ROLE: Record<string, string> = {
-    // Death Knight
-    "Blood": "Tanque", "Frost": "Melee", "Unholy": "Melee",
-    // Demon Hunter
-    "Havoc": "Melee", "Vengeance": "Tanque",
-    // Druid
-    "Balance": "Ranged", "Feral": "Melee", "Guardian": "Tanque", "Restoration": "Sanador",
-    // Evoker
-    "Devastation": "Ranged", "Preservation": "Sanador", "Augmentation": "Ranged",
-    // Hunter
-    "Beast Mastery": "Ranged", "Marksmanship": "Ranged", "Survival": "Melee",
-    // Mage
-    "Arcane": "Ranged", "Fire": "Ranged", // Frost is covered under DK, but mapped to Ranged if mage (handled via class if collision occurs, but we'll use a better approach)
-    // Monk
-    "Brewmaster": "Tanque", "Windwalker": "Melee", "Mistweaver": "Sanador",
-    // Paladin
-    "Holy": "Sanador", "Protection": "Tanque", "Retribution": "Melee",
-    // Priest
-    "Discipline": "Sanador", "Shadow": "Ranged", // Holy is covered
-    // Rogue
-    "Assassination": "Melee", "Outlaw": "Melee", "Subtlety": "Melee",
-    // Shaman
-    "Elemental": "Ranged", "Enhancement": "Melee", // Restoration is covered
-    // Warlock
-    "Affliction": "Ranged", "Demonology": "Ranged", "Destruction": "Ranged",
-    // Warrior
-    "Arms": "Melee", "Fury": "Melee", // Protection covered
+    try {
+        const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" })
+        if (!res.ok) return null
+
+        const data = await res.json()
+        const specName = data.active_spec?.name as string
+        if (!specName) return null
+
+        // Handle collision: Frost can be Mage (Ranged) or DK (Melee).
+        if (specName === "Frost") {
+            return data.character_class?.id === 8 /* Mage */ ? "ranged" : "melee"
+        }
+
+        return specRoleMapping[specName] || null
+    } catch {
+        return null
+    }
 }
 
 export type GuildMemberRaw = {
@@ -119,41 +92,13 @@ type GuildRosterResponse = {
     members: GuildMemberRaw[]
 }
 
-/** Fetch a single character's active spec and deduce their role */
-export async function fetchCharacterRole(
-    realmSlug: string,
-    characterNameSlug: string,
-    region: string,
-    token: string
-): Promise<string | null> {
-    const url = `https://${region}.api.blizzard.com/profile/wow/character/${realmSlug}/${characterNameSlug}?namespace=profile-${region}&locale=en_US`
-
-    try {
-        const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" })
-        if (!res.ok) return null
-
-        const data = await res.json()
-        const specName = data.active_spec?.name as string
-        if (!specName) return null
-
-        // Handle collision: Frost can be Mage (Ranged) or DK (Melee). Protection can be Paladin (Tank) or Warrior (Tank). Holy can be Paladin (Heal) or Priest (Heal).
-        // For Frost Mage/DK:
-        if (specName === "Frost") {
-            return data.character_class?.id === 8 /* Mage */ ? "Ranged" : "Melee"
-        }
-
-        return SPEC_TO_ROLE[specName] || null
-    } catch {
-        return null
-    }
-}
-
 /** Fetch guild roster from Blizzard API */
 export async function fetchGuildRoster(
     realmSlug: string,
     guildNameSlug: string,
     region: string = "eu",
-    locale: string = "es_ES"
+    locale: string = "es_ES",
+    specRoleMapping?: Record<string, string>
 ): Promise<GuildMemberRaw[]> {
     const token = await getAccessToken()
 
@@ -177,9 +122,8 @@ export async function fetchGuildRoster(
     for (let i = 0; i < members.length; i += CHUNK_SIZE) {
         const chunk = members.slice(i, i + CHUNK_SIZE)
         await Promise.all(
-            chunk.map(async (m) => {
-                // only fetch specs for higher level to save bandwidth? The user wants max accuracy, we fetch for all.
-                const role = await fetchCharacterRole(m.character.realm.slug, toSlug(m.character.name), region, token)
+            chunk.map(async (m: GuildMemberRaw) => {
+                const role = await fetchCharacterRole(m.character.realm.slug, m.character.name.toLowerCase(), region, token, specRoleMapping)
                 if (role) {
                     m.role = role
                 }
@@ -188,6 +132,29 @@ export async function fetchGuildRoster(
     }
 
     return members
+}
+
+/** Fetch guild summary (faction, achievement points, etc.) from Blizzard API */
+export async function fetchGuildSummary(
+    realmSlug: string,
+    guildNameSlug: string,
+    region: string = "eu",
+    locale: string = "es_ES"
+): Promise<any> {
+    const token = await getAccessToken()
+    const url = `https://${region}.api.blizzard.com/data/wow/guild/${realmSlug}/${guildNameSlug}?namespace=profile-${region}&locale=${locale}`
+
+    try {
+        const res = await fetch(url, {
+            headers: { Authorization: `Bearer ${token}` },
+            cache: "no-store",
+        })
+
+        if (!res.ok) return null
+        return await res.json()
+    } catch {
+        return null
+    }
 }
 
 /** Convert guild name to slug (lowercase, hyphens, no special chars) */

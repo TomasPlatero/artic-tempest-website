@@ -1,6 +1,10 @@
 import { sb } from "@/infrastructure/auth/auth-options"
 import { SettingsBnetClient } from "@/components/settings/settings-bnet"
 import { getGuildCredentials } from "@/infrastructure/auth/credentials"
+import { AppSidebar } from "@/components/layout/app-sidebar"
+import { SiteHeader } from "@/components/layout/site-header"
+import { SidebarInset, SidebarProvider } from "@/components/common/sidebar"
+import React from "react"
 
 export const runtime = "nodejs"
 

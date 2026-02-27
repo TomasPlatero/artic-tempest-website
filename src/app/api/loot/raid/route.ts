@@ -4,6 +4,8 @@
 import { NextResponse } from "next/server"
 import { sb } from "@/infrastructure/auth/auth-options"
 import { getGuildCredentials } from "@/infrastructure/auth/credentials"
+import { MIDNIGHT_RAIDS } from "@/infrastructure/constants/raids"
+import { MIDNIGHT_LOOT } from "@/infrastructure/constants/midnight-loot"
 
 const CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000 // 24 hours
 
@@ -23,7 +25,8 @@ const SLOT_DISPLAY: Record<string, string> = {
     ONE_HAND: "Una Mano", TWO_HAND: "Dos Manos", MAIN_HAND: "Mano Principal",
     OFF_HAND: "Mano Secundaria", SHIELD: "Escudo", BACK: "Capa", CLOAK: "Capa",
     HELD_IN_OFF_HAND: "Sostener", RANGED: "A Distancia", THROWN: "Arrojadiza",
-    SHIRT: "Camisa",
+    SHIRT: "Camisa", HAND: "Guantes", HOLDABLE: "Sostener",
+    TWOHWEAPON: "Arma de 2 Manos", WEAPON: "Arma",
 }
 
 async function getBnetToken(clientId: string, clientSecret: string): Promise<string> {
@@ -186,11 +189,11 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: "Faltan credenciales de Battle.net" }, { status: 400 })
         }
 
-        let instanceId: number
+        let instanceId: number | string
 
         if (requestedInstanceId) {
             // Explicit instance ID requested
-            instanceId = parseInt(requestedInstanceId, 10)
+            instanceId = requestedInstanceId
         } else {
             // Auto-discover: find the latest cached raid first, or discover from API
             const { data: latestCache } = await sb
@@ -209,6 +212,27 @@ export async function GET(req: Request) {
                 instanceId = await discoverLatestRaid(token, region)
             }
         }
+
+        // --- MIDNIGHT INTERCEPTOR ---
+        if (typeof instanceId === "string" && MIDNIGHT_LOOT[instanceId]) {
+            const raidInfo = MIDNIGHT_RAIDS.find(r => r.id === instanceId)
+            return NextResponse.json({
+                instanceId,
+                instanceName: raidInfo?.name || "Midnight Raid",
+                difficulty,
+                bosses: MIDNIGHT_LOOT[instanceId],
+                cached: true,
+                fetchedAt: new Date().toISOString(),
+                isMidnight: true
+            })
+        }
+        // Force numeric for Blizzard IDs
+        const blizzardId = typeof instanceId === "string" ? parseInt(instanceId, 10) : instanceId
+        if (isNaN(blizzardId as number)) {
+            // If it's a string that wasn't a Midnight ID and isn't a number, it's invalid
+            return NextResponse.json({ error: "ID de banda inválido" }, { status: 400 })
+        }
+        instanceId = blizzardId
 
         // Check cache
         const { data: cached } = await sb

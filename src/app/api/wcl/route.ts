@@ -5,6 +5,9 @@ import { authOptions } from "@/infrastructure/auth/auth-options";
 
 export async function GET(_req: Request) {
     try {
+        const { searchParams } = new URL(_req.url);
+        const reportCode = searchParams.get("code");
+
         const session = await getServerSession(authOptions);
         if (!session?.user) {
             return new NextResponse("No autorizado", { status: 401 });
@@ -46,20 +49,48 @@ export async function GET(_req: Request) {
         const tokenData = await tokenRes.json();
         const accessToken = tokenData.access_token;
 
-        // 2. Fetch recent reports via GraphQL
-        const query = `
-        query {
-            reportData {
-                reports(guildID: 743623, limit: 10) {
-                    data {
+        // 2. Fetch data via GraphQL
+        let query = "";
+
+        if (reportCode) {
+            // Fetch detailed report fights
+            query = `
+            query {
+                reportData {
+                    report(code: "${reportCode}") {
                         code
                         title
                         startTime
+                        endTime
                         zone { name }
+                        fights(killType: All) {
+                            name
+                            difficulty
+                            kill
+                            fightPercentage
+                            bossPercentage
+                            lastPhase
+                            friendlyPlayers
+                        }
                     }
                 }
-            }
-        }`;
+            }`;
+        } else {
+            // Fetch recent reports list
+            query = `
+            query {
+                reportData {
+                    reports(guildID: 743623, limit: 12) {
+                        data {
+                            code
+                            title
+                            startTime
+                            zone { name }
+                        }
+                    }
+                }
+            }`;
+        }
 
         const gqlRes = await fetch("https://www.warcraftlogs.com/api/v2/client", {
             method: "POST",

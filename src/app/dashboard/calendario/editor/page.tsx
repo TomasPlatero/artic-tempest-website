@@ -5,18 +5,82 @@ import { redirect } from "next/navigation"
 import { RaidEditorClient } from "@/components/calendar/raid-editor-client"
 
 export const dynamic = "force-dynamic"
+export const runtime = "nodejs"
+
+async function getEditorData() {
+    // 1. Fetch Ranks and Members
+    const { data: rawRanks } = await sb
+        .from("guild_ranks")
+        .select("rank, name, is_visible, color")
+
+    const visibilityMap: Record<number, boolean> = {}
+    for (let i = 0; i <= 9; i++) {
+        const found = rawRanks?.find(v => v.rank === i)
+        visibilityMap[i] = found ? found.is_visible : true
+    }
+
+    const { data: members } = await sb
+        .from("guild_members")
+        .select("*")
+        .order("rank", { ascending: true })
+
+    const filteredMembers = (members ?? []).filter(m => visibilityMap[Number(m.rank)] ?? true)
+
+    // 2. Fetch Game Constants
+    const { data: constantRows } = await sb
+        .from("game_constants")
+        .select("category, key, value, metadata")
+
+    const classRoles: Record<number, string> = {}
+    const raids: any[] = []
+    const buffs: any[] = [
+        { category: "Buffs / Debuffs", items: [] },
+        { category: "Utilidad", items: [] }
+    ]
+
+    constantRows?.forEach(c => {
+        if (c.category === 'class_role') {
+            classRoles[Number(c.key)] = c.value
+        }
+        if (c.category === 'wow_raid') {
+            raids.push({
+                id: c.key,
+                name: c.value,
+                background: c.metadata?.background,
+                bosses: c.metadata?.bosses || []
+            })
+        }
+        if (c.category === 'wow_buff') {
+            const item = { id: c.key, name: c.value, classId: c.metadata?.classId }
+            if (c.metadata?.type === 'buff') buffs[0].items.push(item)
+            else buffs[1].items.push(item)
+        }
+    })
+
+    const rankColors: (string | null)[] = []
+    for (let i = 0; i <= 9; i++) {
+        const found = rawRanks?.find(v => v.rank === i)
+        rankColors[i] = found?.color || null
+    }
+
+    return {
+        filteredMembers,
+        classRoles,
+        raids,
+        buffs,
+        rankColors
+    }
+}
 
 export default async function RaidEditorPage({
-    params,
     searchParams
 }: {
-    params: Promise<{ id?: string }>,
     searchParams: Promise<{ date?: string }>
 }) {
     const session = await getServerSession(authOptions)
-    if (!session) {
-        redirect("/")
-    }
+    if (!session) redirect("/")
+
+    const { date } = await searchParams
 
     const roleLevel = session.user.roleLevel ?? "member"
     const { canEdit } = await getAppPermission(roleLevel, 'calendar')
@@ -25,70 +89,27 @@ export default async function RaidEditorPage({
         redirect("/dashboard/calendario")
     }
 
-    const { id } = await params
-    const { date } = await searchParams
+    const { data: currentMember } = await sb
+        .from("guild_members")
+        .select("id")
+        .eq("profile_id", session.user.id)
+        .single()
 
-    let initialData = null
-    let signups = []
-
-    if (id) {
-        const { data: raid } = await sb
-            .from("guild_events")
-            .select("*")
-            .eq("id", id)
-            .single()
-        initialData = raid
-
-        if (raid) {
-            const { data: s } = await sb
-                .from("event_signups")
-                .select(`
-                    *,
-                    guild_members (*)
-                `)
-                .eq("event_id", id)
-            signups = s || []
-        }
-    }
-
-    // Step 1: Fetch visible ranks from settings
-    const { data: visibleRanks, error: vrError } = await sb
-        .from("guild_ranks")
-        .select("rank")
-        .eq("is_visible", true)
-
-    if (vrError) console.error("RaidEditorPage - Error fetching visible ranks:", vrError)
-
-    const visibleRankIds = (visibleRanks || []).map(r => r.rank)
-    console.log("RaidEditorPage - Visible Rank IDs:", visibleRankIds)
-
-    // Step 2: Fetch all members belonging to visible ranks to show in the "Available" pool
-    // FALLBACK: If no visible ranks specified, try fetching all to debug
-    let query = sb.from("guild_members").select("*")
-    if (visibleRankIds.length > 0) {
-        query = query.in("rank", visibleRankIds)
-    } else {
-        console.warn("RaidEditorPage - No visible ranks found, fetching ALL members as fallback debug")
-    }
-
-    const { data: members, error: mError } = await query.order("rank", { ascending: true })
-
-    if (mError) console.error("RaidEditorPage - Error fetching members:", mError)
-    console.log("RaidEditorPage - Plannable members found:", members?.length || 0)
-
-    // Emergency RAW check
-    const { data: rawCheck } = await sb.from("guild_members").select("id").limit(1)
-    console.log("RaidEditorPage - RAW table check (1 row):", rawCheck?.length || 0)
+    const data = await getEditorData()
 
     return (
-        <div className="flex flex-1 flex-col py-6 max-w-full mx-auto w-full px-4 gap-6">
+        <div className="flex flex-1 flex-col py-6 max-w-full mx-auto w-full px-4 gap-6 relative">
             <RaidEditorClient
-                initialRaid={initialData}
-                initialSignups={signups}
-                plannableMembers={members || []}
+                initialRaid={null}
+                initialSignups={[]}
+                plannableMembers={data.filteredMembers}
                 preselectedDate={date}
+                currentMemberId={currentMember?.id}
+                classRoles={data.classRoles}
+                raids={data.raids}
+                buffs={data.buffs}
+                rankColors={data.rankColors}
             />
         </div>
     )
 }
-

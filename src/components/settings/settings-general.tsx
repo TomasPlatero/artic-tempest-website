@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { sileo } from "sileo";
+import { toast } from "sonner";
 import {
     IconRefresh,
     IconUpload,
@@ -71,8 +71,7 @@ export function SettingsGeneralClient({
         if (!file) return;
 
         if (!file.type.startsWith("image/")) {
-            sileo.error({
-                title: "Formato inválido",
+            toast.error("Formato inválido", {
                 description: "El archivo debe ser una imagen.",
             });
             return;
@@ -90,22 +89,19 @@ export function SettingsGeneralClient({
             const data = await res.json();
 
             if (!res.ok) {
-                sileo.error({
-                    title: "Error al subir logotipo",
+                toast.error("Error al subir logotipo", {
                     description: data.error ?? "No se pudo actualizar el icono.",
                 });
                 return;
             }
 
-            sileo.success({
-                title: "Logotipo actualizado",
+            toast.success("Logotipo actualizado", {
                 description:
                     "El nuevo icono de la hermandad se ha guardado correctamente.",
             });
             window.location.reload();
         } catch {
-            sileo.error({
-                title: "Error de conexión",
+            toast.error("Error de conexión", {
                 description: "No se pudo contactar con el servidor.",
             });
         } finally {
@@ -327,8 +323,7 @@ export function SettingsGeneralClient({
                                     });
 
                                     if (!res.ok) throw new Error("API error");
-                                    sileo.success({
-                                        title: "Credenciales guardadas",
+                                    toast.success("Credenciales guardadas", {
                                         description: "Los cambios se aplicarán en la próxima operación que las utilice.",
                                     });
 
@@ -341,8 +336,7 @@ export function SettingsGeneralClient({
                                         wcl_client_secret: prev.wcl_client_secret && prev.wcl_client_secret !== MASK ? MASK : prev.wcl_client_secret,
                                     }));
                                 } catch {
-                                    sileo.error({
-                                        title: "Error",
+                                    toast.error("Error", {
                                         description: "No se pudieron guardar las credenciales.",
                                     });
                                 } finally {

@@ -21,11 +21,12 @@ export async function PATCH(
         const body = await request.json()
 
         // Allowed fields for update via this endpoint
-        const { role, rank } = body
+        const { role, rank, is_plannable } = body
 
         const updateData: any = {}
         if (role !== undefined) updateData.role = role
         if (rank !== undefined) updateData.rank = rank
+        if (is_plannable !== undefined) updateData.is_plannable = !!is_plannable
 
         const { data, error } = await sb
             .from("guild_members")
@@ -37,6 +38,20 @@ export async function PATCH(
         if (error) {
             console.error("Supabase update member error:", error)
             return NextResponse.json({ error: error.message }, { status: 500 })
+        }
+
+        // PROPAGATION: If role was updated, update all event_signups for this member
+        if (role !== undefined) {
+            console.log(`Propagating role update (${role}) to all events for member ${p.id}`)
+            const { error: syncError } = await sb
+                .from("event_signups")
+                .update({ event_role: role.toLowerCase() })
+                .eq("member_id", p.id)
+
+            if (syncError) {
+                console.error("Error propagating role to events:", syncError)
+                // We don't fail the whole request because the main update succeeded
+            }
         }
 
         return NextResponse.json({ success: true, data })

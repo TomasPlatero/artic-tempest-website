@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { sileo } from "sileo";
+import { toast } from "sonner";
 import { IconArrowLeft, IconShield, IconUser, IconSword, IconTrash, IconEdit } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -130,8 +130,7 @@ export function SettingsRolesClient({ initialProfiles, initialDiscordRoles, init
             const data = await res.json();
 
             if (!res.ok) {
-                sileo.error({
-                    title: "Error al actualizar",
+                toast.error("Error al actualizar", {
                     description: data.error ?? "No se ha podido cambiar el rol del usuario.",
                 });
                 return;
@@ -142,14 +141,12 @@ export function SettingsRolesClient({ initialProfiles, initialDiscordRoles, init
                 prev.map((p) => (p.user_id === userId ? { ...p, role_level: newRole } : p))
             );
 
-            sileo.success({
-                title: "Permisos actualizados",
+            toast.success("Permisos actualizados", {
                 description: `El usuario ahora tiene acceso nivel ${newRole.toUpperCase()}.`,
             });
 
         } catch (err) {
-            sileo.error({
-                title: "Error interno",
+            toast.error("Error interno", {
                 description: "Ha ocurrido un error al contactar al servidor.",
             });
         } finally {
@@ -172,7 +169,7 @@ export function SettingsRolesClient({ initialProfiles, initialDiscordRoles, init
                 if (!res.ok) throw new Error("API Exception");
 
                 setDiscordRoles(prev => prev.map(r => r.role_id === editingRoleId ? { role_id: newRoleId, name: newRoleName, level: newRoleLevel } : r));
-                sileo.success({ title: "Mapeo actualizado", description: "El rol de Discord ha sido modificado exitosamente." });
+                toast.success("Mapeo actualizado", { description: "El rol de Discord ha sido modificado exitosamente." });
             } else {
                 const res = await fetch("/api/guild/roles/discord", {
                     method: "POST",
@@ -183,11 +180,11 @@ export function SettingsRolesClient({ initialProfiles, initialDiscordRoles, init
                 if (!res.ok) throw new Error("API Exception");
 
                 setDiscordRoles(prev => [...prev, { role_id: newRoleId, name: newRoleName, level: newRoleLevel }]);
-                sileo.success({ title: "Mapeo creado", description: "El rol de Discord se vinculará en futuros inicios de sesión." });
+                toast.success("Mapeo creado", { description: "El rol de Discord se vinculará en futuros inicios de sesión." });
             }
             cancelEditDiscordMapping();
         } catch {
-            sileo.error({ title: "Error", description: "No se pudo guardar la configuración de automatización." });
+            toast.error("Error", { description: "No se pudo guardar la configuración de automatización." });
         } finally {
             setCreatingRole(false);
         }
@@ -199,9 +196,9 @@ export function SettingsRolesClient({ initialProfiles, initialDiscordRoles, init
             if (!res.ok) throw new Error("API Exception");
 
             setDiscordRoles(prev => prev.filter(r => r.role_id !== roleId));
-            sileo.success({ title: "Mapeo eliminado", description: "La automatización ha sido suprimida permanentemente." });
+            toast.success("Mapeo eliminado", { description: "La automatización ha sido suprimida permanentemente." });
         } catch {
-            sileo.error({ title: "Error", description: "Fallo al eliminar el rol de Discord." });
+            toast.error("Error", { description: "Fallo al eliminar el rol de Discord." });
         }
     };
 
@@ -226,7 +223,7 @@ export function SettingsRolesClient({ initialProfiles, initialDiscordRoles, init
             });
             if (!res.ok) throw new Error("API error");
         } catch {
-            sileo.error({ title: "Error", description: "No se pudo guardar el permiso." });
+            toast.error("Error", { description: "No se pudo guardar el permiso." });
             setPermissions(orig);
         }
     };
@@ -499,6 +496,7 @@ export function SettingsRolesClient({ initialProfiles, initialDiscordRoles, init
                                     { id: 'roster', name: 'Roster / Miembros' },
                                     { id: 'stats', name: 'Estadísticas' },
                                     { id: 'calendar', name: 'Calendario / Raids' },
+                                    { id: 'planificador-cds', name: 'Planificador de CD\'s' },
                                     { id: 'bis', name: 'BiS / Wishlist' },
                                 ].map((app) => (
                                     <div key={app.id} className="grid grid-cols-5 items-center p-3 border-b last:border-0 hover:bg-muted/5">

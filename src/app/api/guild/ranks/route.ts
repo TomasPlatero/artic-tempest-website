@@ -15,7 +15,7 @@ export async function PATCH(request: Request) {
         }
 
         const body = await request.json()
-        const { rankId, isVisible, name, appRole } = body
+        const { rankId, isVisible, name, appRole, color } = body
 
         if (typeof rankId !== "number" || typeof isVisible !== "boolean" || (name !== undefined && typeof name !== "string") || (appRole !== undefined && typeof appRole !== "string")) {
             return NextResponse.json({ error: "Datos inválidos" }, { status: 400 })
@@ -28,6 +28,9 @@ export async function PATCH(request: Request) {
         if (appRole !== undefined) {
             payload.app_role = appRole
         }
+        if (color !== undefined) {
+            payload.color = color
+        }
 
         let { error } = await sb
             .from("guild_ranks")
@@ -36,29 +39,41 @@ export async function PATCH(request: Request) {
                 { onConflict: "rank" }
             )
 
-        // Fallback if table doesn't exist or cache is stale
-        if (error && (error.code === 'PGRST204' || error.message.includes("schema cache"))) {
-            console.log("[RANK API] Falling back to guild_rank_visibility...");
-            const fallbackPayload = {
-                rank_id: rankId,
-                is_visible: isVisible,
-                name: payload.name
-            };
-            const { error: fallbackError } = await sb
-                .from("guild_rank_visibility")
-                .upsert(fallbackPayload, { onConflict: "rank_id" });
+        // If the 'color' column is missing, retry without it to at least save name/visibility
+        const isColumnError = error && (
+            error.code === 'PGRST204' ||
+            error.message.toLowerCase().includes("column 'color'") ||
+            error.message.toLowerCase().includes("'color' column") ||
+            error.message.toLowerCase().includes("schema cache")
+        );
 
-            error = fallbackError;
+        if (isColumnError) {
+            console.warn("[RANK API] 'color' column missing, retrying without it...");
+            const fallbackPayload = { ...payload };
+            delete fallbackPayload.color;
+
+            const { error: retryError } = await sb
+                .from("guild_ranks")
+                .upsert(fallbackPayload, { onConflict: "rank" });
+
+            if (!retryError) {
+                return NextResponse.json({
+                    success: true,
+                    warning: "La columna 'color' no existe en la base de datos. Los otros cambios se guardaron."
+                });
+            }
+            error = retryError;
         }
 
         if (error) {
-            console.error("[RANK VISIBILITY UPSERT ERROR]", {
+            console.error("[RANK UPSERT ERROR]", {
                 payload,
                 error
             })
             return NextResponse.json({
-                error: "Error al actualizar la base de datos",
-                details: error.message
+                error: "Error al actualizar el rango en la base de datos.",
+                details: error.message,
+                code: error.code
             }, { status: 500 })
         }
 

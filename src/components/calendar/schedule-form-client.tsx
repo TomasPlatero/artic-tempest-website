@@ -4,7 +4,7 @@ import { useState } from "react"
 import { IconDeviceFloppy, IconRefreshAlert } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { sileo } from "sileo"
+import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 
 const DAYS = [
@@ -18,9 +18,9 @@ const DAYS = [
 ]
 
 const MIDNIGHT_RAIDS = [
-    { id: "The Voidspire", name: "The Voidspire" },
-    { id: "The Dreamrift", name: "The Dreamrift" },
-    { id: "March on Quel'Danas", name: "March on Quel'Danas" }
+    { id: "voidspire", name: "La Aguja del Vacío" },
+    { id: "dreamwell", name: "La Falla del Sueño" },
+    { id: "marchonqueldanas", name: "Marcha sobre Quel'Danas" }
 ]
 
 const DIFFICULTIES = [
@@ -86,10 +86,10 @@ export function ScheduleFormClient({ initialSchedule }: { initialSchedule: any[]
             })
 
             router.refresh()
-            sileo.success({ title: "Guardado", description: "Ajustes guardados y eventos generados con éxito." })
+            toast.success("Guardado", { description: "Ajustes guardados y eventos generados con éxito." })
         } catch (error: any) {
             console.error(error)
-            sileo.error({ title: "Error", description: "Error al guardar: " + error.message })
+            toast.error("Error", { description: "Error al guardar: " + error.message })
         } finally {
             setIsSaving(false)
             setIsSyncing(false)
@@ -108,10 +108,10 @@ export function ScheduleFormClient({ initialSchedule }: { initialSchedule: any[]
 
             const data = await res.json()
             router.refresh()
-            sileo.success({ title: "Sincronizado", description: data.message || "Sincronización completada." })
+            toast.success("Sincronizado", { description: data.message || "Sincronización completada." })
         } catch (error: any) {
             console.error(error)
-            sileo.error({ title: "Error", description: "Error al generar eventos: " + error.message })
+            toast.error("Error", { description: "Error al generar eventos: " + error.message })
         } finally {
             setIsSyncing(false)
         }
@@ -224,15 +224,14 @@ export function ScheduleFormClient({ initialSchedule }: { initialSchedule: any[]
                     variant="outline"
                     onClick={handleManualSync}
                     disabled={isSyncing || isSaving}
-                    className="border-white/20 hover:bg-white/10"
                 >
                     <IconRefreshAlert className={`size-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
                     {isSyncing ? 'Sincronizando...' : 'Forzar Sincronización Rápida'}
                 </Button>
                 <Button
+                    variant="glow"
                     onClick={handleSave}
                     disabled={isSaving || isSyncing}
-                    className="bg-amber-600 hover:bg-amber-500 text-white font-bold"
                 >
                     <IconDeviceFloppy className="size-4 mr-2" />
                     {isSaving ? 'Guardando...' : 'Guardar y Generar Eventos'}

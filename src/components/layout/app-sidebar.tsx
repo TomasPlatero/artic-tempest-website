@@ -11,6 +11,8 @@ import {
   IconUsers,
   IconCalendarEvent,
   IconListCheck,
+  IconStethoscope,
+  IconBell
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav/nav-main"
@@ -25,6 +27,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
 } from "@/components/common/sidebar"
+import { Badge } from "@/components/ui/badge"
 
 const data = {
   navMain: [
@@ -58,6 +61,12 @@ const data = {
       icon: IconListCheck,
       appId: "bis",
     },
+    {
+      title: "Planificador de CD's",
+      url: "/dashboard/planificador-cds",
+      icon: IconStethoscope,
+      appId: "planificador-cds",
+    },
   ],
   navSecondary: [
     {
@@ -73,6 +82,8 @@ const data = {
     },
   ],
 }
+
+import { supabase } from "@/infrastructure/supabase/client"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession()
@@ -91,7 +102,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     if (roleLevel === 'gm') return true
     const p = permissions.find(p => p.role_level === roleLevel && p.app_id === appId)
     if (!p) {
-      // Fallbacks
       if (roleLevel === 'officer') return true
       if (roleLevel === 'raider') return true
       return false
@@ -100,7 +110,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }
 
   const filteredMain = data.navMain.filter(item => {
-    if ((item as any).appId) return hasViewPermission((item as any).appId)
+    const i = item as any
+    if (i.roles && !i.roles.includes(roleLevel)) return false
+    if (i.appId) return hasViewPermission(i.appId)
     return true
   })
 
@@ -132,7 +144,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 ) : (
                   <IconInnerShadowTop className="size-5 shrink-0" />
                 )}
-                <span className="text-base font-semibold truncate">Artic Tempest</span>
+                <div className="flex flex-col truncate">
+                  <span className="text-base font-semibold leading-none">Artic Tempest</span>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 bg-blue-500/10 text-blue-400 border-blue-500/20 font-black">v0.6.1 alpha</Badge>
+                  </div>
+                </div>
               </div>
             </div>
           </SidebarMenuItem>
@@ -145,6 +162,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarFooter>
         <NavUser />
       </SidebarFooter>
-    </Sidebar>
+    </Sidebar >
   )
 }

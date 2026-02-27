@@ -11,9 +11,20 @@ import {
   IconArrowUp,
   IconArrowDown,
   IconArrowsSort,
+  IconCircleLetterG,
+  IconCircleLetterO,
+  IconCircleLetterA,
+  IconCircleLetterR,
+  IconCircleLetterT,
+  IconCircleLetterS,
+  IconCircleLetterI,
+  IconCircleLetterM,
+  IconCircleLetterL,
+  IconCircleLetterB,
+  IconUser
 } from "@tabler/icons-react";
 import { cn } from "@/infrastructure/tailwind/tailwind-utils"
-import { sileo } from "sileo";
+import { toast } from "sonner";
 import {
   Table,
   TableBody,
@@ -62,67 +73,49 @@ export type GuildMember = {
   is_plannable?: boolean;
 };
 
-const WOW_CLASSES: Record<number, string> = {
-  1: "Guerrero",
-  2: "Paladín",
-  3: "Cazador",
-  4: "Pícaro",
-  5: "Sacerdote",
-  6: "DK",
-  7: "Chamán",
-  8: "Mago",
-  9: "Brujo",
-  10: "Monje",
-  11: "Druida",
-  12: "DH",
-  13: "Evocador",
-};
-
-const WOW_CLASS_COLORS: Record<number, string> = {
-  1: "text-[#C69B6D]", // Warrior
-  2: "text-[#F48CBA]", // Paladin
-  3: "text-[#AAD372]", // Hunter
-  4: "text-[#FFF468]", // Rogue
-  5: "text-white", // Priest
-  6: "text-[#C41E3A]", // DK
-  7: "text-[#0070DD]", // Shaman
-  8: "text-[#3FC7EB]", // Mage
-  9: "text-[#8788EE]", // Warlock
-  10: "text-[#00FF98]", // Monk
-  11: "text-[#FF7C0A]", // Druid
-  12: "text-[#A330C9]", // DH
-  13: "text-[#33937F]", // Evoker
-};
-
 const RANK_NAMES: Record<number, string> = {
-  0: "Maestro de Hermandad",
+  0: "Guild Master",
   1: "Oficial",
-  2: "Alter de Oficial",
-  3: "Raider",
-  4: "Pruebas",
-  5: "Social",
-  6: "Alter",
-  7: "Iniciado",
-  8: "Recluta",
-  9: "Miembro",
+  2: "Alter Oficial",
+  3: "Raid Leader",
+  4: "Artic Raider",
+  5: "Raider",
+  6: "Trial",
+  7: "Alter Raider",
+  8: "Backup",
+  9: "Miembro/familia",
 };
 
-// Dummy mapping to guess role based on class for visual purposes
-const CLASS_ROLE_MAPPING: Record<number, string> = {
-  1: "Tanque",
-  2: "Sanador",
-  3: "Ranged",
-  4: "Melee",
-  5: "Sanador",
-  6: "Tanque",
-  7: "Sanador",
-  8: "Ranged",
-  9: "Ranged",
-  10: "Monje",
-  11: "Sanador",
-  12: "Melee",
-  13: "Sanador",
-};
+export const RANK_STYLES: Record<number, { icon: any, color: string }> = {
+  0: { icon: IconCircleLetterG, color: "text-white bg-holo rounded-full p-[0.5px]" }, // Guild Master
+  1: { icon: IconCircleLetterO, color: "text-[#33937F]" }, // Officer (Evoker Green)
+  2: { icon: IconCircleLetterA, color: "text-slate-400" },  // Officer Alt (Slate)
+  3: { icon: IconCircleLetterL, color: "text-[#808000]" }, // Raid Leader (Olive)
+  4: { icon: IconCircleLetterA, color: "text-[#FFD700]" }, // Artic Raider (Gold)
+  5: { icon: IconCircleLetterR, color: "text-[#EF4444]" }, // Raider (Red)
+  6: { icon: IconCircleLetterT, color: "text-[#3B82F6]" }, // Trial (Blue)
+  7: { icon: IconCircleLetterS, color: "text-[#22C55E]" }, // Social (Green)
+  8: { icon: IconCircleLetterA, color: "text-slate-500" }, // Alt (Dark Slate)
+  9: { icon: IconCircleLetterM, color: "text-zinc-500" },   // Member (Zinc)
+}
+
+export function RankBadge({ rank, rankColors, className: extraClassName }: { rank: number, rankColors?: (string | null)[], className?: string }) {
+  const style = RANK_STYLES[rank] || { icon: IconUser, color: "text-zinc-500" };
+  const Icon = style.icon;
+  const dbColor = rankColors?.[rank];
+
+  // Separate color classes from other utility classes (like bg-holo, rounded, etc)
+  const classes = style.color.split(" ");
+  // We check for text- color if no db color is provided
+  const iconStyle = dbColor ? { color: dbColor } : {};
+  const className = dbColor ? classes.filter(c => !c.startsWith("text-")).join(" ") : style.color;
+
+  return (
+    <div className={cn("shrink-0 leading-none flex items-center justify-center", className, extraClassName)} style={iconStyle}>
+      <Icon className="size-4" stroke={2.5} />
+    </div>
+  );
+}
 
 type SortColumn = "name" | "realm" | "role" | "rank";
 
@@ -130,16 +123,24 @@ export function RosterTable({
   members,
   roleLevel,
   rankNames,
+  rankColors,
+  classNames = {},
+  classColors = {},
+  classRoleMapping = {},
   sortColumn,
   sortDirection,
   onSort,
 }: {
   members: GuildMember[];
+  sortColumn: SortColumn;
+  sortDirection: "asc" | "desc";
+  onSort: (column: SortColumn) => void;
   roleLevel?: string;
   rankNames?: string[];
-  sortColumn?: SortColumn;
-  sortDirection?: "asc" | "desc";
-  onSort?: (col: SortColumn) => void;
+  rankColors?: (string | null)[];
+  classNames?: Record<number, string>;
+  classColors?: Record<number, string>;
+  classRoleMapping?: Record<number, string>;
 }) {
   const canViewNote = roleLevel === "gm" || roleLevel === "officer";
 
@@ -165,14 +166,14 @@ export function RosterTable({
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          role: role.charAt(0).toUpperCase() + role.slice(1),
+          role: role.toLowerCase(),
         }),
       });
       if (!res.ok) throw new Error("Failed to update role");
-      sileo.success({ title: `Rol de ${name} actualizado` });
+      toast.success(`Rol de ${name} actualizado`);
       window.location.reload();
     } catch (e) {
-      sileo.error({ title: "Error al actualizar el rol" });
+      toast.error("Error al actualizar el rol");
       console.error(e);
     }
   };
@@ -189,10 +190,10 @@ export function RosterTable({
         body: JSON.stringify({ rank: rankId }),
       });
       if (!res.ok) throw new Error("Failed to update rank");
-      sileo.success({ title: `Rango de ${name} actualizado` });
+      toast.success(`Rango de ${name} actualizado`);
       window.location.reload();
     } catch (e) {
-      sileo.error({ title: "Error al actualizar el rango" });
+      toast.error("Error al actualizar el rango");
       console.error(e);
     }
   };
@@ -221,11 +222,13 @@ export function RosterTable({
         <TableBody>
           {members.length > 0 ? (
             members.map((m) => {
-              const classColor =
-                WOW_CLASS_COLORS[m.class_id ?? 0] ?? "text-white";
-              const classNameStr = WOW_CLASSES[m.class_id ?? 0] ?? "Desconocido";
-              const guessedRole =
-                CLASS_ROLE_MAPPING[m.class_id ?? 0] ?? "Ranged";
+              const dbClassColor = classColors[m.class_id ?? 0];
+              const classNameStr = classNames[m.class_id ?? 0] ?? "Desconocido";
+              const guessedRole = classRoleMapping[m.class_id ?? 0] ?? "ranged";
+
+              const classIconStyle = dbClassColor ? { color: dbClassColor } : {};
+              // If no db color, we fallback to a default text-white class
+              const classColorClass = dbClassColor ? "" : "text-white";
 
               return (
                 <TableRow
@@ -251,11 +254,15 @@ export function RosterTable({
                         </div>
                       )}
 
-                      <span
-                        className={`${classColor} font-semibold drop-shadow-sm`}
-                      >
-                        {m.character_name}
-                      </span>
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <RankBadge rank={m.rank} rankColors={rankColors} />
+                        <span
+                          className={cn(classColorClass, "font-semibold drop-shadow-sm truncate")}
+                          style={classIconStyle}
+                        >
+                          {m.character_name}
+                        </span>
+                      </div>
                     </div>
                   </TableCell>
 
@@ -306,36 +313,46 @@ export function RosterTable({
                                 <IconSettings className="size-4" />
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="sm:max-w-md bg-[#1e1e24] border-border/20">
-                              <DialogHeader>
-                                <DialogTitle className="flex items-center gap-2 text-lg">
-                                  Ficha de Personaje
+                            <DialogContent className="sm:max-w-md bg-card border-border/40 p-0 overflow-hidden shadow-2xl">
+                              <DialogHeader className="p-6 pb-2">
+                                <DialogTitle className="text-xl font-black text-foreground uppercase tracking-tight flex items-center gap-2">
+                                  <IconUser className="size-5 text-primary" /> Ficha de Personaje
                                 </DialogTitle>
-                                <DialogDescription className="text-xs">
-                                  Realiza ajustes al rol, rango o notas internas exclusivas de la web.
+                                <DialogDescription className="text-xs text-muted-foreground/70 uppercase font-bold tracking-widest mt-1">
+                                  Configuración técnica y notas internas
                                 </DialogDescription>
                               </DialogHeader>
-                              <div className="space-y-4 py-4">
-                                <div className="flex items-center gap-3 bg-muted/20 p-3 rounded-md border border-border/10">
+                              <div className="px-6 py-4 space-y-6">
+                                <div className="flex items-center gap-4 bg-blue-500/5 p-4 rounded-xl border border-blue-500/10 shadow-inner">
                                   {m.class_id ? (
-                                    <Image
-                                      src={`/assets/images/classes/${m.class_id}.jpg`}
-                                      alt={classNameStr}
-                                      width={36}
-                                      height={36}
-                                      className="size-9 rounded-full shadow-inner border border-border/30 object-cover"
-                                    />
+                                    <div className="relative">
+                                      <Image
+                                        src={`/assets/images/classes/${m.class_id}.jpg`}
+                                        alt={classNameStr}
+                                        width={48}
+                                        height={48}
+                                        className="size-12 rounded-xl shadow-2xl border-2 border-blue-500/20 object-cover"
+                                      />
+                                      <div className="absolute -bottom-1 -right-1 bg-background rounded-full p-0.5 border border-border/50">
+                                        <RankBadge rank={m.rank} rankColors={rankColors} className="size-3.5" />
+                                      </div>
+                                    </div>
                                   ) : (
-                                    <div className="size-9 rounded-full bg-[#1e1e24] flex items-center justify-center border border-border/30 shadow-inner">
-                                      <div className={`w-full h-full bg-current opacity-20 text-white`}></div>
+                                    <div className="size-12 rounded-xl bg-blue-500/10 flex items-center justify-center border-2 border-blue-500/20 shadow-inner">
+                                      <IconUser className="size-6 text-blue-400/50" />
                                     </div>
                                   )}
-                                  <div>
-                                    <div className={`${classColor} font-semibold text-lg drop-shadow-sm leading-none m-0`}>
+                                  <div className="flex flex-col">
+                                    <h2
+                                      className={cn("text-xl font-black uppercase tracking-tighter leading-none m-0", classColorClass)}
+                                      style={classIconStyle}
+                                    >
                                       {m.character_name}
-                                    </div>
-                                    <div className="text-muted-foreground text-xs mt-1">
-                                      {m.realm_name ?? m.realm_slug}
+                                    </h2>
+                                    <div className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.2em] mt-1.5 flex items-center gap-2">
+                                      <span>{m.realm_name ?? m.realm_slug}</span>
+                                      <span className="size-1 bg-muted-foreground/30 rounded-full" />
+                                      <span className="text-blue-400/80">{rankNames?.[m.rank] || RANK_NAMES[m.rank]}</span>
                                     </div>
                                   </div>
                                 </div>
@@ -349,7 +366,7 @@ export function RosterTable({
                                         handleRoleChange(m.id, m.character_name, val)
                                       }
                                     >
-                                      <SelectTrigger className="w-full bg-[#1e1e24]/50 border-border/30 hover:bg-[#1e1e24] focus:ring-0 transition-colors">
+                                      <SelectTrigger className="w-full bg-muted/20 border-border/40 hover:bg-muted/30 focus:ring-1 focus:ring-blue-500/30 transition-all font-black uppercase text-[10px] tracking-widest h-10">
                                         <SelectValue />
                                       </SelectTrigger>
                                       <SelectContent>
@@ -368,7 +385,7 @@ export function RosterTable({
                                         handleRankChange(m.id, m.character_name, val)
                                       }
                                     >
-                                      <SelectTrigger className="w-full bg-[#1e1e24]/50 border-border/30 hover:bg-[#1e1e24] focus:ring-0 transition-colors">
+                                      <SelectTrigger className="w-full bg-muted/20 border-border/40 hover:bg-muted/30 focus:ring-1 focus:ring-blue-500/30 transition-all font-black uppercase text-[10px] tracking-widest h-10">
                                         <SelectValue />
                                       </SelectTrigger>
                                       <SelectContent>
@@ -383,19 +400,17 @@ export function RosterTable({
                                 </div>
 
                                 {canViewNote && (
-                                  <div className="space-y-1.5 pt-2">
+                                  <div className="space-y-1.5 pt-2 border-t border-border/10">
                                     <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Notas Internas</label>
                                     <NoteCell memberId={m.id} initialNote={m.note} />
                                   </div>
                                 )}
 
-                                <Separator className="my-2 opacity-50" />
-
-                                <div className="flex justify-start">
+                                <div className="pt-2 border-t border-border/10 flex justify-end">
                                   <Button
-                                    variant="ghost"
+                                    variant="destructive"
                                     size="sm"
-                                    className="text-red-500 hover:text-red-400 hover:bg-red-500/10 text-xs px-2 h-7"
+                                    className="text-[10px] uppercase font-black tracking-widest gap-2"
                                     onClick={async () => {
                                       if (
                                         confirm(
@@ -416,7 +431,7 @@ export function RosterTable({
                                       }
                                     }}
                                   >
-                                    <IconTrash className="size-3.5 mr-1" /> Remover personaje
+                                    <IconTrash className="size-3.5" /> Remover personaje
                                   </Button>
                                 </div>
                               </div>
@@ -441,7 +456,7 @@ export function RosterTable({
           )}
         </TableBody>
       </Table>
-    </div>
+    </div >
   );
 }
 
@@ -467,14 +482,14 @@ function NoteCell({
       if (!res.ok) throw new Error("Failed to save");
 
       if (!note || note.trim() === "") {
-        sileo.success({ title: "Nota borrada" });
+        toast.success("Nota borrada");
       } else {
-        sileo.success({ title: "Nota editada" });
+        toast.success("Nota editada");
       }
 
       setIsEditing(false);
     } catch (e) {
-      sileo.error({ title: "Error al guardar la nota" });
+      toast.error("Error al guardar la nota");
     } finally {
       setIsSaving(false);
     }

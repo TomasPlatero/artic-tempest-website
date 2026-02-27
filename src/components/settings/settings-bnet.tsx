@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { sileo } from "sileo";
+import { toast } from "sonner";
 import {
     IconRefresh,
     IconCheck,
@@ -47,22 +47,19 @@ export function SettingsBnetClient({
             const data = await res.json();
 
             if (!res.ok) {
-                sileo.error({
-                    title: "Error al sincronizar",
+                toast.error("Error al sincronizar", {
                     description: data.error ?? "Error desconocido",
                 });
                 return;
             }
 
-            sileo.success({
-                title: "Roster sincronizado",
+            toast.success("Roster sincronizado", {
                 description: `${data.imported} personajes importados de ${data.guild}`,
             });
 
             window.location.reload();
         } catch {
-            sileo.error({
-                title: "Error de conexión",
+            toast.error("Error de conexión", {
                 description: "No se pudo contactar con el servidor",
             });
         } finally {
@@ -87,22 +84,19 @@ export function SettingsBnetClient({
             const data = await res.json();
 
             if (!res.ok) {
-                sileo.error({
-                    title: "Error al borrar",
+                toast.error("Error al borrar", {
                     description: data.error ?? "No se pudo vaciar la lista de personajes.",
                 });
                 return;
             }
 
-            sileo.success({
-                title: "Roster eliminado",
+            toast.success("Roster eliminado", {
                 description: "Se han borrado todos los personajes de la base de datos.",
             });
 
             window.location.reload();
         } catch {
-            sileo.error({
-                title: "Error de conexión",
+            toast.error("Error de conexión", {
                 description: "No se pudo contactar con el servidor.",
             });
         } finally {

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { IconRefresh, IconCheck, IconX, IconDeviceGamepad, IconChevronLeft, IconChevronRight, IconUnlink } from "@tabler/icons-react"
 import { useState } from "react"
 import Image from "next/image"
-import { sileo } from "sileo"
+import { toast } from "sonner"
 
 type Character = {
     id: string
@@ -48,13 +48,13 @@ export function AccountClient({ battletag, characters }: AccountClientProps) {
             const res = await fetch("/api/bnet/unlink", { method: "DELETE" })
             const data = await res.json()
             if (res.ok) {
-                sileo.success({ title: "Cuenta desvinculada", description: "Tus personajes han sido eliminados del sistema." })
+                toast.success("Cuenta desvinculada", { description: "Tus personajes han sido eliminados del sistema." })
                 window.location.href = "/dashboard/cuenta?success=unlinked"
             } else {
-                sileo.error({ title: "Error", description: data.error || "No se pudo desvincular." })
+                toast.error("Error", { description: data.error || "No se pudo desvincular." })
             }
         } catch {
-            sileo.error({ title: "Error", description: "Problema de conexión con el servidor." })
+            toast.error("Error", { description: "Problema de conexión con el servidor." })
         } finally {
             setUnlinking(false)
         }
@@ -115,7 +115,11 @@ export function AccountClient({ battletag, characters }: AccountClientProps) {
                             )}
                         </div>
                         {!battletag && (
-                            <Button className="w-full bg-[#00aeff] hover:bg-[#00aeff]/90 text-white" onClick={handleLinkAccount}>
+                            <Button
+                                variant="glow"
+                                className="w-full text-[#00aeff] border-[#00aeff]/20 hover:border-[#00aeff]/40"
+                                onClick={handleLinkAccount}
+                            >
                                 Vincular cuenta
                             </Button>
                         )}
@@ -132,7 +136,7 @@ export function AccountClient({ battletag, characters }: AccountClientProps) {
                         </p>
                     </div>
                     {battletag && (
-                        <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing}>
+                        <Button variant="glow" size="sm" onClick={handleRefresh} disabled={refreshing}>
                             <IconRefresh className={`size-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
                             Refrescar
                         </Button>

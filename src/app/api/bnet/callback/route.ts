@@ -137,8 +137,8 @@ export async function GET(request: Request) {
             // Finalmente: "Reclamar" los que ya estén en la hermandad (guild_members)
             for (const c of charRows) {
                 await sb.from("guild_members")
-                    .update({ user_id: userId })
-                    .match({ character_name: c.name, realm_slug: c.realm_slug, user_id: null })
+                    .update({ profile_id: userId })
+                    .match({ character_name: c.name, realm_slug: c.realm_slug, profile_id: null })
             }
         }
 

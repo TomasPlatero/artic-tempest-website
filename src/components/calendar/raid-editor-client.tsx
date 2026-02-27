@@ -11,15 +11,18 @@ import {
     IconDeviceFloppy,
     IconArrowLeft,
     IconTrash,
-    IconUserOff
+    IconUserOff,
+    IconTimeline,
+    IconClipboardText
 } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { sileo } from "sileo"
+import { toast } from "sonner"
 import { cn } from "@/infrastructure/tailwind/tailwind-utils"
+import { RankBadge } from "@/components/common/roster-table"
 
 // DND Kit
 import {
@@ -63,64 +66,18 @@ interface Signup {
     is_late?: boolean
 }
 
-const MIDNIGHT_RAIDS = [
-    {
-        id: "The Voidspire",
-        name: "La Aguja del Vacío",
-        background: "/assets/images/raids/voidspire.jpg",
-        bosses: ["Plexus Sentinel", "Soulbinder Naazindhri", "Loom'ithar", "Forgeweaver Araz", "The Soul Hunters", "Fractillus"]
-    },
-    {
-        id: "The Dreamrift",
-        name: "La Falla del Sueño",
-        background: "/assets/images/raids/dreamrift.jpg",
-        bosses: ["Primo-Dream"]
-    },
-    {
-        id: "March on Quel'Danas",
-        name: "Marcha sobre Quel'Danas",
-        background: "/assets/images/raids/marchonqueldanas.jpg",
-        bosses: ["Sunwell Corruption", "Xal'atath Shade"]
-    }
-]
+const formatToDateTimeLocal = (dateInput: string | Date) => {
+    const date = new Date(dateInput)
+    if (isNaN(date.getTime())) return ""
 
-const CLASS_ROLES: Record<number, string> = {
-    1: "tank", 2: "tank", 3: "ranged", 4: "melee", 5: "heal", 6: "tank", 7: "ranged", 8: "ranged", 9: "ranged", 10: "tank", 11: "heal", 12: "melee", 13: "ranged"
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`
 }
-
-const RAID_BUFFS = [
-    {
-        category: "Buffs / Debuffs",
-        items: [
-            { id: "intellect", name: "5% Intelecto", classId: 8 },
-            { id: "attack_power", name: "5% Poder de Ataque", classId: 1 },
-            { id: "stamina", name: "5% Aguante", classId: 5 },
-            { id: "phys_damage", name: "5% Daño Físico", classId: 10 },
-            { id: "magic_damage", name: "5% Daño Mágico", classId: 12 },
-            { id: "devotion", name: "Aura de Devoción", classId: 2 },
-            { id: "versatility", name: "3% Versatilidad", classId: 11 },
-            { id: "dr", name: "3.6% Reducción de Daño", classId: 13 },
-            { id: "hunters_mark", name: "Marca del Cazador", classId: 3 },
-            { id: "skyfury", name: "Skyfury", classId: 7 },
-        ]
-    },
-    {
-        category: "Utilidad",
-        items: [
-            { id: "lust", name: "Ansia de Sangre", classId: 7 },
-            { id: "bres", name: "Resurrección en Combate", classId: 6 },
-            { id: "speed", name: "Velocidad de Movimiento", classId: 11 },
-            { id: "healthstone", name: "Piedra de Salud", classId: 9 },
-            { id: "gateway", name: "Portal", classId: 9 },
-            { id: "innervate", name: "Estimular", classId: 11 },
-            { id: "amz", name: "Zona Anti-Magia", classId: 6 },
-            { id: "bop", name: "Bendición de Protección", classId: 2 },
-            { id: "rally", name: "Grito de Convocatoria", classId: 1 },
-            { id: "darkness", name: "Oscuridad", classId: 12 },
-            { id: "immunity", name: "Inmunidad", classId: 2 },
-        ]
-    }
-]
 
 export function RaidEditorClient({
     initialRaid,
@@ -128,7 +85,11 @@ export function RaidEditorClient({
     plannableMembers,
     preselectedDate,
     currentMemberId,
-    isReadOnly = false
+    isReadOnly = false,
+    rankColors,
+    classRoles = {},
+    raids = [],
+    buffs = []
 }: {
     initialRaid: any
     initialSignups: any[]
@@ -136,14 +97,24 @@ export function RaidEditorClient({
     preselectedDate?: string
     currentMemberId?: string
     isReadOnly?: boolean
+    rankColors?: (string | null)[]
+    classRoles?: Record<number, string>
+    raids?: any[]
+    buffs?: any[]
 }) {
+    console.log("RaidEditorClient - Props received:", {
+        raidsCount: raids.length,
+        buffsCount: buffs.length,
+        initialRaidDest: initialRaid?.destination
+    })
     const router = useRouter()
     const [raid, setRaid] = useState(initialRaid ? {
         ...initialRaid,
+        event_date: formatToDateTimeLocal(initialRaid.event_date),
         selected_bosses: initialRaid.selected_bosses || []
     } : {
-        destination: MIDNIGHT_RAIDS[0].name,
-        event_date: preselectedDate ? `${preselectedDate}T20:00` : new Date().toISOString().slice(0, 16),
+        destination: raids[0]?.id || "",
+        event_date: preselectedDate ? `${preselectedDate}T20:00` : formatToDateTimeLocal(new Date()),
         difficulty: "Mítico (20)",
         status: "planned",
         selected_bosses: []
@@ -157,7 +128,7 @@ export function RaidEditorClient({
         // Add existing signups
         initialSignups.forEach(s => {
             // Ensure event_role is set (fallback to class role if missing)
-            const role = s.event_role || (s.guild_members?.role || CLASS_ROLES[s.guild_members?.class_id] || 'dps').toLowerCase()
+            const role = s.event_role || (s.guild_members?.role || classRoles[s.guild_members?.class_id] || 'ranged').toLowerCase()
             merged.push({
                 ...s,
                 event_role: role,
@@ -169,10 +140,13 @@ export function RaidEditorClient({
         // Add plannable members who aren't signed up yet as 'queued'
         plannableMembers.forEach(m => {
             if (!merged.find(s => s.member_id === m.id)) {
+                // Determine initial role: strictly from roster member (m.role)
+                const initialRole = (m.role || classRoles[m.class_id] || 'ranged').toLowerCase()
+
                 merged.push({
                     member_id: m.id,
                     selection_status: 'queued',
-                    event_role: (m.role || CLASS_ROLES[m.class_id] || 'dps').toLowerCase(),
+                    event_role: initialRole,
                     signup_order: merged.length,
                     guild_members: m
                 })
@@ -187,9 +161,17 @@ export function RaidEditorClient({
     }, [])
 
     const initialDuration = initialRaid?.end_date && initialRaid?.event_date
-        ? Math.max(1, Math.round((new Date(initialRaid.end_date).getTime() - new Date(initialRaid.event_date).getTime()) / 3600000))
+        ? Math.max(1, (new Date(initialRaid.end_date).getTime() - new Date(initialRaid.event_date).getTime()) / 3600000)
         : 2
     const [duration, setDuration] = useState(initialDuration.toString())
+
+    const isPast = useMemo(() => {
+        if (!raid.event_date) return false
+        // Calculate based on current input and duration to provide real-time feedback
+        const startDate = new Date(raid.event_date)
+        const eventEnd = new Date(startDate.getTime() + parseFloat(duration) * 3600000)
+        return eventEnd < new Date()
+    }, [raid.event_date, duration])
 
     const [isSaving, setIsSaving] = useState(false)
 
@@ -218,11 +200,11 @@ export function RaidEditorClient({
             })
 
             if (!res.ok) throw new Error("Failed to save")
-            sileo.success({ title: "Inscripción guardada", description: "Tu estado para esta raid ha sido actualizado." })
+            toast.success("Inscripción guardada", { description: "Tu estado para esta raid ha sido actualizado." })
             router.refresh()
         } catch (error) {
             console.error(error)
-            sileo.error({ title: "Error", description: "No se pudo guardar tu inscripción." })
+            toast.error("Error", { description: "No se pudo guardar tu inscripción." })
         } finally {
             setIsSaving(false)
         }
@@ -387,10 +369,12 @@ export function RaidEditorClient({
         try {
             const startDate = new Date(raid.event_date)
             const endDate = new Date(startDate.getTime() + parseFloat(duration) * 60 * 60 * 1000)
+
             const payload = {
                 ...raid,
+                event_date: startDate.toISOString(), // Standardize to UTC ISO
                 end_date: endDate.toISOString(),
-                selected_bosses: []
+                selected_bosses: raid.selected_bosses || []
             }
 
             // 1. Create/Update Raid
@@ -420,11 +404,11 @@ export function RaidEditorClient({
             })
             if (!signupRes.ok) throw new Error("Error al guardar el roster")
 
-            sileo.success({ title: "Raid y Roster guardados con éxito" })
+            toast.success("Evento guardados con éxito")
             router.push("/dashboard/calendario")
             router.refresh()
         } catch (error: any) {
-            sileo.error({ title: "Error", description: error.message })
+            toast.error("Error", { description: error.message })
         } finally {
             setIsSaving(false)
         }
@@ -442,11 +426,11 @@ export function RaidEditorClient({
             const data = await res.json()
             if (!res.ok) throw new Error(data.error || "Error al eliminar el evento")
 
-            sileo.success({ title: "Evento eliminado correctamente" })
+            toast.success("Evento eliminado correctamente")
             router.push("/dashboard/calendario")
             router.refresh()
         } catch (error: any) {
-            sileo.error({ title: "Error", description: error.message })
+            toast.error("Error", { description: error.message })
             setIsSaving(false)
         }
     }
@@ -474,7 +458,40 @@ export function RaidEditorClient({
 
     const activeClassIds = useMemo(() => new Set(activeMembers.map(s => s.guild_members.class_id)), [activeMembers])
 
-    const currentRaid = MIDNIGHT_RAIDS.find(r => r.id === raid.destination)
+    const [localRaids, setLocalRaids] = useState(raids)
+    const [localBuffs, setLocalBuffs] = useState(buffs)
+
+    useEffect(() => {
+        if (localRaids.length === 0 || localBuffs.length === 0) {
+            fetch("/api/guild/constants")
+                .then(res => res.json())
+                .then(data => {
+                    const r: any[] = []
+                    const b: any[] = [
+                        { category: "Buffs / Debuffs", items: [] },
+                        { category: "Utilidad", items: [] }
+                    ]
+
+                    if (data.wow_raid) {
+                        Object.entries(data.wow_raid).forEach(([key, val]: [string, any]) => {
+                            r.push({ id: key, name: val.value, background: val.metadata?.background, bosses: val.metadata?.bosses || [] })
+                        })
+                        setLocalRaids(r)
+                    }
+                    if (data.wow_buff) {
+                        Object.entries(data.wow_buff).forEach(([key, val]: [string, any]) => {
+                            const item = { id: key, name: val.value, classId: val.metadata?.classId }
+                            if (val.metadata?.type === 'buff') b[0].items.push(item)
+                            else b[1].items.push(item)
+                        })
+                        setLocalBuffs(b)
+                    }
+                })
+                .catch(err => console.error("Error fetching fallback constants:", err))
+        }
+    }, [localRaids.length, localBuffs.length])
+
+    const currentRaid = useMemo(() => localRaids.find((r: any) => r.id === raid.destination || r.name === raid.destination), [localRaids, raid.destination])
     const bgUrl = currentRaid?.background || "/assets/images/wow-raid-hero.jpg"
 
     return (
@@ -490,6 +507,12 @@ export function RaidEditorClient({
                         <IconCalendar className="size-5 text-primary" />
                         Planificador de Raid
                     </h1>
+                    {isPast && (
+                        <div className="bg-amber-500/20 text-amber-400 text-[10px] px-2 py-0.5 rounded-full font-black uppercase border border-amber-500/30 flex items-center gap-1 animate-pulse">
+                            <span className="size-1.5 bg-amber-500 rounded-full" />
+                            Evento Finalizado
+                        </div>
+                    )}
                 </div>
                 <div className="flex items-center gap-2">
                     {/* Buttons moved to the info card below duration */}
@@ -499,19 +522,20 @@ export function RaidEditorClient({
             {/* Raid Info Header */}
             <div className="relative overflow-hidden bg-card/50 p-6 rounded-xl border border-border/40 shadow-sm flex flex-col gap-6">
                 <div
-                    className="absolute inset-0 -z-10 bg-cover bg-center pointer-events-none transition-all duration-700"
+                    className="absolute inset-0 z-0 bg-cover bg-center pointer-events-none transition-all duration-700"
                     style={{
                         backgroundImage: `linear-gradient(to left, transparent 0%, rgba(15, 15, 20, 0.4) 30%, rgba(15, 15, 20, 0.9) 80%, rgba(15, 15, 20, 1) 100%), url(${bgUrl})`,
                         opacity: 0.3
                     }}
                 />
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+                <div className="relative z-10 grid grid-cols-2 md:grid-cols-8 gap-8 md:gap-6">
                     <div className="flex flex-col gap-1.5">
                         <Label className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em]">Fecha y Hora</Label>
                         {isReadOnly ? (
                             <div className="flex items-center gap-2 h-10 px-0 text-amber-200/90 font-medium">
                                 <IconCalendar className="size-4 opacity-50" />
                                 <span className="text-sm">{new Date(raid.event_date).toLocaleString('es-ES', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                                {isPast && <span className="text-[10px] bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded uppercase font-bold border border-amber-500/20 ml-2">Histórico</span>}
                             </div>
                         ) : (
                             <Input
@@ -526,7 +550,7 @@ export function RaidEditorClient({
                         <Label className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em]">Destino (Midnight)</Label>
                         {isReadOnly ? (
                             <div className="flex items-center gap-2 h-10 px-0 text-white font-bold tracking-tight">
-                                <span className="text-sm">{MIDNIGHT_RAIDS.find(r => r.id === raid.destination)?.name || raid.destination}</span>
+                                <span className="text-sm">{raids.find((r: any) => r.id === raid.destination || r.name === raid.destination)?.name || raid.destination}</span>
                             </div>
                         ) : (
                             <Select
@@ -537,7 +561,7 @@ export function RaidEditorClient({
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent className="bg-popover border-border/20">
-                                    {MIDNIGHT_RAIDS.map(r => (
+                                    {localRaids.map((r: any) => (
                                         <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
                                     ))}
                                 </SelectContent>
@@ -608,24 +632,54 @@ export function RaidEditorClient({
                             {isSaving ? "Guardando..." : "Guardar Evento"}
                         </Button>
                         {initialRaid && (
-                            <Button
-                                variant="outline"
-                                size="lg"
-                                onClick={handleDelete}
-                                disabled={isSaving}
-                                className="px-4 h-11 rounded-xl border-red-500/30 text-red-500 hover:bg-red-500/10 hover:text-red-400"
-                                title="Eliminar Evento"
-                            >
-                                <IconTrash className="size-4 mr-2" />
-                                <span className="text-xs uppercase font-bold">Eliminar</span>
-                            </Button>
+                            <>
+                                <div className="h-6 w-px bg-border/20 mx-1" />
+                                <Button
+                                    variant="outline"
+                                    size="lg"
+                                    onClick={async () => {
+                                        if (!isReadOnly) await handleSave();
+                                        const firstBoss = currentRaid?.bosses[0] || ""
+                                        router.push(`/dashboard/planificador-cds?event_id=${initialRaid.id}${firstBoss ? `&boss=${encodeURIComponent(firstBoss)}` : ''}`)
+                                    }}
+                                    className="px-6 h-11 rounded-xl border-blue-500/30 text-blue-400 hover:bg-blue-500/10 hover:text-blue-300 shadow-lg shadow-blue-500/5 group"
+                                >
+                                    <IconTimeline className="size-4 mr-2 group-hover:scale-110 transition-transform" />
+                                    <span className="text-sm font-black uppercase tracking-widest">Asignar CD&apos;s</span>
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="lg"
+                                    onClick={async () => {
+                                        if (!isReadOnly) await handleSave();
+                                        const firstBoss = currentRaid?.bosses[0] || ""
+                                        router.push(`/dashboard/planificador-cds?event_id=${initialRaid.id}&tab=mrt${firstBoss ? `&boss=${encodeURIComponent(firstBoss)}` : ''}`)
+                                    }}
+                                    className="px-6 h-11 rounded-xl border-amber-500/30 text-amber-500 hover:bg-amber-500/10 hover:text-amber-400 shadow-lg shadow-amber-500/5 group"
+                                >
+                                    <IconClipboardText className="size-4 mr-2 group-hover:scale-110 transition-transform" />
+                                    <span className="text-sm font-black uppercase tracking-widest">Nota MRT</span>
+                                </Button>
+                                <div className="h-6 w-px bg-border/20 mx-1" />
+                                <Button
+                                    variant="outline"
+                                    size="lg"
+                                    onClick={handleDelete}
+                                    disabled={isSaving}
+                                    className="px-4 h-11 rounded-xl border-red-500/30 text-red-500 hover:bg-red-500/10 hover:text-red-400"
+                                    title="Eliminar Evento"
+                                >
+                                    <IconTrash className="size-4 mr-2" />
+                                    <span className="text-xs uppercase font-bold">Eliminar</span>
+                                </Button>
+                            </>
                         )}
                     </div>
                 )}
             </div>
 
             {/* Personal Inscription (for Raiders/Members to set their own status) */}
-            <div className="bg-card/30 border border-border/20 rounded-xl p-4 md:p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
+            {/* <div className="bg-card/30 border border-border/20 rounded-xl p-4 md:p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
                 <div className="flex flex-col gap-1">
                     <h2 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
                         <IconUsers className="size-4" />
@@ -683,7 +737,7 @@ export function RaidEditorClient({
                         {isSaving ? "Cargando..." : "Confirmar Mi Asistencia"}
                     </Button>
                 </div>
-            </div>
+            </div> */}
 
             {/* Main Planning Area */}
             {
@@ -719,10 +773,10 @@ export function RaidEditorClient({
                                                 strategy={verticalListSortingStrategy}
                                                 className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-4 flex flex-col gap-4"
                                             >
-                                                <RosterGroup title="Tanques" icon="🛡️" color="text-emerald-500" signups={activeByRole.tanks} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                                <RosterGroup title="Sanadores" icon="➕" color="text-emerald-500" signups={activeByRole.heals} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                                <RosterGroup title="Melee DPS" icon="⚔️" color="text-emerald-500" signups={activeByRole.melee} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                                <RosterGroup title="Ranged DPS" icon="🏹" color="text-emerald-500" signups={activeByRole.ranged} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
+                                                <RosterGroup title="Tanques" color="text-emerald-500" signups={activeByRole.tanks} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
+                                                <RosterGroup title="Sanadores" color="text-emerald-500" signups={activeByRole.heals} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
+                                                <RosterGroup title="Melee DPS" color="text-emerald-500" signups={activeByRole.melee} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
+                                                <RosterGroup title="Ranged DPS" color="text-emerald-500" signups={activeByRole.ranged} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
                                             </DroppableContainer>
                                         </div>
                                     </TabsContent>
@@ -736,16 +790,16 @@ export function RaidEditorClient({
                                                 strategy={verticalListSortingStrategy}
                                                 className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 flex flex-col gap-4"
                                             >
-                                                <RosterGroup title="Tanques" color="text-amber-500" signups={reserveByRole.tanks} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                                <RosterGroup title="Sanadores" color="text-amber-500" signups={reserveByRole.heals} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                                <RosterGroup title="Melee DPS" color="text-amber-500" signups={reserveByRole.melee} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                                <RosterGroup title="Ranged DPS" color="text-amber-500" signups={reserveByRole.ranged} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
+                                                <RosterGroup title="Tanques" color="text-amber-500" signups={reserveByRole.tanks} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
+                                                <RosterGroup title="Sanadores" color="text-amber-500" signups={reserveByRole.heals} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
+                                                <RosterGroup title="Melee DPS" color="text-amber-500" signups={reserveByRole.melee} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
+                                                <RosterGroup title="Ranged DPS" color="text-amber-500" signups={reserveByRole.ranged} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
                                             </DroppableContainer>
                                         </div>
                                     </TabsContent>
 
                                     <TabsContent value="buffs">
-                                        <BuffsCard activeClassIds={activeClassIds} className="h-auto" />
+                                        <BuffsCard activeClassIds={activeClassIds} buffs={localBuffs} className="h-auto" />
                                     </TabsContent>
                                 </Tabs>
                             </div>
@@ -764,10 +818,10 @@ export function RaidEditorClient({
                                         strategy={rectSortingStrategy}
                                         className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-4 min-h-[600px] grid grid-cols-1 xl:grid-cols-2 gap-4"
                                     >
-                                        <RosterGroup title="Tanques" icon="🛡️" color="text-emerald-500" signups={activeByRole.tanks} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                        <RosterGroup title="Sanadores" icon="➕" color="text-emerald-500" signups={activeByRole.heals} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                        <RosterGroup title="Melee DPS" icon="⚔️" color="text-emerald-500" signups={activeByRole.melee} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                        <RosterGroup title="Ranged DPS" icon="🏹" color="text-emerald-500" signups={activeByRole.ranged} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
+                                        <RosterGroup title="Tanques" color="text-emerald-500" signups={activeByRole.tanks} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
+                                        <RosterGroup title="Sanadores" color="text-emerald-500" signups={activeByRole.heals} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
+                                        <RosterGroup title="Melee DPS" color="text-emerald-500" signups={activeByRole.melee} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
+                                        <RosterGroup title="Ranged DPS" color="text-emerald-500" signups={activeByRole.ranged} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
                                     </DroppableContainer>
                                 </div>
 
@@ -783,10 +837,10 @@ export function RaidEditorClient({
                                         strategy={rectSortingStrategy}
                                         className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 min-h-[600px] grid grid-cols-1 xl:grid-cols-2 gap-4"
                                     >
-                                        <RosterGroup title="Tanques" color="text-amber-500" signups={reserveByRole.tanks} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                        <RosterGroup title="Sanadores" color="text-amber-500" signups={reserveByRole.heals} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                        <RosterGroup title="Melee DPS" color="text-amber-500" signups={reserveByRole.melee} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
-                                        <RosterGroup title="Ranged DPS" color="text-amber-500" signups={reserveByRole.ranged} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} />
+                                        <RosterGroup title="Tanques" color="text-amber-500" signups={reserveByRole.tanks} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
+                                        <RosterGroup title="Sanadores" color="text-amber-500" signups={reserveByRole.heals} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
+                                        <RosterGroup title="Melee DPS" color="text-amber-500" signups={reserveByRole.melee} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
+                                        <RosterGroup title="Ranged DPS" color="text-amber-500" signups={reserveByRole.ranged} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
                                     </DroppableContainer>
                                 </div>
 
@@ -796,7 +850,7 @@ export function RaidEditorClient({
                                         <h3 className="text-sm font-bold text-primary uppercase tracking-widest">Buffs & Debuffs</h3>
                                         <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">Cobertura de Raid</span>
                                     </div>
-                                    <BuffsCard activeClassIds={activeClassIds} />
+                                    <BuffsCard activeClassIds={activeClassIds} buffs={localBuffs} />
                                 </div>
                             </div>
                         </div>
@@ -811,6 +865,7 @@ export function RaidEditorClient({
                                         onToggleLate={() => { }}
                                         onResetStatus={() => { }}
                                         changeRole={changeRole}
+                                        rankColors={rankColors}
                                     />
                                 </div>
                             ) : null}
@@ -822,7 +877,7 @@ export function RaidEditorClient({
     )
 }
 
-function MemberItem({ signup, onToggle, onToggleAbsent, onToggleLate, onResetStatus, isReadOnly = false, changeRole }: { signup: Signup, onToggle: () => void, onToggleAbsent: () => void, onToggleLate: () => void, onResetStatus: () => void, isReadOnly?: boolean, changeRole: (id: string, role: string) => void }) {
+function MemberItem({ signup, onToggle, onToggleAbsent, onToggleLate, onResetStatus, isReadOnly = false, changeRole, rankColors }: { signup: Signup, onToggle: () => void, onToggleAbsent: () => void, onToggleLate: () => void, onResetStatus: () => void, isReadOnly?: boolean, changeRole: (id: string, role: string) => void, rankColors?: (string | null)[] }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
         id: signup.member_id,
         disabled: isReadOnly || signup.is_absent || signup.is_late
@@ -836,7 +891,7 @@ function MemberItem({ signup, onToggle, onToggleAbsent, onToggleLate, onResetSta
     }
 
     const m = signup.guild_members
-    const classColor = WOW_CLASS_COLORS[m.class_id] || "text-white"
+    const classColor = "text-white"
 
     return (
         <div
@@ -844,7 +899,7 @@ function MemberItem({ signup, onToggle, onToggleAbsent, onToggleLate, onResetSta
             style={style}
             className={cn(
                 "flex items-center justify-between bg-card border border-border/50 rounded-lg p-2 gap-3 hover:border-primary/30 group cursor-pointer active:scale-[0.98] transition-all relative overflow-hidden",
-                (signup.is_absent || signup.is_late) && "opacity-40 grayscale-[0.5] border-dashed cursor-default",
+                (signup.is_absent || signup.is_late) && "opacity-70 grayscale-[0.3] border-dashed cursor-default",
                 signup.is_absent && "border-red-500/30",
                 signup.is_late && "border-amber-500/30"
             )}
@@ -853,8 +908,8 @@ function MemberItem({ signup, onToggle, onToggleAbsent, onToggleLate, onResetSta
             {(signup.is_absent || signup.is_late) && (
                 <div
                     className={cn(
-                        "absolute inset-0 flex items-center justify-center z-20 transition-all backdrop-blur-[1px]",
-                        signup.is_absent ? "bg-red-950/40" : "bg-amber-950/40",
+                        "absolute inset-0 flex items-center justify-center z-20 transition-all",
+                        signup.is_absent ? "bg-red-950/30" : "bg-amber-950/30",
                         !isReadOnly && "cursor-pointer group/absent hover:bg-emerald-950/60"
                     )}
                     onClick={(e) => {
@@ -881,7 +936,8 @@ function MemberItem({ signup, onToggle, onToggleAbsent, onToggleLate, onResetSta
             )}
             <div className="flex items-center gap-2 flex-1 overflow-hidden" {...attributes} {...listeners}>
                 <Image src={`/assets/images/classes/${m.class_id}.jpg`} alt="" width={20} height={20} className="rounded-full shrink-0" />
-                <span className={cn("text-xs font-semibold truncate", classColor)}>{m.character_name}</span>
+                <RankBadge rank={m.rank} rankColors={rankColors} className="size-4" />
+                <span className={cn("text-xs font-semibold truncate text-white")}>{m.character_name}</span>
             </div>
 
             <div className="flex items-center gap-1.5 shrink-0" onClick={e => e.stopPropagation()}>
@@ -959,13 +1015,6 @@ function DroppableContainer({ id, items, strategy, children, className }: { id: 
     )
 }
 
-const WOW_CLASSES: Record<number, string> = {
-    1: "Guerrero", 2: "Paladín", 3: "Cazador", 4: "Pícaro", 5: "Sacerdote", 6: "Caballero de la Muerte", 7: "Chamán", 8: "Mago", 9: "Brujo", 10: "Monje", 11: "Druida", 12: "Cazador de Demonios", 13: "Evocador"
-}
-
-const WOW_CLASS_COLORS: Record<number, string> = {
-    1: "text-[#C69B6D]", 2: "text-[#F48CBA]", 3: "text-[#AAD372]", 4: "text-[#FFF468]", 5: "text-white", 6: "text-[#C41E3A]", 7: "text-[#0070DD]", 8: "text-[#3FC7EB]", 9: "text-[#8788EE]", 10: "text-[#00FF98]", 11: "text-[#FF7C0A]", 12: "text-[#A330C9]", 13: "text-[#33937F]"
-}
 
 const CLASS_COUNTS = (active: Signup[]) => {
     const counts: Record<number, number> = {}
@@ -976,11 +1025,10 @@ const CLASS_COUNTS = (active: Signup[]) => {
     return counts
 }
 
-function RosterGroup({ title, icon, color, signups, onToggle, onToggleAbsent, onToggleLate, onResetStatus, isReadOnly, changeRole }: { title: string, icon?: string, color: string, signups: Signup[], onToggle: (id: string) => void, onToggleAbsent: (id: string) => void, onToggleLate: (id: string) => void, onResetStatus: (id: string) => void, isReadOnly: boolean, changeRole: (id: string, role: string) => void }) {
+function RosterGroup({ title, color, signups, onToggle, onToggleAbsent, onToggleLate, onResetStatus, isReadOnly, changeRole, rankColors }: { title: string, color: string, signups: Signup[], onToggle: (id: string) => void, onToggleAbsent: (id: string) => void, onToggleLate: (id: string) => void, onResetStatus: (id: string) => void, isReadOnly: boolean, changeRole: (id: string, role: string) => void, rankColors?: (string | null)[] }) {
     return (
         <div className="flex flex-col gap-2">
             <h4 className={cn("text-[10px] font-bold uppercase pl-1 flex items-center gap-1", color + "/60")}>
-                {icon && <span>{icon}</span>}
                 {title}
             </h4>
             {signups.length > 0 ? signups.map(s => (
@@ -993,47 +1041,61 @@ function RosterGroup({ title, icon, color, signups, onToggle, onToggleAbsent, on
                     onResetStatus={() => onResetStatus(s.member_id)}
                     isReadOnly={isReadOnly}
                     changeRole={changeRole}
+                    rankColors={rankColors}
                 />
             )) : <div className={cn("h-10 border border-dashed rounded-lg flex items-center justify-center text-[10px] font-bold uppercase italic", color + "/10", color + "/30")}>Vacío</div>}
         </div>
     )
 }
 
-function BuffsCard({ activeClassIds, className }: { activeClassIds: Set<number>, className?: string }) {
+function BuffsCard({ activeClassIds, buffs, className }: { activeClassIds: Set<number>, buffs: any[], className?: string }) {
+    if (!buffs || buffs.length === 0) {
+        return (
+            <div className={cn("bg-card/50 border border-border/40 rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center py-12 text-muted-foreground", className)}>
+                <IconClipboardText className="size-8 opacity-20 mb-2" />
+                <p className="text-[10px] uppercase font-bold tracking-widest opacity-50">Sin datos de cobertura</p>
+            </div>
+        )
+    }
+
     return (
         <div className={cn("bg-card/50 border border-border/40 rounded-2xl p-6 shadow-sm flex flex-col gap-8", className)}>
-            {RAID_BUFFS.map(section => (
+            {buffs.map((section: any) => (
                 <div key={section.category} className="flex flex-col gap-4">
                     <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/50 border-b border-border/10 pb-2">
                         {section.category}
                     </h4>
-                    <div className="grid grid-cols-1 gap-2">
-                        {section.items.map(buff => {
-                            const isPresent = activeClassIds.has(buff.classId)
-                            return (
-                                <div key={buff.id} className="flex items-center justify-between p-2.5 rounded-xl bg-background/40 border border-border/10 group">
-                                    <div className="flex items-center gap-3">
+                    {section.items.length === 0 ? (
+                        <p className="text-[9px] text-muted-foreground/30 italic">No hay beneficios disponibles</p>
+                    ) : (
+                        <div className="grid grid-cols-1 gap-2">
+                            {section.items.map((buff: any) => {
+                                const isPresent = activeClassIds.has(Number(buff.classId))
+                                return (
+                                    <div key={buff.id} className="flex items-center justify-between p-2.5 rounded-xl bg-background/40 border border-border/10 group">
+                                        <div className="flex items-center gap-3">
+                                            <div className={cn(
+                                                "size-2 rounded-full transition-all duration-300",
+                                                isPresent ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-muted-foreground/20"
+                                            )} />
+                                            <span className={cn(
+                                                "text-xs transition-colors",
+                                                isPresent ? "text-foreground font-semibold" : "text-muted-foreground/40 italic"
+                                            )}>
+                                                {buff.name}
+                                            </span>
+                                        </div>
                                         <div className={cn(
-                                            "size-2 rounded-full transition-all duration-300",
-                                            isPresent ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-muted-foreground/20"
-                                        )} />
-                                        <span className={cn(
-                                            "text-xs transition-colors",
-                                            isPresent ? "text-foreground font-semibold" : "text-muted-foreground/40 italic"
+                                            "size-5 rounded-md flex items-center justify-center transition-all shrink-0",
+                                            isPresent ? "bg-emerald-500/10 text-emerald-500" : "text-muted-foreground/10"
                                         )}>
-                                            {buff.name}
-                                        </span>
+                                            {isPresent && <IconCheck className="size-3" />}
+                                        </div>
                                     </div>
-                                    <div className={cn(
-                                        "size-5 rounded-md flex items-center justify-center transition-all shrink-0",
-                                        isPresent ? "bg-emerald-500/10 text-emerald-500" : "text-muted-foreground/10"
-                                    )}>
-                                        {isPresent && <IconCheck className="size-3" />}
-                                    </div>
-                                </div>
-                            )
-                        })}
-                    </div>
+                                )
+                            })}
+                        </div>
+                    )}
                 </div>
             ))}
         </div>

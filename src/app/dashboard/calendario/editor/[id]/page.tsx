@@ -1,8 +1,102 @@
 import { getServerSession } from "next-auth"
 import { authOptions, sb } from "@/infrastructure/auth/auth-options"
-import { redirect } from "next/navigation"
-import { RaidEditorClient } from "@/components/calendar/raid-editor-client"
 import { getAppPermission } from "@/infrastructure/auth/permissions"
+import { redirect, notFound } from "next/navigation"
+import { RaidEditorClient } from "@/components/calendar/raid-editor-client"
+
+export const dynamic = "force-dynamic"
+export const runtime = "nodejs"
+
+async function getEditorData(eventId?: string) {
+    // 1. Fetch Raid if ID provided
+    let initialData = null
+    let signups = []
+
+    if (eventId) {
+        const { data: raid } = await sb
+            .from("guild_events")
+            .select("*")
+            .eq("id", eventId)
+            .single()
+
+        if (!raid) return null
+        initialData = raid
+
+        const { data: s } = await sb
+            .from("event_signups")
+            .select(`
+                *,
+                guild_members (*)
+            `)
+            .eq("event_id", eventId)
+        signups = s || []
+    }
+
+    // 2. Fetch Ranks and Members
+    const { data: rawRanks } = await sb
+        .from("guild_ranks")
+        .select("rank, name, is_visible, color")
+
+    const visibilityMap: Record<number, boolean> = {}
+    for (let i = 0; i <= 9; i++) {
+        const found = rawRanks?.find(v => v.rank === i)
+        visibilityMap[i] = found ? found.is_visible : true
+    }
+
+    const { data: members } = await sb
+        .from("guild_members")
+        .select("*")
+        .order("rank", { ascending: true })
+
+    const filteredMembers = (members ?? []).filter(m => visibilityMap[Number(m.rank)] ?? true)
+
+    // 3. Fetch Game Constants
+    const { data: constantRows } = await sb
+        .from("game_constants")
+        .select("category, key, value, metadata")
+
+    const classRoles: Record<number, string> = {}
+    const raids: any[] = []
+    const buffs: any[] = [
+        { category: "Buffs / Debuffs", items: [] },
+        { category: "Utilidad", items: [] }
+    ]
+
+    constantRows?.forEach(c => {
+        if (c.category === 'class_role') {
+            classRoles[Number(c.key)] = c.value
+        }
+        if (c.category === 'wow_raid') {
+            raids.push({
+                id: c.key,
+                name: c.value,
+                background: c.metadata?.background,
+                bosses: c.metadata?.bosses || []
+            })
+        }
+        if (c.category === 'wow_buff') {
+            const item = { id: c.key, name: c.value, classId: c.metadata?.classId }
+            if (c.metadata?.type === 'buff') buffs[0].items.push(item)
+            else buffs[1].items.push(item)
+        }
+    })
+
+    const rankColors: (string | null)[] = []
+    for (let i = 0; i <= 9; i++) {
+        const found = rawRanks?.find(v => v.rank === i)
+        rankColors[i] = found?.color || null
+    }
+
+    return {
+        initialData,
+        signups,
+        filteredMembers,
+        classRoles,
+        raids,
+        buffs,
+        rankColors
+    }
+}
 
 export default async function RaidEditorPage({
     params,
@@ -12,19 +106,16 @@ export default async function RaidEditorPage({
     searchParams: Promise<{ date?: string }>
 }) {
     const session = await getServerSession(authOptions)
-    if (!session) {
-        redirect("/")
-    }
+    if (!session) redirect("/")
+
+    const { id } = await params
+    const { date } = await searchParams
 
     const roleLevel = session.user.roleLevel ?? "member"
     const { canEdit } = await getAppPermission(roleLevel, 'calendar')
 
-    const { id } = await params
-
     if (!canEdit) {
-        if (id) {
-            redirect(`/dashboard/calendario/${id}`)
-        }
+        if (id) redirect(`/dashboard/calendario/${id}`)
         redirect("/dashboard/calendario")
     }
 
@@ -34,55 +125,21 @@ export default async function RaidEditorPage({
         .eq("profile_id", session.user.id)
         .single()
 
-    const { date } = await searchParams
-
-    let initialData = null
-    let signups = []
-
-    if (id) {
-        const { data: raid } = await sb
-            .from("guild_events")
-            .select("*")
-            .eq("id", id)
-            .single()
-        initialData = raid
-
-        if (raid) {
-            const { data: s } = await sb
-                .from("event_signups")
-                .select(`
-                    *,
-                    guild_members (*)
-                `)
-                .eq("event_id", id)
-            signups = s || []
-        }
-    }
-
-    // Fetch visible ranks from settings
-    const { data: visibleRanks } = await sb
-        .from("guild_ranks")
-        .select("rank")
-        .eq("is_visible", true)
-
-    const visibleRankIds = (visibleRanks || []).map(r => r.rank)
-
-    // Fetch all members belonging to visible ranks to show in the "Available" pool
-    let query = sb.from("guild_members").select("*")
-    if (visibleRankIds.length > 0) {
-        query = query.in("rank", visibleRankIds)
-    }
-
-    const { data: members } = await query.order("rank", { ascending: true })
+    const data = await getEditorData(id)
+    if (id && !data) notFound()
 
     return (
-        <div className="flex flex-1 flex-col py-6 max-w-full mx-auto w-full px-4 gap-6">
+        <div className="flex flex-1 flex-col py-6 max-w-full mx-auto w-full px-4 gap-6 relative">
             <RaidEditorClient
-                initialRaid={initialData}
-                initialSignups={signups}
-                plannableMembers={members || []}
+                initialRaid={data?.initialData}
+                initialSignups={data?.signups || []}
+                plannableMembers={data?.filteredMembers || []}
                 preselectedDate={date}
                 currentMemberId={currentMember?.id}
+                classRoles={data?.classRoles || {}}
+                raids={data?.raids || []}
+                buffs={data?.buffs || []}
+                rankColors={data?.rankColors || []}
             />
         </div>
     )

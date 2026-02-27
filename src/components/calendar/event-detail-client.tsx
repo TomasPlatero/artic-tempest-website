@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { IconChevronLeft, IconChevronRight, IconCalendarEvent, IconTrash, IconClock, IconPlus } from "@tabler/icons-react"
+import { IconChevronLeft, IconChevronRight, IconCalendarEvent, IconTrash, IconClock, IconPlus, IconTimeline, IconClipboardText } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select"
 import { GuildEvent } from "./calendar-client"
 import { cn } from "@/infrastructure/tailwind/tailwind-utils"
+import { MIDNIGHT_RAIDS } from "@/infrastructure/constants/raids"
 
 export type EventSignup = {
     member_id: string
@@ -218,8 +219,33 @@ export function EventDetailClient({
                             </span>
                         </h2>
                         <div className="flex gap-2">
-                            <Button variant="outline" size="sm" className="h-8 bg-[#1e1e24] border-border/30">Importar</Button>
-                            <Button variant="outline" size="sm" className="h-8 bg-[#1e1e24] border-border/30">Ver info de planificación</Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                    const currentRaid = MIDNIGHT_RAIDS.find(r => r.name === event.destination || r.id === event.destination)
+                                    const firstBoss = currentRaid?.bosses[0] || ""
+                                    router.push(`/dashboard/planificador-cds?event_id=${event.id}${firstBoss ? `&boss=${encodeURIComponent(firstBoss)}` : ''}`)
+                                }}
+                                className="px-5 h-10 rounded-xl border-blue-500/30 text-blue-400 hover:bg-blue-500/10 hover:text-blue-300 transition-all font-black uppercase tracking-widest"
+                            >
+                                <IconTimeline className="size-4 mr-2" />
+                                Asignar CD&apos;s
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                    const currentRaid = MIDNIGHT_RAIDS.find(r => r.name === event.destination || r.id === event.destination)
+                                    const firstBoss = currentRaid?.bosses[0] || ""
+                                    router.push(`/dashboard/planificador-cds?event_id=${event.id}&tab=mrt${firstBoss ? `&boss=${encodeURIComponent(firstBoss)}` : ''}`)
+                                }}
+                                className="h-10 px-5 rounded-xl border-amber-500/30 text-amber-500 hover:bg-amber-500/10 hover:text-amber-400 transition-all font-black uppercase tracking-widest"
+                            >
+                                <IconClipboardText className="size-4 mr-2" />
+                                Nota MRT
+                            </Button>
+                            <Button variant="outline" size="sm" className="h-8 bg-[#1e1e24] border-border/30 uppercase text-[10px] font-black tracking-widest text-muted-foreground">Importar</Button>
                         </div>
                     </div>
 

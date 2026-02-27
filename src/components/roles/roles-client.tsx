@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { IconTrash, IconPlus, IconShield } from "@tabler/icons-react"
-import { sileo } from "sileo"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -43,8 +43,7 @@ export function RolesClient({
 
     const handleCreate = async () => {
         if (!newRoleId || !newRoleName) {
-            sileo.error({
-                title: "Campos incompletos",
+            toast.error("Campos incompletos", {
                 description: "El ID del rol y el nombre son obligatorios.",
             })
             return
@@ -69,9 +68,9 @@ export function RolesClient({
             setNewRoleId("")
             setNewRoleName("")
             setNewAppRole("raider")
-            sileo.success({ title: "Mapeo guardado", description: "El rol se ha añadido correctamente." })
+            toast.success("Mapeo guardado", { description: "El rol se ha añadido correctamente." })
         } catch (err: any) {
-            sileo.error({ title: "Error", description: err.message })
+            toast.error("Error", { description: err.message })
         } finally {
             setLoading(false)
         }
@@ -86,9 +85,9 @@ export function RolesClient({
             }
 
             setMappings(mappings.filter((m) => m.id !== id))
-            sileo.success({ title: "Mapeo eliminado" })
+            toast.success("Mapeo eliminado")
         } catch (err: any) {
-            sileo.error({ title: "Error", description: err.message })
+            toast.error("Error", { description: err.message })
         }
     }
 
