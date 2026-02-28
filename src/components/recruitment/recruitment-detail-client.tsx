@@ -145,10 +145,11 @@ export function RecruitmentDetailClient({ application, answers, classConstants, 
                     const betterSpec = synced?.spec || rio?.active_spec_name
                     if (betterSpec && betterSpec !== "Unknown") {
                         console.log("[Client] Found better spec:", betterSpec)
-                        await supabase
-                            .from("recruitment_applications")
-                            .update({ character_spec: betterSpec })
-                            .eq("id", application.id)
+                        await fetch("/api/recruitment/applications", {
+                            method: "PATCH",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ id: application.id, character_spec: betterSpec })
+                        })
                     }
                 }
             } catch (error) {
@@ -160,19 +161,26 @@ export function RecruitmentDetailClient({ application, answers, classConstants, 
     }, [application, initialRioData])
 
     const handleUpdateStatus = async (val: string) => {
+        const prevStatus = currentStatus
         setCurrentStatus(val)
         setIsUpdating(true)
         try {
-            const { error } = await supabase
-                .from("recruitment_applications")
-                .update({ status: val, updated_at: new Date().toISOString() })
-                .eq("id", application.id)
+            const res = await fetch("/api/recruitment/applications", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: application.id, status: val })
+            })
 
-            if (error) throw error
+            if (!res.ok) {
+                const err = await res.json()
+                throw new Error(err.error || "Error al actualizar")
+            }
+
             toast.success(`Estado actualizado a: ${statusConfig[val].label}`)
             router.refresh()
-        } catch (error) {
-            toast.error("Error al actualizar estado")
+        } catch (error: any) {
+            setCurrentStatus(prevStatus)
+            toast.error("Error al actualizar estado", { description: error.message })
         } finally {
             setIsUpdating(false)
         }
@@ -505,8 +513,17 @@ export function RecruitmentDetailClient({ application, answers, classConstants, 
                             placeholder="Escribe notas privadas para el resto de oficiales sobre este aplicante..."
                             defaultValue={application.internal_notes || ""}
                             onBlur={async (e) => {
-                                await supabase.from("recruitment_applications").update({ internal_notes: e.target.value }).eq("id", application.id)
-                                toast.success("Nota guardada")
+                                try {
+                                    const res = await fetch("/api/recruitment/applications", {
+                                        method: "PATCH",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({ id: application.id, internal_notes: e.target.value })
+                                    })
+                                    if (!res.ok) throw new Error("Error al guardar nota")
+                                    toast.success("Nota guardada")
+                                } catch (err) {
+                                    toast.error("Error al guardar nota")
+                                }
                             }}
                         />
                     </CardContent>
