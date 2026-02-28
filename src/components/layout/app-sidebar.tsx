@@ -155,7 +155,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       .channel('sidebar_notifications')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'system_notifications' }, () => fetchNotifications())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'user_notifications_read', filter: `user_id=eq.${session?.user?.id}` }, () => fetchNotifications())
-      .subscribe()
+      .subscribe((status) => {
+        if (status !== 'SUBSCRIBED') console.warn("Supabase Realtime (Notifications) Status:", status)
+      })
 
     // Fetch badges
     if (roleLevel === 'gm' || roleLevel === 'officer') {
@@ -168,8 +170,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         })
 
       // Simple fetch for pending invitations if profile is linked
-      /* 
-      // Simple fetch for pending invitations if profile is linked
       if (session?.user?.id) {
         supabase
           .from("event_signups")
@@ -179,7 +179,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             setBadges(prev => ({ ...prev, calendar: count || 0 }))
           })
       }
-      */
+
       // Real-time subscription for recruitment applications
       const channel = supabase
         .channel('sidebar_recruitment_changes')
@@ -196,7 +196,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               })
           }
         )
-        .subscribe()
+        .subscribe((status) => {
+          if (status !== 'SUBSCRIBED') console.warn("Supabase Realtime (Recruitment) Status:", status)
+        })
 
       return () => {
         supabase.removeChannel(channel)
@@ -207,7 +209,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return () => {
       supabase.removeChannel(notifChannel)
     }
-  }, [roleLevel, session?.user?.id])
+  }, [roleLevel, session?.user?.id, mounted])
 
   const hasViewPermission = (appId: string) => {
     if (roleLevel === 'gm') return true

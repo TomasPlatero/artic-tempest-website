@@ -7,10 +7,19 @@ import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 
+import React from "react"
+
 export function DashboardClient({ data, roleLevel }: { data: any, roleLevel: string }) {
     const router = useRouter()
     const isOfficer = roleLevel === "gm" || roleLevel === "officer"
+    const [mounted, setMounted] = React.useState(false)
     const { isBnetLinked, myCharacters } = data
+
+    React.useEffect(() => {
+        setMounted(true)
+    }, [])
+
+    if (!mounted) return <div className="animate-pulse flex flex-col gap-6 w-full h-[600px] bg-white/5 rounded-2xl" />
 
     return (
         <div className="flex flex-col gap-6 w-full">
