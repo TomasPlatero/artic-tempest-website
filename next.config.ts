@@ -40,7 +40,7 @@ const nextConfig: NextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-eval' 'unsafe-inline' va.vercel-scripts.com",
               "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
-              "img-src 'self' blob: data: cdn.discordapp.com render.worldofwarcraft.com *.supabase.co www.google.com *.raider.io *.warcraftlogs.com",
+              "img-src 'self' blob: data: cdn.discordapp.com render.worldofwarcraft.com *.supabase.co *.google.com *.akamaihd.net *.raider.io *.warcraftlogs.com",
               "font-src 'self' data: fonts.gstatic.com",
               "connect-src 'self' *.supabase.co wss://*.supabase.co discord.com *.discordapp.com vitals.vercel-insights.com raider.io *.raider.io warcraftlogs.com *.warcraftlogs.com",
               "frame-ancestors 'none'",

@@ -111,11 +111,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [iconUrl, setIconUrl] = React.useState<string | null>(null)
   const [guildName, setGuildName] = React.useState<string>("Artic Tempest")
   const [permissions, setPermissions] = React.useState<any[]>([])
+  const [mounted, setMounted] = React.useState(false)
   const [badges, setBadges] = React.useState<Record<string, number>>({
     recruitment: 0,
     calendar: 0,
     notifications: 0
   })
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
 
   React.useEffect(() => {
     fetch("/api/guild/permissions")
@@ -163,6 +168,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         })
 
       // Simple fetch for pending invitations if profile is linked
+      /* 
+      // Simple fetch for pending invitations if profile is linked
       if (session?.user?.id) {
         supabase
           .from("event_signups")
@@ -172,6 +179,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             setBadges(prev => ({ ...prev, calendar: count || 0 }))
           })
       }
+      */
       // Real-time subscription for recruitment applications
       const channel = supabase
         .channel('sidebar_recruitment_changes')
@@ -227,6 +235,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     { title: "ZONA RAIDER", items: filterItems(navigationData.raider) },
     { title: "ADMINISTRACIÓN", items: filterItems(navigationData.admin) },
   ].filter(group => group.items.length > 0)
+
+  if (!mounted) {
+    return (
+      <Sidebar collapsible="icon" {...props}>
+        <SidebarHeader className="h-12" />
+        <SidebarContent />
+        <SidebarFooter className="h-16" />
+      </Sidebar>
+    )
+  }
 
   return (
     <Sidebar collapsible="icon" {...props}>
