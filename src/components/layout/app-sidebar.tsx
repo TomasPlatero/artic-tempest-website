@@ -148,15 +148,35 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         .catch(err => console.error("Failed to fetch notification badges:", err))
     }
 
+    /*
+    // Refined subscription with retry logic
+    let notifChannel: any = null
+    
+    const startRealtime = () => {
+      notifChannel = supabase
+        .channel('sidebar_notifications')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'system_notifications' }, () => fetchNotifications())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'user_notifications_read', filter: `user_id=eq.${session?.user?.id}` }, () => fetchNotifications())
+        .subscribe((status) => {
+          if (status === 'CHANNEL_ERROR') {
+            console.error("Supabase Realtime (Notifications) failed. Check if Realtime is enabled for 'system_notifications' table.")
+          }
+        })
+    }
+    
+    // Tiny delay to ensure WebSocket is ready in some edge cases
+    const timer = setTimeout(startRealtime, 1000)
+    */
+
     fetchNotifications()
 
-    // Real-time for notifications
+    // Simple direct subscription for better production reliability
     const notifChannel = supabase
       .channel('sidebar_notifications')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'system_notifications' }, () => fetchNotifications())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'user_notifications_read', filter: `user_id=eq.${session?.user?.id}` }, () => fetchNotifications())
       .subscribe((status) => {
-        if (status !== 'SUBSCRIBED') console.warn("Supabase Realtime (Notifications) Status:", status)
+        if (status !== 'SUBSCRIBED') console.warn("Realtime Notifications:", status)
       })
 
     // Fetch badges
@@ -169,16 +189,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           setBadges(prev => ({ ...prev, recruitment: count || 0 }))
         })
 
-      // Simple fetch for pending invitations if profile is linked
+      // Remove problematic event_signups check that causes 400 error in prod
+      /*
       if (session?.user?.id) {
         supabase
           .from("event_signups")
           .select("id", { count: 'exact', head: true })
-          .eq("status", "invited")
+          .eq("status", "present")
           .then(({ count }) => {
             setBadges(prev => ({ ...prev, calendar: count || 0 }))
           })
       }
+      */
 
       // Real-time subscription for recruitment applications
       const channel = supabase
@@ -197,7 +219,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           }
         )
         .subscribe((status) => {
-          if (status !== 'SUBSCRIBED') console.warn("Supabase Realtime (Recruitment) Status:", status)
+          if (status !== 'SUBSCRIBED') console.warn("Realtime Recruitment:", status)
         })
 
       return () => {
