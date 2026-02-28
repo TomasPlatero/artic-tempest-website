@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -45,6 +46,7 @@ export function ApplyClient({ user, characters, questions, classConstants }: Pro
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isSuccess, setIsSuccess] = useState(false)
     const [showAllChars, setShowAllChars] = useState(false)
+    const [acceptedRGPD, setAcceptedRGPD] = useState(false)
 
     const classMap = new Map()
     classConstants.forEach(c => classMap.set(Number(c.key), c.value))
@@ -393,38 +395,55 @@ export function ApplyClient({ user, characters, questions, classConstants }: Pro
                         exit={{ opacity: 0, x: -20 }}
                         className="space-y-8"
                     >
-                        <div className="p-8 rounded-3xl bg-blue-600/5 border border-blue-500/20">
-                            <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3 italic">
-                                <IconUserCode className="size-6 text-blue-500" />
-                                Resumen de tu aplicación
-                            </h3>
+                        <div className="space-y-6">
+                            <div className="p-8 rounded-3xl bg-blue-600/5 border border-blue-500/20">
+                                <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3 italic">
+                                    <IconUserCode className="size-6 text-blue-500" />
+                                    Resumen de tu aplicación
+                                </h3>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="space-y-4">
-                                    <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Personaje</p>
-                                    <div className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5">
-                                        <div className="relative size-14 rounded-xl overflow-hidden shadow-2xl">
-                                            <Image
-                                                src={`/assets/images/classes/${selectedChar.class_id}.jpg`}
-                                                alt="Clase" fill className="object-cover"
-                                            />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-4">
+                                        <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Personaje</p>
+                                        <div className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5">
+                                            <div className="relative size-14 rounded-xl overflow-hidden shadow-2xl">
+                                                <Image
+                                                    src={`/assets/images/classes/${selectedChar.class_id}.jpg`}
+                                                    alt="Clase" fill className="object-cover"
+                                                />
+                                            </div>
+                                            <div>
+                                                <p className="text-lg font-black text-white leading-tight">{selectedChar.name}</p>
+                                                <p className="text-[10px] text-zinc-400 font-medium uppercase">{selectedChar.spec || "Unknown"} {classMap.get(selectedChar.class_id)}</p>
+                                                <p className="text-[10px] text-xs mt-1 text-zinc-500">{selectedChar.realm}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-lg font-black text-white leading-tight">{selectedChar.name}</p>
-                                            <p className="text-[10px] text-zinc-400 font-medium uppercase">{selectedChar.spec || "Unknown"} {classMap.get(selectedChar.class_id)}</p>
-                                            <p className="text-[10px] text-xs mt-1 text-zinc-500">{selectedChar.realm}</p>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Estado</p>
+                                        <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+                                            <p className="text-sm text-zinc-300">
+                                                Al pulsar enviar, tu perfil de **Raider.io** y **Warcraft Logs** será vinculado automáticamente para que los oficiales lo revisen.
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
 
-                                <div className="space-y-4">
-                                    <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Estado</p>
-                                    <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
-                                        <p className="text-sm text-zinc-300">
-                                            Al pulsar enviar, tu perfil de **Raider.io** y **Warcraft Logs** será vinculado automáticamente para que los oficiales lo revisen.
-                                        </p>
-                                    </div>
+                            {/* RGPD */}
+                            <div className="flex items-start gap-3 p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-white/20 transition-colors group relative overflow-hidden">
+                                <div className="shrink-0 pt-0.5">
+                                    <Checkbox
+                                        id="rgpd-apply"
+                                        checked={acceptedRGPD}
+                                        onCheckedChange={(val) => setAcceptedRGPD(!!val)}
+                                        className="size-5 rounded border-white/20 bg-zinc-950 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500 cursor-pointer"
+                                    />
                                 </div>
+                                <Label htmlFor="rgpd-apply" className="text-xs text-white/50 leading-relaxed cursor-pointer group-hover:text-white/70 transition-colors flex-1 select-none block">
+                                    He leído y acepto la <Link href="/privacidad" target="_blank" className="text-blue-400 hover:underline font-bold">política de privacidad</Link> y doy mi consentimiento para el tratamiento de mis datos personales para la gestión de mi solicitud de reclutamiento.
+                                </Label>
                             </div>
                         </div>
 
@@ -435,9 +454,9 @@ export function ApplyClient({ user, characters, questions, classConstants }: Pro
                             </Button>
                             <Button
                                 size="xl"
-                                className="rounded-xl px-12 font-black uppercase tracking-widest bg-emerald-600 hover:bg-emerald-500 text-white shadow-xl shadow-emerald-600/20"
+                                className="rounded-xl px-12 font-black uppercase tracking-widest bg-emerald-600 hover:bg-emerald-500 text-white shadow-xl shadow-emerald-600/20 disabled:opacity-40 disabled:grayscale"
                                 onClick={handleSubmit}
-                                disabled={isSubmitting}
+                                disabled={isSubmitting || !acceptedRGPD}
                             >
                                 {isSubmitting ? (
                                     <>

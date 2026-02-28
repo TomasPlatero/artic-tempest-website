@@ -21,10 +21,11 @@ export function LandingFooter() {
                         </p>
                     </div>
 
-                    <div className="flex gap-4 text-[10px] text-white/20 uppercase tracking-widest font-black">
+                    <div className="flex flex-wrap gap-x-6 gap-y-3 text-[10px] text-white/20 uppercase tracking-widest font-black">
                         <Link href="/aviso-legal" className="hover:text-white/60 transition-colors">Aviso Legal</Link>
                         <Link href="/privacidad" className="hover:text-white/60 transition-colors">Privacidad</Link>
                         <Link href="/cookies" className="hover:text-white/60 transition-colors">Cookies</Link>
+                        <Link href="/feedback" className="hover:text-white/60 transition-colors">Feedback</Link>
                     </div>
 
                     <p className="text-white/20 text-[10px] font-medium">

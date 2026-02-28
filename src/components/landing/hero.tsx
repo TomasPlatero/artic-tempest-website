@@ -16,6 +16,7 @@ export function LandingHero() {
                     alt="Midnight Battle Hero"
                     fill
                     className="object-cover"
+                    sizes="100vw"
                     priority
                     quality={90}
                 />
