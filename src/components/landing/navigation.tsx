@@ -42,7 +42,7 @@ export function LandingNavigation() {
     }
 
     return (
-        <nav className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-md border-b border-white/10">
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-md border-b border-white/10 dark">
             <div className="max-w-7xl mx-auto px-4 md:px-6 h-20 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
                     {/* Botón de Menú Mobile */}
@@ -163,7 +163,7 @@ export function LandingNavigation() {
                         </DropdownMenu>
                     ) : (
                         <Button
-                            variant="glow"
+                            variant="glass"
                             size="sm"
                             onClick={() => signIn('discord')}
                             className="rounded-full px-4 md:px-6 transition-all min-w-[80px]"
