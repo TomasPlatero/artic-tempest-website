@@ -24,13 +24,18 @@ interface BnetCharacter {
 
 async function getDashboardData(userId: string | undefined) {
   // Get guild metrics base
+  // Get guild metrics base - We try to select everything but handle fails gracefully
   const { data: guild, error: guildError } = await sb
     .from("guilds_managed")
     .select("name, region, realm, faction, last_bnet_sync")
     .maybeSingle()
 
   if (guildError) {
-    console.error("Dashboard: Error fetching guild data:", guildError)
+    console.error("Dashboard: Error fetching guild data (this is likely a missing column last_bnet_sync):", {
+      code: (guildError as any).code,
+      message: (guildError as any).message,
+      details: (guildError as any).details
+    })
   }
 
   const { count: rosterCount } = await sb
