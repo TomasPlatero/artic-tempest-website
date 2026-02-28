@@ -1,6 +1,7 @@
 // src/app/aviso-legal/page.tsx
 import { LandingNavigation } from "@/components/landing/navigation"
 import { LandingFooter } from "@/components/landing/footer"
+import Image from "next/image"
 import { IconScale, IconUsers, IconCopyright, IconAlertTriangle, IconBriefcase } from "@tabler/icons-react"
 
 import { Metadata } from "next"
@@ -13,9 +14,18 @@ export const metadata: Metadata = {
 export default function AvisoLegalPage() {
     return (
         <main className="min-h-screen bg-black flex flex-col relative overflow-hidden">
-            {/* Background elements */}
-            <div className="fixed inset-0 z-0 bg-[url('/assets/images/raids/voidspire.webp')] bg-cover bg-center bg-no-repeat opacity-10 pointer-events-none" />
-            <div className="fixed inset-0 z-0 bg-gradient-to-t from-black via-black/90 to-transparent pointer-events-none" />
+            {/* Background Image & Decor */}
+            <div className="absolute inset-0 z-0 select-none pointer-events-none overflow-hidden h-full w-full">
+                <Image
+                    src="/assets/images/housing-contact.webp"
+                    alt="Background"
+                    fill
+                    className="object-cover blur-[2px] opacity-30 scale-105"
+                    sizes="100vw"
+                    priority
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/90" />
+            </div>
 
             <LandingNavigation />
 
@@ -39,9 +49,9 @@ export default function AvisoLegalPage() {
                                 En cumplimiento del artículo 10 de la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y de Comercio Electrónico (LSSI-CE), se informa que:
                             </p>
                             <ul className="list-none p-0 m-0 space-y-3">
-                                <li className="text-sm font-bold text-white/50 border-b border-white/5 pb-2">PROPIETARIO: <span className="text-white ml-2 text-base">Tomas Platero (Zatosh) / Artic Tempest</span></li>
+                                <li className="text-sm font-bold text-white/50 border-b border-white/5 pb-2">PROPIETARIO: <span className="text-white ml-2 text-base">Tomás Platero (Zatoshi - GM) / Artic Tempest</span></li>
                                 <li className="text-sm font-bold text-white/50 border-b border-white/5 pb-2">DOMINIO: <span className="text-emerald-400 ml-2">artictempest.es</span></li>
-                                <li className="text-sm font-bold text-white/50 border-b border-white/5 pb-2">CONTACTO: <span className="text-white ml-2">taplatero@outlook.es</span></li>
+                                <li className="text-sm font-bold text-white/50 border-b border-white/5 pb-2">CONTACTO: <span className="text-white ml-2">admin@artictempest.es</span></li>
                                 <li className="text-sm font-bold text-white/50">FINALIDAD: <span className="text-white ml-2">Gestión de comunidad competitiva de WoW y panel de herramientas para miembros.</span></li>
                             </ul>
                         </div>

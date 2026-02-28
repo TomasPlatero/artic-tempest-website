@@ -1,4 +1,5 @@
 import { Metadata } from "next"
+import Image from "next/image"
 import { LandingNavigation } from "@/components/landing/navigation"
 import { LandingFooter } from "@/components/landing/footer"
 import { FeedbackClient } from "@/components/feedback/feedback-client"
@@ -14,9 +15,16 @@ export default function FeedbackPage() {
             <LandingNavigation />
 
             <div className="flex-1 pt-40 pb-20 px-6 relative overflow-hidden">
-                {/* Background Decor */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-full pointer-events-none opacity-20 pointer-events-none select-none">
-                    <div className="absolute top-0 left-0 w-full h-96 bg-blue-500/20 blur-[120px] rounded-full" />
+                <div className="absolute inset-0 z-0 select-none pointer-events-none overflow-hidden">
+                    <Image
+                        src="/assets/images/housing-contact.webp"
+                        alt="Background"
+                        fill
+                        className="object-cover blur-[2px] opacity-70"
+                        sizes="100vw"
+                        priority
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-b from-black via-black/40 to-black/90" />
                 </div>
 
                 <div className="max-w-7xl mx-auto relative z-10">

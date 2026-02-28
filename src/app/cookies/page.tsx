@@ -1,6 +1,7 @@
 // src/app/cookies/page.tsx
 import { LandingNavigation } from "@/components/landing/navigation"
 import { LandingFooter } from "@/components/landing/footer"
+import Image from "next/image"
 import { IconCookie, IconCheck, IconSettings, IconInfoCircle } from "@tabler/icons-react"
 
 import { Metadata } from "next"
@@ -13,9 +14,18 @@ export const metadata: Metadata = {
 export default function CookiesPage() {
     return (
         <main className="min-h-screen bg-black flex flex-col relative overflow-hidden">
-            {/* Background elements */}
-            <div className="fixed inset-0 z-0 bg-[url('/assets/images/raids/voidspire.webp')] bg-cover bg-center bg-no-repeat opacity-10 pointer-events-none" />
-            <div className="fixed inset-0 z-0 bg-gradient-to-t from-black via-black/90 to-transparent pointer-events-none" />
+            {/* Background Image & Decor */}
+            <div className="absolute inset-0 z-0 select-none pointer-events-none overflow-hidden h-full w-full">
+                <Image
+                    src="/assets/images/housing-contact.webp"
+                    alt="Background"
+                    fill
+                    className="object-cover blur-[2px] opacity-30 scale-105"
+                    sizes="100vw"
+                    priority
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/90" />
+            </div>
 
             <LandingNavigation />
 

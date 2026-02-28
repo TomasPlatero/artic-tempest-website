@@ -307,7 +307,7 @@ export function FeedbackClient() {
                         required
                     />
                 </div>
-                <Label htmlFor="rgpd" className="text-xs text-white/50 leading-relaxed cursor-pointer group-hover:text-white/70 transition-colors flex-1 select-none">
+                <Label htmlFor="rgpd" className="text-xs text-white/50 leading-relaxed cursor-pointer group-hover:text-white/70 transition-colors flex-1 select-none block">
                     He leído y acepto la <Link href="/privacidad" className="text-blue-400 hover:underline font-bold">política de privacidad</Link> y el consentimiento para el tratamiento de mis datos personales para gestionar este feedback.
                 </Label>
             </div>

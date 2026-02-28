@@ -441,7 +441,7 @@ export function ApplyClient({ user, characters, questions, classConstants }: Pro
                                         className="size-5 rounded border-white/20 bg-zinc-950 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500 cursor-pointer"
                                     />
                                 </div>
-                                <Label htmlFor="rgpd-apply" className="text-xs text-white/50 leading-relaxed cursor-pointer group-hover:text-white/70 transition-colors flex-1 select-none">
+                                <Label htmlFor="rgpd-apply" className="text-xs text-white/50 leading-relaxed cursor-pointer group-hover:text-white/70 transition-colors flex-1 select-none block">
                                     He leído y acepto la <Link href="/privacidad" target="_blank" className="text-blue-400 hover:underline font-bold">política de privacidad</Link> y doy mi consentimiento para el tratamiento de mis datos personales para la gestión de mi solicitud de reclutamiento.
                                 </Label>
                             </div>

@@ -1,6 +1,8 @@
 // src/app/privacidad/page.tsx
 import { LandingNavigation } from "@/components/landing/navigation"
 import { LandingFooter } from "@/components/landing/footer"
+import Link from "next/link"
+import Image from "next/image"
 import { IconShieldCheck, IconLock, IconEye, IconTrash, IconFileText } from "@tabler/icons-react"
 
 import { Metadata } from "next"
@@ -13,9 +15,18 @@ export const metadata: Metadata = {
 export default function PrivacidadPage() {
     return (
         <main className="min-h-screen bg-black flex flex-col relative overflow-hidden">
-            {/* Background elements */}
-            <div className="fixed inset-0 z-0 bg-[url('/assets/images/raids/voidspire.webp')] bg-cover bg-center bg-no-repeat opacity-10 pointer-events-none" />
-            <div className="fixed inset-0 z-0 bg-gradient-to-t from-black via-black/90 to-transparent pointer-events-none" />
+            {/* Background Image & Decor */}
+            <div className="absolute inset-0 z-0 select-none pointer-events-none overflow-hidden h-full w-full">
+                <Image
+                    src="/assets/images/housing-contact.webp"
+                    alt="Background"
+                    fill
+                    className="object-cover blur-[2px] opacity-30 scale-105"
+                    sizes="100vw"
+                    priority
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/90" />
+            </div>
 
             <LandingNavigation />
 
@@ -99,7 +110,7 @@ export default function PrivacidadPage() {
                         </ul>
                         <div className="mt-8 pt-8 border-t border-blue-500/20">
                             <p className="text-xs text-blue-400 font-bold uppercase tracking-widest leading-relaxed">
-                                Para ejercer estos derechos o informar de una brecha de seguridad, contacta inmediatamente con <span className="text-white">taplatero@outlook.es</span> o abre un ticket en nuestro Discord.
+                                Para ejercer estos derechos o informar de una brecha de seguridad, contacta inmediatamente con nosotros desde <Link href="/feedback" className="text-white hover:text-blue-300 underline decoration-blue-500/30 transition-colors">este enlace</Link>.
                             </p>
                         </div>
                     </section>

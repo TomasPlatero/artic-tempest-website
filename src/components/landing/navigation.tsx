@@ -61,6 +61,7 @@ export function LandingNavigation() {
                                             alt="Artic Tempest Logo"
                                             fill
                                             className="object-contain"
+                                            sizes="150px"
                                         />
                                     </div>
                                 </SheetTitle>
@@ -92,6 +93,7 @@ export function LandingNavigation() {
                                 alt="Artic Tempest Logo"
                                 fill
                                 className="object-contain"
+                                sizes="(max-width: 768px) 150px, 200px"
                                 priority
                             />
                         </div>
@@ -124,6 +126,7 @@ export function LandingNavigation() {
                                             alt={session.user.username || "Usuario"}
                                             fill
                                             className="object-cover"
+                                            sizes="40px"
                                         />
                                     ) : (
                                         <IconUser className="size-5 text-white/70" />
