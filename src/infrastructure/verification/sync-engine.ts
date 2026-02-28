@@ -111,8 +111,8 @@ export async function verifyUser(userId: string): Promise<SyncResult> {
         if (oldRole === 'invitado') newRole = 'member'
     } else {
         // Degradación automática si no cumple requisitos
-        // Solo degradamos si era Miembro o similar (no tocamos Officer/GM manualmente)
-        if (oldRole === 'member' || oldRole === 'raider') {
+        // Solo degradamos si era Miembro (no tocamos Raider/Officer/GM manualmente)
+        if (oldRole === 'member') {
             newRole = 'invitado'
         }
     }
