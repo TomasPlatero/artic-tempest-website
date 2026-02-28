@@ -176,7 +176,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'system_notifications' }, () => fetchNotifications())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'user_notifications_read', filter: `user_id=eq.${session?.user?.id}` }, () => fetchNotifications())
       .subscribe((status) => {
-        if (status !== 'SUBSCRIBED') console.warn("Realtime Notifications:", status)
+        if (status === 'SUBSCRIBED') {
+          console.log("Realtime Notifications: Conectado (SUBSCRIBED)")
+        } else if (status === 'CLOSED') {
+          // Normal React unmount, ignore false warning
+        } else {
+          console.warn(`Realtime Notifications: ${status}`)
+        }
       })
 
     // Fetch badges
@@ -219,7 +225,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           }
         )
         .subscribe((status) => {
-          if (status !== 'SUBSCRIBED') console.warn("Realtime Recruitment:", status)
+          if (status === 'SUBSCRIBED') {
+            console.log("Realtime Recruitment: Conectado (SUBSCRIBED)")
+          } else if (status === 'CLOSED') {
+            // Normal React unmount, ignore false warning
+          } else {
+            console.warn(`Realtime Recruitment: ${status}`)
+          }
         })
 
       return () => {

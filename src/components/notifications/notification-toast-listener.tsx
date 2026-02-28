@@ -61,7 +61,15 @@ export function NotificationToastListener() {
                     checkNotifications()
                 }
             )
-            .subscribe()
+            .subscribe((status) => {
+                if (status === 'SUBSCRIBED') {
+                    console.log("Realtime Toast Notifications: Conectado (SUBSCRIBED)")
+                } else if (status === 'CLOSED') {
+                    // Normal React unmount, ignore false warning
+                } else {
+                    console.warn(`Realtime Toast Notifications: ${status}`)
+                }
+            })
 
         return () => {
             supabase.removeChannel(channel)
