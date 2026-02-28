@@ -10,11 +10,9 @@ const SYNC_DAYS_AHEAD = 60 // 60 days ahead
 function getBackgroundUrl(destination: string) {
     if (!destination) return null
     const destLower = destination.toLowerCase()
-    if (destLower.includes("ulduar")) return "https://wow.zamimg.com/uploads/screenshots/normal/136894-ulduar.jpg"
-    if (destLower.includes("naxx")) return "https://wow.zamimg.com/uploads/screenshots/normal/105741-naxxramas.jpg"
-    if (destLower.includes("voidspire")) return "https://www.nerdsquare.eu/wp-content/uploads/2025/08/nerdsquare-wow-midnight-raid-voidspire-700x394.jpg"
-    if (destLower.includes("dreamrift")) return "https://www.nerdsquare.eu/wp-content/uploads/2025/08/nerdsquare-wow-midnight-raid-dreamrift-700x394.jpg"
-    if (destLower.includes("quel'danas") || destLower.includes("sunwell")) return "https://www.nerdsquare.eu/wp-content/uploads/2025/08/nerdsquare-wow-midnight-raid-marchonqueldanas-700x394.jpg"
+    if (destLower.includes("voidspire")) return "https://www.nerdsquare.eu/wp-content/uploads/2025/08/nerdsquare-wow-midnight-raid-voidspire-700x394.webp"
+    if (destLower.includes("dreamrift")) return "https://www.nerdsquare.eu/wp-content/uploads/2025/08/nerdsquare-wow-midnight-raid-dreamrift-700x394.webp"
+    if (destLower.includes("quel'danas") || destLower.includes("sunwell")) return "https://www.nerdsquare.eu/wp-content/uploads/2025/08/nerdsquare-wow-midnight-raid-marchonqueldanas-700x394.webp"
     return null
 }
 

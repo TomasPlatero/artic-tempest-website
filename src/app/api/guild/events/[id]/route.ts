@@ -55,11 +55,9 @@ export async function PATCH(
             // Refresh background if destination changed
             let background_url = null
             const destLower = destination.toLowerCase()
-            if (destLower.includes("ulduar")) background_url = "https://wow.zamimg.com/uploads/screenshots/normal/136894-ulduar.jpg"
-            else if (destLower.includes("naxx")) background_url = "https://wow.zamimg.com/uploads/screenshots/normal/105741-naxxramas.jpg"
-            else if (destLower.includes("voidspire")) background_url = "https://www.nerdsquare.eu/wp-content/uploads/2025/08/nerdsquare-wow-midnight-raid-voidspire-700x394.jpg"
-            else if (destLower.includes("dreamrift")) background_url = "https://www.nerdsquare.eu/wp-content/uploads/2025/08/nerdsquare-wow-midnight-raid-dreamrift-700x394.jpg"
-            else if (destLower.includes("quel'danas") || destLower.includes("sunwell")) background_url = "https://www.nerdsquare.eu/wp-content/uploads/2025/08/nerdsquare-wow-midnight-raid-marchonqueldanas-700x394.jpg"
+            if (destLower.includes("voidspire")) background_url = "https://www.nerdsquare.eu/wp-content/uploads/2025/08/nerdsquare-wow-midnight-raid-voidspire-700x394.webp"
+            else if (destLower.includes("dreamrift")) background_url = "https://www.nerdsquare.eu/wp-content/uploads/2025/08/nerdsquare-wow-midnight-raid-dreamrift-700x394.webp"
+            else if (destLower.includes("quel'danas") || destLower.includes("sunwell")) background_url = "https://www.nerdsquare.eu/wp-content/uploads/2025/08/nerdsquare-wow-midnight-raid-marchonqueldanas-700x394.webp"
 
             if (background_url) updateData.background_url = background_url
         }

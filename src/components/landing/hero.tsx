@@ -12,7 +12,7 @@ export function LandingHero() {
             {/* Background Image Layer with Native Next.js Optimization */}
             <div className="absolute inset-0 z-0 select-none pointer-events-none scale-110 animate-[slow-zoom_20s_infinite_alternate]">
                 <Image
-                    src="/assets/images/midnight-battle-hero.jpg"
+                    src="/assets/images/midnight-battle.webp"
                     alt="Midnight Battle Hero"
                     fill
                     className="object-cover"
@@ -54,7 +54,7 @@ export function LandingHero() {
                             </Link>
                         </Button>
                         <Button variant="outline" size="xl" className="rounded-full px-8 text-lg bg-white/5 border-white/20 hover:bg-white/10" asChild>
-                            <Link href="#historia">
+                            <Link href="#progreso">
                                 Ver Progreso
                             </Link>
                         </Button>

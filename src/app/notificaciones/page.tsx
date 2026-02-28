@@ -25,7 +25,7 @@ export default function PublicNotificationsPage() {
     const { data: session, status } = useSession()
     const [notifications, setNotifications] = useState<Notification[]>([])
     const [loading, setLoading] = useState(true)
-    const [activeFilter, setActiveFilter] = useState<'all' | 'unread' | 'update' | 'important'>('all')
+    const [activeFilter, setActiveFilter] = useState<'all' | 'unread' | 'read' | 'info' | 'update' | 'warning' | 'important'>('all')
 
     const fetchNotifications = async () => {
         try {
@@ -90,9 +90,10 @@ export default function PublicNotificationsPage() {
     }
 
     const filteredNotifications = notifications.filter(n => {
-        if (activeFilter === 'all') return true
+        if (activeFilter === 'all') return !n.isRead
         if (activeFilter === 'unread') return !n.isRead
-        return n.type === activeFilter
+        if (activeFilter === 'read') return n.isRead
+        return n.type === activeFilter && !n.isRead
     })
 
     if (status === "loading") return null
@@ -132,10 +133,11 @@ export default function PublicNotificationsPage() {
                     {[
                         { id: 'all', label: 'Todos' },
                         { id: 'unread', label: 'Sin leer', count: notifications.filter(n => !n.isRead).length },
-                        { id: 'info', label: 'Informativo', count: notifications.filter(n => n.type === 'info').length },
-                        { id: 'update', label: 'Actualización', count: notifications.filter(n => n.type === 'update').length },
-                        { id: 'warning', label: 'Aviso', count: notifications.filter(n => n.type === 'warning').length },
-                        { id: 'important', label: 'Importante', count: notifications.filter(n => n.type === 'important').length },
+                        { id: 'read', label: 'Leídos', count: notifications.filter(n => n.isRead).length },
+                        { id: 'info', label: 'Informativo', count: notifications.filter(n => n.type === 'info' && !n.isRead).length },
+                        { id: 'update', label: 'Actualización', count: notifications.filter(n => n.type === 'update' && !n.isRead).length },
+                        { id: 'warning', label: 'Aviso', count: notifications.filter(n => n.type === 'warning' && !n.isRead).length },
+                        { id: 'important', label: 'Importante', count: notifications.filter(n => n.type === 'important' && !n.isRead).length },
                     ].map((filter) => (
                         <button
                             key={filter.id}
@@ -148,12 +150,12 @@ export default function PublicNotificationsPage() {
                             )}
                         >
                             {filter.label}
-                            {((filter.id === 'all' && notifications.length > 0) || (filter.count !== undefined && filter.count > 0)) && (
+                            {((filter.id === 'all' && notifications.filter(n => !n.isRead).length > 0) || (filter.count !== undefined && filter.count > 0)) && (
                                 <span className={cn(
                                     "px-1.5 py-0.5 rounded-md text-[9px] min-w-4 flex items-center justify-center font-bold",
                                     activeFilter === filter.id ? "bg-white/20 text-white" : "bg-white/10 text-zinc-400"
                                 )}>
-                                    {filter.id === 'all' ? notifications.length : filter.count}
+                                    {filter.id === 'all' ? notifications.filter(n => !n.isRead).length : filter.count}
                                 </span>
                             )}
                         </button>
@@ -168,12 +170,14 @@ export default function PublicNotificationsPage() {
                             ))}
                         </div>
                     ) : filteredNotifications.length === 0 ? (
-                        <div className="bg-white/5 border border-white/10 rounded-3xl p-20 text-center backdrop-blur-md">
+                        <div className="bg-white/5 border border-white/10 rounded-3xl p-20 text-center backdrop-blur-md animate-in fade-in zoom-in duration-500">
                             <IconBell className="size-16 text-zinc-700 mx-auto mb-6 opacity-20" />
                             <p className="text-zinc-500 font-medium italic">
-                                {activeFilter === 'unread'
+                                {activeFilter === 'unread' || activeFilter === 'all'
                                     ? "¡Estás al día! No tienes mensajes sin leer."
-                                    : "No se han encontrado mensajes en esta categoría."}
+                                    : activeFilter === 'read'
+                                        ? "No tienes mensajes leídos todavía."
+                                        : "No se han encontrado mensajes sin leer en esta categoría."}
                             </p>
                         </div>
                     ) : (

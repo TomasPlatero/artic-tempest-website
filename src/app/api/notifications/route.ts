@@ -72,3 +72,32 @@ export async function POST(request: Request) {
 
     return NextResponse.json(data);
 }
+
+export async function DELETE(request: Request) {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+        return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    // Only GM can delete system notifications
+    if (session.user.roleLevel !== "gm") {
+        return NextResponse.json({ error: "Solo el GM puede eliminar notificaciones" }, { status: 403 });
+    }
+
+    const { id } = await request.json();
+
+    if (!id) {
+        return NextResponse.json({ error: "ID de notificación requerido" }, { status: 400 });
+    }
+
+    const { error } = await sb
+        .from("system_notifications")
+        .delete()
+        .eq("id", id);
+
+    if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
+}

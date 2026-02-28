@@ -237,7 +237,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <div className="flex flex-col truncate">
                   <span className="text-base font-semibold leading-none">{guildName}</span>
                   <div className="flex items-center gap-1.5 mt-0.5">
-                    <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 bg-blue-500/10 text-blue-400 border-blue-500/20 font-black">v0.6.1 alpha</Badge>
+                    <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 bg-blue-500/10 text-blue-400 border-blue-500/20 font-black">v0.9.0 beta</Badge>
                   </div>
                 </div>
               </div>

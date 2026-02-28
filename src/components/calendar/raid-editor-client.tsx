@@ -492,7 +492,7 @@ export function RaidEditorClient({
     }, [localRaids.length, localBuffs.length])
 
     const currentRaid = useMemo(() => localRaids.find((r: any) => r.id === raid.destination || r.name === raid.destination), [localRaids, raid.destination])
-    const bgUrl = currentRaid?.background || "/assets/images/wow-raid-hero.jpg"
+    const bgUrl = currentRaid?.background || "/assets/images/midnight-battle.webp"
 
     return (
         <div className="flex flex-col gap-6 text-foreground">
