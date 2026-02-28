@@ -16,14 +16,13 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Faltan campos obligatorios" }, { status: 400 })
         }
 
-        // Insert into DB using admin client to bypass RLS if needed, or normal client if RLS is setup for GM
+        // Insert into DB
         const { data, error } = await sb
-            .from("discord_role_mappings")
+            .from("discord_roles")
             .insert({
-                discord_role_id,
-                role_name,
-                app_role,
-                created_by: session.user.id,
+                role_id: discord_role_id,
+                name: role_name,
+                level: app_role,
             })
             .select()
             .single()
@@ -50,16 +49,16 @@ export async function DELETE(req: Request) {
         }
 
         const { searchParams } = new URL(req.url)
-        const id = searchParams.get("id")
+        const id = searchParams.get("id") // In discord_roles, the primary key is role_id or id?
 
         if (!id) {
             return NextResponse.json({ error: "Falta el ID" }, { status: 400 })
         }
 
         const { error } = await sb
-            .from("discord_role_mappings")
+            .from("discord_roles")
             .delete()
-            .eq("id", id)
+            .match({ role_id: id }) // Match role_id
 
         if (error) throw error
 
