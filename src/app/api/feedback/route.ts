@@ -64,10 +64,19 @@ export async function POST(req: Request) {
                                     </div>
                                 </div>
 
-                                ${images && images.length > 0 ? `
-                                    <h3 style="color: #60a5fa; margin-bottom: 10px;">Adjuntos:</h3>
-                                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                        ${images.map((img: string) => `<img src="${img}" style="width: 140px; height: 140px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);" />`).join('')}
+                                 ${images && images.length > 0 ? `
+                                    <div style="margin-top: 30px;">
+                                        <h3 style="color: #60a5fa; margin-bottom: 15px; font-size: 18px;">Adjuntos (${images.length}):</h3>
+                                        <div style="font-size: 0;">
+                                            ${images.map((img: string) => `
+                                                <div style="display: inline-block; margin-right: 10px; margin-bottom: 10px; border: 2px solid rgba(255,255,255,0.1); border-radius: 12px; overflow: hidden; background: #111;">
+                                                    <a href="${img}" target="_blank" style="text-decoration: none;">
+                                                        <img src="${img}" width="180" height="180" style="display: block; object-fit: cover; border: 0;" alt="Feedback attachment" />
+                                                    </a>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                        <p style="font-size: 12px; color: #60a5fa; margin-top: 5px;">Haga clic en las imágenes para verlas a tamaño completo.</p>
                                     </div>
                                 ` : ''}
 
