@@ -9,8 +9,8 @@ export async function generateMetadata(): Promise<Metadata> {
     .limit(1)
     .single()
 
-  const title = guild ? `GuildBoard – ${guild.name}` : "Artic Tempest GuildBoard"
-  const desc = `Dashboard y sitio web oficial de la hermandad ${guild?.name || 'Artic Tempest'} para World of Warcraft. Consulta nuestro progreso en Midnight y únete al roster.`
+  const title = guild ? `${guild.name}` : "Artic Tempest"
+  const desc = `Sitio web oficial de la hermandad ${guild?.name || 'Artic Tempest'} (World of Warcraft). Consulta nuestro progreso en Midnight y únete al roster.`
 
   return {
     title,

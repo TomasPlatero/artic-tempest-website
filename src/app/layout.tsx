@@ -27,8 +27,8 @@ export async function generateMetadata(): Promise<Metadata> {
     .limit(1)
     .single();
 
-  const title = guild ? `GuildBoard – ${guild.name}` : "GuildBoard";
-  const desc = "Dashboard de hermandad para World of Warcraft. Gestiona tu roster, calendario y estadísticas de raideo.";
+  const title = guild ? `${guild.name}` : "Artic Tempest";
+  const desc = "Sitio web oficial y Dashboard de la hermandad Artic Tempest (World of Warcraft). Gestiona tu roster, calendario y estadísticas de raideo.";
   const icon = guild?.icon_url || "/favicon.ico";
 
   return {
@@ -37,7 +37,7 @@ export async function generateMetadata(): Promise<Metadata> {
     keywords: ["World of Warcraft", "WoW", "Guild", "Hermandad", "Dashboard", "Roster", "Raideo"],
     authors: [{ name: "Artic Tempest" }],
     creator: "Artic Tempest",
-    publisher: "GuildBoard",
+    publisher: "Artic Tempest",
     formatDetection: {
       email: false,
       address: false,
@@ -65,7 +65,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title,
       description: desc,
       url: './',
-      siteName: 'GuildBoard',
+      siteName: 'Artic Tempest',
       locale: 'es_ES',
       type: 'website',
       images: [
