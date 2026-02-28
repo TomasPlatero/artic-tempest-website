@@ -18,8 +18,8 @@ export function RecruitmentPageClient() {
                 {/* Background Image Layer with Native Next.js Optimization */}
                 <div className="absolute inset-0 z-0 select-none pointer-events-none opacity-40 scale-105 animate-[slow-zoom_20s_infinite_alternate]">
                     <Image
-                        src="/assets/images/midnight-battle.jpg"
-                        alt="Midnight Battle"
+                        src="/assets/images/midnight-cinematic.webp"
+                        alt="midnight-cinematic"
                         fill
                         className="object-cover object-[center_30%]"
                         priority
@@ -99,10 +99,14 @@ export function RecruitmentPageClient() {
                             </div>
 
                             <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-                                <h3 className="text-white font-bold mb-4 flex items-center gap-2">Requisitos Mínimos</h3>
+                                <h3 className="text-white font-bold mb-4 flex items-center gap-2">
+                                    Requisitos Mínimos</h3>
                                 <ul className="space-y-3 font-medium">
                                     {[
-                                        "Experiencia previa en contenido Mítico.",
+                                        "Experiencia comprobada en contenido Mítico.",
+                                        "Máxima asistencia posible.",
+                                        "Dominio absoluto del personaje que vayas a usar.",
+                                        "Capacidad para optimizar y adaptar la interfaz (addons, auras, etc.).",
                                         "Uso obligatorio de addons (WeakAuras, BigWigs/LittleWigs, Method Raid Tools).",
                                         "Preparación previa de los encuentros (consumibles, guías).",
                                         "Micrófono funcional y presencia en Discord."

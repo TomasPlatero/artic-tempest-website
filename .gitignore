@@ -109,3 +109,7 @@ dist/
 supabase/.temp
 supabase_types.d.ts
 debug-db.ts
+.jpg
+.jpeg
+.png
+.svg

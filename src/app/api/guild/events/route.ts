@@ -27,11 +27,11 @@ export async function POST(request: Request) {
         let background_url = null
         const destLower = destination.toLowerCase()
         if (destLower.includes("voidspire")) {
-            background_url = "/assets/images/raids/voidspire.jpg"
+            background_url = "/assets/images/raids/voidspire.webp"
         } else if (destLower.includes("dreamrift")) {
-            background_url = "/assets/images/raids/dreamrift.jpg"
+            background_url = "/assets/images/raids/dreamrift.webp"
         } else if (destLower.includes("quel'danas") || destLower.includes("sunwell")) {
-            background_url = "/assets/images/raids/marchonqueldanas.jpg"
+            background_url = "/assets/images/raids/marchonqueldanas.webp"
         }
 
         // Get the first guild ID (since the app manages one guild for now)

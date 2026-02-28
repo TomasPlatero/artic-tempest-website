@@ -23,7 +23,7 @@ export function LandingNavigation() {
                 <Link href="/" className="flex items-center gap-3">
                     <div className="relative h-12 w-48">
                         <Image
-                            src="/assets/brand/logo-texto.png"
+                            src="/assets/brand/logo-texto.webp"
                             alt="Artic Tempest Logo"
                             fill
                             className="object-contain"
@@ -32,9 +32,9 @@ export function LandingNavigation() {
                 </Link>
 
                 <div className="hidden md:flex items-center gap-8">
-                    <Link href="#progreso" className="text-sm font-medium text-white/70 hover:text-white transition-colors" title="Consulta nuestro progreso en Midnight">Progreso</Link>
-                    <Link href="#reclutamiento" className="text-sm font-medium text-white/70 hover:text-white transition-colors" title="Mira las clases que necesitamos en Artic Tempest">Reclutamiento</Link>
-                    <Link href="#historia" className="text-sm font-medium text-white/70 hover:text-white transition-colors" title="Conoce la trayectoria de nuestra hermandad">Nuestra Historia</Link>
+                    <Link href="/#progreso" className="text-sm font-medium text-white/70 hover:text-white transition-colors" title="Consulta nuestro progreso en Midnight">Progreso</Link>
+                    <Link href="/#reclutamiento" className="text-sm font-medium text-white/70 hover:text-white transition-colors" title="Mira las clases que necesitamos en Artic Tempest">Reclutamiento</Link>
+                    <Link href="/#historia" className="text-sm font-medium text-white/70 hover:text-white transition-colors" title="Conoce la trayectoria de nuestra hermandad">Nuestra Historia</Link>
                 </div>
 
                 <div className="flex items-center gap-4">

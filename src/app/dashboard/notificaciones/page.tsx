@@ -12,11 +12,13 @@ import { IconBell, IconCheck, IconInfoCircle, IconAlertCircle, IconClock } from 
 import { toast } from "sonner"
 
 import { supabase } from "@/infrastructure/supabase/client"
+import { cn } from "@/infrastructure/tailwind/tailwind-utils"
 
 export default function NotificationsPage() {
     const { data: session } = useSession()
     const [notifications, setNotifications] = React.useState<any[]>([])
     const [loading, setLoading] = React.useState(true)
+    const [activeFilter, setActiveFilter] = React.useState<'all' | 'unread' | 'read' | 'info' | 'update' | 'warning' | 'important'>('all')
 
     const fetchNotifications = async () => {
         try {
@@ -37,13 +39,24 @@ export default function NotificationsPage() {
 
         // Real-time subscription
         const channel = supabase
-            .channel('system_notifications_changes')
+            .channel('system_notifications_dashboard')
             .on(
                 'postgres_changes',
                 {
-                    event: 'INSERT',
+                    event: '*', // Listen to everything to keep sync
                     schema: 'public',
                     table: 'system_notifications',
+                },
+                () => {
+                    fetchNotifications()
+                }
+            )
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'user_notifications_read',
                 },
                 () => {
                     fetchNotifications()
@@ -56,6 +69,13 @@ export default function NotificationsPage() {
         }
     }, [])
 
+    const filteredNotifications = notifications.filter(n => {
+        if (activeFilter === 'all') return !n.isRead
+        if (activeFilter === 'unread') return !n.isRead
+        if (activeFilter === 'read') return n.isRead
+        return n.type === activeFilter && !n.isRead
+    })
+
     const markAsRead = async (id: string) => {
         try {
             const res = await fetch("/api/notifications/read", {
@@ -67,7 +87,7 @@ export default function NotificationsPage() {
                 setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n))
                 window.dispatchEvent(new CustomEvent('notifications-updated'))
                 toast.success("Leído", {
-                    description: "Notificación marcada como leída"
+                    description: "Notificación movida a la bandeja de leídos"
                 })
             }
         } catch (err) {
@@ -82,18 +102,14 @@ export default function NotificationsPage() {
         if (unread.length === 0) return
 
         try {
-            for (const n of unread) {
-                await fetch("/api/notifications/read", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ notificationId: n.id })
+            const res = await fetch("/api/notifications/read-all", { method: "POST" })
+            if (res.ok) {
+                setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))
+                window.dispatchEvent(new CustomEvent('notifications-updated'))
+                toast.success("Éxito", {
+                    description: "Todas las notificaciones movidas a leídos"
                 })
             }
-            setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))
-            window.dispatchEvent(new CustomEvent('notifications-updated'))
-            toast.success("Éxito", {
-                description: "Todas las notificaciones marcadas como leídas"
-            })
         } catch (err) {
             toast.error("Error", {
                 description: "Error al marcar todas como leídas"
@@ -104,7 +120,7 @@ export default function NotificationsPage() {
     const getTypeIcon = (type: string) => {
         switch (type) {
             case 'warning': return <IconAlertCircle className="size-5 text-amber-500" />
-            case 'error': return <IconAlertCircle className="size-5 text-rose-500" />
+            case 'important': return <IconBell className="size-5 text-rose-500" />
             default: return <IconInfoCircle className="size-5 text-blue-500" />
         }
     }
@@ -114,26 +130,36 @@ export default function NotificationsPage() {
         "--header-height": "calc(var(--spacing) * 12)",
     } as React.CSSProperties
 
+    const filters = [
+        { id: 'all', label: 'Todos' },
+        { id: 'unread', label: 'Sin leer', count: notifications.filter(n => !n.isRead).length },
+        { id: 'read', label: 'Leídos', count: notifications.filter(n => n.isRead).length },
+        { id: 'info', label: 'Informativo', count: notifications.filter(n => n.type === 'info' && !n.isRead).length },
+        { id: 'update', label: 'Actualización', count: notifications.filter(n => n.type === 'update' && !n.isRead).length },
+        { id: 'warning', label: 'Aviso', count: notifications.filter(n => n.type === 'warning' && !n.isRead).length },
+        { id: 'important', label: 'Importante', count: notifications.filter(n => n.type === 'important' && !n.isRead).length },
+    ]
+
     return (
         <SidebarProvider style={style}>
             <AppSidebar variant="inset" />
             <SidebarInset>
                 <SiteHeader />
-                <div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6 max-w-5xl mx-auto w-full">
-                    <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6 max-w-5xl mx-auto w-full animate-in fade-in duration-500">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
-                            <h1 className="text-2xl font-bold flex items-center gap-2">
-                                <IconBell className="size-6 text-blue-500" />
+                            <h1 className="text-2xl font-black flex items-center gap-3 tracking-tighter uppercase">
+                                <IconBell className="size-7 text-blue-500" />
                                 Bandeja de Entrada
                             </h1>
-                            <p className="text-sm text-muted-foreground mt-1">
-                                Comunicados oficiales y actualizaciones del sistema.
+                            <p className="text-sm text-muted-foreground mt-1 font-medium">
+                                Comunicados oficiales y actualizaciones del equipo de Artic Tempest.
                             </p>
                         </div>
                         <Button
                             variant="outline"
                             size="sm"
-                            className="bg-blue-500/5 text-blue-400 border-blue-500/20 hover:bg-blue-500/10"
+                            className="bg-blue-500/5 text-blue-400 border-blue-500/20 hover:bg-blue-500/10 h-10 rounded-xl font-black uppercase text-[10px] tracking-widest"
                             onClick={markAllAsRead}
                             disabled={!notifications.some(n => !n.isRead)}
                         >
@@ -142,71 +168,125 @@ export default function NotificationsPage() {
                         </Button>
                     </div>
 
-                    <div className="flex flex-col gap-3 mt-4">
+                    {/* Filtros */}
+                    <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none mt-4">
+                        {filters.map((filter) => (
+                            <button
+                                key={filter.id}
+                                onClick={() => setActiveFilter(filter.id as any)}
+                                className={cn(
+                                    "whitespace-nowrap px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all duration-300 flex items-center gap-2",
+                                    activeFilter === filter.id
+                                        ? "bg-blue-500 text-white border-blue-400 shadow-[0_5px_15px_rgba(59,130,246,0.3)]"
+                                        : "bg-background/50 text-muted-foreground border-border/40 hover:border-blue-500/30 hover:text-blue-400"
+                                )}
+                            >
+                                {filter.label}
+                                {((filter.id === 'all' && notifications.filter(n => !n.isRead).length > 0) || (filter.count !== undefined && filter.count > 0)) && (
+                                    <span className={cn(
+                                        "px-1.5 py-0.5 rounded text-[9px] min-w-4 flex items-center justify-center font-bold",
+                                        activeFilter === filter.id ? "bg-white/20 text-white" : "bg-blue-500/10 text-blue-500"
+                                    )}>
+                                        {filter.id === 'all' ? notifications.filter(n => !n.isRead).length : filter.count}
+                                    </span>
+                                )}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="flex flex-col gap-4 mt-2">
                         {loading ? (
-                            <div className="py-20 text-center text-muted-foreground animate-pulse">
-                                Cargando notificaciones...
+                            <div className="space-y-4">
+                                {[1, 2, 3].map(i => (
+                                    <div key={i} className="h-32 w-full bg-muted/20 animate-pulse rounded-2xl border border-border/20" />
+                                ))}
                             </div>
-                        ) : notifications.length === 0 ? (
-                            <Card className="bg-card/50 border-dashed border-border/40">
-                                <CardContent className="py-20 flex flex-col items-center justify-center text-center">
-                                    <div className="size-12 rounded-full bg-muted/20 flex items-center justify-center mb-4">
-                                        <IconBell className="size-6 text-muted-foreground/40" />
+                        ) : filteredNotifications.length === 0 ? (
+                            <Card className="bg-card/30 border-dashed border-border/40 backdrop-blur-sm animate-in fade-in zoom-in duration-500">
+                                <CardContent className="py-24 flex flex-col items-center justify-center text-center">
+                                    <div className="size-16 rounded-3xl bg-muted/20 flex items-center justify-center mb-6 opacity-30">
+                                        <IconBell className="size-8 text-muted-foreground" />
                                     </div>
-                                    <h3 className="text-lg font-bold">No tienes notificaciones</h3>
-                                    <p className="text-sm text-muted-foreground max-w-xs mt-1">
-                                        Aquí aparecerán los avisos de actualizaciones y mensajes del sistema.
+                                    <h3 className="text-xl font-black uppercase tracking-tight">
+                                        {activeFilter === 'unread' || activeFilter === 'all'
+                                            ? "¡Todo al día!"
+                                            : activeFilter === 'read'
+                                                ? "No hay leídos"
+                                                : "Sin resultados"}
+                                    </h3>
+                                    <p className="text-sm text-muted-foreground max-w-xs mt-2 italic font-medium">
+                                        {activeFilter === 'unread' || activeFilter === 'all'
+                                            ? "No tienes mensajes nuevos por revisar en esta sección."
+                                            : activeFilter === 'read'
+                                                ? "Todavía no has marcado ninguna notificación como leída."
+                                                : "No se han encontrado mensajes sin leer en esta categoría."}
                                     </p>
                                 </CardContent>
                             </Card>
                         ) : (
-                            notifications.map((n) => (
-                                <Card
-                                    key={n.id}
-                                    className={`relative overflow-hidden transition-all duration-300 border-border/40 ${!n.isRead ? 'bg-blue-500/5 border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.05)]' : 'bg-card/30 opacity-80'}`}
-                                >
-                                    {!n.isRead && (
-                                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500" />
-                                    )}
-                                    <CardHeader className="flex flex-row items-start gap-4 pb-2">
-                                        <div className={`p-2 rounded-lg bg-background/50 border border-border/20 shadow-sm mt-1`}>
-                                            {getTypeIcon(n.type)}
-                                        </div>
-                                        <div className="flex-1 flex flex-col gap-1">
-                                            <div className="flex items-center justify-between gap-4">
-                                                <CardTitle className={`text-lg transition-colors ${!n.isRead ? 'text-white' : 'text-foreground/70'}`}>
-                                                    {n.title}
-                                                </CardTitle>
-                                                {!n.isRead && (
-                                                    <Badge className="bg-blue-500 text-white hover:bg-blue-600 text-[10px] font-black uppercase tracking-tighter h-5">Nuevo</Badge>
-                                                )}
-                                            </div>
-                                            <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
-                                                <IconClock className="size-3" />
-                                                {new Date(n.created_at).toLocaleDateString("es-ES", { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                            </div>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className={`text-sm leading-relaxed ${!n.isRead ? 'text-foreground/90' : 'text-muted-foreground'}`}>
-                                            {n.content}
-                                        </p>
-                                        {!n.isRead && (
-                                            <div className="flex justify-end mt-4">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="h-8 text-[11px] font-black uppercase text-emerald-400 border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 hover:border-emerald-500/40"
-                                                    onClick={() => markAsRead(n.id)}
-                                                >
-                                                    <IconCheck className="size-3.5 mr-1.5" />
-                                                    Marcar como leído
-                                                </Button>
-                                            </div>
+                            <div className="grid gap-4">
+                                {filteredNotifications.map((n) => (
+                                    <Card
+                                        key={n.id}
+                                        className={cn(
+                                            "relative overflow-hidden transition-all duration-500 border-border/40 group hover:border-blue-500/30",
+                                            !n.isRead
+                                                ? "bg-blue-500/[0.03] border-blue-500/20"
+                                                : "bg-card/20 opacity-70"
                                         )}
-                                    </CardContent>
-                                </Card>
-                            ))
+                                    >
+                                        {!n.isRead && (
+                                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
+                                        )}
+                                        <CardHeader className="flex flex-row items-start gap-4 pb-3">
+                                            <div className={cn(
+                                                "p-3 rounded-xl border shadow-sm transition-colors duration-500",
+                                                !n.isRead ? "bg-blue-500/10 border-blue-500/20" : "bg-muted/10 border-border/20"
+                                            )}>
+                                                {getTypeIcon(n.type)}
+                                            </div>
+                                            <div className="flex-1 flex flex-col gap-1 min-w-0">
+                                                <div className="flex items-center justify-between gap-4">
+                                                    <CardTitle className={cn(
+                                                        "text-xl font-black tracking-tight transition-colors duration-500 truncate",
+                                                        !n.isRead ? "text-white" : "text-zinc-500"
+                                                    )}>
+                                                        {n.title}
+                                                    </CardTitle>
+                                                    {!n.isRead && (
+                                                        <Badge className="bg-blue-500 text-white text-[9px] font-black uppercase tracking-[0.2em] px-2 h-5 rounded-md animate-pulse">Nuevo</Badge>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center gap-2 text-[10px] text-muted-foreground/60 font-black uppercase tracking-widest">
+                                                    <IconClock className="size-3" />
+                                                    {new Date(n.created_at).toLocaleDateString("es-ES", { day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit' })}
+                                                </div>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p className={cn(
+                                                "text-sm leading-relaxed whitespace-pre-wrap transition-colors duration-500",
+                                                !n.isRead ? "text-zinc-200" : "text-zinc-600"
+                                            )}>
+                                                {n.content}
+                                            </p>
+                                            {!n.isRead && (
+                                                <div className="flex justify-end mt-6">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="h-9 px-5 text-[10px] font-black uppercase tracking-widest text-emerald-400 border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 hover:border-emerald-500/40 rounded-xl"
+                                                        onClick={() => markAsRead(n.id)}
+                                                    >
+                                                        <IconCheck className="size-3.5 mr-2" />
+                                                        Marcar como leído
+                                                    </Button>
+                                                </div>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
                         )}
                     </div>
                 </div>

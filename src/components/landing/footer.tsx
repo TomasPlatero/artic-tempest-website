@@ -59,19 +59,22 @@ export function LandingFooter() {
 
                 {/* WoW Links */}
                 <div className="flex flex-col gap-6">
-                    <h4 className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em]">Progreso & Stats</h4>
+                    <h4 className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em]">Estamos en...</h4>
                     <div className="flex flex-wrap gap-3">
                         <a href="https://raider.io/guilds/eu/dun-modr/Artic%20Tempest" target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-blue-500/30 hover:bg-white/10 transition-all group" title="Raider.io">
-                            <Image src="/assets/images/icons/raiderio.png" width={24} height={24} className="size-5 grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 transition-all object-contain" alt="RIO" />
+                            <Image src="/assets/images/icons/raiderio.webp" width={24} height={24} className="size-5 grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 transition-all object-contain" alt="RIO" />
                         </a>
                         <a href="https://www.warcraftlogs.com/guild/eu/dun-modr/artic%20tempest" target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-blue-500/30 hover:bg-white/10 transition-all group" title="WarcraftLogs">
-                            <Image src="/assets/images/icons/wcl.png" width={24} height={24} className="size-5 grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 transition-all object-contain" alt="WCL" />
+                            <Image src="/assets/images/icons/wcl.webp" width={24} height={24} className="size-5 grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 transition-all object-contain" alt="WCL" />
                         </a>
                         <a href="https://www.wowprogress.com/guild/eu/dun-modr/artic%20tempest" target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-blue-500/30 hover:bg-white/10 transition-all group" title="WoW Progress">
                             <IconChartBar className="size-5 text-white/40 group-hover:text-amber-400 rotate-90 transition-colors" />
                         </a>
+                        <a href="https://guildsofwow.com/artic-tempest/artic%20tempest" target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-blue-500/30 hover:bg-white/10 transition-all group" title="Guilds Of WoW">
+                            <Image src="/assets/images/icons/guildsofwow.webp" width={35} height={35} className="size-5 grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 transition-all object-contain" alt="Guilds Of WoW" />
+                        </a>
                         <a href="https://worldofwarcraft.blizzard.com/en-gb/guild/eu/dun-modr/artic-tempest" target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-blue-500/30 hover:bg-white/10 transition-all group" title="Armería WoW">
-                            <Image src="/assets/images/icons/armory.png" width={24} height={24} className="size-5 grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 transition-all object-contain" alt="Armería" />
+                            <Image src="/assets/images/icons/armory.webp" width={24} height={24} className="size-5 grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 transition-all object-contain" alt="Armería" />
                         </a>
                     </div>
                 </div>
