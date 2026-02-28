@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import Image from "next/image"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -62,43 +62,8 @@ export function PlanificadorCdsClient() {
         return new Date(currentEvent.end_date) < new Date()
     }, [currentEvent?.end_date])
 
-    // Initialize
-    useEffect(() => {
-        setMounted(true)
-        fetchCooldownDefinitions()
-        if (eventIdParam) {
-            fetchEventData(eventIdParam)
-            fetchEventRoster(eventIdParam)
-        } else {
-            fetchRecentEvents()
-            fetchBossSummaries()
-            // Default mock roster if no event specified
-            setHealers([
-                { id: "mock-1", character_name: "Averzian", class_id: 2 },
-                { id: "mock-2", character_name: "Vorasius", class_id: 13 },
-                { id: "mock-3", character_name: "Salhadaar", class_id: 7 },
-                { id: "mock-4", character_name: "Vaelgor", class_id: 5 },
-                { id: "mock-5", character_name: "Vanguardia", class_id: 10 },
-                { id: "mock-6", character_name: "Belo'ren", class_id: 7 },
-                { id: "mock-7", character_name: "Crown", class_id: 11 },
-                { id: "mock-8", character_name: "Chimaerus", class_id: 2 },
-            ])
-        }
 
-        if (bossParam) {
-            setSelectedBoss(bossParam)
-            setActiveTab(initialTabParam || "planner")
-        }
-    }, [eventIdParam, bossParam, initialTabParam])
-
-    // Load assignments when boss changes
-    useEffect(() => {
-        if (eventIdParam && selectedBoss) {
-            fetchAssignments(eventIdParam, selectedBoss)
-        }
-    }, [eventIdParam, selectedBoss])
-
-    const fetchEventData = async (id: string) => {
+    const fetchEventData = useCallback(async (id: string) => {
         try {
             const res = await fetch(`/api/guild/events/${id}`)
             if (!res.ok) throw new Error("Failed to fetch event data")
@@ -126,9 +91,9 @@ export function PlanificadorCdsClient() {
         } catch (error) {
             console.error("fetchEventData error:", error)
         }
-    }
+    }, [bossParam, initialTabParam])
 
-    const fetchCooldownDefinitions = async () => {
+    const fetchCooldownDefinitions = useCallback(async () => {
         try {
             const res = await fetch('/api/cd-planner/cooldowns')
             if (!res.ok) throw new Error("Failed to fetch cooldown definitions")
@@ -137,9 +102,9 @@ export function PlanificadorCdsClient() {
         } catch (error) {
             console.error("fetchCooldownDefinitions error:", error)
         }
-    }
+    }, [])
 
-    const fetchRecentEvents = async () => {
+    const fetchRecentEvents = useCallback(async () => {
         try {
             const res = await fetch('/api/guild/events/list')
             if (!res.ok) throw new Error("Failed to fetch recent events")
@@ -148,9 +113,9 @@ export function PlanificadorCdsClient() {
         } catch (error) {
             console.error("fetchRecentEvents error:", error)
         }
-    }
+    }, [])
 
-    const fetchBossSummaries = async () => {
+    const fetchBossSummaries = useCallback(async () => {
         try {
             const res = await fetch('/api/cd-planner/boss-summaries')
             if (!res.ok) throw new Error("Failed to fetch boss summaries")
@@ -159,9 +124,9 @@ export function PlanificadorCdsClient() {
         } catch (error) {
             console.error("fetchBossSummaries error:", error)
         }
-    }
+    }, [])
 
-    const fetchEventRoster = async (id: string) => {
+    const fetchEventRoster = useCallback(async (id: string) => {
         try {
             const res = await fetch(`/api/guild/events/${id}/selected-roster`)
             if (!res.ok) throw new Error("Failed to fetch roster")
@@ -187,9 +152,9 @@ export function PlanificadorCdsClient() {
         } catch (error) {
             console.error("fetchEventRoster error:", error)
         }
-    }
+    }, [])
 
-    const fetchAssignments = async (eventId: string, bossName: string) => {
+    const fetchAssignments = useCallback(async (eventId: string, bossName: string) => {
         setIsLoading(true)
         try {
             const res = await fetch(`/api/cd-planner/assignments?event_id=${eventId}&boss_name=${encodeURIComponent(bossName)}`)
@@ -201,7 +166,43 @@ export function PlanificadorCdsClient() {
         } finally {
             setIsLoading(false)
         }
-    }
+    }, [])
+
+    // Initialize
+    useEffect(() => {
+        setMounted(true)
+        fetchCooldownDefinitions()
+        if (eventIdParam) {
+            fetchEventData(eventIdParam)
+            fetchEventRoster(eventIdParam)
+        } else {
+            fetchRecentEvents()
+            fetchBossSummaries()
+            // Default mock roster if no event specified
+            setHealers([
+                { id: "mock-1", character_name: "Averzian", class_id: 2 },
+                { id: "mock-2", character_name: "Vorasius", class_id: 13 },
+                { id: "mock-3", character_name: "Salhadaar", class_id: 7 },
+                { id: "mock-4", character_name: "Vaelgor", class_id: 5 },
+                { id: "mock-5", character_name: "Vanguardia", class_id: 10 },
+                { id: "mock-6", character_name: "Belo'ren", class_id: 7 },
+                { id: "mock-7", character_name: "Crown", class_id: 11 },
+                { id: "mock-8", character_name: "Chimaerus", class_id: 2 },
+            ])
+        }
+
+        if (bossParam) {
+            setSelectedBoss(bossParam)
+            setActiveTab(initialTabParam || "planner")
+        }
+    }, [eventIdParam, bossParam, initialTabParam, fetchCooldownDefinitions, fetchEventData, fetchEventRoster, fetchRecentEvents, fetchBossSummaries])
+
+    // Load assignments when boss changes
+    useEffect(() => {
+        if (eventIdParam && selectedBoss) {
+            fetchAssignments(eventIdParam, selectedBoss)
+        }
+    }, [eventIdParam, selectedBoss, fetchAssignments])
 
     const formatTime = (seconds: number) => {
         const m = Math.floor(seconds / 60)

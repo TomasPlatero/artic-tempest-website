@@ -74,6 +74,20 @@ export function ApplyClient({ user, characters, questions, classConstants }: Pro
         setIsSubmitting(true)
 
         try {
+            // 0. Final safety check
+            const { data: activeApps } = await supabase
+                .from("recruitment_applications")
+                .select("id")
+                .eq("user_id", user.id)
+                .in("status", ["pending", "reviewing", "interview"])
+                .limit(1)
+
+            if (activeApps && activeApps.length > 0) {
+                toast.error("Ya tienes una solicitud activa")
+                router.push("/reclutamiento/apply-en-curso")
+                return
+            }
+
             // 1. Create Application
             const { data: application, error: appError } = await supabase
                 .from("recruitment_applications")

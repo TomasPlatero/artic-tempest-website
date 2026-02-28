@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { supabase } from "@/infrastructure/supabase/client"
-import { ChevronRight } from "lucide-react"
+import { ChevronRight, Check } from "lucide-react"
 
 type Spot = {
     class_id: string
@@ -27,6 +27,9 @@ type ClassData = {
 export function WantedClasses() {
     const [classesWithSpots, setClassesWithSpots] = useState<ClassData[]>([])
     const [loading, setLoading] = useState(true)
+    const [hasApplied, setHasApplied] = useState(false)
+
+    const { data: session } = useSession()
 
     useEffect(() => {
         async function fetchData() {
@@ -68,8 +71,22 @@ export function WantedClasses() {
             setClassesWithSpots(enriched)
             setLoading(false)
         }
+
+        async function checkApplication() {
+            if (!session?.user?.id) return
+            const { data } = await supabase
+                .from("recruitment_applications")
+                .select("id")
+                .eq("user_id", session.user.id)
+                .in("status", ["pending", "reviewing", "interview"])
+                .limit(1)
+
+            if (data && data.length > 0) setHasApplied(true)
+        }
+
         fetchData()
-    }, [])
+        checkApplication()
+    }, [session])
 
     const urgencyColors: Record<string, string> = {
         high: "bg-red-500/10 text-red-500 border-red-500/20",
@@ -83,7 +100,6 @@ export function WantedClasses() {
         low: "BAJA"
     }
 
-    const { data: session } = useSession()
 
     return (
         <section className="py-24 px-6 max-w-7xl mx-auto w-full">
@@ -160,28 +176,50 @@ export function WantedClasses() {
                 </div>
             )}
 
-            <div className="mt-16 text-center">
-                {session ? (
-                    <Button
-                        size="xl"
-                        className="rounded-full px-12 font-black uppercase tracking-widest group shadow-[0_20px_40px_-15px_rgba(var(--primary-rgb),0.3)]"
-                        asChild
-                    >
-                        <Link href="/reclutamiento">
-                            Aplica Ya!
-                            <ChevronRight className="size-6 group-hover:translate-x-1 transition-transform ml-2" />
-                        </Link>
-                    </Button>
-                ) : (
-                    <Button
-                        size="xl"
-                        className="rounded-full px-12 font-black uppercase tracking-widest group shadow-[0_20px_40px_-15px_rgba(var(--primary-rgb),0.3)]"
-                        onClick={() => signIn('discord')}
-                    >
-                        Inicia Sesión para Aplicar
-                        <ChevronRight className="size-6 group-hover:translate-x-1 transition-transform ml-2" />
-                    </Button>
+            <div className="mt-16 flex flex-col items-center">
+                {session && hasApplied && (
+                    <div className="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-black uppercase tracking-widest animate-bounce">
+                        <Check className="size-3.5" />
+                        Ya has enviado tu solicitud
+                    </div>
                 )}
+                <div className="text-center">
+                    {session ? (
+                        hasApplied ? (
+                            <Button
+                                size="xl"
+                                variant="glow"
+                                className="rounded-full px-12 font-black uppercase tracking-widest group shadow-[0_20px_40px_-15px_rgba(var(--primary-rgb),0.3)]"
+                                asChild
+                            >
+                                <Link href="/reclutamiento/apply-en-curso">
+                                    Ver Mi Aplicación
+                                    <ChevronRight className="size-6 group-hover:translate-x-1 transition-transform ml-2" />
+                                </Link>
+                            </Button>
+                        ) : (
+                            <Button
+                                size="xl"
+                                className="rounded-full px-12 font-black uppercase tracking-widest group shadow-[0_20px_40px_-15px_rgba(var(--primary-rgb),0.3)]"
+                                asChild
+                            >
+                                <Link href="/reclutamiento">
+                                    Aplica Ya!
+                                    <ChevronRight className="size-6 group-hover:translate-x-1 transition-transform ml-2" />
+                                </Link>
+                            </Button>
+                        )
+                    ) : (
+                        <Button
+                            size="xl"
+                            className="rounded-full px-12 font-black uppercase tracking-widest group shadow-[0_20px_40px_-15px_rgba(var(--primary-rgb),0.3)]"
+                            onClick={() => signIn('discord')}
+                        >
+                            Inicia Sesión para Aplicar
+                            <ChevronRight className="size-6 group-hover:translate-x-1 transition-transform ml-2" />
+                        </Button>
+                    )}
+                </div>
             </div>
         </section>
     );

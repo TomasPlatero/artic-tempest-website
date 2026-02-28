@@ -39,11 +39,11 @@ export function CookieConsentLoader() {
                 translations: {
                     es: {
                         consentModal: {
-                            title: 'Aviso de Privacidad y Cookies',
-                            description: 'Utilizamos cookies propias estrictamente necesarias para el correcto funcionamiento de la plataforma (como mantener tu sesión protegida y activa). También usamos cookies para analizar el tráfico. Puedes ver más detalles en nuestra <a href="/cookies">Política de Cookies</a>.',
+                            title: 'Control de su Privacidad',
+                            description: 'Utilizamos cookies propias y de terceros para fines analíticos y para mostrarle publicidad personalizada en base a un perfil elaborado a partir de sus hábitos de navegación. Al pulsar "Aceptar Todas", consiente el uso de todas las cookies. Al pulsar "Solo Esenciales", rechaza todas las que no sean necesarias para el funcionamiento. También puede configurar sus preferencias. <br/><br/>Más información en nuestra <a href="/cookies">Política de Cookies</a>.',
                             acceptAllBtn: 'Aceptar Todas',
                             acceptNecessaryBtn: 'Solo Esenciales',
-                            showPreferencesBtn: 'Gestionar preferencias'
+                            showPreferencesBtn: 'Configurar'
                         },
                         preferencesModal: {
                             title: 'Centro de Preferencias de Cookies',

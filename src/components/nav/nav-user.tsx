@@ -5,7 +5,18 @@ import { signOut } from "next-auth/react"
 import { toast } from "sonner"
 import Link from "next/link"
 
-import { IconCreditCard, IconDotsVertical, IconLogout, IconNotification, IconUserCircle } from "@tabler/icons-react"
+import {
+  IconCreditCard,
+  IconDotsVertical,
+  IconLogout,
+  IconNotification,
+  IconUserCircle,
+  IconSun,
+  IconMoon,
+  IconHelp,
+  IconWorld
+} from "@tabler/icons-react"
+import { useTheme } from "next-themes"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -33,6 +44,7 @@ import { supabase } from "@/infrastructure/supabase/client"
 
 export function NavUser() {
   const { isMobile } = useSidebar()
+  const { theme, setTheme } = useTheme()
   const [user, setUser] = React.useState<MePayload | null>(null)
   const [unreadCount, setUnreadCount] = React.useState(0)
 
@@ -120,14 +132,14 @@ export function NavUser() {
                 </Avatar>
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">
-                  {displayName}
-                  {user?.role ? (
-                    <span className="relative ml-2 rounded bg-muted px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
+                <div className="flex items-center gap-2 overflow-hidden">
+                  <span className="truncate font-semibold">{displayName}</span>
+                  {user?.role && (
+                    <span className="text-[9px] font-black text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20 uppercase tracking-widest shrink-0">
                       {user.role}
                     </span>
-                  ) : null}
-                </span>
+                  )}
+                </div>
               </div>
               <IconDotsVertical className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -157,6 +169,21 @@ export function NavUser() {
                       {unreadCount}
                     </span>
                   )}
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+
+            <DropdownMenuSeparator />
+
+            <DropdownMenuGroup>
+              <DropdownMenuItem onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
+                {theme === "dark" ? <IconSun className="text-amber-400" /> : <IconMoon className="text-blue-400" />}
+                Cambiar tema
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="#">
+                  <IconHelp className="text-zinc-400" />
+                  Ayuda
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>

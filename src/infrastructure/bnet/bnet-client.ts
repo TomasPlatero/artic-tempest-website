@@ -75,6 +75,26 @@ export async function fetchCharacterRole(
     }
 }
 
+/** Fetch a single character's active spec name */
+export async function fetchCharacterSpec(
+    realmSlug: string,
+    characterNameSlug: string,
+    region: string,
+    token: string
+): Promise<string | null> {
+    const url = `https://${region}.api.blizzard.com/profile/wow/character/${realmSlug}/${characterNameSlug}?namespace=profile-${region}&locale=en_US`
+
+    try {
+        const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" })
+        if (!res.ok) return null
+
+        const data = await res.json()
+        return data.active_spec?.name || null
+    } catch {
+        return null
+    }
+}
+
 export type GuildMemberRaw = {
     character: {
         name: string

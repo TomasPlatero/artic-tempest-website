@@ -16,17 +16,19 @@ export default async function ApplyPage() {
     }
 
     // 0. Verificar si ya tiene una solicitud activa
-    const { data: existingApp } = await sb
+    const { data: existingApps } = await sb
         .from("recruitment_applications")
         .select("id, status, created_at")
         .eq("user_id", session.user.id)
-        .in("status", ["pending", "accepted"])
-        .maybeSingle()
+        .in("status", ["pending", "reviewing", "interview"])
+        .limit(1)
+
+    const existingApp = existingApps && existingApps.length > 0 ? existingApps[0] : null
 
     // 1. Verificar si tiene personajes de Bnet
     const { data: bnetCharacters } = await sb
         .from("bnet_characters")
-        .select("id, name, realm, class_id, level")
+        .select("id, name, realm, class_id, level, spec")
         .eq("user_id", session.user.id)
         .order("level", { ascending: false })
 
@@ -52,19 +54,7 @@ export default async function ApplyPage() {
                 </div>
 
                 {existingApp ? (
-                    <div className="bg-blue-600/5 border border-blue-500/20 rounded-3xl p-12 text-center animate-in fade-in zoom-in duration-500">
-                        <div className="size-20 bg-blue-500/10 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <IconShieldCheck className="size-10" />
-                        </div>
-                        <h2 className="text-3xl font-bold text-white mb-4 uppercase">Aplicación en Curso</h2>
-                        <p className="text-zinc-400 max-w-sm mx-auto mb-8">
-                            Ya tienes una solicitud {existingApp.status === 'pending' ? 'pendiente de revisión' : 'aceptada'}.
-                            Enviada el {new Date(existingApp.created_at).toLocaleDateString()}.
-                        </p>
-                        <Button variant="outline" className="rounded-xl" asChild>
-                            <Link href="/">Volver al Inicio</Link>
-                        </Button>
-                    </div>
+                    redirect("/reclutamiento/apply-en-curso")
                 ) : (
                     <ApplyClient
                         user={session.user}

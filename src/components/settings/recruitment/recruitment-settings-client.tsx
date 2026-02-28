@@ -2,13 +2,27 @@
 
 import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { IconUsers, IconForms } from "@tabler/icons-react"
-import { SpotsManager } from "./spots-manager"
-import { FormBuilder } from "./form-builder"
+import { IconUsers, IconForms, IconInbox } from "@tabler/icons-react"
+import { SpotsManager } from "@/components/settings/recruitment/spots-manager"
+import { FormBuilder } from "@/components/settings/recruitment/form-builder"
+import { RecruitmentInbox } from "@/components/settings/recruitment/recruitment-inbox"
+import { useSearchParams } from "next/navigation"
+import { useEffect } from "react"
 
-export function RecruitmentSettingsClient({ initialSpots, initialQuestions, constants }: any) {
+export function RecruitmentSettingsClient({ initialSpots, initialQuestions, constants, applications }: any) {
+    const [mounted, setMounted] = useState(false)
+    const searchParams = useSearchParams()
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
+
+    if (!mounted) return null
+
+    const defaultTab = searchParams.get("tab") || "spots"
+
     return (
-        <Tabs defaultValue="spots" className="w-full">
+        <Tabs defaultValue={defaultTab} className="w-full">
             <TabsList className="bg-muted/50 p-1">
                 <TabsTrigger value="spots" className="gap-2">
                     <IconUsers className="size-4" />
@@ -18,6 +32,10 @@ export function RecruitmentSettingsClient({ initialSpots, initialQuestions, cons
                     <IconForms className="size-4" />
                     Constructor de Formulario
                 </TabsTrigger>
+                <TabsTrigger value="inbox" className="gap-2">
+                    <IconInbox className="size-4" />
+                    Bandeja de Entrada
+                </TabsTrigger>
             </TabsList>
 
             <TabsContent value="spots" className="mt-6">
@@ -26,6 +44,10 @@ export function RecruitmentSettingsClient({ initialSpots, initialQuestions, cons
 
             <TabsContent value="form" className="mt-6">
                 <FormBuilder initialQuestions={initialQuestions} />
+            </TabsContent>
+
+            <TabsContent value="inbox" className="mt-6">
+                <RecruitmentInbox applications={applications} constants={constants} />
             </TabsContent>
         </Tabs>
     )

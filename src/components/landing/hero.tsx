@@ -4,15 +4,22 @@ import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { IconChevronRight, IconSword } from "@tabler/icons-react"
 import Link from "next/link"
+import Image from "next/image"
 
 export function LandingHero() {
     return (
         <section className="relative h-screen flex items-center justify-center overflow-hidden">
-            {/* Background Image with Parallax-ish feel */}
-            <div
-                className="absolute inset-0 z-0 bg-cover bg-center scale-110 transition-transform duration-[20s] linear animate-[slow-zoom_20s_infinite_alternate]"
-                style={{ backgroundImage: "url('/assets/images/midnight-battle-hero.jpg')" }}
-            />
+            {/* Background Image Layer with Native Next.js Optimization */}
+            <div className="absolute inset-0 z-0 select-none pointer-events-none scale-110 animate-[slow-zoom_20s_infinite_alternate]">
+                <Image
+                    src="/assets/images/midnight-battle-hero.jpg"
+                    alt="Midnight Battle Hero"
+                    fill
+                    className="object-cover"
+                    priority
+                    quality={90}
+                />
+            </div>
             {/* Advanced Overlays for Maximum Readability */}
             <div className="absolute inset-0 z-1 bg-black/50" />
             <div className="absolute inset-0 z-1 bg-gradient-to-b from-black/60 via-transparent to-black/80" />
