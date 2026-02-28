@@ -56,6 +56,12 @@ const navigationData = {
   ],
   raider: [
     {
+      title: "Roster",
+      url: "/dashboard/roster",
+      icon: IconUsers,
+      appId: "roster",
+    },
+    {
       title: "Calendario",
       url: "/dashboard/calendario",
       icon: IconCalendarEvent,

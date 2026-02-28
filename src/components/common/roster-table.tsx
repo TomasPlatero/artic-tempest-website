@@ -277,7 +277,7 @@ export function RosterTable({
                           className="p-1 hover:bg-muted rounded transition-colors w-10"
                           title="Armería de WoW"
                         >
-                          <Image src="/assets/images/icons/armory.png" width={20} height={20} className="size-5 opacity-80 hover:opacity-100 transition-all object-contain" alt="Armería" />
+                          <Image src="/assets/images/icons/armory.webp" width={20} height={20} className="size-5 opacity-80 hover:opacity-100 transition-all object-contain" alt="Armería" />
                         </a>
                         <a
                           href={`https://www.warcraftlogs.com/character/eu/${m.realm_slug}/${m.character_name.toLowerCase()}`}
@@ -286,7 +286,7 @@ export function RosterTable({
                           className="p-1 hover:bg-muted rounded transition-colors w-10"
                           title="WarcraftLogs"
                         >
-                          <Image src="/assets/images/icons/wcl.png" width={20} height={20} className="size-5 opacity-80 hover:opacity-100 transition-all object-contain" alt="WCL" />
+                          <Image src="/assets/images/icons/wcl.webp" width={20} height={20} className="size-5 opacity-80 hover:opacity-100 transition-all object-contain" alt="WCL" />
                         </a>
                         <a
                           href={`https://raider.io/characters/eu/${m.realm_slug}/${m.character_name.toLowerCase()}`}
@@ -295,7 +295,7 @@ export function RosterTable({
                           className="p-1 hover:bg-muted rounded transition-colors w-10"
                           title="Raider.io"
                         >
-                          <Image src="/assets/images/icons/raiderio.png" width={20} height={20} className="size-5 opacity-80 hover:opacity-100 transition-all object-contain" alt="RIO" />
+                          <Image src="/assets/images/icons/raiderio.webp" width={20} height={20} className="size-5 opacity-80 hover:opacity-100 transition-all object-contain" alt="RIO" />
                         </a>
                       </div>
 
