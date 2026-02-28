@@ -11,7 +11,7 @@ import Image from "next/image"
 export function RecruitmentPageClient() {
     const { data: session } = useSession()
     return (
-        <main className="min-h-screen bg-black overflow-x-hidden">
+        <main className="min-h-screen bg-black overflow-x-hidden dark">
             <LandingNavigation />
 
             <div className="relative overflow-hidden group">
@@ -63,7 +63,7 @@ export function RecruitmentPageClient() {
                             </div>
 
                             {session ? (
-                                <Button size="xl" className="rounded-xl px-10 group" asChild>
+                                <Button size="xl" className="w-full sm:w-auto rounded-xl px-6 md:px-10 group" asChild>
                                     <Link href="/reclutamiento/apply">
                                         Empezar Aplicación
                                         <IconArrowRight className="size-5 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -72,7 +72,7 @@ export function RecruitmentPageClient() {
                             ) : (
                                 <Button
                                     size="xl"
-                                    className="rounded-xl px-10 group"
+                                    className="w-full sm:w-auto rounded-xl px-6 md:px-10 group"
                                     onClick={() => signIn('discord')}
                                 >
                                     Inicia Sesión para Aplicar

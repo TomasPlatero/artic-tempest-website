@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function FeedbackPage() {
     return (
-        <main className="min-h-screen bg-black flex flex-col">
+        <main className="min-h-screen bg-black flex flex-col dark">
             <LandingNavigation />
 
             <div className="flex-1 pt-40 pb-20 px-6 relative overflow-hidden">

@@ -33,7 +33,7 @@ export function HomePageClient() {
     }, [])
 
     return (
-        <main className="min-h-screen bg-black selection:bg-blue-500/30">
+        <main className="min-h-screen bg-black selection:bg-blue-500/30 dark">
             <LandingNavigation />
             <LandingHero />
 

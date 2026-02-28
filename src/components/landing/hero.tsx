@@ -54,7 +54,7 @@ export function LandingHero() {
                                 <IconChevronRight className="size-5 ml-1 opacity-50" />
                             </Link>
                         </Button>
-                        <Button variant="outline" size="xl" className="rounded-full px-8 text-lg bg-white/5 border-white/20 hover:bg-white/10" asChild>
+                        <Button variant="glass" size="xl" className="rounded-full px-8 text-lg" asChild>
                             <Link href="#progreso">
                                 Ver Progreso
                             </Link>
@@ -65,12 +65,12 @@ export function LandingHero() {
 
             {/* Scroll Indicator */}
             <motion.div
-                className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/40"
+                className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/60"
                 animate={{ y: [0, 10, 0] }}
                 transition={{ duration: 2, repeat: Infinity }}
             >
-                <span className="text-[10px] uppercase tracking-[0.2em] font-bold">Explorar</span>
-                <div className="w-1 h-12 bg-gradient-to-b from-blue-500/50 to-transparent rounded-full" />
+                <span className="text-[10px] uppercase tracking-[0.2em] font-black text-white/70">Explorar</span>
+                <div className="w-1 h-12 bg-gradient-to-b from-blue-500 to-transparent rounded-full" />
             </motion.div>
         </section>
     )

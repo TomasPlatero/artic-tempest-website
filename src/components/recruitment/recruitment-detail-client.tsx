@@ -263,7 +263,7 @@ export function RecruitmentDetailClient({ application, answers, classConstants, 
     const activeRaids = getRaidForSeason(selectedSeason)
 
     return (
-        <div className="space-y-8 max-w-5xl mx-auto pb-20">
+        <div className="space-y-8 max-w-5xl mx-auto pb-20 dark">
             {/* CLEAN HEADER SECTION */}
             <div className="flex flex-col md:flex-row justify-between items-start gap-4">
                 <div className="flex items-center gap-6">
