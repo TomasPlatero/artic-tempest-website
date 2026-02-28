@@ -144,8 +144,10 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
         setIsInspecting(true)
         setInspectError(null)
         try {
-            const realm = m.realm_slug || m.character_realm || 'zuljin'
-            const url = `https://raider.io/api/v1/characters/profile?region=eu&realm=${realm}&name=${m.character_name}&fields=mythic_plus_scores_by_season:current,mythic_plus_best_runs`
+            const realm = (m.realm_slug || m.character_realm || 'zuljin').toLowerCase().trim().replace(/\s+/g, '-')
+            const seasons = ['current', 'previous', 'season-tww-1', 'season-df-4', 'season-df-3', 'season-df-2', 'season-df-1']
+            const seasonField = `mythic_plus_scores_by_season:${seasons.join(':')}`
+            const url = `https://raider.io/api/v1/characters/profile?region=eu&realm=${realm}&name=${encodeURIComponent(m.character_name.trim())}&fields=${seasonField},mythic_plus_best_runs`
             const res = await fetch(url)
             const data = await res.json()
             if (!res.ok) {

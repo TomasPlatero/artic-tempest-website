@@ -8,15 +8,6 @@ import React from "react"
 export const runtime = "nodejs";
 
 export default async function SettingsRolesPage() {
-    const { data: profiles, error } = await sb
-        .from("profiles")
-        .select("user_id, discord_username, discord_avatar, role_level")
-        .order("created_at", { ascending: true });
-
-    if (error) {
-        console.error("Error fetching profiles:", error);
-    }
-
     const { data: discordRoles } = await sb
         .from("discord_roles")
         .select("role_id, name, level");
@@ -27,7 +18,6 @@ export default async function SettingsRolesPage() {
 
     return (
         <SettingsRolesClient
-            initialProfiles={profiles ?? []}
             initialDiscordRoles={discordRoles ?? []}
             initialPermissions={permissions ?? []}
         />

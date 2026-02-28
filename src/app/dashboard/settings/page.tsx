@@ -5,7 +5,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
-import { IconBell, IconApi, IconBuildingStore, IconDeviceGamepad, IconUsers, IconLayoutCards } from "@tabler/icons-react"
+import { IconBell, IconApi, IconBuildingStore, IconDeviceGamepad, IconUsers, IconLayoutCards, IconSearch } from "@tabler/icons-react"
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { SiteHeader } from "@/components/layout/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/common/sidebar"
@@ -30,9 +30,17 @@ export default function SettingsHubPage() {
             bg: "bg-amber-500/10"
         },
         {
-            title: "Roles y Accesos",
-            description: "Mapeo y visualización de permisos (GM, Oficiales, Raiders) del servidor de Discord vinculado.",
+            title: "Gestión de Cuentas",
+            description: "Estado de vinculación Discord/Battle.net, tokens y verificación manual de miembros.",
             icon: IconUsers,
+            href: "/dashboard/settings/accounts",
+            color: "text-indigo-500",
+            bg: "bg-indigo-500/10"
+        },
+        {
+            title: "Roles y Accesos",
+            description: "Configuración de permisos (CRUD y visibilidad) para cada rol del sistema.",
+            icon: IconLayoutCards,
             href: "/dashboard/settings/roles",
             color: "text-green-500",
             bg: "bg-green-500/10"
@@ -52,6 +60,14 @@ export default function SettingsHubPage() {
             href: "/dashboard/settings/notifications",
             color: "text-rose-500",
             bg: "bg-rose-500/10"
+        },
+        {
+            title: "Reclutamiento",
+            description: "Gestiona las vacantes de clase, prioridades y el formulario de aplicación público.",
+            icon: IconSearch,
+            href: "/dashboard/settings/recruitment",
+            color: "text-blue-400",
+            bg: "bg-blue-400/10"
         },
         {
             title: "Documentación API",

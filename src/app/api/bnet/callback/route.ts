@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions, sb } from "@/infrastructure/auth/auth-options"
 import { cookies } from "next/headers"
 import { getGuildCredentials } from "@/infrastructure/auth/credentials"
+import { fetchCharacterSpec } from "@/infrastructure/bnet/bnet-client"
 
 export const runtime = "nodejs"
 
@@ -16,14 +17,18 @@ export async function GET(request: Request) {
             return NextResponse.redirect(new URL("/", baseUrl))
         }
 
+        let isGuest = session.user.roleLevel?.toLowerCase() === "invitado"
+        let finalDest = isGuest ? "/mis-personajes" : "/dashboard/cuenta"
+
         const { searchParams } = reqUrl
         const code = searchParams.get("code")
         const state = searchParams.get("state")
         const error = searchParams.get("error")
 
+
         if (error || !code) {
             console.error("Bnet OAuth error:", error)
-            return NextResponse.redirect(new URL("/dashboard/cuenta?error=auth_failed", baseUrl))
+            return NextResponse.redirect(new URL(`${finalDest}?error=auth_failed`, baseUrl))
         }
 
         const cookieStore = await cookies()
@@ -31,7 +36,7 @@ export async function GET(request: Request) {
 
         if (!state || state !== savedState) {
             console.error("Bnet OAuth state mismatch")
-            return NextResponse.redirect(new URL("/dashboard/cuenta?error=invalid_state", baseUrl))
+            return NextResponse.redirect(new URL(`${finalDest}?error=invalid_state`, baseUrl))
         }
 
         const creds = await getGuildCredentials()
@@ -64,7 +69,7 @@ export async function GET(request: Request) {
         if (!tokenRes.ok) {
             const errBody = await tokenRes.text()
             console.error("Bnet token exchange failed:", errBody)
-            return NextResponse.redirect(new URL("/dashboard/cuenta?error=token_exchange", baseUrl))
+            return NextResponse.redirect(new URL(`${finalDest}?error=token_exchange`, baseUrl))
         }
 
         const tokenData = await tokenRes.json()
@@ -116,15 +121,19 @@ export async function GET(request: Request) {
         if (characters.length > 0) {
             await sb.from("bnet_characters").delete().eq("user_id", userId)
 
-            const charRows = characters.map(c => ({
-                user_id: userId,
-                name: c.name,
-                realm: c.realm.name,
-                realm_slug: c.realm.slug,
-                class_id: c.playable_class.id,
-                race_id: c.playable_race.id,
-                level: c.level,
-                faction: c.faction?.type?.toLowerCase() || 'neutral'
+            const charRows = await Promise.all(characters.map(async c => {
+                const spec = await fetchCharacterSpec(c.realm.slug, c.name.toLowerCase(), "eu", accessToken)
+                return {
+                    user_id: userId,
+                    name: c.name,
+                    realm: c.realm.name,
+                    realm_slug: c.realm.slug,
+                    class_id: c.playable_class.id,
+                    race_id: c.playable_race.id,
+                    level: c.level,
+                    faction: c.faction?.type?.toLowerCase() || 'neutral',
+                    spec: spec || "Unknown"
+                }
             }))
 
             const { error: insertErr } = await sb.from("bnet_characters").insert(charRows)
@@ -142,12 +151,18 @@ export async function GET(request: Request) {
             }
         }
 
-        return NextResponse.redirect(new URL("/dashboard/cuenta?success=linked", baseUrl))
+
+        return NextResponse.redirect(new URL(`${finalDest}?success=linked`, baseUrl))
 
     } catch (e: any) {
         console.error("Bnet callback unhandled error:", e)
         const errUrl = new URL(request.url)
+
+        const currentSession = await getServerSession(authOptions)
+        const guestRole = currentSession?.user?.roleLevel?.toLowerCase() === "invitado"
+        const errorDest = guestRole ? "/mis-personajes" : "/dashboard/cuenta"
+
         const baseUrl = process.env.NEXTAUTH_URL || errUrl.origin
-        return NextResponse.redirect(new URL("/dashboard/cuenta?error=unknown", baseUrl))
+        return NextResponse.redirect(new URL(`${errorDest}?error=unknown`, baseUrl))
     }
 }

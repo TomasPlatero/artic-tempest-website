@@ -24,11 +24,14 @@ interface BnetCharacter {
 
 async function getDashboardData(userId: string | undefined) {
   // Get guild metrics base
-  const { data: guild } = await sb
+  const { data: guild, error: guildError } = await sb
     .from("guilds_managed")
     .select("name, region, realm, faction, last_bnet_sync")
-    .limit(1)
-    .single()
+    .maybeSingle()
+
+  if (guildError) {
+    console.error("Dashboard: Error fetching guild data:", guildError)
+  }
 
   const { count: rosterCount } = await sb
     .from("guild_members")
@@ -69,7 +72,7 @@ async function getDashboardData(userId: string | undefined) {
   }
 
   return {
-    guildName: guild?.name ?? "Sin hermandad",
+    guildName: guild?.name ?? "Artic Tempest",
     realm: guild?.realm ?? "—",
     region: guild?.region ?? "eu",
     faction: guild?.faction ?? "horde",
@@ -88,7 +91,13 @@ export default async function DashboardPage() {
     redirect("/")
   }
 
-  const roleLevel = session.user?.roleLevel ?? "raider"
+  const roleLevel = session.user?.roleLevel?.toLowerCase() ?? "raider"
+  const isGuest = roleLevel === "invitado"
+
+  if (isGuest) {
+    redirect("/mis-personajes")
+  }
+
   const dashboardData = await getDashboardData(session.user?.id)
 
   const style = {

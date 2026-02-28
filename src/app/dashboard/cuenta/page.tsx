@@ -17,6 +17,10 @@ export default async function CuentaPage(props: {
         redirect("/")
     }
 
+    if (session.user.roleLevel?.toLowerCase() === "invitado") {
+        redirect("/mis-personajes")
+    }
+
     // Fecth Profile & BattleTag
     const { data: profile } = await sb
         .from("profiles")
