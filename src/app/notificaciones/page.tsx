@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/infrastructure/tailwind/tailwind-utils"
 import { useSession } from "next-auth/react"
 import { redirect } from "next/navigation"
+import Image from "next/image"
+import DOMPurify from "isomorphic-dompurify"
 
 interface Notification {
     id: string
@@ -26,6 +28,16 @@ export default function PublicNotificationsPage() {
     const [notifications, setNotifications] = useState<Notification[]>([])
     const [loading, setLoading] = useState(true)
     const [activeFilter, setActiveFilter] = useState<'all' | 'unread' | 'read' | 'info' | 'update' | 'warning' | 'important'>('all')
+    const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+
+    const toggleExpand = (id: string) => {
+        setExpandedIds(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
+    }
 
     const fetchNotifications = async () => {
         try {
@@ -100,8 +112,18 @@ export default function PublicNotificationsPage() {
 
     return (
         <main className="min-h-screen bg-black flex flex-col relative overflow-hidden">
-            <div className="fixed inset-0 z-0 bg-[url('/assets/images/wow-raid-hero.jpg')] bg-cover bg-center bg-no-repeat opacity-5 pointer-events-none" />
-            <div className="fixed inset-0 z-0 bg-gradient-to-t from-black via-black/90 to-transparent pointer-events-none" />
+            {/* Background Image & Decor */}
+            <div className="absolute inset-0 z-0 select-none pointer-events-none overflow-hidden h-full w-full">
+                <Image
+                    src="/assets/images/housing-contact.webp"
+                    alt="Background"
+                    fill
+                    className="object-cover blur-[2px] opacity-30 scale-105"
+                    sizes="100vw"
+                    priority
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/90" />
+            </div>
 
             <LandingNavigation />
 
@@ -212,9 +234,28 @@ export default function PublicNotificationsPage() {
                                                     {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: es })}
                                                 </time>
                                             </div>
-                                            <p className={cn("text-base leading-relaxed whitespace-pre-wrap transition-colors duration-500", n.isRead ? "text-zinc-600" : "text-zinc-400")}>
-                                                {n.content}
-                                            </p>
+                                            <div className="relative">
+                                                <div
+                                                    className={cn(
+                                                        "text-base leading-relaxed transition-colors duration-500 prose prose-invert prose-sm max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-2 prose-li:my-0.5 prose-img:rounded-xl",
+                                                        n.isRead ? "text-zinc-600" : "text-zinc-400",
+                                                        !expandedIds.has(n.id) && "line-clamp-3 overflow-hidden"
+                                                    )}
+                                                    dangerouslySetInnerHTML={{
+                                                        __html: DOMPurify.sanitize(n.content)
+                                                    }}
+                                                />
+                                                {n.content?.length > 300 && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => toggleExpand(n.id)}
+                                                        className="h-8 text-[10px] font-black uppercase tracking-widest text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 p-0 mt-2"
+                                                    >
+                                                        {expandedIds.has(n.id) ? "Ver menos" : "Seguir leyendo"}
+                                                    </Button>
+                                                )}
+                                            </div>
                                         </div>
                                         {!n.isRead && (
                                             <Button

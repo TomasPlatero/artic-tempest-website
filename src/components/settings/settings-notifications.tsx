@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import DOMPurify from "isomorphic-dompurify";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
@@ -23,6 +25,16 @@ export function SettingsNotificationsClient() {
         content: "",
         type: "info" as "info" | "update" | "warning" | "important"
     });
+    const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+
+    const toggleExpand = (id: string) => {
+        setExpandedIds(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
+    };
 
     const fetchNotifications = useCallback(async () => {
         try {
@@ -225,11 +237,10 @@ export function SettingsNotificationsClient() {
 
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1">Contenido del Mensaje</label>
-                                    <Textarea
-                                        placeholder="Escribe aquí los detalles..."
-                                        className="min-h-[160px] bg-muted/20 border-border/40 focus:border-blue-500/50 text-sm leading-relaxed rounded-2xl resize-none p-4"
+                                    <RichTextEditor
                                         value={form.content}
-                                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setForm({ ...form, content: e.target.value })}
+                                        onChange={(val) => setForm({ ...form, content: val })}
+                                        placeholder="Escribe aquí los detalles del anuncio..."
                                     />
                                 </div>
 
@@ -339,8 +350,26 @@ export function SettingsNotificationsClient() {
                                                                     )}
                                                                 </Button>
                                                             </div>
-                                                            <div className="text-sm text-muted-foreground font-medium leading-relaxed mb-6 group-hover:text-zinc-200 transition-colors whitespace-pre-wrap">
-                                                                {n.content}
+                                                            <div className="relative">
+                                                                <div
+                                                                    className={cn(
+                                                                        "text-sm text-muted-foreground font-medium leading-relaxed mb-4 group-hover:text-zinc-200 transition-colors prose prose-invert prose-sm max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-2 prose-li:my-0.5 prose-img:rounded-xl",
+                                                                        !expandedIds.has(n.id) && "line-clamp-3 overflow-hidden"
+                                                                    )}
+                                                                    dangerouslySetInnerHTML={{
+                                                                        __html: DOMPurify.sanitize(n.content)
+                                                                    }}
+                                                                />
+                                                                {n.content?.length > 300 && (
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        onClick={() => toggleExpand(n.id)}
+                                                                        className="h-8 text-[10px] font-black uppercase tracking-widest text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 p-0 mb-6"
+                                                                    >
+                                                                        {expandedIds.has(n.id) ? "Ver menos" : "Seguir leyendo"}
+                                                                    </Button>
+                                                                )}
                                                             </div>
                                                             <div className="flex flex-wrap items-center gap-4">
                                                                 <span className={cn("text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-lg border border-current/20 shadow-sm", styles.color, styles.bg)}>
