@@ -67,12 +67,26 @@ export function HomePageClient() {
             {/* History Section */}
             <section id="historia" className="py-24 px-6 max-w-4xl mx-auto text-center">
                 <h2 className="text-4xl font-black text-white mb-8 uppercase tracking-tight">Nuestra Historia</h2>
+
                 <div className="space-y-6">
                     <p className="text-lg text-blue-100/60 leading-relaxed">
-                        Fundada en el fragor de batallas legendarias, <strong className="text-white font-black">Artic Tempest</strong> nació con un único propósito: alcanzar la excelencia sin perder la camaradería. Con una trayectoria consolidada en el WoW competitivo, somos una de las hermandades más estables y comprometidas de <span className="text-blue-400 font-bold">Dun Modr</span>.
+                        <strong className="text-white font-black">Artic Tempest</strong> nace con una idea clara: progresar con seriedad sin perder el buen ambiente que hace que una hermandad funcione a largo plazo. No somos un proyecto improvisado; somos un grupo consolidado en <span className="text-blue-400 font-bold">Dun Modr</span>, con una estructura estable y un compromiso real con el progreso PvE.
                     </p>
+
                     <p className="text-lg text-blue-100/60 leading-relaxed">
-                        No solo buscamos jugadores con habilidad excepcional, buscamos personas que compartan nuestra visión: puntualidad, preparación meticulosa y el deseo constante de mejorar día tras día. Si crees que encajas en este entorno de alto nivel, el frío de la tempestad te espera para la nueva expansión <span className="text-white font-bold">Midnight</span>.
+                        Tras haber conseguido nuestro primer <span className="text-white font-bold">Cutting Edge en The War Within</span> y posicionarnos como una hermandad <span className="text-white font-bold">Top 25 de España</span>, hemos demostrado que sabemos competir a buen nivel sin perder nuestra identidad. Aquí no hay ruido innecesario: hay organización, constancia y trabajo bien hecho semana tras semana.
+                    </p>
+
+                    <p className="text-lg text-blue-100/60 leading-relaxed">
+                        En <strong className="text-white font-black">Artic Tempest</strong> no buscamos únicamente rendimiento individual. Buscamos jugadores que entiendan lo que implica formar parte de un equipo serio: puntualidad, preparación previa de cada encuentro, mentalidad de mejora continua y capacidad de adaptación.
+                    </p>
+
+                    <p className="text-lg text-blue-100/60 leading-relaxed">
+                        El objetivo es claro: seguir creciendo en <span className="text-white font-bold">Midnight</span>, consolidando lo conseguido y dando un paso más en nuestro nivel de juego, manteniendo lo que nos ha traído hasta aquí: estabilidad, constancia y cohesión de grupo.
+                    </p>
+
+                    <p className="text-lg text-blue-100/60 leading-relaxed">
+                        Si encajas en este enfoque y buscas una hermandad seria, sin dramas y con ambición real, <strong className="text-white font-black">Artic Tempest</strong> es tu sitio.
                     </p>
                 </div>
             </section>
