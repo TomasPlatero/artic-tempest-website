@@ -61,7 +61,9 @@ export function NotificationToastListener() {
                     checkNotifications()
                 }
             )
-            .subscribe()
+            .subscribe((status) => {
+                if (status !== 'SUBSCRIBED') console.warn("Realtime Toast Notifications:", status)
+            })
 
         return () => {
             supabase.removeChannel(channel)
