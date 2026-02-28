@@ -23,7 +23,7 @@ export function DashboardClient({ data, roleLevel }: { data: any, roleLevel: str
                 {/* Background Image */}
                 <div
                     className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                    style={{ backgroundImage: "url('/assets/images/midnight-bg.png')" }}
+                    style={{ backgroundImage: "url('/assets/images/midnight-battle.webp')" }}
                 />
                 <div className="relative z-20 flex flex-col items-start justify-center h-full p-6 sm:p-10">
                     <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2 drop-shadow-md flex items-center gap-3">
