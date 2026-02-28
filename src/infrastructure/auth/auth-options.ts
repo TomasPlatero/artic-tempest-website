@@ -116,16 +116,13 @@ export const authOptions: NextAuthOptions = {
 
       const dbLevel = (existing?.role_level as RoleLevel | null) ?? "invitado"
 
-      // If they are in the Discord Guild, they are at least 'member'
-      // If we found a mapped role (officer/gm), we use that.
+      // 3. Initial Provisioning Logic
+      // If the user is new, we use the Discord-to-App mappings (discordLevel).
+      // If the user already exists, the App's role_level is the absolute source of truth (Manual priority).
       const discordLevel: RoleLevel = topRole?.level ?? (member ? "member" : "invitado")
+      let finalLevel: RoleLevel = existing ? dbLevel : discordLevel
 
-      // LOGIC: We promote automatically up to 'member'. 
-      // Higher roles (officer, gm, raider) are usually manually assigned or synced with specific mappings.
-      // But if we have a topRole mapping, we respect it.
-      let finalLevel = pickMax(dbLevel, discordLevel)
-
-      // 3. Save / Update Profile
+      // 4. Save / Update Profile
       const { data, error } = await sb
         .from("profiles")
         .upsert(
@@ -159,7 +156,8 @@ export const authOptions: NextAuthOptions = {
       return true
     },
 
-    async jwt({ token, account }) {
+    async jwt({ token, account, trigger }) {
+      // Initial sign in
       const meta = (account as (Account & { __guildboard?: GuildboardMeta }) | null)?.__guildboard
       if (meta) {
         token.userId = meta.profileId
@@ -168,7 +166,25 @@ export const authOptions: NextAuthOptions = {
         token.username = meta.username
         token.avatarUrl = meta.avatarUrl
         token.checkedAt = meta.checkedAt
+        return token
       }
+
+      // Periodically refresh role from DB (e.g. if more than 5 minutes have passed or on every check)
+      // Since this runs in the edge or server-side, a quick DB fetch is acceptable to keep roles in sync
+      try {
+        const { data: profile } = await sb
+          .from("profiles")
+          .select("role_level")
+          .eq("user_id", token.userId)
+          .maybeSingle()
+
+        if (profile) {
+          token.roleLevel = profile.role_level
+        }
+      } catch (error) {
+        console.error("[JWT Callback] Error refreshing role:", error)
+      }
+
       return token
     },
 
