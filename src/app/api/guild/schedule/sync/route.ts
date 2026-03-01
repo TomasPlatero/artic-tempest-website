@@ -10,8 +10,8 @@ const SYNC_DAYS_AHEAD = 60 // 60 days ahead
 function getBackgroundUrl(destination: string) {
     if (!destination) return null
     const destLower = destination.toLowerCase()
-    if (destLower.includes("voidspire")) return "/assets/images/raids/voidspire.webp"
-    if (destLower.includes("dreamrift")) return "/assets/images/raids/dreamrift.webp"
+    if (destLower.includes("voidspire") || destLower.includes("aguja")) return "/assets/images/raids/voidspire.webp"
+    if (destLower.includes("dreamrift") || destLower.includes("falla") || destLower.includes("sueño")) return "/assets/images/raids/dreamrift.webp"
     if (destLower.includes("quel'danas") || destLower.includes("sunwell")) return "/assets/images/raids/marchonqueldanas.webp"
     return null
 }
@@ -59,7 +59,10 @@ export async function POST(request: Request) {
         // 2. Map schedules by day (1 = Monday, 7 = Sunday)
         const schedMap = new Map()
         schedules.forEach(s => {
-            schedMap.set(s.day_of_week, s)
+            if (!schedMap.has(s.day_of_week)) {
+                schedMap.set(s.day_of_week, [])
+            }
+            schedMap.get(s.day_of_week).push(s)
         })
 
         const eventsToInsert = []
@@ -74,38 +77,40 @@ export async function POST(request: Request) {
             const dbDayOfWeek = dDay === 0 ? 7 : dDay
 
             if (schedMap.has(dbDayOfWeek)) {
-                const config = schedMap.get(dbDayOfWeek)
+                const configs = schedMap.get(dbDayOfWeek)
 
-                // parse time strings "HH:mm(:ss)"
-                const [startH, startM] = config.start_time.split(':')
-                const [endH, endM] = config.end_time.split(':')
+                for (const config of configs) {
+                    // parse time strings "HH:mm(:ss)"
+                    const [startH, startM] = config.start_time.split(':')
+                    const [endH, endM] = config.end_time.split(':')
 
-                const eventStart = new Date(targetDate)
-                eventStart.setHours(parseInt(startH, 10), parseInt(startM, 10), 0)
+                    const eventStart = new Date(targetDate)
+                    eventStart.setHours(parseInt(startH, 10), parseInt(startM, 10), 0)
 
-                const eventEnd = new Date(targetDate)
-                eventEnd.setHours(parseInt(endH, 10), parseInt(endM, 10), 0)
+                    const eventEnd = new Date(targetDate)
+                    eventEnd.setHours(parseInt(endH, 10), parseInt(endM, 10), 0)
 
-                // If end time is before start time, it likely crossed midnight, add 1 day to end date
-                if (isAfter(eventStart, eventEnd)) {
-                    eventEnd.setDate(eventEnd.getDate() + 1)
-                }
+                    // If end time is before start time, it likely crossed midnight, add 1 day to end date
+                    if (isAfter(eventStart, eventEnd)) {
+                        eventEnd.setDate(eventEnd.getDate() + 1)
+                    }
 
-                if (isAfter(eventStart, now)) {
-                    eventsToInsert.push({
-                        guild_id: guildId,
-                        author_id: session.user.id,
-                        title: config.destination,
-                        description: `Scheduled recurring event`,
-                        event_type: 'raid',
-                        destination: config.destination,
-                        difficulty: config.difficulty,
-                        status: 'Scheduled',
-                        event_date: eventStart.toISOString(),
-                        end_date: eventEnd.toISOString(),
-                        background_url: getBackgroundUrl(config.destination),
-                        selected_bosses: []
-                    })
+                    if (isAfter(eventStart, now)) {
+                        eventsToInsert.push({
+                            guild_id: guildId,
+                            author_id: session.user.id,
+                            title: config.destination,
+                            description: `Scheduled recurring event`,
+                            event_type: 'raid',
+                            destination: config.destination,
+                            difficulty: config.difficulty,
+                            status: 'Scheduled',
+                            event_date: eventStart.toISOString(),
+                            end_date: eventEnd.toISOString(),
+                            background_url: getBackgroundUrl(config.destination),
+                            selected_bosses: []
+                        })
+                    }
                 }
             }
         }
@@ -128,13 +133,11 @@ export async function POST(request: Request) {
 
         if (existErr) throw existErr
 
-        // 4. filter out events that already exist on that day with the same destination
-        // (Checking just the date part, and destination)
+        // 4. filter out events that already exist on that exact time and destination
         const finalInsertBatch = eventsToInsert.filter(evt => {
-            const evtDay = format(new Date(evt.event_date), 'yyyy-MM-dd')
             const duplicate = existingEvents?.find(ex => {
-                const exDay = format(new Date(ex.event_date), 'yyyy-MM-dd')
-                return exDay === evtDay && ex.destination === evt.destination
+                const isSameTime = new Date(ex.event_date).getTime() === new Date(evt.event_date).getTime()
+                return isSameTime && ex.destination === evt.destination
             })
             return !duplicate
         })

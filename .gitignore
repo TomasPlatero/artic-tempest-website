@@ -113,3 +113,7 @@ debug-db.ts
 .jpeg
 .png
 .svg
+scripts/test-db.js
+scripts/replace.js
+scripts/list-raids.js
+scripts/add-raid.js

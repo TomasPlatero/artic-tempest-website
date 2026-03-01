@@ -32,23 +32,27 @@ async function getEditorData() {
         .select("category, key, value, metadata")
 
     const classRoles: Record<number, string> = {}
-    const raids: any[] = []
     const buffs: any[] = [
         { category: "Buffs / Debuffs", items: [] },
         { category: "Utilidad", items: [] }
     ]
 
+    const uniqueRaids = new Map()
     constantRows?.forEach(c => {
         if (c.category === 'class_role') {
             classRoles[Number(c.key)] = c.value
         }
         if (c.category === 'wow_raid') {
-            raids.push({
-                id: c.key,
-                name: c.value,
-                background: c.metadata?.background,
-                bosses: c.metadata?.bosses || []
-            })
+            const name = c.value || "";
+            const normalizedName = name.toLowerCase().trim();
+            if (!uniqueRaids.has(normalizedName)) {
+                uniqueRaids.set(normalizedName, {
+                    id: c.key,
+                    name: c.value,
+                    background: c.metadata?.background,
+                    bosses: c.metadata?.bosses || []
+                })
+            }
         }
         if (c.category === 'wow_buff') {
             const item = { id: c.key, name: c.value, classId: c.metadata?.classId }
@@ -56,6 +60,17 @@ async function getEditorData() {
             else buffs[1].items.push(item)
         }
     })
+
+    const raids = Array.from(uniqueRaids.values())
+    raids.sort((a, b) => {
+        const nameA = (a.name || "").toLowerCase();
+        const nameB = (b.name || "").toLowerCase();
+        const isATodas = nameA.includes("todas las raids");
+        const isBTodas = nameB.includes("todas las raids");
+        if (isATodas && !isBTodas) return -1;
+        if (!isATodas && isBTodas) return 1;
+        return nameA.localeCompare(nameB, 'es');
+    });
 
     const rankColors: (string | null)[] = []
     for (let i = 0; i <= 9; i++) {

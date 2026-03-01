@@ -16,9 +16,11 @@ export async function PATCH(req: Request) {
             .from("profiles")
             .select("role_level")
             .eq("user_id", session.user.id)
-            .single();
+            .maybeSingle();
 
-        if (profile?.role_level !== "gm") {
+        // If the database was reset, the profile might be missing. Allow saving credentials 
+        // initially so the Discord integration can work on the next login.
+        if (profile && profile.role_level !== "gm") {
             return new NextResponse("Sin permisos", { status: 403 });
         }
 

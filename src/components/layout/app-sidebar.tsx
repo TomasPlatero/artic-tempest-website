@@ -44,7 +44,7 @@ const navigationData = {
     },
     {
       title: "Notificaciones",
-      url: "/notificaciones",
+      url: "/dashboard/notificaciones",
       icon: IconBell,
       badgeKey: "notifications",
     },
