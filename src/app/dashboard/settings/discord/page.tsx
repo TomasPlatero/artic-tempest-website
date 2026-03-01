@@ -7,7 +7,8 @@ import { getGuildCredentials } from "@/infrastructure/auth/credentials"
 
 export default async function DiscordSettingsPage() {
     const session = await getServerSession(authOptions)
-    if (!session || session.user.roleLevel !== 'gm') {
+    const roleLevel = session?.user?.roleLevel
+    if (!session || (roleLevel !== 'gm' && roleLevel !== 'officer')) {
         redirect("/dashboard")
     }
 

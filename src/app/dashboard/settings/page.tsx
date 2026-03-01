@@ -92,7 +92,7 @@ export default function SettingsHubPage() {
             <div>
                 <h1 className="text-2xl font-bold">Ajustes</h1>
                 <p className="text-sm text-muted-foreground mt-1">
-                    Panel de control centralizado — solo accesible para el Guild Master
+                    Panel de control centralizado — accesible para el Guild Master y Oficiales
                 </p>
             </div>
 

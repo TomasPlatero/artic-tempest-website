@@ -22,9 +22,9 @@ export default async function SettingsLayout({
         redirect("/")
     }
 
-    // Only GM can access settings
+    // Only GM and Officers can access settings
     const role = session.user?.roleLevel
-    if (role !== "gm") {
+    if (role !== "gm" && role !== "officer") {
         redirect("/dashboard")
     }
 

@@ -10,7 +10,8 @@ export async function DELETE() {
             return NextResponse.json({ error: "No autorizado" }, { status: 401 })
         }
 
-        if (session.user.roleLevel !== "gm") {
+        const roleLevel = session?.user?.roleLevel
+        if (roleLevel !== "gm" && roleLevel !== "officer") {
             return NextResponse.json({ error: "Permisos insuficientes" }, { status: 403 })
         }
 
