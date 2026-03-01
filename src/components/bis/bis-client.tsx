@@ -3,8 +3,9 @@
 import { useState, useEffect, useMemo, useCallback } from "react"
 import {
     IconSword, IconShield, IconCheck, IconX, IconRefresh,
-    IconListCheck, IconLayoutGrid, IconUser, IconFilter,
+    IconListCheck, IconLayoutGrid, IconUser, IconFilter, IconSettings
 } from "@tabler/icons-react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -299,7 +300,13 @@ function WishlistCard({
     )
 }
 
-export function BisClient({ eligibleMembers }: { eligibleMembers: EligibleMember[] }) {
+export function BisClient({
+    eligibleMembers,
+    canEdit = false
+}: {
+    eligibleMembers: EligibleMember[]
+    canEdit?: boolean
+}) {
     const [selectedMemberId, setSelectedMemberId] = useState<string>(eligibleMembers[0]?.id || "")
     const [difficulty, setDifficulty] = useState<"heroic" | "mythic">("heroic")
     const [viewMode, setViewMode] = useState<"slot" | "boss">("slot")
@@ -481,12 +488,22 @@ export function BisClient({ eligibleMembers }: { eligibleMembers: EligibleMember
             />
 
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold">Lista de Deseos BiS</h1>
-                    <p className="text-sm text-muted-foreground mt-1">
-                        {raidName ? `Loot disponible en ${raidName}` : "Selecciona los ítems que necesitas de la raid actual."}
-                    </p>
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div className="flex items-center gap-4">
+                    <div>
+                        <h1 className="text-2xl font-bold">Lista de Deseos BiS</h1>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            {raidName ? `Loot disponible en ${raidName}` : "Selecciona los ítems que necesitas de la raid actual."}
+                        </p>
+                    </div>
+                    {canEdit && (
+                        <Button variant="outline" size="sm" asChild className="ml-4 h-8 bg-blue-500/5 text-blue-400 border-blue-500/20 hover:bg-blue-500/10 hover:text-blue-300 gap-2">
+                            <Link href="/dashboard/bis/admin">
+                                <IconSettings className="size-3.5" />
+                                Gestionar Listas
+                            </Link>
+                        </Button>
+                    )}
                 </div>
                 <div className="flex items-center gap-3 flex-wrap">
                     {/* Character Selector */}
