@@ -55,6 +55,7 @@ export function PlanificadorCdsClient() {
 
     // Roster State (Members with CDs)
     const [healers, setHealers] = useState<any[]>([])
+    const [eventSignups, setEventSignups] = useState<any[]>([])
     const [cooldownDefinitions, setCooldownDefinitions] = useState<CooldownDefinition[]>([])
 
     const isPast = useMemo(() => {
@@ -131,24 +132,24 @@ export function PlanificadorCdsClient() {
             const res = await fetch(`/api/guild/events/${id}/selected-roster`)
             if (!res.ok) throw new Error("Failed to fetch roster")
             const data = await res.json()
+            setEventSignups(data)
 
-            // Map event signups to members with CDs
-            const filteredHealers = data
-                .map((s: any) => {
-                    const info = s.guild_members;
-                    if (!info) return null;
-                    return {
-                        id: s.member_id,
-                        character_name: info.character_name || "Unknown",
-                        class_id: info.class_id || 0,
-                        spec_id: info.spec_id || 0,
-                        avatar: null
-                    };
-                })
-                .filter((h: any) => h !== null);
+            // Map event signups to members with CDs (we do this dynamically now in useEffect, but we can set default here)
+            const mapped = data.map((s: any) => {
+                const info = s.guild_members;
+                if (!info) return null;
+                return {
+                    id: s.member_id,
+                    character_name: info.character_name || "Unknown",
+                    class_id: info.class_id || 0,
+                    spec_id: info.spec_id || 0,
+                    avatar: null,
+                    selected_bosses: s.selected_bosses || []
+                };
+            }).filter((h: any) => h !== null);
 
-            console.log(`Event ${id} members with CDs fetched:`, filteredHealers.length);
-            setHealers(filteredHealers)
+            setHealers(mapped);
+            console.log(`Event ${id} members with CDs fetched:`, mapped.length);
         } catch (error) {
             console.error("fetchEventRoster error:", error)
         }
@@ -203,6 +204,33 @@ export function PlanificadorCdsClient() {
             fetchAssignments(eventIdParam, selectedBoss)
         }
     }, [eventIdParam, selectedBoss, fetchAssignments])
+
+    // Update healers when boss or event changes
+    useEffect(() => {
+        if (!currentEvent || eventSignups.length === 0) return;
+
+        const isGeneralRoster = !currentEvent.selected_bosses || currentEvent.selected_bosses.length === 0;
+
+        const mapped = eventSignups.map((s: any) => {
+            const info = s.guild_members;
+            if (!info) return null;
+            return {
+                id: s.member_id,
+                character_name: info.character_name || "Unknown",
+                class_id: info.class_id || 0,
+                spec_id: info.spec_id || 0,
+                avatar: null,
+                selected_bosses: s.selected_bosses || []
+            };
+        }).filter((h: any) => h !== null);
+
+        const filtered = mapped.filter((h: any) => {
+            if (isGeneralRoster) return true;
+            return h.selected_bosses.includes(selectedBoss);
+        });
+
+        setHealers(filtered);
+    }, [selectedBoss, currentEvent, eventSignups])
 
     const formatTime = (seconds: number) => {
         const m = Math.floor(seconds / 60)
@@ -356,6 +384,114 @@ export function PlanificadorCdsClient() {
         setTimeout(() => setCopySuccess(false), 2000)
     }
 
+    const renderBossCard = (boss: string, idx: number, parentRaid: any) => {
+        const isGeneralRoster = !currentEvent?.selected_bosses || currentEvent.selected_bosses.length === 0;
+        const isBossEnabled = isGeneralRoster || (currentEvent?.selected_bosses || []).includes(boss);
+
+        return (
+            <div key={boss} className="flex flex-col gap-3">
+                <Card className={cn(
+                    "border-border/40 overflow-hidden relative h-44 rounded-xl shadow-2xl border flex flex-col transition-all duration-300",
+                    isBossEnabled ? "bg-[#121217]/90 group/boss hover:border-blue-500/30" : "bg-[#121217]/40 grayscale opacity-60"
+                )}>
+                    <div
+                        className={cn(
+                            "absolute inset-x-0 top-0 h-32 bg-cover bg-center transition-all duration-500",
+                            isBossEnabled ? "opacity-20 group-hover/boss:opacity-40 grayscale group-hover/boss:grayscale-0" : "opacity-10 grayscale"
+                        )}
+                        style={{ backgroundImage: `url(${parentRaid.image})` }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d12] via-[#0d0d12]/60 to-transparent pointer-events-none" />
+
+                    {/* Disabled overlay */}
+                    {!isBossEnabled && (
+                        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/60 backdrop-blur-[2px]">
+                            <div className="flex flex-col items-center gap-2">
+                                <span className="text-red-500/80 font-black uppercase text-sm tracking-widest border border-red-500/20 px-3 py-1 rounded bg-red-950/40">No hay roster</span>
+                            </div>
+                        </div>
+                    )}
+
+                    <CardHeader className="relative z-10 pl-5 pt-3 pb-0">
+                        <h3 className={cn("text-[17px] font-black uppercase tracking-tight truncate", isBossEnabled ? "text-white/90 group-hover:text-white transition-colors" : "text-white/40")}>
+                            {boss}
+                        </h3>
+                        <span className="text-[9px] font-black text-muted-foreground/50 uppercase tracking-[0.2em] mt-1 truncate">
+                            {parentRaid.name}
+                        </span>
+                    </CardHeader>
+
+                    <CardContent className="relative z-10 px-5 pt-5 pb-6 mt-auto flex gap-2">
+                        <Button
+                            variant="secondary"
+                            disabled={!isBossEnabled}
+                            className="flex-1 h-9 text-[9px] font-black px-2 bg-blue-600/10 text-blue-400 border border-blue-500/20 hover:bg-blue-600 hover:text-white transition-all uppercase tracking-widest shadow-xl backdrop-blur-md"
+                            onClick={() => {
+                                setSelectedBoss(boss);
+                                setActiveTab("planner");
+                            }}
+                        >
+                            Asignar CD&apos;s
+                        </Button>
+                        <Button
+                            variant="secondary"
+                            disabled={!isBossEnabled}
+                            className="flex-1 h-9 text-[9px] font-black px-2 bg-amber-600/10 text-amber-500 border border-amber-500/20 hover:bg-amber-600 hover:text-white transition-all uppercase tracking-widest shadow-xl backdrop-blur-md"
+                            onClick={() => {
+                                setSelectedBoss(boss);
+                                setActiveTab("mrt");
+                            }}
+                        >
+                            Nota MRT
+                        </Button>
+                    </CardContent>
+                </Card>
+
+                {/* Boss Planning Details Card (Viserio Style) */}
+                <div className="bg-[#121217]/60 border border-border/20 rounded-xl p-4 flex flex-col gap-3 shadow-inner">
+                    <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest">Planificaciones</span>
+                        <span className="text-[9px] font-bold text-blue-400/60 uppercase tracking-tighter">Historial</span>
+                    </div>
+
+                    {bossSummaries.filter(s => s.boss_name === boss).length > 0 ? (
+                        <div className="flex flex-col gap-2">
+                            {bossSummaries.filter(s => s.boss_name === boss).slice(0, 3).map((ev) => (
+                                <div
+                                    key={ev.id}
+                                    className="group/plan flex items-center justify-between bg-black/40 border border-white/5 p-2 rounded-lg hover:border-blue-500/30 cursor-pointer transition-all"
+                                    onClick={() => {
+                                        window.location.href = `/dashboard/planificador-cds?event_id=${ev.id}&boss=${encodeURIComponent(boss)}`;
+                                    }}
+                                >
+                                    <div className="flex flex-col">
+                                        <span className="text-[11px] font-bold text-white/80 group-hover/plan:text-white">{boss}</span>
+                                        <span className="text-[9px] text-muted-foreground/50 font-bold uppercase overflow-hidden text-ellipsis whitespace-nowrap max-w-[140px]">
+                                            {new Date(ev.event_date).toLocaleDateString("es-ES", { day: '2-digit', month: 'short' })} • {ev.difficulty}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex -space-x-2">
+                                            <div className="size-5 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-[8px] font-black text-blue-400" title={`${ev.assignment_count} asignaciones`}>
+                                                {ev.assignment_count}
+                                            </div>
+                                        </div>
+                                        <IconTimeline className="size-3.5 text-muted-foreground/40 group-hover/plan:text-blue-400 transition-colors" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center py-4 bg-black/20 rounded-lg border border-dashed border-white/5">
+                            <IconTimeline className="size-5 text-muted-foreground/30 mb-2" />
+                            <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest">Sin registros</span>
+                        </div>
+                    )}
+                </div>
+            </div>
+        )
+    }
+
     if (!mounted) return null
 
     return (
@@ -460,94 +596,28 @@ export function PlanificadorCdsClient() {
                 </TabsList>
 
                 <TabsContent value="selection" className="m-0">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {selectedRaid.bosses.map((boss, idx) => {
-                            return (
-                                <div key={idx} className="flex flex-col gap-3">
-                                    <Card className="bg-[#121217]/90 border-border/40 overflow-hidden relative group/boss h-44 rounded-xl shadow-2xl border flex flex-col hover:border-blue-500/30 transition-all duration-300">
-                                        <div
-                                            className="absolute inset-x-0 top-0 h-32 bg-cover bg-center transition-all duration-500 opacity-20 group-hover/boss:opacity-40 grayscale group-hover/boss:grayscale-0"
-                                            style={{ backgroundImage: `url(${selectedRaid.image})` }}
-                                        />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d12] via-[#0d0d12]/60 to-transparent pointer-events-none" />
-
-                                        <CardHeader className="relative z-10 pl-5 pt-3 pb-0">
-                                            <h3 className="text-[17px] font-black uppercase tracking-tight text-white/90 group-hover:text-white transition-colors truncate">
-                                                {boss}
-                                            </h3>
-                                            <span className="text-[9px] font-black text-muted-foreground/50 uppercase tracking-[0.2em] mt-1 truncate">
-                                                {selectedRaid.name}
-                                            </span>
-                                        </CardHeader>
-
-                                        <CardContent className="relative z-10 px-5 pt-5 pb-6 mt-auto flex gap-2">
-                                            <Button
-                                                variant="secondary"
-                                                className="flex-1 h-9 text-[9px] font-black px-2 bg-blue-600/10 text-blue-400 border border-blue-500/20 hover:bg-blue-600 hover:text-white transition-all uppercase tracking-widest shadow-xl backdrop-blur-md"
-                                                onClick={() => {
-                                                    setSelectedBoss(boss);
-                                                    setActiveTab("planner");
-                                                }}
-                                            >
-                                                Asignar CD&apos;s
-                                            </Button>
-                                            <Button
-                                                variant="secondary"
-                                                className="flex-1 h-9 text-[9px] font-black px-2 bg-amber-600/10 text-amber-500 border border-amber-500/20 hover:bg-amber-600 hover:text-white transition-all uppercase tracking-widest shadow-xl backdrop-blur-md"
-                                                onClick={() => {
-                                                    setSelectedBoss(boss);
-                                                    setActiveTab("mrt");
-                                                }}
-                                            >
-                                                Nota MRT
-                                            </Button>
-                                        </CardContent>
-                                    </Card>
-
-                                    {/* Boss Planning Details Card (Viserio Style) */}
-                                    <div className="bg-[#121217]/60 border border-border/20 rounded-xl p-4 flex flex-col gap-3 shadow-inner">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest">Planificaciones</span>
-                                            <span className="text-[9px] font-bold text-blue-400/60 uppercase tracking-tighter">Historial</span>
-                                        </div>
-
-                                        {bossSummaries.filter(s => s.boss_name === boss).length > 0 ? (
-                                            <div className="flex flex-col gap-2">
-                                                {bossSummaries.filter(s => s.boss_name === boss).slice(0, 3).map((ev) => (
-                                                    <div
-                                                        key={ev.id}
-                                                        className="group/plan flex items-center justify-between bg-black/40 border border-white/5 p-2 rounded-lg hover:border-blue-500/30 cursor-pointer transition-all"
-                                                        onClick={() => {
-                                                            window.location.href = `/dashboard/planificador-cds?event_id=${ev.id}&boss=${encodeURIComponent(boss)}`;
-                                                        }}
-                                                    >
-                                                        <div className="flex flex-col">
-                                                            <span className="text-[11px] font-bold text-white/80 group-hover/plan:text-white">{boss}</span>
-                                                            <span className="text-[9px] text-muted-foreground/50 font-bold uppercase overflow-hidden text-ellipsis whitespace-nowrap max-w-[140px]">
-                                                                {new Date(ev.event_date).toLocaleDateString("es-ES", { day: '2-digit', month: 'short' })} • {ev.difficulty}
-                                                            </span>
-                                                        </div>
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="flex -space-x-2">
-                                                                <div className="size-5 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-[8px] font-black text-blue-400" title={`${ev.assignment_count} asignaciones`}>
-                                                                    {ev.assignment_count}
-                                                                </div>
-                                                            </div>
-                                                            <IconTimeline className="size-3.5 text-muted-foreground/40 group-hover/plan:text-blue-400 transition-colors" />
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <div className="text-[9px] font-bold text-muted-foreground/30 uppercase tracking-widest py-4 text-center border border-dashed border-border/10 rounded-lg">
-                                                No hay rutas para este boss
-                                            </div>
-                                        )}
+                    {selectedRaid.id === "Todas las Raids" ? (
+                        <div className="flex flex-col gap-10">
+                            {MIDNIGHT_RAIDS.filter((r) => r.id !== "Todas las Raids").map((subRaid) => (
+                                <div key={subRaid.id} className="flex flex-col gap-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-4 w-1 bg-primary/40 rounded-full" />
+                                        <h3 className="text-[12px] font-black uppercase tracking-[0.3em] text-white/60">
+                                            {subRaid.name}
+                                        </h3>
+                                        <div className="h-px flex-1 bg-border/10" />
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                        {subRaid.bosses.map((boss, idx) => renderBossCard(boss, idx, subRaid))}
                                     </div>
                                 </div>
-                            )
-                        })}
-                    </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            {selectedRaid.bosses.map((boss, idx) => renderBossCard(boss, idx, selectedRaid))}
+                        </div>
+                    )}
 
                     {/* Recent Events Panel */}
                     {!eventIdParam && recentEvents.length > 0 && (
@@ -702,16 +772,16 @@ export function PlanificadorCdsClient() {
                                             return (
                                                 <div key={hIndex} className="flex border-b border-border/10">
                                                     <div className="w-[200px] border-r border-border/20 shrink-0 flex items-stretch bg-[#0d0d12] sticky left-0 z-10 shadow-[4px_0_24px_rgba(0,0,0,0.5)]">
-                                                        <div className="w-8 flex flex-col items-center justify-center py-4 border-r border-border/10 bg-black/20"
+                                                        <div className="w-9 flex flex-col items-center justify-center py-4 border-r border-border/10 bg-black/20 overflow-hidden h-full"
                                                             style={{ borderLeftWidth: '3px', borderLeftColor: classColor }}>
-                                                            <span className="text-[11px] font-black uppercase tracking-widest -rotate-90 whitespace-nowrap" style={{ color: classColor }}>
+                                                            <span className="text-[10px] font-black uppercase tracking-wider -rotate-90 whitespace-nowrap" style={{ color: classColor }}>
                                                                 {h.character_name}
                                                             </span>
                                                         </div>
 
-                                                        <div className="flex-1 flex flex-col divide-y divide-border/5 bg-black/40">
+                                                        <div className="flex-1 flex flex-col bg-black/40">
                                                             {hCooldowns.map(cd => (
-                                                                <div key={cd.id} className="h-10 flex items-center justify-between pl-3 pr-2 group/cdname hover:bg-white/[0.02] transition-colors">
+                                                                <div key={cd.id} className="h-[48px] flex items-center justify-between pl-3 pr-2 group/cdname hover:bg-white/[0.02] transition-colors border-b border-border/5 last:border-0">
                                                                     <span className="text-[10px] font-bold text-white/80 truncate pr-2 group-hover/cdname:text-white transition-colors">{cd.name}</span>
                                                                     <Image src={cd.icon} alt={cd.name} width={18} height={18} className="rounded shadow-sm opacity-90 mix-blend-screen" />
                                                                 </div>
@@ -719,7 +789,7 @@ export function PlanificadorCdsClient() {
                                                         </div>
                                                     </div>
 
-                                                    <div className="flex-1 flex flex-col divide-y divide-border/5 relative bg-grid-white/[0.01]">
+                                                    <div className="flex-1 flex flex-col relative bg-grid-white/[0.01]">
                                                         <div className="absolute inset-0 pointer-events-none">
                                                             {[...Array(16)].map((_, i) => (
                                                                 <div key={`grid-${i}`} className="absolute inset-y-0 w-px bg-white/[0.02]" style={{ left: `${((TOTAL_FIGHT_SECONDS / 16) * i) / TOTAL_FIGHT_SECONDS * 100}%` }} />
@@ -732,7 +802,7 @@ export function PlanificadorCdsClient() {
                                                             return (
                                                                 <div
                                                                     key={`track-${cd.id}`}
-                                                                    className="h-10 relative cursor-crosshair hover:bg-white/[0.03] transition-colors group/track"
+                                                                    className="h-[48px] relative cursor-crosshair hover:bg-white/[0.03] transition-colors group/track border-b border-border/5 last:border-0"
                                                                     onClick={(e) => {
                                                                         if (isLoading || wasDragging) return;
                                                                         const rect = e.currentTarget.getBoundingClientRect()

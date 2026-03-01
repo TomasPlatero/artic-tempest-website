@@ -32,6 +32,7 @@ export async function PATCH(
             selection_status: s.selection_status,
             event_role: s.event_role,
             signup_order: s.signup_order,
+            selected_bosses: s.selected_bosses || [],
             status: s.is_absent ? 'absent' : s.is_late ? 'late' : 'present'
         }))
 

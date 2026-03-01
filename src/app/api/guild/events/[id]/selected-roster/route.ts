@@ -31,6 +31,7 @@ export async function GET(
                 member_id, 
                 event_role, 
                 selection_status, 
+                selected_bosses,
                 guild_members!inner(
                     character_name, 
                     class_id,

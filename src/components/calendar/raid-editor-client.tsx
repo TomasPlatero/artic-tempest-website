@@ -62,6 +62,7 @@ interface Signup {
     event_role: string
     signup_order: number
     guild_members: Member
+    selected_bosses: string[]
     is_absent?: boolean
     is_late?: boolean
 }
@@ -113,9 +114,9 @@ export function RaidEditorClient({
         event_date: formatToDateTimeLocal(initialRaid.event_date),
         selected_bosses: initialRaid.selected_bosses || []
     } : {
-        destination: raids[0]?.id || "",
+        destination: raids.find((r: any) => r.id === "Todas las Raids" || r.name === "Todas las Raids")?.id || raids[0]?.id || "",
         event_date: preselectedDate ? `${preselectedDate}T20:00` : formatToDateTimeLocal(new Date()),
-        difficulty: "Mítico (20)",
+        difficulty: "Normal (30)",
         status: "planned",
         selected_bosses: []
     })
@@ -132,6 +133,7 @@ export function RaidEditorClient({
             merged.push({
                 ...s,
                 event_role: role,
+                selected_bosses: s.selected_bosses || [],
                 is_absent: s.status === 'absent',
                 is_late: s.status === 'late'
             })
@@ -148,6 +150,7 @@ export function RaidEditorClient({
                     selection_status: 'queued',
                     event_role: initialRole,
                     signup_order: merged.length,
+                    selected_bosses: [],
                     guild_members: m
                 })
             }
@@ -210,6 +213,15 @@ export function RaidEditorClient({
         }
     }
 
+
+    const [currentBossTab, setCurrentBossTab] = useState<string>("All")
+
+    // Clean up currentBossTab if a boss is removed from raid.selected_bosses
+    useEffect(() => {
+        if (currentBossTab !== "All" && !raid.selected_bosses.includes(currentBossTab)) {
+            setCurrentBossTab("All")
+        }
+    }, [raid.selected_bosses, currentBossTab])
 
     useEffect(() => {
         // Initialization/logging if needed
@@ -281,17 +293,32 @@ export function RaidEditorClient({
                 if (activeIndex === -1) return prev
 
                 const draggedMember = prev[activeIndex]
-                const newStatus = overContainer === 'active-container' ? 'selected' : 'queued'
-
-                if (newStatus === 'selected') {
-                    const diffGroups = (raid.difficulty || "").match(/\((\d+)\)/)
-                    const maxActive = diffGroups ? parseInt(diffGroups[1], 10) : 30
-                    const currentActiveCount = prev.filter(s => s.selection_status === 'selected').length
-                    if (currentActiveCount >= maxActive) return prev
-                }
-
                 const newSignups = [...prev]
-                newSignups[activeIndex] = { ...draggedMember, selection_status: newStatus }
+
+                if (currentBossTab === "All") {
+                    // Global Roster modify selection_status
+                    const newStatus = overContainer === 'active-container' ? 'selected' : 'queued'
+                    if (newStatus === 'selected') {
+                        const maxActive = (raid.difficulty || "").match(/\((\d+)\)/) ? parseInt((raid.difficulty || "").match(/\((\d+)\)/)![1], 10) : 30
+                        const currentActiveCount = prev.filter(s => s.selection_status === 'selected').length
+                        if (currentActiveCount >= maxActive) return prev
+                    }
+                    newSignups[activeIndex] = { ...draggedMember, selection_status: newStatus }
+                } else {
+                    // Boss-specific modify selected_bosses array
+                    let updatedBosses = [...(draggedMember.selected_bosses || [])]
+                    const isMovingToActive = overContainer === 'active-container'
+
+                    if (isMovingToActive && !updatedBosses.includes(currentBossTab)) {
+                        const maxActive = (raid.difficulty || "").match(/\((\d+)\)/) ? parseInt((raid.difficulty || "").match(/\((\d+)\)/)![1], 10) : 30
+                        const currentActiveCount = prev.filter(s => (s.selected_bosses || []).includes(currentBossTab)).length
+                        if (currentActiveCount >= maxActive) return prev
+                        updatedBosses.push(currentBossTab)
+                    } else if (!isMovingToActive) {
+                        updatedBosses = updatedBosses.filter(b => b !== currentBossTab)
+                    }
+                    newSignups[activeIndex] = { ...draggedMember, selected_bosses: updatedBosses, selection_status: "selected" } // Ensure they are at least globally selected if assigned
+                }
                 return newSignups
             })
         } else if (active.id !== over.id) {
@@ -315,12 +342,23 @@ export function RaidEditorClient({
             const signup = prev.find(s => s.member_id === memberId)
             if (!signup) return prev
 
-            if (signup.selection_status !== 'selected') {
-                const currentActiveCount = prev.filter(s => s.selection_status === 'selected').length
-                if (currentActiveCount >= maxActive) return prev
-                return prev.map(s => s.member_id === memberId ? { ...s, selection_status: 'selected' } : s)
+            if (currentBossTab === "All") {
+                if (signup.selection_status !== 'selected') {
+                    const currentActiveCount = prev.filter(s => s.selection_status === 'selected').length
+                    if (currentActiveCount >= maxActive) return prev
+                    return prev.map(s => s.member_id === memberId ? { ...s, selection_status: 'selected' } : s)
+                } else {
+                    return prev.map(s => s.member_id === memberId ? { ...s, selection_status: 'queued' } : s)
+                }
             } else {
-                return prev.map(s => s.member_id === memberId ? { ...s, selection_status: 'queued' } : s)
+                const hasBoss = (signup.selected_bosses || []).includes(currentBossTab)
+                if (!hasBoss) {
+                    const currentActiveCount = prev.filter(s => (s.selected_bosses || []).includes(currentBossTab)).length
+                    if (currentActiveCount >= maxActive) return prev
+                    return prev.map(s => s.member_id === memberId ? { ...s, selected_bosses: [...(s.selected_bosses || []), currentBossTab], selection_status: 'selected' } : s)
+                } else {
+                    return prev.map(s => s.member_id === memberId ? { ...s, selected_bosses: (s.selected_bosses || []).filter(b => b !== currentBossTab) } : s)
+                }
             }
         })
     }
@@ -397,6 +435,7 @@ export function RaidEditorClient({
                         selection_status: s.selection_status,
                         event_role: s.event_role,
                         signup_order: idx,
+                        selected_bosses: s.selected_bosses || [],
                         is_absent: s.is_absent,
                         is_late: s.is_late
                     }))
@@ -435,8 +474,13 @@ export function RaidEditorClient({
         }
     }
 
-    const activeMembers = signups.filter(s => s.selection_status === 'selected')
-    const reserveMembers = signups.filter(s => s.selection_status === 'queued')
+    const activeMembers = useMemo(() => signups.filter(s =>
+        currentBossTab === "All" ? s.selection_status === 'selected' : (s.selected_bosses || []).includes(currentBossTab)
+    ), [signups, currentBossTab])
+
+    const reserveMembers = useMemo(() => signups.filter(s =>
+        currentBossTab === "All" ? s.selection_status === 'queued' : !(s.selected_bosses || []).includes(currentBossTab)
+    ), [signups, currentBossTab])
 
     const activeByRole = useMemo(() => {
         return {
@@ -473,9 +517,32 @@ export function RaidEditorClient({
                     ]
 
                     if (data.wow_raid) {
+                        const uniqueRaids = new Map()
                         Object.entries(data.wow_raid).forEach(([key, val]: [string, any]) => {
-                            r.push({ id: key, name: val.value, background: val.metadata?.background, bosses: val.metadata?.bosses || [] })
+                            const name = val.value || "";
+                            const normalizedName = name.toLowerCase().trim();
+                            if (!uniqueRaids.has(normalizedName)) {
+                                uniqueRaids.set(normalizedName, {
+                                    id: key,
+                                    name: val.value,
+                                    background: val.metadata?.background,
+                                    bosses: val.metadata?.bosses || []
+                                })
+                            }
                         })
+
+                        const r = Array.from(uniqueRaids.values())
+                        // Sort: Forced "Todas las Raids" at the very top
+                        r.sort((a, b) => {
+                            const nameA = (a.name || "").toLowerCase();
+                            const nameB = (b.name || "").toLowerCase();
+                            const isATodas = nameA === "todas las raids" || nameA.includes("todas las raids");
+                            const isBTodas = nameB === "todas las raids" || nameB.includes("todas las raids");
+
+                            if (isATodas && !isBTodas) return -1;
+                            if (!isATodas && isBTodas) return 1;
+                            return nameA.localeCompare(nameB, 'es');
+                        });
                         setLocalRaids(r)
                     }
                     if (data.wow_buff) {
@@ -492,7 +559,7 @@ export function RaidEditorClient({
     }, [localRaids.length, localBuffs.length])
 
     const currentRaid = useMemo(() => localRaids.find((r: any) => r.id === raid.destination || r.name === raid.destination), [localRaids, raid.destination])
-    const bgUrl = currentRaid?.background || "/assets/images/midnight-battle.webp"
+    const bgUrl = currentRaid?.background || currentRaid?.image || "/assets/images/midnight-battle.webp"
 
     return (
         <div className="flex flex-col gap-6 text-foreground">
@@ -639,8 +706,7 @@ export function RaidEditorClient({
                                     size="lg"
                                     onClick={async () => {
                                         if (!isReadOnly) await handleSave();
-                                        const firstBoss = currentRaid?.bosses[0] || ""
-                                        router.push(`/dashboard/planificador-cds?event_id=${initialRaid.id}${firstBoss ? `&boss=${encodeURIComponent(firstBoss)}` : ''}`)
+                                        router.push(`/dashboard/planificador-cds?event_id=${initialRaid.id}`)
                                     }}
                                     className="px-6 h-11 rounded-xl border-blue-500/30 text-blue-400 hover:bg-blue-500/10 hover:text-blue-300 shadow-lg shadow-blue-500/5 group"
                                 >
@@ -652,8 +718,7 @@ export function RaidEditorClient({
                                     size="lg"
                                     onClick={async () => {
                                         if (!isReadOnly) await handleSave();
-                                        const firstBoss = currentRaid?.bosses[0] || ""
-                                        router.push(`/dashboard/planificador-cds?event_id=${initialRaid.id}&tab=mrt${firstBoss ? `&boss=${encodeURIComponent(firstBoss)}` : ''}`)
+                                        router.push(`/dashboard/planificador-cds?event_id=${initialRaid.id}&tab=mrt`)
                                     }}
                                     className="px-6 h-11 rounded-xl border-amber-500/30 text-amber-500 hover:bg-amber-500/10 hover:text-amber-400 shadow-lg shadow-amber-500/5 group"
                                 >
@@ -739,53 +804,190 @@ export function RaidEditorClient({
                 </div>
             </div> */}
 
-            {/* Boss Selection */}
-            {currentRaid?.bosses && currentRaid.bosses.length > 0 && !isReadOnly && (
+            {/* Boss Selection & Roster Tabs (Unified) */}
+            {currentRaid?.bosses && currentRaid.bosses.length > 0 && (
                 <div className="bg-card/30 border border-border/20 rounded-xl p-4 md:p-6 shadow-sm flex flex-col gap-4">
                     <div className="flex flex-col gap-1">
                         <h2 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
                             <IconCheck className="size-4" />
-                            Selección de Jefes
+                            Selección de Jefes y Roster
                         </h2>
-                        <p className="text-xs text-muted-foreground">Selecciona qué jefes se van a enfrentar en esta planifiación.</p>
+                        <p className="text-xs text-muted-foreground">Selecciona un jefe para ajustar su roster específico.</p>
                     </div>
 
-                    <div className="flex flex-wrap gap-2">
-                        <button
-                            onClick={() => setRaid({ ...raid, selected_bosses: [] })}
-                            className={cn(
-                                "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all uppercase tracking-tighter border",
-                                raid.selected_bosses.length === 0
-                                    ? "bg-primary/20 text-primary border-primary/30"
-                                    : "bg-background/50 border-border/20 text-muted-foreground hover:bg-muted/50"
-                            )}
-                        >
-                            Todos (Completa)
-                        </button>
-                        {currentRaid.bosses.map((boss: string) => {
-                            const isSelected = raid.selected_bosses.includes(boss);
-                            return (
-                                <button
-                                    key={boss}
-                                    onClick={() => {
-                                        setRaid((prev: any) => {
-                                            const newArray = isSelected
-                                                ? prev.selected_bosses.filter((b: string) => b !== boss)
-                                                : [...(prev.selected_bosses || []), boss];
-                                            return { ...prev, selected_bosses: newArray };
-                                        });
-                                    }}
-                                    className={cn(
-                                        "flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-bold transition-all uppercase border",
-                                        isSelected
-                                            ? "bg-primary text-primary-foreground border-primary"
-                                            : "bg-background/50 border-border/20 text-muted-foreground hover:border-primary/30 hover:text-primary"
-                                    )}
-                                >
-                                    {boss}
-                                </button>
-                            );
-                        })}
+                    <div className="flex flex-col gap-6 pt-2 border-t border-border/10">
+                        <div className="flex flex-wrap gap-2">
+                            <button
+                                onClick={() => setCurrentBossTab("All")}
+                                className={cn(
+                                    "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all uppercase tracking-tighter border shrink-0",
+                                    currentBossTab === "All"
+                                        ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20"
+                                        : "bg-card/50 border-border/20 text-muted-foreground hover:bg-muted/50 cursor-pointer"
+                                )}
+                            >
+                                <IconUsers className="size-4" />
+                                Roster Global
+                            </button>
+                        </div>
+
+                        {currentRaid?.id === "Todas las Raids" ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+                                {localRaids.filter(r => r.id !== "Todas las Raids").map((subRaid: any) => (
+                                    <div key={subRaid.id} className="flex flex-col gap-3 bg-black/20 p-3 rounded-xl border border-white/5">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <div className="h-4 w-1 bg-primary/50 rounded-full" />
+                                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white/70">
+                                                {subRaid.name}
+                                            </h3>
+                                        </div>
+                                        <div className="flex flex-col gap-1.5">
+                                            {subRaid.bosses.map((boss: string) => {
+                                                const isActiveTab = currentBossTab === boss;
+                                                const playersAssigned = signups.filter(s => (s.selected_bosses || []).includes(boss)).length;
+                                                const hasPlayers = playersAssigned > 0;
+
+                                                // Color mapping for raids
+                                                const raidColors: Record<string, { bg: string, border: string, text: string, hover: string }> = {
+                                                    "La Aguja del Vacío": {
+                                                        bg: "bg-purple-500/10",
+                                                        border: "border-purple-500/20",
+                                                        text: "text-purple-300",
+                                                        hover: "hover:bg-purple-500/20"
+                                                    },
+                                                    "La Falla del Sueño": {
+                                                        bg: "bg-emerald-900/20",
+                                                        border: "border-emerald-500/20",
+                                                        text: "text-emerald-300",
+                                                        hover: "hover:bg-emerald-800/30"
+                                                    },
+                                                    "Marcha sobre Quel'Danas": {
+                                                        bg: "bg-amber-500/10",
+                                                        border: "border-amber-500/20",
+                                                        text: "text-amber-200",
+                                                        hover: "hover:bg-amber-500/20"
+                                                    }
+                                                };
+
+                                                const colors = raidColors[subRaid.name] || {
+                                                    bg: "bg-white/[0.02]",
+                                                    border: "border-white/5",
+                                                    text: "text-muted-foreground",
+                                                    hover: "hover:bg-white/[0.05] hover:text-foreground"
+                                                };
+
+                                                return (
+                                                    <button
+                                                        key={boss}
+                                                        onClick={() => {
+                                                            setCurrentBossTab(boss);
+                                                            if (isReadOnly) return;
+                                                            if (!raid.selected_bosses.includes(boss)) {
+                                                                setRaid((prev: any) => ({
+                                                                    ...prev,
+                                                                    selected_bosses: [...(prev.selected_bosses || []), boss]
+                                                                }));
+                                                            }
+                                                        }}
+                                                        className={cn(
+                                                            "flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-[11px] font-bold transition-all uppercase tracking-tight border text-left cursor-pointer group",
+                                                            isActiveTab
+                                                                ? "bg-primary/20 text-primary border-primary/50 shadow-[inset_0_0_15px_rgba(59,130,246,0.1)]"
+                                                                : cn(colors.bg, colors.text, colors.border, colors.hover)
+                                                        )}
+                                                    >
+                                                        <div className="flex items-center gap-2 truncate">
+                                                            {isActiveTab ? <IconCheck className="size-3.5 shrink-0" /> : <div className={cn("size-3.5 shrink-0 rounded-full border border-white/10", !isReadOnly && "group-hover:border-white/30")} />}
+                                                            <span className="truncate">{boss}</span>
+                                                        </div>
+                                                        {hasPlayers && (
+                                                            <span className={cn(
+                                                                "ml-2 px-1.5 py-0.5 rounded-md text-[9px] font-black tabular-nums",
+                                                                isActiveTab ? "bg-primary/30 text-primary" : "bg-purple-500/20 text-purple-400"
+                                                            )}>
+                                                                {playersAssigned}
+                                                            </span>
+                                                        )}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                                {currentRaid?.bosses?.map((boss: string) => {
+                                    const isActiveTab = currentBossTab === boss;
+                                    const playersAssigned = signups.filter(s => (s.selected_bosses || []).includes(boss)).length;
+                                    const hasPlayers = playersAssigned > 0;
+
+                                    // Color mapping for raids (reusing the same logic)
+                                    const raidColors: Record<string, { bg: string, border: string, text: string, hover: string }> = {
+                                        "La Aguja del Vacío": {
+                                            bg: "bg-purple-500/10",
+                                            border: "border-purple-500/20",
+                                            text: "text-purple-300",
+                                            hover: "hover:bg-purple-500/20"
+                                        },
+                                        "La Falla del Sueño": {
+                                            bg: "bg-emerald-900/20",
+                                            border: "border-emerald-500/20",
+                                            text: "text-emerald-300",
+                                            hover: "hover:bg-emerald-800/30"
+                                        },
+                                        "Marcha sobre Quel'Danas": {
+                                            bg: "bg-amber-500/10",
+                                            border: "border-amber-500/20",
+                                            text: "text-amber-200",
+                                            hover: "hover:bg-amber-500/20"
+                                        }
+                                    };
+
+                                    const colors = raidColors[currentRaid.name] || {
+                                        bg: "bg-card/40",
+                                        border: "border-border/10",
+                                        text: "text-muted-foreground",
+                                        hover: "hover:bg-muted/50 hover:text-foreground"
+                                    };
+
+                                    return (
+                                        <button
+                                            key={boss}
+                                            onClick={() => {
+                                                setCurrentBossTab(boss);
+                                                if (isReadOnly) return;
+                                                if (!raid.selected_bosses.includes(boss)) {
+                                                    setRaid((prev: any) => ({
+                                                        ...prev,
+                                                        selected_bosses: [...(prev.selected_bosses || []), boss]
+                                                    }));
+                                                }
+                                            }}
+                                            className={cn(
+                                                "flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold transition-all uppercase tracking-tight border cursor-pointer group",
+                                                isActiveTab
+                                                    ? "bg-primary/20 text-primary border-primary/50 shadow-lg shadow-primary/5"
+                                                    : cn(colors.bg, colors.text, colors.border, colors.hover)
+                                            )}
+                                        >
+                                            <div className="flex items-center gap-2 truncate">
+                                                {isActiveTab ? <IconCheck className="size-4 shrink-0" /> : <div className="size-4 shrink-0 rounded-full border border-white/10" />}
+                                                <span className="truncate">{boss}</span>
+                                            </div>
+                                            {hasPlayers && (
+                                                <span className={cn(
+                                                    "px-1.5 py-0.5 rounded-md text-[10px] tabular-nums",
+                                                    isActiveTab ? "bg-primary/30 text-primary" : "bg-purple-500/20 text-purple-400"
+                                                )}>
+                                                    {playersAssigned}
+                                                </span>
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
@@ -806,7 +1008,7 @@ export function RaidEditorClient({
                         onDragOver={canDrag ? handleDragOver : undefined}
                         onDragEnd={canDrag ? handleDragEnd : undefined}
                     >
-                        <div className="w-full">
+                        <div className="w-full mt-2">
                             <div className="flex-1 overflow-hidden">
                                 <Tabs defaultValue="active" className="lg:hidden w-full">
                                     <TabsList className="grid grid-cols-3 mb-4 w-full h-11 p-1">
@@ -882,21 +1084,51 @@ export function RaidEditorClient({
                                         <h3 className="text-sm font-bold text-amber-500 uppercase tracking-widest">En Cola ({reserveMembers.length})</h3>
                                         <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">Banquillo disponible</span>
                                     </div>
-                                    <DroppableContainer
-                                        id="queue-container"
-                                        items={reserveMembers.map(s => s.member_id)}
-                                        strategy={rectSortingStrategy}
-                                        className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 min-h-[600px] grid grid-cols-1 xl:grid-cols-2 gap-4"
-                                    >
-                                        <RosterGroup title="Tanques" color="text-amber-500" signups={reserveByRole.tanks} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
-                                        <RosterGroup title="Sanadores" color="text-amber-500" signups={reserveByRole.heals} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
-                                        <RosterGroup title="Melee DPS" color="text-amber-500" signups={reserveByRole.melee} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
-                                        <RosterGroup title="Ranged DPS" color="text-amber-500" signups={reserveByRole.ranged} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
-                                    </DroppableContainer>
+                                    <Tabs defaultValue="all" className="w-full flex flex-col h-full">
+                                        <TabsList className="grid grid-cols-5 mb-2 h-10 p-1 bg-amber-500/5 border border-amber-500/10">
+                                            <TabsTrigger value="all" className="text-[9px] uppercase font-bold px-1 text-center leading-tight">Todos</TabsTrigger>
+                                            <TabsTrigger value="tanks" className="text-[9px] uppercase font-bold px-1 text-center leading-tight">Tanques</TabsTrigger>
+                                            <TabsTrigger value="heals" className="text-[9px] uppercase font-bold px-1 text-center leading-tight">Sanadores</TabsTrigger>
+                                            <TabsTrigger value="melee" className="text-[9px] uppercase font-bold px-1 text-center leading-tight">Cuerpo a Cuerpo</TabsTrigger>
+                                            <TabsTrigger value="ranged" className="text-[9px] uppercase font-bold px-1 text-center leading-tight">Rango</TabsTrigger>
+                                        </TabsList>
+
+                                        <div className="flex-1 bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 min-h-[600px]">
+                                            <DroppableContainer
+                                                id="queue-container"
+                                                items={reserveMembers.map(s => s.member_id)}
+                                                strategy={rectSortingStrategy}
+                                                className="h-full"
+                                            >
+                                                <TabsContent value="all" className="flex flex-col gap-6 m-0">
+                                                    <RosterGroup title="Tanques" color="text-amber-500" signups={reserveByRole.tanks} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
+                                                    <RosterGroup title="Sanadores" color="text-amber-500" signups={reserveByRole.heals} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
+                                                    <RosterGroup title="Melee DPS" color="text-amber-500" signups={reserveByRole.melee} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
+                                                    <RosterGroup title="Ranged DPS" color="text-amber-500" signups={reserveByRole.ranged} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
+                                                </TabsContent>
+
+                                                <TabsContent value="tanks" className="m-0">
+                                                    <RosterGroup title="Tanques" color="text-amber-500" signups={reserveByRole.tanks} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
+                                                </TabsContent>
+
+                                                <TabsContent value="heals" className="m-0">
+                                                    <RosterGroup title="Sanadores" color="text-amber-500" signups={reserveByRole.heals} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
+                                                </TabsContent>
+
+                                                <TabsContent value="melee" className="m-0">
+                                                    <RosterGroup title="Melee DPS" color="text-amber-500" signups={reserveByRole.melee} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
+                                                </TabsContent>
+
+                                                <TabsContent value="ranged" className="m-0">
+                                                    <RosterGroup title="Ranged DPS" color="text-amber-500" signups={reserveByRole.ranged} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
+                                                </TabsContent>
+                                            </DroppableContainer>
+                                        </div>
+                                    </Tabs>
                                 </div>
 
                                 {/* COLUMN 3: Buffs */}
-                                <div className="flex-1 flex flex-col gap-4 min-w-0 sticky top-6">
+                                <div className="w-96 shrink-0 flex flex-col gap-4 sticky top-6">
                                     <div className="flex justify-between items-end">
                                         <h3 className="text-sm font-bold text-primary uppercase tracking-widest">Buffs & Debuffs</h3>
                                         <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">Cobertura de Raid</span>
@@ -949,7 +1181,8 @@ function MemberItem({ signup, onToggle, onToggleAbsent, onToggleLate, onResetSta
             ref={setNodeRef}
             style={style}
             className={cn(
-                "flex items-center justify-between bg-card border border-border/50 rounded-lg p-2 gap-3 hover:border-primary/30 group cursor-pointer active:scale-[0.98] transition-all relative overflow-hidden",
+                "flex items-center justify-between bg-card border border-border/50 rounded-lg p-2 gap-3 transition-all relative overflow-hidden",
+                !isReadOnly && "hover:border-primary/30 cursor-pointer active:scale-[0.98] group",
                 (signup.is_absent || signup.is_late) && "opacity-70 grayscale-[0.3] border-dashed cursor-default",
                 signup.is_absent && "border-red-500/30",
                 signup.is_late && "border-amber-500/30"
@@ -1110,45 +1343,54 @@ function BuffsCard({ activeClassIds, buffs, className }: { activeClassIds: Set<n
     }
 
     return (
-        <div className={cn("bg-card/50 border border-border/40 rounded-2xl p-6 shadow-sm flex flex-col gap-8", className)}>
-            {buffs.map((section: any) => (
-                <div key={section.category} className="flex flex-col gap-4">
-                    <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/50 border-b border-border/10 pb-2">
-                        {section.category}
-                    </h4>
-                    {section.items.length === 0 ? (
-                        <p className="text-[9px] text-muted-foreground/30 italic">No hay beneficios disponibles</p>
-                    ) : (
-                        <div className="grid grid-cols-1 gap-2">
-                            {section.items.map((buff: any) => {
-                                const isPresent = activeClassIds.has(Number(buff.classId))
-                                return (
-                                    <div key={buff.id} className="flex items-center justify-between p-2.5 rounded-xl bg-background/40 border border-border/10 group">
-                                        <div className="flex items-center gap-3">
-                                            <div className={cn(
-                                                "size-2 rounded-full transition-all duration-300",
-                                                isPresent ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-muted-foreground/20"
-                                            )} />
-                                            <span className={cn(
-                                                "text-xs transition-colors",
-                                                isPresent ? "text-foreground font-semibold" : "text-muted-foreground/40 italic"
-                                            )}>
-                                                {buff.name}
-                                            </span>
-                                        </div>
-                                        <div className={cn(
-                                            "size-5 rounded-md flex items-center justify-center transition-all shrink-0",
-                                            isPresent ? "bg-emerald-500/10 text-emerald-500" : "text-muted-foreground/10"
-                                        )}>
-                                            {isPresent && <IconCheck className="size-3" />}
-                                        </div>
-                                    </div>
-                                )
-                            })}
+        <div className={cn("bg-card/50 border border-border/40 rounded-2xl p-4 shadow-sm flex flex-col gap-4", className)}>
+            <Tabs defaultValue={buffs[0]?.category} className="w-full">
+                <TabsList className="grid grid-cols-2 mb-4 h-9 p-1 bg-background/20">
+                    {buffs.map((section: any) => (
+                        <TabsTrigger key={section.category} value={section.category} className="text-[10px] uppercase font-bold px-2 truncate">
+                            {section.category === "Buffs / Debuffs" ? "Buffs" : "Utilidad"}
+                        </TabsTrigger>
+                    ))}
+                </TabsList>
+
+                {buffs.map((section: any) => (
+                    <TabsContent key={section.category} value={section.category} className="mt-0">
+                        <div className="flex flex-col gap-3">
+                            {section.items.length === 0 ? (
+                                <p className="text-[9px] text-muted-foreground/30 italic py-4 text-center">No hay beneficios disponibles</p>
+                            ) : (
+                                <div className="grid grid-cols-1 gap-2">
+                                    {section.items.map((buff: any) => {
+                                        const isPresent = activeClassIds.has(Number(buff.classId))
+                                        return (
+                                            <div key={buff.id} className="flex items-center justify-between p-2.5 rounded-xl bg-background/20 border border-border/5 group transition-colors hover:bg-background/30">
+                                                <div className="flex items-center gap-2.5 max-w-[85%]">
+                                                    <div className={cn(
+                                                        "size-2 rounded-full transition-all duration-300 shrink-0",
+                                                        isPresent ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-muted-foreground/30"
+                                                    )} />
+                                                    <span className={cn(
+                                                        "text-xs transition-colors truncate",
+                                                        isPresent ? "text-foreground font-bold" : "text-muted-foreground/60 italic"
+                                                    )}>
+                                                        {buff.name}
+                                                    </span>
+                                                </div>
+                                                <div className={cn(
+                                                    "size-5 rounded-md flex items-center justify-center transition-all shrink-0",
+                                                    isPresent ? "bg-emerald-500/10 text-emerald-500" : "text-muted-foreground/10"
+                                                )}>
+                                                    {isPresent && <IconCheck className="size-3" />}
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            )}
                         </div>
-                    )}
-                </div>
-            ))}
+                    </TabsContent>
+                ))}
+            </Tabs>
         </div>
     )
 }

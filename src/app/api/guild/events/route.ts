@@ -32,6 +32,8 @@ export async function POST(request: Request) {
             background_url = "/assets/images/raids/dreamrift.webp"
         } else if (destLower.includes("quel'danas") || destLower.includes("sunwell")) {
             background_url = "/assets/images/raids/marchonqueldanas.webp"
+        } else if (destLower.includes("todas las raids")) {
+            background_url = "/assets/images/raids/all-raids.webp"
         }
 
         // Get the first guild ID (since the app manages one guild for now)
