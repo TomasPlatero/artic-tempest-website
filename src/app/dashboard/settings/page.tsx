@@ -5,7 +5,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
-import { IconBell, IconApi, IconBuildingStore, IconDeviceGamepad, IconUsers, IconLayoutCards, IconSearch } from "@tabler/icons-react"
+import { IconBell, IconApi, IconBuildingStore, IconDeviceGamepad, IconUsers, IconLayoutCards, IconSearch, IconBrandDiscord } from "@tabler/icons-react"
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { SiteHeader } from "@/components/layout/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/common/sidebar"
@@ -68,6 +68,14 @@ export default function SettingsHubPage() {
             href: "/dashboard/settings/recruitment",
             color: "text-blue-400",
             bg: "bg-blue-400/10"
+        },
+        {
+            title: "Bot de Discord",
+            description: "Vinculación de la App, gestión de Slash Commands y sincronización de comandos.",
+            icon: IconBrandDiscord,
+            href: "/dashboard/settings/discord",
+            color: "text-[#5865F2]",
+            bg: "bg-[#5865F2]/10"
         },
         {
             title: "Documentación API",

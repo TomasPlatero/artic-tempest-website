@@ -75,7 +75,6 @@ export async function fetchCharacterRole(
     }
 }
 
-/** Fetch a single character's active spec name */
 export async function fetchCharacterSpec(
     realmSlug: string,
     characterNameSlug: string,
@@ -90,6 +89,29 @@ export async function fetchCharacterSpec(
 
         const data = await res.json()
         return data.active_spec?.name || null
+    } catch {
+        return null
+    }
+}
+
+/** Fetch a character's item level from Battle.net */
+export async function fetchCharacterItemLevel(
+    realmSlug: string,
+    characterNameSlug: string,
+    region: string = "eu"
+): Promise<{ equipped: number; average: number } | null> {
+    const token = await getAccessToken()
+    const url = `https://${region}.api.blizzard.com/profile/wow/character/${realmSlug}/${characterNameSlug}?namespace=profile-${region}&locale=en_US`
+
+    try {
+        const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" })
+        if (!res.ok) return null
+
+        const data = await res.json()
+        return {
+            equipped: data.equipped_item_level || 0,
+            average: data.average_item_level || 0
+        }
     } catch {
         return null
     }

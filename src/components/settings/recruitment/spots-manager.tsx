@@ -116,9 +116,9 @@ export function SpotsManager({ initialSpots, constants }: any) {
                                                         <SelectValue />
                                                     </SelectTrigger>
                                                     <SelectContent className="bg-zinc-950 border-zinc-800 text-white">
-                                                        <SelectItem value="high" className="font-bold text-red-500">🔥 ALTA</SelectItem>
-                                                        <SelectItem value="medium" className="font-bold text-amber-500">⚡ MEDIA</SelectItem>
-                                                        <SelectItem value="low" className="font-bold text-blue-500">💧 BAJA</SelectItem>
+                                                        <SelectItem value="high" className="font-bold text-red-500">🔴 ALTA</SelectItem>
+                                                        <SelectItem value="medium" className="font-bold text-amber-500">🟡 MEDIA</SelectItem>
+                                                        <SelectItem value="low" className="font-bold text-blue-500">🔵 BAJA</SelectItem>
                                                         <SelectItem value="closed" className="font-bold text-zinc-500">🔒 CERRADO</SelectItem>
                                                     </SelectContent>
                                                 </Select>

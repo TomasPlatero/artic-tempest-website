@@ -28,6 +28,9 @@ export async function PATCH(req: Request) {
         const {
             discord_client_id,
             discord_client_secret,
+            discord_app_id,
+            discord_bot_token,
+            discord_public_key,
             discord_guild_id,
             bnet_client_id,
             bnet_client_secret,
@@ -44,6 +47,7 @@ export async function PATCH(req: Request) {
 
         // IDs always update (not secrets)
         if (discord_client_id !== undefined) updates.discord_client_id = discord_client_id || null;
+        if (discord_app_id !== undefined) updates.discord_app_id = discord_app_id || null;
         if (discord_guild_id !== undefined) updates.discord_guild_id = discord_guild_id || null;
         if (bnet_client_id !== undefined) updates.bnet_client_id = bnet_client_id || null;
         if (wcl_client_id !== undefined) updates.wcl_client_id = wcl_client_id || null;
@@ -51,6 +55,12 @@ export async function PATCH(req: Request) {
         // Secrets only update if not masked
         if (discord_client_secret !== undefined && discord_client_secret !== MASK) {
             updates.discord_client_secret = discord_client_secret || null;
+        }
+        if (discord_bot_token !== undefined && discord_bot_token !== MASK) {
+            updates.discord_bot_token = discord_bot_token || null;
+        }
+        if (discord_public_key !== undefined && discord_public_key !== MASK) {
+            updates.discord_public_key = discord_public_key || null;
         }
         if (bnet_client_secret !== undefined && bnet_client_secret !== MASK) {
             updates.bnet_client_secret = bnet_client_secret || null;

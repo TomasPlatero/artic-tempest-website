@@ -76,53 +76,25 @@ export function ApplyClient({ user, characters, questions, classConstants }: Pro
         setIsSubmitting(true)
 
         try {
-            // 0. Final safety check
-            const { data: activeApps } = await supabase
-                .from("recruitment_applications")
-                .select("id")
-                .eq("user_id", user.id)
-                .in("status", ["pending", "reviewing", "interview"])
-                .limit(1)
+            const res = await fetch("/api/recruitment/submit", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ selectedChar, answers })
+            })
 
-            if (activeApps && activeApps.length > 0) {
-                toast.error("Ya tienes una solicitud activa")
-                router.push("/reclutamiento/apply-en-curso")
-                return
+            const json = await res.json()
+
+            if (!res.ok) {
+                if (json.error === "Ya tienes una solicitud activa") {
+                    toast.error(json.error)
+                    router.push("/reclutamiento/apply-en-curso")
+                    return
+                }
+                throw new Error(json.error || "Error desconocido al enviar. Revisa la consola.")
             }
-
-            // 1. Create Application
-            const { data: application, error: appError } = await supabase
-                .from("recruitment_applications")
-                .insert({
-                    user_id: user.id,
-                    character_name: selectedChar.name,
-                    character_realm: selectedChar.realm,
-                    character_class: selectedChar.class_id,
-                    character_spec: selectedChar.spec || "Unknown",
-                    status: "pending"
-                })
-                .select()
-                .single()
-
-            if (appError) throw appError
-
-            // 2. Create Answers
-            const answersToInsert = Object.entries(answers).map(([qId, val]) => ({
-                application_id: application.id,
-                question_id: qId,
-                answer_text: val
-            }))
-
-            const { error: ansError } = await supabase
-                .from("application_answers")
-                .insert(answersToInsert)
-
-            if (ansError) throw ansError
 
             setIsSuccess(true)
             toast.success("Solicitud enviada correctamente")
-
-            // Notification (future) would be triggered here by a DB Webhook or Edge Function
 
         } catch (error: any) {
             console.error("Error submitting application:", error)

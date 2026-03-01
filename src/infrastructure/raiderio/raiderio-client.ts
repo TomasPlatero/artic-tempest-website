@@ -61,7 +61,7 @@ export async function fetchCharacterRIO(
         'season-mn-1'
     ]
     const seasonField = `mythic_plus_scores_by_season:${seasons.join(':')}`
-    const url = `https://raider.io/api/v1/characters/profile?region=${region}&realm=${realmSlug}&name=${encodeURIComponent(name)}&fields=${seasonField},raid_progression,active_spec_name`
+    const url = `https://raider.io/api/v1/characters/profile?region=${region}&realm=${realmSlug}&name=${encodeURIComponent(name)}&fields=${seasonField},raid_progression,active_spec_name,gear`
 
     try {
         const res = await fetch(url, { next: { revalidate: 3600 } })
