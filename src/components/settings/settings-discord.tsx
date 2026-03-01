@@ -416,7 +416,7 @@ export function SettingsDiscordClient({ initialCredentials, initialCommands }: S
                                         Información Importante sobre Sincronización
                                     </h4>
                                     <p className="text-xs text-amber-500/60 leading-relaxed font-medium">
-                                        Al pulsar en <strong>Refrescar y Limpiar</strong>, el sistema realizará un "Overwrite" masivo en Discord. Esto borrará cualquier comando antiguo que no esté definido en el código actual de GuildBoard. Discord puede tardar hasta 1 hora en propagar los cambios si los comandos son globales.
+                                        Al pulsar en <strong>Refrescar y Limpiar</strong>, el sistema realizará un &quot;Overwrite&quot; masivo en Discord. Esto borrará cualquier comando antiguo que no esté definido en el código actual de GuildBoard. Discord puede tardar hasta 1 hora en propagar los cambios si los comandos son globales.
                                     </p>
                                 </div>
                             </div>
