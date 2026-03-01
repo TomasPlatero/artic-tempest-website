@@ -10,9 +10,9 @@ const SYNC_DAYS_AHEAD = 60 // 60 days ahead
 function getBackgroundUrl(destination: string) {
     if (!destination) return null
     const destLower = destination.toLowerCase()
-    if (destLower.includes("voidspire")) return "https://www.nerdsquare.eu/wp-content/uploads/2025/08/nerdsquare-wow-midnight-raid-voidspire-700x394.webp"
-    if (destLower.includes("dreamrift")) return "https://www.nerdsquare.eu/wp-content/uploads/2025/08/nerdsquare-wow-midnight-raid-dreamrift-700x394.webp"
-    if (destLower.includes("quel'danas") || destLower.includes("sunwell")) return "https://www.nerdsquare.eu/wp-content/uploads/2025/08/nerdsquare-wow-midnight-raid-marchonqueldanas-700x394.webp"
+    if (destLower.includes("voidspire")) return "/assets/images/raids/voidspire.webp"
+    if (destLower.includes("dreamrift")) return "/assets/images/raids/dreamrift.webp"
+    if (destLower.includes("quel'danas") || destLower.includes("sunwell")) return "/assets/images/raids/marchonqueldanas.webp"
     return null
 }
 
