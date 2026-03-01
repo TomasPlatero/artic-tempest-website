@@ -8,6 +8,28 @@ import { supabase } from "@/infrastructure/supabase/client"
 export function NotificationToastListener() {
     const { status } = useSession()
     const [lastNotifiedCount, setLastNotifiedCount] = React.useState<number | null>(null)
+    const [guildInfo, setGuildInfo] = React.useState<{ name: string, icon_url: string | null } | null>(null)
+
+    // Request notification permission and fetch guild info on mount
+    React.useEffect(() => {
+        if ("Notification" in window && Notification.permission === "default") {
+            Notification.requestPermission()
+        }
+
+        fetch("/api/guild/info")
+            .then(res => res.json())
+            .then(data => setGuildInfo(data))
+            .catch(() => { })
+    }, [])
+
+    const sendNativeNotification = React.useCallback((title: string, body: string) => {
+        if ("Notification" in window && Notification.permission === "granted") {
+            new Notification(title, {
+                body,
+                icon: guildInfo?.icon_url || "/favicon.ico",
+            })
+        }
+    }, [guildInfo])
 
     const checkNotifications = React.useCallback(async (isInitial = false) => {
         try {
@@ -16,6 +38,7 @@ export function NotificationToastListener() {
             const data = await res.json()
             if (Array.isArray(data)) {
                 const unread = data.filter((n: any) => !n.isRead).length
+                const latest = data.find((n: any) => !n.isRead)
 
                 // On initial check (login), if there are unread notifications
                 if (isInitial || lastNotifiedCount === null) {
@@ -29,9 +52,18 @@ export function NotificationToastListener() {
                 }
                 // On subsequent checks, if new notifications arrived
                 else if (unread > lastNotifiedCount) {
-                    toast("Nueva notificación", {
-                        description: "Acabas de recibir un mensaje oficial, revisa tus notificaciones."
+                    const title = latest?.title || "Nueva notificación"
+                    const message = "Acabas de recibir un mensaje oficial, revisa tus notificaciones."
+
+                    toast(title, {
+                        description: message
                     })
+
+                    sendNativeNotification(
+                        `${guildInfo?.name || "Artic Tempest"}: ${title}`,
+                        message
+                    )
+
                     setLastNotifiedCount(unread)
                 } else {
                     setLastNotifiedCount(unread)
@@ -40,7 +72,7 @@ export function NotificationToastListener() {
         } catch (err) {
             console.error("Failed to check notifications for toast:", err)
         }
-    }, [lastNotifiedCount])
+    }, [lastNotifiedCount, guildInfo, sendNativeNotification])
 
     React.useEffect(() => {
         if (status !== "authenticated") return
