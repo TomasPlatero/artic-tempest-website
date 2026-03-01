@@ -95,6 +95,12 @@ const navigationData = {
       badgeKey: "recruitment",
     },
     {
+      title: "Gestión BiS",
+      url: "/dashboard/bis/admin",
+      icon: IconListCheck,
+      roles: ["gm", "officer"],
+    },
+    {
       title: "Ajustes",
       url: "/dashboard/settings",
       icon: IconAdjustments,
@@ -148,6 +154,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         .catch(err => console.error("Failed to fetch notification badges:", err))
     }
 
+    // Fetch recruitment badge
+    const fetchRecruitmentCount = () => {
+      if (roleLevel === 'gm' || roleLevel === 'officer') {
+        fetch("/api/recruitment/count")
+          .then(res => res.json())
+          .then(data => {
+            setBadges(prev => ({ ...prev, recruitment: data.count || 0 }))
+          })
+          .catch(err => console.error("Failed to fetch recruitment count:", err))
+      }
+    }
+
     /*
     // Refined subscription with retry logic
     let notifChannel: any = null
@@ -169,6 +187,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     */
 
     fetchNotifications()
+    fetchRecruitmentCount()
 
     // Simple direct subscription for better production reliability
     const notifChannel = supabase
@@ -185,62 +204,27 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         }
       })
 
-    // Fetch badges
-    if (roleLevel === 'gm' || roleLevel === 'officer') {
-      supabase
-        .from("recruitment_applications")
-        .select("id", { count: 'exact', head: true })
-        .in("status", ["pending", "reviewing", "interview"])
-        .then(({ count }) => {
-          setBadges(prev => ({ ...prev, recruitment: count || 0 }))
-        })
-
-      // Remove problematic event_signups check that causes 400 error in prod
-      /*
-      if (session?.user?.id) {
-        supabase
-          .from("event_signups")
-          .select("id", { count: 'exact', head: true })
-          .eq("status", "present")
-          .then(({ count }) => {
-            setBadges(prev => ({ ...prev, calendar: count || 0 }))
-          })
-      }
-      */
-
-      // Real-time subscription for recruitment applications
-      const channel = supabase
-        .channel('sidebar_recruitment_changes')
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'recruitment_applications' },
-          () => {
-            supabase
-              .from("recruitment_applications")
-              .select("id", { count: 'exact', head: true })
-              .in("status", ["pending", "reviewing", "interview"])
-              .then(({ count }) => {
-                setBadges(prev => ({ ...prev, recruitment: count || 0 }))
-              })
-          }
-        )
-        .subscribe((status) => {
-          if (status === 'SUBSCRIBED') {
-            console.log("Realtime Recruitment: Conectado (SUBSCRIBED)")
-          } else if (status === 'CLOSED') {
-            // Normal React unmount, ignore false warning
-          } else {
-            console.warn(`Realtime Recruitment: ${status}`)
-          }
-        })
-
-      return () => {
-        supabase.removeChannel(channel)
-        supabase.removeChannel(notifChannel)
-      }
-    }
+    // Real-time subscription for recruitment applications
+    // Even if RLS prevents SELECT, the event payload might trigger a re-fetch of our secure API
+    const recruitmentChannel = supabase
+      .channel('sidebar_recruitment_changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'recruitment_applications' },
+        () => fetchRecruitmentCount()
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log("Realtime Recruitment: Conectado (SUBSCRIBED)")
+        } else if (status === 'CLOSED') {
+          // Normal React unmount, ignore false warning
+        } else {
+          console.warn(`Realtime Recruitment: ${status}`)
+        }
+      })
 
     return () => {
+      supabase.removeChannel(recruitmentChannel)
       supabase.removeChannel(notifChannel)
     }
   }, [roleLevel, session?.user?.id, mounted])

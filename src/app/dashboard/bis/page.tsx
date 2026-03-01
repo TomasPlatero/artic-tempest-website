@@ -53,29 +53,24 @@ async function getBisData(userId: string) {
         }
     }
 
-    const visibleRankIds = (rawRanks || [])
-        .filter(r => r.is_visible)
-        .map(r => Number(r.rank))
+    // Simplified visibility logic matching Roster app behavior: 
+    // Default to true for all ranks unless explicitly set to false in the database.
+    const visibilityMap: Record<number, boolean> = {}
+    for (let i = 0; i <= 9; i++) visibilityMap[i] = true
+    rawRanks?.forEach(r => {
+        visibilityMap[Number(r.rank)] = r.is_visible
+    })
 
-    let query = sb
+    const { data: members } = await sb
         .from("guild_members")
         .select("id, character_name, realm_slug, class_id, rank")
         .in("character_name", charNames)
+        .order("rank", { ascending: true })
 
-    if (visibleRankIds.length > 0) {
-        query = query.in("rank", visibleRankIds)
-    } else if (rawRanks && rawRanks.length > 0) {
-        // Ranks are configured but NONE are visible (edge case)
-        return { eligibleMembers: [] }
-    } else {
-        // Fallback for empty config
-        query = query.lte("rank", 4)
-    }
-
-    const { data: members } = await query.order("rank", { ascending: true })
+    const filteredMembers = (members || []).filter(m => visibilityMap[Number(m.rank)] !== false)
 
     return {
-        eligibleMembers: (members || []) as EligibleMember[],
+        eligibleMembers: filteredMembers as EligibleMember[],
     }
 }
 
@@ -87,7 +82,7 @@ export default async function BisPage() {
 
     const userId = session.user.id
     const roleLevel = session.user?.roleLevel ?? "member"
-    const { canView } = await getAppPermission(roleLevel, 'bis')
+    const { canView, canEdit } = await getAppPermission(roleLevel, 'bis')
 
     if (!canView) {
         redirect("/dashboard")
@@ -106,7 +101,7 @@ export default async function BisPage() {
             <SidebarInset>
                 <SiteHeader />
                 <div className="flex flex-1 flex-col p-4 md:p-6 gap-6">
-                    <BisClient eligibleMembers={eligibleMembers} />
+                    <BisClient eligibleMembers={eligibleMembers} canEdit={canEdit} />
                 </div>
             </SidebarInset>
         </SidebarProvider>

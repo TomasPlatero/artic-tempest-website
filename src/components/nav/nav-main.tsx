@@ -39,8 +39,9 @@ export function NavMain({
         const isDashboard = item.url === '/dashboard'
         const isHome = item.url === '/'
         const isSettings = item.url === '/dashboard/settings'
+        const isBis = item.url === '/dashboard/bis'
 
-        const isActive = isExact || (!isHome && !isDashboard && !isSettings && pathname.startsWith(item.url + '/'))
+        const isActive = isExact || (!isHome && !isDashboard && !isSettings && !isBis && pathname.startsWith(item.url + '/'))
 
         return (
           <SidebarMenuItem key={item.title}>
@@ -56,7 +57,7 @@ export function NavMain({
                 {item.icon && <item.icon className={cn("size-4", isActive && "text-blue-400")} />}
                 <span>{item.title}</span>
                 {item.badge !== undefined && item.badge !== null && item.badge !== 0 && (
-                  <span className="ml-auto flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500 text-[10px] font-black text-white border border-blue-400/20 shadow-sm animate-in fade-in zoom-in duration-300 animate-pulse">
+                  <span className="ml-auto flex min-w-5 h-5 px-1.5 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white border border-blue-400/20 shadow-[0_0_12px_rgba(37,99,235,0.4)] animate-in fade-in zoom-in duration-300">
                     {item.badge}
                   </span>
                 )}
