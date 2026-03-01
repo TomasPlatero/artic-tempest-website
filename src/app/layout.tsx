@@ -5,6 +5,7 @@ import { ThemedToaster } from "@/components/ui/sonner"
 import { SessionProvider } from "@/components/layout/session-provider"
 import { CookieConsentLoader } from "@/components/common/cookie-consent"
 import { NotificationToastListener } from "@/components/notifications/notification-toast-listener"
+import { NotificationPermissionModal } from "@/components/notifications/notification-permission-modal"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css";
 
@@ -115,6 +116,7 @@ export default function RootLayout({
         >
           <SessionProvider>
             <NotificationToastListener />
+            <NotificationPermissionModal />
             {children}
           </SessionProvider>
           <CookieConsentLoader />
