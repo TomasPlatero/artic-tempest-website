@@ -9,8 +9,9 @@ export async function PATCH(request: Request) {
             return NextResponse.json({ error: "No autorizado" }, { status: 401 })
         }
 
-        // Only GMs can change roles
-        if (session.user.roleLevel !== "gm") {
+        // Only GMs and Officers can change roles
+        const roleLevel = session?.user?.roleLevel
+        if (roleLevel !== "gm" && roleLevel !== "officer") {
             return NextResponse.json({ error: "Permisos insuficientes. Solo administradores pueden cambiar roles." }, { status: 403 })
         }
 
@@ -24,6 +25,11 @@ export async function PATCH(request: Request) {
         const validRoles = ["gm", "officer", "raider", "member"]
         if (!validRoles.includes(newRoleLevel)) {
             return NextResponse.json({ error: "Nivel de rol inválido" }, { status: 400 })
+        }
+
+        // Officers cannot promote anyone to GM
+        if (roleLevel === "officer" && newRoleLevel === "gm") {
+            return NextResponse.json({ error: "Solo el Guild Master puede nombrar a otro Guild Master." }, { status: 403 })
         }
 
         // Prevent removing the last GM (safety check)

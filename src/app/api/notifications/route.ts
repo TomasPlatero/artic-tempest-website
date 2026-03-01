@@ -44,9 +44,9 @@ export async function POST(request: Request) {
 
     const userId = (session.user as any).id;
 
-    // Only GM can send system notifications
-    if (session.user.roleLevel !== "gm") {
-        return NextResponse.json({ error: "Solo el GM puede enviar notificaciones de sistema" }, { status: 403 });
+    // Only GM and Officers can send system notifications
+    if (session.user.roleLevel !== "gm" && session.user.roleLevel !== "officer") {
+        return NextResponse.json({ error: "Solo el GM u Oficiales pueden enviar notificaciones de sistema" }, { status: 403 });
     }
 
     const { title, content, type } = await request.json();
@@ -79,9 +79,9 @@ export async function DELETE(request: Request) {
         return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    // Only GM can delete system notifications
-    if (session.user.roleLevel !== "gm") {
-        return NextResponse.json({ error: "Solo el GM puede eliminar notificaciones" }, { status: 403 });
+    // Only GM and Officers can delete system notifications
+    if (session.user.roleLevel !== "gm" && session.user.roleLevel !== "officer") {
+        return NextResponse.json({ error: "Solo el GM u Oficiales pueden eliminar notificaciones" }, { status: 403 });
     }
 
     const { id } = await request.json();
@@ -108,9 +108,9 @@ export async function PATCH(request: Request) {
         return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    // Only GM can update system notifications
-    if (session.user.roleLevel !== "gm") {
-        return NextResponse.json({ error: "Solo el GM puede editar notificaciones" }, { status: 403 });
+    // Only GM and Officers can update system notifications
+    if (session.user.roleLevel !== "gm" && session.user.roleLevel !== "officer") {
+        return NextResponse.json({ error: "Solo el GM u Oficiales pueden editar notificaciones" }, { status: 403 });
     }
 
     const { id, title, content, type } = await request.json();

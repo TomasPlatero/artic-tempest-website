@@ -20,7 +20,8 @@ export async function GET() {
 export async function PATCH(request: Request) {
     try {
         const session = await getServerSession(authOptions)
-        if (session?.user?.roleLevel !== "gm") {
+        const roleLevel = session?.user?.roleLevel
+        if (roleLevel !== "gm" && roleLevel !== "officer") {
             return NextResponse.json({ error: "No autorizado" }, { status: 403 })
         }
 

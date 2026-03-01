@@ -9,8 +9,9 @@ export async function PATCH(request: Request) {
             return NextResponse.json({ error: "No autorizado" }, { status: 401 })
         }
 
-        // Only GMs can modify which ranks are imported
-        if (session.user.roleLevel !== "gm") {
+        // Only GMs and Officers can modify which ranks are imported
+        const roleLevel = session?.user?.roleLevel
+        if (roleLevel !== "gm" && roleLevel !== "officer") {
             return NextResponse.json({ error: "Permisos insuficientes" }, { status: 403 })
         }
 

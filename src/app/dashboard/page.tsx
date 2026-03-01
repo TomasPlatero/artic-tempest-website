@@ -8,7 +8,6 @@ import { AppSidebar } from "@/components/layout/app-sidebar"
 import { SiteHeader } from "@/components/layout/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/common/sidebar"
 import { DashboardClient } from "@/components/dashboard/dashboard-client"
-import { IconUsersGroup } from "@tabler/icons-react"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -23,7 +22,6 @@ interface BnetCharacter {
 
 
 async function getDashboardData(userId: string | undefined) {
-  // Get guild metrics base
   // Get guild metrics base - We try to select everything but handle fails gracefully
   const { data: guild, error: guildError } = await sb
     .from("guilds_managed")

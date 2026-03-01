@@ -20,7 +20,7 @@ export async function PATCH(req: Request) {
 
         // If the database was reset, the profile might be missing. Allow saving credentials 
         // initially so the Discord integration can work on the next login.
-        if (profile && profile.role_level !== "gm") {
+        if (profile && profile.role_level !== "gm" && profile.role_level !== "officer") {
             return new NextResponse("Sin permisos", { status: 403 });
         }
 

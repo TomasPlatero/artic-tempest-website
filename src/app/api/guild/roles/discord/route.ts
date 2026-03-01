@@ -5,7 +5,8 @@ import { authOptions, sb } from "@/infrastructure/auth/auth-options"
 export async function POST(request: Request) {
     try {
         const session = await getServerSession(authOptions)
-        if (session?.user?.roleLevel !== "gm") {
+        const roleLevel = session?.user?.roleLevel
+        if (roleLevel !== "gm" && roleLevel !== "officer") {
             return NextResponse.json({ error: "No autorizado" }, { status: 403 })
         }
 
@@ -43,7 +44,8 @@ export async function POST(request: Request) {
 export async function DELETE(request: Request) {
     try {
         const session = await getServerSession(authOptions)
-        if (session?.user?.roleLevel !== "gm") {
+        const roleLevel = session?.user?.roleLevel
+        if (roleLevel !== "gm" && roleLevel !== "officer") {
             return NextResponse.json({ error: "No autorizado" }, { status: 403 })
         }
 
@@ -68,7 +70,8 @@ export async function DELETE(request: Request) {
 export async function PUT(request: Request) {
     try {
         const session = await getServerSession(authOptions)
-        if (session?.user?.roleLevel !== "gm") {
+        const roleLevel = session?.user?.roleLevel
+        if (roleLevel !== "gm" && roleLevel !== "officer") {
             return NextResponse.json({ error: "No autorizado" }, { status: 403 })
         }
 

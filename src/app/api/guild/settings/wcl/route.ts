@@ -20,7 +20,7 @@ export async function PATCH(req: Request) {
             .eq("user_id", session.user.id)
             .single();
 
-        if (profile?.role_level !== "gm") {
+        if (profile?.role_level !== "gm" && profile?.role_level !== "officer") {
             return new NextResponse("Forbidden", { status: 403 });
         }
 
