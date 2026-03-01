@@ -25,6 +25,11 @@ import {
 import { IconCheck, IconX, IconExternalLink } from "@tabler/icons-react"
 
 export function StatsClient({ members, rioData, classColors = {} }: { members: any[], rioData?: any, classColors?: Record<number, string> }) {
+    const [isMounted, setIsMounted] = useState(false)
+
+    useEffect(() => {
+        setIsMounted(true)
+    }, [])
 
 
 
@@ -72,7 +77,7 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
     useEffect(() => {
         async function fetchWCL() {
             try {
-                const res = await fetch("/api/wcl")
+                const res = await fetch("/api/wcl?t=" + Date.now())
                 const data = await res.json()
                 if (!res.ok) {
                     throw new Error(data.error || "Error al cargar datos de WCL")
@@ -163,6 +168,8 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
             setIsInspecting(false)
         }
     }
+
+    if (!isMounted) return null
 
     return (
         <div className="flex flex-col gap-6 px-4 lg:px-6">
@@ -405,7 +412,13 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                                         <div className="grid grid-cols-1 gap-2">
                                             {wclReportDetails.fights && wclReportDetails.fights.length > 0 ? (
                                                 wclReportDetails.fights.map((fight: any, i: number) => (
-                                                    <div key={i} className="flex items-center justify-between p-3 rounded-lg border border-border/10 bg-background/40 group hover:border-blue-500/20 transition-all">
+                                                    <a
+                                                        href={`https://www.warcraftlogs.com/reports/${selectedWclReport.code}#fight=${fight.id}`}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        key={i}
+                                                        className="flex items-center justify-between p-3 rounded-lg border border-border/10 bg-background/40 group hover:border-blue-500/30 hover:bg-blue-500/[0.03] transition-all"
+                                                    >
                                                         <div className="flex items-center gap-3">
                                                             <div className={cn(
                                                                 "size-6 rounded-md flex items-center justify-center text-[10px] font-black",
@@ -414,7 +427,10 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                                                                 {fight.kill ? <IconCheck className="size-3.5" /> : <IconX className="size-3.5" />}
                                                             </div>
                                                             <div className="flex flex-col">
-                                                                <span className="text-sm font-bold">{fight.name}</span>
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-sm font-bold group-hover:text-blue-400 transition-colors">{fight.name}</span>
+                                                                    <IconExternalLink className="size-3 opacity-0 group-hover:opacity-40 transition-opacity" />
+                                                                </div>
                                                                 <span className="text-[10px] uppercase font-black text-muted-foreground/50 tracking-tighter">
                                                                     {fight.difficulty === 3 ? "Normal" : fight.difficulty === 4 ? "Heroico" : fight.difficulty === 5 ? "Mítico" : "Buscador"}
                                                                 </span>
@@ -432,7 +448,7 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                                                                 <Badge className="bg-emerald-500/10 text-emerald-500 border-none text-[9px] font-black uppercase">Derrotado</Badge>
                                                             )}
                                                         </div>
-                                                    </div>
+                                                    </a>
                                                 ))
                                             ) : (
                                                 <div className="text-center py-8 text-xs text-muted-foreground italic">No se encontraron combates registrados.</div>

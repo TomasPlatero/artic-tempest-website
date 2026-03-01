@@ -260,20 +260,20 @@ export function SettingsRosterClient({
                         </div>
                     </div>
 
-                    <DialogFooter className="p-8 pt-0 flex gap-4 sm:justify-between items-center sm:flex-row flex-col-reverse">
+                    <DialogFooter className="p-8 pt-0 flex gap-3 sm:justify-between items-center sm:flex-row flex-col-reverse">
                         <Button
-                            variant="outline"
-                            className="w-full sm:w-auto px-8 bg-white/5 border-white/10 hover:bg-white/10 text-zinc-400 font-bold uppercase tracking-widest text-[10px] h-14 rounded-2xl"
+                            variant="ghost"
+                            className="w-full sm:w-auto px-10 text-white/40 hover:text-white hover:bg-white/5 font-black uppercase tracking-[0.2em] text-[10px] h-14 rounded-2xl transition-all"
                             onClick={() => setIsModalOpen(false)}
                         >
-                            Descartar
+                            DESCARTAR
                         </Button>
                         <Button
-                            className="w-full sm:flex-1 bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-[10px] h-14 rounded-2xl shadow-[0_10px_30px_rgba(var(--primary),0.2)] transition-all active:scale-95"
+                            className="w-full sm:flex-1 bg-white hover:bg-zinc-200 text-zinc-950 font-black uppercase tracking-[0.2em] text-[10px] h-14 rounded-2xl shadow-[0_10px_40px_rgba(255,255,255,0.1)] transition-all active:scale-[0.98]"
                             onClick={handleSaveRankSettings}
                             disabled={isSaving}
                         >
-                            {isSaving ? "Guardando..." : "Guardar Cambios"}
+                            {isSaving ? "GUARDANDO..." : "GUARDAR CAMBIOS"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
