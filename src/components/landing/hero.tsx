@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { IconChevronRight, IconSword } from "@tabler/icons-react"
+import { IconChevronDown, IconChevronRight, IconSword } from "@tabler/icons-react"
 import Link from "next/link"
 import Image from "next/image"
 
@@ -22,8 +22,8 @@ export function LandingHero() {
                 />
             </div>
             {/* Advanced Overlays for Maximum Readability */}
-            <div className="absolute inset-0 z-1 bg-black/50" />
-            <div className="absolute inset-0 z-1 bg-gradient-to-b from-black/60 via-transparent to-black/80" />
+            <div className="absolute inset-0 z-1 bg-black/50 pointer-events-none" />
+            <div className="absolute inset-0 z-1 bg-gradient-to-b from-black/60 via-transparent to-black/80 pointer-events-none" />
 
             {/* Central Glow / Blur for Text Focus */}
             <div className="absolute inset-0 z-1 flex items-center justify-center">
@@ -42,19 +42,19 @@ export function LandingHero() {
                     <div className="relative inline-block mb-10">
                         <div className="absolute inset-0 bg-black/40 blur-2xl rounded-full -m-6" />
                         <p className="relative text-xl md:text-3xl text-blue-50/90 max-w-3xl mx-auto font-bold drop-shadow-2xl leading-tight">
-                            Disciplina, progreso y una comunidad inquebrantable en el corazón de Azeroth. Forjamos leyendas en el frío de la batalla.
+                            Disciplina, progreso y compromiso real. Una hermandad consolidada en Azeroth donde la constancia y el trabajo en equipo convierten objetivos en resultados.
                         </p>
                     </div>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <Button size="xl" className="rounded-full px-8 text-lg font-bold group" asChild>
+                        <Button size="xl" className="rounded-full w-full sm:w-64 text-lg font-bold group" asChild>
                             <Link href="/reclutamiento">
                                 <IconSword className="size-5 mr-2 group-hover:rotate-12 transition-transform" />
                                 Únete a nosotros
                                 <IconChevronRight className="size-5 ml-1 opacity-50" />
                             </Link>
                         </Button>
-                        <Button variant="glass" size="xl" className="rounded-full px-8 text-lg" asChild>
+                        <Button variant="glass" size="xl" className="rounded-full w-full sm:w-64 text-lg font-bold" asChild>
                             <Link href="#progreso">
                                 Ver Progreso
                             </Link>
@@ -64,14 +64,19 @@ export function LandingHero() {
             </div>
 
             {/* Scroll Indicator */}
-            <motion.div
-                className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/60"
-                animate={{ y: [0, 10, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
+            <motion.button
+                onClick={() => document.getElementById('reclutamiento')?.scrollIntoView({ behavior: 'smooth' })}
+                className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-white/60 hover:text-white transition-colors cursor-pointer group z-20 p-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1, y: [0, 8, 0] }}
+                transition={{
+                    opacity: { duration: 1, delay: 1 },
+                    y: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+                }}
             >
-                <span className="text-[10px] uppercase tracking-[0.2em] font-black text-white/70">Explorar</span>
-                <div className="w-1 h-12 bg-gradient-to-b from-blue-500 to-transparent rounded-full" />
-            </motion.div>
+                <span className="text-[10px] uppercase tracking-[0.2em] font-black text-white/70 group-hover:text-blue-400 transition-colors">Explorar</span>
+                <IconChevronDown className="size-6 text-blue-400/80 group-hover:text-blue-400 transition-colors" />
+            </motion.button>
         </section>
     )
 }

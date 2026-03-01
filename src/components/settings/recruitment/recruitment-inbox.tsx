@@ -12,7 +12,8 @@ import {
     IconCheck,
     IconX,
     IconSearch,
-    IconFilter
+    IconFilter,
+    IconTrash
 } from "@tabler/icons-react"
 import Image from "next/image"
 import { Input } from "@/components/ui/input"
@@ -23,6 +24,7 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select"
+import { toast } from "sonner"
 
 const statusConfig: Record<string, { label: string, color: string }> = {
     pending: { label: "Nuevo", color: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
@@ -36,6 +38,7 @@ export function RecruitmentInbox({ applications, constants }: { applications: an
     const router = useRouter()
     const [searchTerm, setSearchTerm] = useState("")
     const [statusFilter, setStatusFilter] = useState("all")
+    const [isDeleting, setIsDeleting] = useState<string | null>(null)
 
     const classMap = new Map()
     constants.filter(c => c.category === 'wow_class').forEach(c => {
@@ -47,6 +50,31 @@ export function RecruitmentInbox({ applications, constants }: { applications: an
         const matchesStatus = statusFilter === "all" || app.status === statusFilter
         return matchesSearch && matchesStatus
     })
+
+    const handleDelete = async (e: React.MouseEvent, id: string, name: string) => {
+        e.stopPropagation() // Evitar navegar a los detalles
+
+        if (!window.confirm(`¿Estás seguro de que quieres borrar la solicitud de ${name}? Esta acción no se puede deshacer.`)) {
+            return
+        }
+
+        setIsDeleting(id)
+        try {
+            const res = await fetch(`/api/recruitment/applications?id=${id}`, {
+                method: "DELETE",
+            })
+
+            if (!res.ok) throw new Error("No se pudo borrar la solicitud")
+
+            toast.success("Solicitud borrada correctamente")
+            router.refresh()
+        } catch (error: any) {
+            console.error("Delete error:", error)
+            toast.error("Error al borrar la solicitud")
+        } finally {
+            setIsDeleting(null)
+        }
+    }
 
     return (
         <div className="space-y-6">
@@ -103,18 +131,18 @@ export function RecruitmentInbox({ applications, constants }: { applications: an
                                                 <h3 className="font-bold text-lg text-white truncate">{app.character_name}</h3>
                                                 <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-white/5 bg-white/5">
                                                     <div className={`size-1.5 rounded-full ${app.status === 'pending' ? 'bg-blue-500' :
-                                                            app.status === 'reviewing' ? 'bg-purple-500' :
-                                                                app.status === 'interview' ? 'bg-amber-500' :
-                                                                    app.status === 'accepted' ? 'bg-emerald-500' :
-                                                                        app.status === 'rejected' ? 'bg-rose-500' :
-                                                                            'bg-zinc-500'
+                                                        app.status === 'reviewing' ? 'bg-purple-500' :
+                                                            app.status === 'interview' ? 'bg-amber-500' :
+                                                                app.status === 'accepted' ? 'bg-emerald-500' :
+                                                                    app.status === 'rejected' ? 'bg-rose-500' :
+                                                                        'bg-zinc-500'
                                                         }`} />
                                                     <span className={`text-[10px] uppercase font-black tracking-tight ${app.status === 'pending' ? 'text-blue-400' :
-                                                            app.status === 'reviewing' ? 'text-purple-400' :
-                                                                app.status === 'interview' ? 'text-amber-400' :
-                                                                    app.status === 'accepted' ? 'text-emerald-400' :
-                                                                        app.status === 'rejected' ? 'text-rose-400' :
-                                                                            'text-zinc-400'
+                                                        app.status === 'reviewing' ? 'text-purple-400' :
+                                                            app.status === 'interview' ? 'text-amber-400' :
+                                                                app.status === 'accepted' ? 'text-emerald-400' :
+                                                                    app.status === 'rejected' ? 'text-rose-400' :
+                                                                        'text-zinc-400'
                                                         }`}>
                                                         {statusConfig[app.status]?.label}
                                                     </span>
@@ -126,8 +154,8 @@ export function RecruitmentInbox({ applications, constants }: { applications: an
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto">
-                                        <div className="flex flex-col items-end">
+                                    <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
+                                        <div className="flex flex-col items-end mr-3">
                                             <div className="flex items-center gap-1 text-zinc-500">
                                                 <IconClock className="size-3" />
                                                 <span className="text-[10px] font-bold uppercase tracking-wider">
@@ -138,10 +166,21 @@ export function RecruitmentInbox({ applications, constants }: { applications: an
                                                 <span className="text-[9px] text-blue-400 font-bold uppercase mt-1">✓ Con notas</span>
                                             )}
                                         </div>
-                                        <Button variant="outline" size="sm" className="rounded-xl h-9 px-4 border-white/10 bg-white/5 group-hover:bg-blue-500 group-hover:text-white transition-all text-xs">
-                                            Ver Detalles
-                                            <IconExternalLink className="size-3 ml-2" />
-                                        </Button>
+                                        <div className="flex items-center gap-2">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="size-9 rounded-xl text-zinc-500 hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
+                                                onClick={(e) => handleDelete(e, app.id, app.character_name)}
+                                                disabled={isDeleting === app.id}
+                                            >
+                                                <IconTrash className="size-4" />
+                                            </Button>
+                                            <Button variant="outline" size="sm" className="rounded-xl h-9 px-4 border-white/10 bg-white/5 group-hover:bg-blue-500 group-hover:text-white transition-all text-xs">
+                                                Ver Detalles
+                                                <IconExternalLink className="size-3 ml-2" />
+                                            </Button>
+                                        </div>
                                     </div>
                                 </div>
                             </CardContent>

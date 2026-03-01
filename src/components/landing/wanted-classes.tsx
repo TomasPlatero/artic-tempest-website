@@ -95,9 +95,9 @@ export function WantedClasses() {
     }
 
     const urgencyLabels: Record<string, string> = {
-        high: "ALTA",
-        medium: "MEDIA",
-        low: "BAJA"
+        high: "🔴 ALTA",
+        medium: "🟡 MEDIA",
+        low: "🔵 BAJA"
     }
 
 

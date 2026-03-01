@@ -2,6 +2,13 @@ import type { NextConfig } from "next";
 
 /** @type {import('next').NextConfig} */
 const nextConfig: NextConfig = {
+  // Configuración para el túnel NGROK en desarrollo
+  serverExternalPackages: ['tweetnacl'],
+  experimental: {
+    serverSourceMaps: false,
+  },
+  allowedDevOrigins: ['cataractous-overharshly-keshia.ngrok-free.dev', 'localhost:3000'],
+
   // --- PERFORMANCE & SECURITY: ANTIGRAVITY STACK (Native) ---
 
   // 1. Minificación Extrema (Uses SWC by default in Next.js 13+)
@@ -23,6 +30,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "render.worldofwarcraft.com" },
       { protocol: "https", hostname: "cdn.discordapp.com" },
     ],
+    qualities: [50, 75, 90], // NextJS 15+ Image qualities allowed
   },
 
   // 5. Compresión: Next.js + Vercel ya incluyen Gzip/Brotli en el Edge

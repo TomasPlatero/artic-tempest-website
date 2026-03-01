@@ -65,7 +65,7 @@ export function RecruitmentPageClient() {
                             {session ? (
                                 <Button size="xl" className="w-full sm:w-auto rounded-xl px-6 md:px-10 group" asChild>
                                     <Link href="/reclutamiento/apply">
-                                        Empezar Aplicación
+                                        Empezar Apply
                                         <IconArrowRight className="size-5 ml-2 group-hover:translate-x-1 transition-transform" />
                                     </Link>
                                 </Button>
