@@ -562,7 +562,7 @@ export function PlanificadorCdsClient() {
             {activeTab === "selection" && (
                 <div className="relative group/tabs">
                     <Card className="bg-[#121217]/50 border border-border/40 rounded-xl px-2 shadow-xl relative overflow-hidden backdrop-blur-sm">
-                        <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide py-1">
+                        <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide py-1 no-scrollbar flex-nowrap touch-pan-x">
                             {MIDNIGHT_RAIDS.map(raid => (
                                 <button
                                     key={raid.id}
@@ -570,7 +570,7 @@ export function PlanificadorCdsClient() {
                                         setSelectedRaid(raid)
                                         setActiveTab("selection")
                                     }}
-                                    className={`flex-1 min-w-[max-content] px-6 py-3 text-[11px] font-black uppercase tracking-[0.2em] whitespace-nowrap transition-all duration-300 relative rounded-lg ${selectedRaid.id === raid.id
+                                    className={`flex-1 min-w-[max-content] px-6 py-3 text-[11px] font-black uppercase tracking-[0.2em] whitespace-nowrap transition-all duration-300 relative rounded-lg shrink-0 ${selectedRaid.id === raid.id
                                         ? "text-blue-400 bg-blue-500/5 shadow-[inset_0_0_20px_rgba(59,130,246,0.05)] border border-blue-500/10"
                                         : "text-muted-foreground hover:text-foreground hover:bg-white/5 border border-transparent"
                                         }`}
@@ -683,7 +683,7 @@ export function PlanificadorCdsClient() {
                         </div>
 
                         <div
-                            className="p-0 overflow-x-auto select-none bg-[#0a0a0f] relative"
+                            className="p-0 overflow-x-auto select-none bg-[#0a0a0f] relative no-scrollbar scrollbar-hide"
                             ref={setTimelineRef}
                             onMouseMove={handleTimelineMouseMove}
                             onMouseLeave={handleTimelineMouseLeave}

@@ -101,3 +101,38 @@ export async function DELETE(request: Request) {
 
     return NextResponse.json({ success: true });
 }
+
+export async function PATCH(request: Request) {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+        return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    // Only GM can update system notifications
+    if (session.user.roleLevel !== "gm") {
+        return NextResponse.json({ error: "Solo el GM puede editar notificaciones" }, { status: 403 });
+    }
+
+    const { id, title, content, type } = await request.json();
+
+    if (!id || !title || !content) {
+        return NextResponse.json({ error: "ID, título y contenido son requeridos" }, { status: 400 });
+    }
+
+    const { data, error } = await sb
+        .from("system_notifications")
+        .update({
+            title,
+            content,
+            type: type || 'info'
+        })
+        .eq("id", id)
+        .select()
+        .single();
+
+    if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(data);
+}

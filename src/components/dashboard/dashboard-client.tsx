@@ -35,10 +35,10 @@ export function DashboardClient({ data, roleLevel }: { data: any, roleLevel: str
                     style={{ backgroundImage: "url('/assets/images/midnight-battle.webp')" }}
                 />
                 <div className="relative z-20 flex flex-col items-start justify-center h-full p-6 sm:p-10">
-                    <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2 drop-shadow-md flex items-center gap-3">
+                    <h1 className="text-2xl sm:text-4xl font-bold text-white mb-2 drop-shadow-md leading-tight">
                         ¡Bienvenido a <span className="text-blue-300">{data.guildName}</span>!
                     </h1>
-                    <p className="text-blue-50/90 max-w-lg text-sm sm:text-base drop-shadow-sm">
+                    <p className="text-blue-50/90 max-w-full sm:max-w-lg text-sm sm:text-base drop-shadow-sm">
                         Comprueba tus personajes, mantente al día de las próximas raids en el calendario y revisa el estado de reclutamiento de la hermandad.
                     </p>
                 </div>
@@ -68,7 +68,7 @@ export function DashboardClient({ data, roleLevel }: { data: any, roleLevel: str
                                                 <span className="font-semibold text-foreground">{char.name}</span>
                                                 <span className="text-muted-foreground/70">Nvl {char.level}</span>
                                             </div>
-                                            <span className="text-muted-foreground truncate max-w-[80px]">{char.realm}</span>
+                                            <span className="text-muted-foreground truncate max-w-[80px] sm:max-w-none ml-auto">{char.realm}</span>
                                         </div>
                                     ))}
                                 </div>
