@@ -23,16 +23,16 @@ export function RecruitmentSettingsClient({ initialSpots, initialQuestions, cons
 
     return (
         <Tabs defaultValue={defaultTab} className="w-full">
-            <TabsList className="bg-muted/50 p-1">
-                <TabsTrigger value="spots" className="gap-2">
+            <TabsList className="bg-muted/50 p-1 w-full flex justify-start overflow-x-auto no-scrollbar scrollbar-hide h-auto min-h-12 py-1.5 md:h-10 md:py-1 flex-nowrap touch-pan-x">
+                <TabsTrigger value="spots" className="gap-2 shrink-0">
                     <IconUsers className="size-4" />
                     Vacantes de Clase
                 </TabsTrigger>
-                <TabsTrigger value="form" className="gap-2">
+                <TabsTrigger value="form" className="gap-2 shrink-0">
                     <IconForms className="size-4" />
                     Constructor de Formulario
                 </TabsTrigger>
-                <TabsTrigger value="inbox" className="gap-2">
+                <TabsTrigger value="inbox" className="gap-2 shrink-0">
                     <IconInbox className="size-4" />
                     Bandeja de Entrada
                 </TabsTrigger>

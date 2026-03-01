@@ -257,79 +257,80 @@ export function SettingsApiClient({ }: any) {
         const m = method.split(" | ")[0];
         switch (m) {
             case "GET": return {
-                bg: "bg-[#61affe]",
-                text: "text-white",
-                border: "border-[#61affe]/20",
-                ghost: "bg-[#61affe]/10 text-[#61affe] border-[#61affe]/30"
+                bg: "bg-blue-500/10",
+                text: "text-blue-400",
+                border: "border-blue-500/20",
+                badge: "bg-blue-500/10 text-blue-400 border-blue-500/20"
             };
             case "POST": return {
-                bg: "bg-[#49cc90]",
-                text: "text-white",
-                border: "border-[#49cc90]/20",
-                ghost: "bg-[#49cc90]/10 text-[#49cc90] border-[#49cc90]/30"
+                bg: "bg-emerald-500/10",
+                text: "text-emerald-400",
+                border: "border-emerald-500/20",
+                badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
             };
             case "PATCH":
             case "PUT": return {
-                bg: "bg-[#fca130]",
-                text: "text-white",
-                border: "border-[#fca130]/20",
-                ghost: "bg-[#fca130]/10 text-[#fca130] border-[#fca130]/30"
+                bg: "bg-amber-500/10",
+                text: "text-amber-400",
+                border: "border-amber-500/20",
+                badge: "bg-amber-500/10 text-amber-400 border-amber-500/20"
             };
             case "DELETE": return {
-                bg: "bg-[#f93e3e]",
-                text: "text-white",
-                border: "border-[#f93e3e]/20",
-                ghost: "bg-[#f93e3e]/10 text-[#f93e3e] border-[#f93e3e]/30"
+                bg: "bg-rose-500/10",
+                text: "text-rose-400",
+                border: "border-rose-500/20",
+                badge: "bg-rose-500/10 text-rose-400 border-rose-500/20"
             };
             default: return {
-                bg: "bg-slate-500",
-                text: "text-white",
-                border: "border-slate-500/20",
-                ghost: "bg-slate-500/10 text-slate-400 border-slate-500/30"
+                bg: "bg-zinc-500/10",
+                text: "text-zinc-400",
+                border: "border-zinc-500/20",
+                badge: "bg-zinc-500/10 text-zinc-400 border-zinc-500/20"
             };
         }
     };
 
     return (
-        <div className="flex flex-col gap-10 p-4 md:p-10 pb-40 w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="flex flex-col gap-10 p-6 md:p-10 pb-40 w-full max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Header Section */}
-            <div className="flex flex-col gap-6 relative">
-
-                <div className="flex items-center gap-4">
-                    <Link href="/dashboard/settings">
-                        <Button variant="ghost" size="icon" className="rounded-full">
-                            <IconArrowLeft className="h-5 w-5" />
-                        </Button>
-                    </Link>
-                    <Badge variant="secondary" className="bg-purple-500/10 text-purple-400 border-purple-500/20 px-3 py-1 text-[10px] font-mono tracking-tighter">
-                        INTERNAL API v1.0
-                    </Badge>
+            <div className="flex flex-col gap-8 relative">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-6">
+                        <Link href="/dashboard/settings">
+                            <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 transition-all shadow-xl">
+                                <IconArrowLeft className="h-5 w-5" />
+                            </Button>
+                        </Link>
+                        <Badge variant="outline" className="bg-purple-500/5 text-purple-400 border-purple-500/20 px-4 py-1.5 text-[10px] font-mono tracking-widest uppercase">
+                            INTERNAL API v1.0
+                        </Badge>
+                    </div>
                 </div>
 
-                <div className="space-y-3">
-                    <h1 className="text-4xl font-black tracking-tight flex items-center gap-4 bg-gradient-to-r from-foreground to-foreground/50 bg-clip-text text-transparent">
+                <div className="space-y-4">
+                    <h1 className="text-4xl md:text-5xl font-black tracking-tight text-white uppercase italic">
                         Developers Guide
                     </h1>
-                    <p className="text-lg text-muted-foreground/80 max-w-3xl leading-relaxed">
-                        Referencia técnica exhaustiva para desarrolladores. Todos los endpoints están protegidos por <span className="text-foreground font-semibold">Row Level Security</span> y requieren autenticación válida.
+                    <p className="text-base text-white/40 max-w-3xl leading-relaxed font-medium">
+                        Referencia técnica exhaustiva para desarrolladores. Todos los endpoints están protegidos por <span className="text-primary font-bold">Row Level Security</span> y requieren autenticación válida mediante sesión o tokens.
                     </p>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-16">
+            <div className="grid grid-cols-1 gap-20 mt-4">
                 {categories.map((cat, i) => (
-                    <section key={i} className="space-y-6">
-                        <div className="flex items-center gap-4 border-b border-border/40 pb-4">
-                            <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20 shadow-inner">
+                    <section key={i} className="space-y-8">
+                        <div className="flex items-center gap-5 border-b border-white/5 pb-6">
+                            <div className="size-14 rounded-[1.25rem] bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20 shadow-[0_0_20px_rgba(99,102,241,0.1)]">
                                 {cat.icon}
                             </div>
                             <div>
-                                <h2 className="text-2xl font-bold tracking-tight">{cat.title}</h2>
-                                <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">{cat.endpoints.length} Endpoints disponibles</p>
+                                <h2 className="text-2xl font-black uppercase tracking-tight text-white">{cat.title}</h2>
+                                <p className="text-[10px] text-white/30 font-black uppercase tracking-[0.2em] mt-1">{cat.endpoints.length} Endpoints disponibles</p>
                             </div>
                         </div>
 
-                        <Accordion type="single" collapsible className="space-y-4">
+                        <Accordion type="single" collapsible className="space-y-5">
                             {cat.endpoints.map((ep, j) => {
                                 const styles = getMethodConfig(ep.method);
                                 return (
@@ -337,84 +338,84 @@ export function SettingsApiClient({ }: any) {
                                         key={j}
                                         value={`${i}-${j}`}
                                         className={cn(
-                                            "group rounded-xl overflow-hidden transition-all duration-300 border-2",
-                                            styles.border,
-                                            "bg-card/30 hover:bg-card/60"
+                                            "group rounded-[2rem] overflow-hidden transition-all duration-500 border border-white/5",
+                                            "bg-zinc-900/40 backdrop-blur-3xl hover:bg-zinc-900/60 hover:border-white/10 shadow-2xl"
                                         )}
                                     >
-                                        <AccordionTrigger className="hover:no-underline p-5 data-[state=open]:bg-muted/10 transition-all">
+                                        <AccordionTrigger className="hover:no-underline p-6 data-[state=open]:bg-white/[0.03] transition-all">
                                             <div className="flex items-center gap-6 w-full text-left">
                                                 <div className={cn(
-                                                    "w-24 h-10 flex items-center justify-center rounded-lg font-black text-sm tracking-widest shadow-lg shadow-black/20",
+                                                    "w-24 h-11 flex items-center justify-center rounded-xl font-black text-[11px] tracking-[0.2em] shadow-xl transition-all group-hover:scale-105 border",
                                                     styles.bg,
-                                                    styles.text
+                                                    styles.text,
+                                                    styles.border
                                                 )}>
                                                     {ep.method.split(" | ")[0]}
                                                 </div>
                                                 <div className="flex flex-col gap-1 min-w-0">
-                                                    <code className="text-base font-mono font-bold text-foreground overflow-hidden text-ellipsis whitespace-nowrap">
+                                                    <code className="text-base font-mono font-bold text-white tracking-tighter overflow-hidden text-ellipsis whitespace-nowrap">
                                                         {ep.path}
                                                     </code>
-                                                    <span className="text-xs text-muted-foreground/80 font-medium md:hidden">
+                                                    <span className="text-[10px] text-white/20 font-black uppercase tracking-widest md:hidden">
                                                         {ep.description}
                                                     </span>
                                                 </div>
-                                                <div className="hidden md:block flex-1 border-b border-dashed border-border/20 mx-4" />
-                                                <div className="hidden md:block text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider max-w-[300px] truncate">
+                                                <div className="hidden md:block flex-1 border-b border-dashed border-white/5 mx-4 opacity-50" />
+                                                <div className="hidden md:block text-[11px] font-bold text-white/40 uppercase tracking-wider max-w-[350px] truncate group-hover:text-white/60 transition-colors">
                                                     {ep.description}
                                                 </div>
                                             </div>
                                         </AccordionTrigger>
-                                        <AccordionContent className="p-0 border-t border-border/20">
-                                            <div className="p-8 space-y-10 bg-muted/5">
+                                        <AccordionContent className="p-0 border-t border-white/5">
+                                            <div className="p-8 md:p-10 space-y-12 bg-black/40">
                                                 {/* Meta Info */}
-                                                <div className="flex flex-wrap items-center justify-between gap-6">
-                                                    <div className="space-y-2">
-                                                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">Recurso</h3>
-                                                        <p className="text-lg font-semibold">{ep.description}</p>
+                                                <div className="flex flex-wrap items-center justify-between gap-8">
+                                                    <div className="space-y-3">
+                                                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Descripción del Recurso</h3>
+                                                        <p className="text-xl font-black text-white tracking-tight">{ep.description}</p>
                                                     </div>
-                                                    <div className="flex items-center gap-3 bg-indigo-500/5 px-4 py-3 rounded-2xl border border-indigo-500/10">
-                                                        <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
+                                                    <div className="flex items-center gap-4 bg-primary/5 px-6 py-4 rounded-3xl border border-primary/10 shadow-xl backdrop-blur-md">
+                                                        <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/10">
                                                             <IconLock className="size-4" />
                                                         </div>
                                                         <div>
-                                                            <h3 className="text-[10px] font-black uppercase tracking-wider text-muted-foreground/50">Seguridad</h3>
-                                                            <p className="text-sm font-bold text-indigo-300/90">{ep.auth}</p>
+                                                            <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30">Nivel de Acceso</h3>
+                                                            <p className="text-xs font-black text-primary uppercase tracking-widest mt-0.5">{ep.auth}</p>
                                                         </div>
                                                     </div>
                                                 </div>
 
                                                 {/* Request Section */}
-                                                <div className="space-y-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="h-4 w-1 rounded-full bg-primary" />
-                                                        <h3 className="text-xs font-black uppercase tracking-widest">Petición</h3>
+                                                <div className="space-y-6">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="h-4 w-1 rounded-full bg-primary shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
+                                                        <h3 className="text-xs font-black uppercase tracking-[0.25em] text-white/60">Estructura de Petición</h3>
                                                     </div>
 
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                                         {ep.params || ep.body ? (
                                                             <>
                                                                 {ep.params && (
                                                                     <div className="space-y-3">
-                                                                        <span className="text-[10px] font-bold text-blue-400/80 uppercase">Query Parameters</span>
-                                                                        <div className="bg-[#090b10] rounded-xl p-4 border border-blue-500/20 font-mono text-xs text-blue-200/80 shadow-inner">
+                                                                        <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest ml-1">URL Parameters</span>
+                                                                        <div className="bg-zinc-950/80 rounded-2xl p-5 border border-white/5 font-mono text-xs text-blue-300/80 shadow-2xl ring-1 ring-white/5">
                                                                             {ep.params}
                                                                         </div>
                                                                     </div>
                                                                 )}
                                                                 {ep.body && (
                                                                     <div className="space-y-3">
-                                                                        <span className="text-[10px] font-bold text-emerald-400/80 uppercase">Request Body (JSON)</span>
-                                                                        <div className="bg-[#090b10] rounded-xl p-4 border border-emerald-500/20 font-mono text-xs text-emerald-200/80 shadow-inner">
-                                                                            {ep.body}
+                                                                        <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest ml-1">Payload (JSON)</span>
+                                                                        <div className="bg-zinc-950/80 rounded-2xl p-5 border border-white/5 font-mono text-xs text-emerald-300/80 shadow-2xl ring-1 ring-white/5">
+                                                                            <pre className="whitespace-pre-wrap">{ep.body}</pre>
                                                                         </div>
                                                                     </div>
                                                                 )}
                                                             </>
                                                         ) : (
-                                                            <div className="col-span-2 bg-[#090b10]/30 rounded-xl p-5 border border-dashed border-border/20 flex items-center gap-4 text-muted-foreground/30">
-                                                                <IconApi className="size-4" />
-                                                                <span className="text-xs font-semibold italic">Este endpoint no requiere parámetros ni cuerpo de mensaje.</span>
+                                                            <div className="col-span-2 bg-zinc-950/40 rounded-2xl p-6 border border-dashed border-white/10 flex items-center justify-center gap-4 text-white/20 italic text-sm font-medium">
+                                                                <IconApi className="size-5" />
+                                                                Este endpoint no requiere parámetros ni cuerpo de mensaje.
                                                             </div>
                                                         )}
                                                     </div>
@@ -422,21 +423,21 @@ export function SettingsApiClient({ }: any) {
 
                                                 {/* Response Section */}
                                                 {ep.response && (
-                                                    <div className="space-y-4">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="h-4 w-1 rounded-full bg-amber-500" />
-                                                            <h3 className="text-xs font-black uppercase tracking-widest text-amber-500/80">Respuesta</h3>
+                                                    <div className="space-y-6">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="h-4 w-1 rounded-full bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]" />
+                                                            <h3 className="text-xs font-black uppercase tracking-[0.25em] text-amber-500/80">Modelo de Respuesta</h3>
                                                         </div>
                                                         <div className="relative group/example">
-                                                            <div className="bg-[#0d1117] rounded-xl p-6 border border-amber-500/20 shadow-2xl">
-                                                                <pre className="text-xs font-mono text-amber-200/70 overflow-x-auto leading-relaxed">
+                                                            <div className="bg-[#050505] rounded-[2rem] p-8 border border-white/5 shadow-[0_30px_60px_rgba(0,0,0,0.6)] ring-1 ring-white/5">
+                                                                <pre className="text-xs font-mono text-white/50 overflow-x-auto leading-relaxed scrollbar-hide no-scrollbar">
                                                                     {ep.response}
                                                                 </pre>
                                                             </div>
                                                             <Button
                                                                 variant="ghost"
                                                                 size="icon"
-                                                                className="absolute top-4 right-4 text-amber-500/40 hover:text-amber-500 hover:bg-amber-500/10 opacity-0 group-hover/example:opacity-100 transition-all"
+                                                                className="absolute top-6 right-6 size-10 rounded-xl bg-white/5 text-white/20 hover:text-white hover:bg-white/10 opacity-0 group-hover/example:opacity-100 transition-all shadow-xl backdrop-blur-xl border border-white/10"
                                                                 onClick={() => copyToClipboard(ep.response || "", 'example')}
                                                             >
                                                                 <IconCopy className="size-4" />
@@ -446,21 +447,20 @@ export function SettingsApiClient({ }: any) {
                                                 )}
 
                                                 {/* Quick Actions */}
-                                                <div className="flex items-center justify-between pt-6 border-t border-border/20">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="size-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                                                        <span className="text-[10px] font-mono text-muted-foreground uppercase">Endpoint Operativo</span>
+                                                <div className="flex items-center justify-between pt-10 border-t border-white/5">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="size-2 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.8)]" />
+                                                        <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">Service Status: Operational</span>
                                                     </div>
                                                     <Button
-                                                        variant="glow"
-                                                        size="sm"
-                                                        className="h-10 px-6 font-black text-xs gap-3"
+                                                        variant="outline"
+                                                        className="h-12 px-8 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] gap-3 border-white/10 hover:bg-white/5 hover:border-white/20 text-white transition-all active:scale-95 shadow-2xl"
                                                         onClick={() => copyToClipboard(ep.path, 'path')}
                                                     >
                                                         {copiedPath === ep.path ? (
-                                                            <><IconCheck className="size-4" /> Copiado</>
+                                                            <><IconCheck className="size-4 text-emerald-500" /> Copiado</>
                                                         ) : (
-                                                            <><IconCopy className="size-4" /> Copiar URL</>
+                                                            <><IconCopy className="size-4" /> Copiar Endpoint</>
                                                         )}
                                                     </Button>
                                                 </div>
@@ -474,11 +474,13 @@ export function SettingsApiClient({ }: any) {
                 ))}
             </div>
 
-            <footer className="py-20 flex flex-col items-center gap-6 border-t border-border/20 mt-20">
-                <IconApi className="size-16 text-muted-foreground/10" />
-                <div className="text-center space-y-2">
-                    <p className="text-[10px] font-black uppercase tracking-[0.5em] text-muted-foreground/40">GuildBoard Developers Portal</p>
-                    <p className="text-xs text-muted-foreground/30">© 2024 Artic Tempest - All rights reserved</p>
+            <footer className="py-32 flex flex-col items-center gap-8 border-t border-white/5 mt-20 opacity-40">
+                <div className="p-4 rounded-3xl bg-white/5 border border-white/10 grayscale">
+                    <IconApi className="size-12" />
+                </div>
+                <div className="text-center space-y-3">
+                    <p className="text-[10px] font-black uppercase tracking-[0.6em] text-white/40">GuildBoard Developers Portal</p>
+                    <p className="text-[10px] font-bold text-white/20 italic tracking-widest">© 2024 Artic Tempest - Powered by Artic API v1.0</p>
                 </div>
             </footer>
         </div>

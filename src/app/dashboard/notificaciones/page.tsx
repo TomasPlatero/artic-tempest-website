@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { IconBell, IconCheck, IconInfoCircle, IconAlertCircle, IconClock } from "@tabler/icons-react"
 import { toast } from "sonner"
+import DOMPurify from "isomorphic-dompurify"
 
 import { supabase } from "@/infrastructure/supabase/client"
 import { cn } from "@/infrastructure/tailwind/tailwind-utils"
@@ -169,13 +170,13 @@ export default function NotificationsPage() {
                     </div>
 
                     {/* Filtros */}
-                    <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none mt-4">
+                    <div className="flex items-center gap-2 overflow-x-auto pb-4 no-scrollbar scrollbar-hide mt-4 w-full flex-nowrap touch-pan-x translate-z-0 relative z-10">
                         {filters.map((filter) => (
                             <button
                                 key={filter.id}
                                 onClick={() => setActiveFilter(filter.id as any)}
                                 className={cn(
-                                    "whitespace-nowrap px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all duration-300 flex items-center gap-2",
+                                    "whitespace-nowrap px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all duration-300 flex items-center gap-2 shrink-0",
                                     activeFilter === filter.id
                                         ? "bg-blue-500 text-white border-blue-400 shadow-[0_5px_15px_rgba(59,130,246,0.3)]"
                                         : "bg-background/50 text-muted-foreground border-border/40 hover:border-blue-500/30 hover:text-blue-400"
@@ -264,12 +265,15 @@ export default function NotificationsPage() {
                                             </div>
                                         </CardHeader>
                                         <CardContent>
-                                            <p className={cn(
-                                                "text-sm leading-relaxed whitespace-pre-wrap transition-colors duration-500",
-                                                !n.isRead ? "text-zinc-200" : "text-zinc-600"
-                                            )}>
-                                                {n.content}
-                                            </p>
+                                            <div
+                                                className={cn(
+                                                    "text-sm leading-relaxed transition-colors duration-500 prose prose-invert prose-sm max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-2 prose-li:my-0.5 prose-img:rounded-xl",
+                                                    !n.isRead ? "text-zinc-200" : "text-zinc-600"
+                                                )}
+                                                dangerouslySetInnerHTML={{
+                                                    __html: DOMPurify.sanitize(n.content)
+                                                }}
+                                            />
                                             {!n.isRead && (
                                                 <div className="flex justify-end mt-6">
                                                     <Button

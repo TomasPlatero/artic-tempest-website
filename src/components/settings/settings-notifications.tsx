@@ -1,6 +1,6 @@
 "use client";
 
-import { IconBell, IconArrowLeft, IconSend, IconInfoCircle, IconTimeline, IconAlertCircle, IconShieldCheck, IconTrash, IconClock } from "@tabler/icons-react";
+import { IconBell, IconArrowLeft, IconSend, IconInfoCircle, IconTimeline, IconAlertCircle, IconShieldCheck, IconTrash, IconClock, IconSettings } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,7 +25,9 @@ export function SettingsNotificationsClient() {
         content: "",
         type: "info" as "info" | "update" | "warning" | "important"
     });
+    const [editingId, setEditingId] = useState<string | null>(null);
     const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+    const [activeTab, setActiveTab] = useState("send");
 
     const toggleExpand = (id: string) => {
         setExpandedIds(prev => {
@@ -81,26 +83,49 @@ export function SettingsNotificationsClient() {
 
         setSending(true);
         try {
+            const method = editingId ? "PATCH" : "POST";
+            const body = editingId ? { ...form, id: editingId } : form;
+
             const res = await fetch("/api/notifications", {
-                method: "POST",
+                method,
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(form)
+                body: JSON.stringify(body)
             });
 
             if (res.ok) {
-                toast.success("Notificación enviada", {
-                    description: "Todos los usuarios recibirán el aviso en su bandeja de entrada."
+                toast.success(editingId ? "Notificación actualizada" : "Notificación enviada", {
+                    description: editingId
+                        ? "Los cambios se han aplicado correctamente."
+                        : "Todos los usuarios recibirán el aviso en su bandeja de entrada."
                 });
                 setForm({ title: "", content: "", type: "info" });
+                setEditingId(null);
+                if (editingId) setActiveTab("history");
             } else {
                 const err = await res.json();
-                throw new Error(err.error || "Error al enviar");
+                throw new Error(err.error || "Error al procesar");
             }
         } catch (error: any) {
             toast.error("Error", { description: error.message });
         } finally {
             setSending(false);
         }
+    };
+
+    const handleEdit = (notification: any) => {
+        setForm({
+            title: notification.title,
+            content: notification.content,
+            type: notification.type
+        });
+        setEditingId(notification.id);
+        setActiveTab("send");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const cancelEdit = () => {
+        setForm({ title: "", content: "", type: "info" });
+        setEditingId(null);
     };
 
     const handleDelete = async (id: string) => {
@@ -169,14 +194,14 @@ export function SettingsNotificationsClient() {
                 </div>
             </div>
 
-            <Tabs defaultValue="send" className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <div className="flex justify-center mb-8">
                     <TabsList className="grid w-full max-w-md grid-cols-2 h-14 rounded-2xl p-1.5 bg-muted/20 border border-border/20 shadow-2xl backdrop-blur-md">
                         <TabsTrigger
                             value="send"
                             className="rounded-xl font-black uppercase text-[10px] tracking-[0.2em] gap-2 data-[state=active]:bg-blue-500 data-[state=active]:text-white transition-all duration-300"
                         >
-                            <IconSend className="size-3.5" /> Enviar
+                            <IconSend className="size-3.5" /> {editingId ? "Editar" : "Enviar"}
                         </TabsTrigger>
                         <TabsTrigger
                             value="history"
@@ -197,10 +222,13 @@ export function SettingsNotificationsClient() {
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-3 font-black uppercase text-xs tracking-[0.3em] text-blue-400">
                                     <IconSend className="size-5" />
-                                    Nuevo Mensaje Global
+                                    {editingId ? "Editar Notificación" : "Nuevo Mensaje Global"}
                                 </CardTitle>
                                 <CardDescription className="text-xs font-medium italic opacity-60">
-                                    Este mensaje aparecerá en la bandeja de entrada de cada miembro con su respectivo aviso.
+                                    {editingId
+                                        ? "Estás modificando un comunicado existente. Los cambios se actualizarán para todos los usuarios."
+                                        : "Este mensaje aparecerá en la bandeja de entrada de cada miembro con su respectivo aviso."
+                                    }
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-6">
@@ -244,21 +272,36 @@ export function SettingsNotificationsClient() {
                                     />
                                 </div>
 
-                                <Button
-                                    className="w-full h-16 text-base font-black gap-3 rounded-2xl shadow-xl shadow-blue-500/20 active:scale-[0.98] transition-all"
-                                    size="lg"
-                                    disabled={sending}
-                                    onClick={handleSend}
-                                >
-                                    {sending ? (
-                                        <div className="flex items-center gap-3">
-                                            <div className="size-5 border-2 border-white/30 border-t-white animate-spin rounded-full" />
-                                            <span>Emitiendo Notificación...</span>
-                                        </div>
-                                    ) : (
-                                        <><IconSend className="size-5" /> Emitir Notificación Global</>
+                                <div className="flex gap-4">
+                                    {editingId && (
+                                        <Button
+                                            variant="outline"
+                                            className="h-16 px-8 text-base font-black rounded-2xl border-border/40 hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/20 transition-all"
+                                            onClick={cancelEdit}
+                                            disabled={sending}
+                                        >
+                                            Cancelar
+                                        </Button>
                                     )}
-                                </Button>
+                                    <Button
+                                        className="flex-1 h-16 text-base font-black gap-3 rounded-2xl shadow-xl shadow-blue-500/20 active:scale-[0.98] transition-all"
+                                        size="lg"
+                                        disabled={sending}
+                                        onClick={handleSend}
+                                    >
+                                        {sending ? (
+                                            <div className="flex items-center gap-3">
+                                                <div className="size-5 border-2 border-white/30 border-t-white animate-spin rounded-full" />
+                                                <span>{editingId ? "Actualizando..." : "Emitiendo Notificación..."}</span>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <IconSend className="size-5" />
+                                                {editingId ? "Actualizar Notificación" : "Emitir Notificación Global"}
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
                             </CardContent>
                         </Card>
 
@@ -336,19 +379,29 @@ export function SettingsNotificationsClient() {
                                                         <div className="flex-1 min-w-0">
                                                             <div className="flex items-center justify-between gap-3 mb-2">
                                                                 <h3 className="font-black text-lg text-zinc-100 tracking-tight group-hover:text-blue-400 transition-colors uppercase">{n.title}</h3>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    onClick={() => handleDelete(n.id)}
-                                                                    disabled={deletingId === n.id}
-                                                                    className="size-10 rounded-xl text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-all shrink-0 -mt-1 -mr-1"
-                                                                >
-                                                                    {deletingId === n.id ? (
-                                                                        <div className="size-5 border-2 border-rose-500/30 border-t-rose-500 animate-spin rounded-full" />
-                                                                    ) : (
-                                                                        <IconTrash className="size-5" />
-                                                                    )}
-                                                                </Button>
+                                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all -mt-1 -mr-1">
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        onClick={() => handleEdit(n)}
+                                                                        className="size-10 rounded-xl text-muted-foreground hover:text-blue-400 hover:bg-blue-400/10"
+                                                                    >
+                                                                        <IconSettings className="size-5" />
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        onClick={() => handleDelete(n.id)}
+                                                                        disabled={deletingId === n.id}
+                                                                        className="size-10 rounded-xl text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10"
+                                                                    >
+                                                                        {deletingId === n.id ? (
+                                                                            <div className="size-5 border-2 border-rose-500/30 border-t-rose-500 animate-spin rounded-full" />
+                                                                        ) : (
+                                                                            <IconTrash className="size-5" />
+                                                                        )}
+                                                                    </Button>
+                                                                </div>
                                                             </div>
                                                             <div className="relative">
                                                                 <div

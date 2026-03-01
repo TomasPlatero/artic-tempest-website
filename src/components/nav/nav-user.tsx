@@ -181,7 +181,7 @@ export function NavUser() {
                 Cambiar tema
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="#">
+                <Link href="/ayuda">
                   <IconHelp className="text-zinc-400" />
                   Ayuda
                 </Link>

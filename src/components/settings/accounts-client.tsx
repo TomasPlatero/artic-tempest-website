@@ -19,7 +19,12 @@ import {
     IconCheck,
     IconClock,
     IconChevronDown,
-    IconTrash
+    IconTrash,
+    IconUsers,
+    IconPencil,
+    IconTimeline,
+    IconExternalLink,
+    IconSearch
 } from "@tabler/icons-react"
 import {
     DropdownMenu,
@@ -29,10 +34,17 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu"
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter
+} from "@/components/ui/dialog"
 import { toast } from "sonner"
 import Image from "next/image"
 import { Input } from "@/components/ui/input"
-import { IconSearch } from "@tabler/icons-react"
 import { cn } from "@/infrastructure/tailwind/tailwind-utils"
 
 export function AccountsClient({ initialProfiles }: { initialProfiles: any[] }) {
@@ -40,6 +52,10 @@ export function AccountsClient({ initialProfiles }: { initialProfiles: any[] }) 
     const [searchTerm, setSearchTerm] = useState("")
     const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>({})
     const [isMounted, setIsMounted] = useState(false)
+    const [editingProfile, setEditingProfile] = useState<any>(null)
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+    const [currentPage, setCurrentPage] = useState(1)
+    const itemsPerPage = 10
 
     useEffect(() => {
         setIsMounted(true)
@@ -52,6 +68,12 @@ export function AccountsClient({ initialProfiles }: { initialProfiles: any[] }) 
     const filteredProfiles = profiles.filter(p =>
         p.discord_username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.user_id.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+
+    const totalPages = Math.ceil(filteredProfiles.length / itemsPerPage)
+    const paginatedProfiles = filteredProfiles.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
     )
 
     const handleVerifySync = async (userId: string) => {
@@ -160,11 +182,97 @@ export function AccountsClient({ initialProfiles }: { initialProfiles: any[] }) 
                     placeholder="Buscar por usuario o ID..."
                     className="pl-10 bg-zinc-950/50 border-white/5 focus:border-blue-500/50 transition-colors"
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => {
+                        setSearchTerm(e.target.value)
+                        setCurrentPage(1)
+                    }}
                 />
             </div>
 
-            <div className="rounded-3xl border border-white/[0.08] bg-zinc-950/40 backdrop-blur-xl overflow-hidden w-full shadow-2xl ring-1 ring-white/5">
+            {/* Mobile Cards View */}
+            <div className="grid grid-cols-1 gap-4 lg:hidden">
+                {paginatedProfiles.map((profile) => (
+                    <div
+                        key={profile.user_id}
+                        className="bg-zinc-900/60 border border-white/5 rounded-2xl p-4 flex flex-col gap-4 shadow-xl backdrop-blur-md"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="relative size-12 rounded-full overflow-hidden border-2 border-white/10 shadow-lg">
+                                {profile.discord_avatar ? (
+                                    <Image src={profile.discord_avatar} alt="Avatar" fill className="object-cover" />
+                                ) : (
+                                    <div className="flex items-center justify-center h-full bg-zinc-800">
+                                        <IconBrandDiscord className="size-6 text-white/10" />
+                                    </div>
+                                )}
+                            </div>
+                            <div className="flex flex-col flex-1 min-w-0">
+                                <span className="font-black text-white text-base truncate">{profile.discord_username}</span>
+                                <div className="flex items-center gap-1.5 mt-0.5">
+                                    <div className="size-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                    {getRoleBadge(profile.role_level)}
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-10 rounded-xl bg-white/5 border border-white/5 text-zinc-400 hover:text-primary hover:border-primary/20"
+                                    onClick={() => {
+                                        setEditingProfile(profile)
+                                        setIsEditModalOpen(true)
+                                    }}
+                                >
+                                    <IconPencil className="size-4.5" />
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-10 rounded-xl bg-white/5 border border-white/5 text-zinc-400 hover:text-rose-500 hover:border-rose-500/20"
+                                    onClick={() => handleDeleteUser(profile)}
+                                >
+                                    <IconTrash className="size-4.5" />
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+
+                {filteredProfiles.length > itemsPerPage && (
+                    <div className="flex items-center justify-between gap-4 py-4 px-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={currentPage === 1}
+                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            className="bg-white/5 border-white/5 text-zinc-400 disabled:opacity-30 rounded-xl font-bold uppercase tracking-widest text-[10px]"
+                        >
+                            Anterior
+                        </Button>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                            Página {currentPage} de {totalPages}
+                        </span>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={currentPage === totalPages}
+                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            className="bg-white/5 border-white/5 text-zinc-400 disabled:opacity-30 rounded-xl font-bold uppercase tracking-widest text-[10px]"
+                        >
+                            Siguiente
+                        </Button>
+                    </div>
+                )}
+
+                {filteredProfiles.length === 0 && (
+                    <div className="p-12 text-center text-zinc-500 italic font-medium bg-zinc-950/20 rounded-3xl border border-dashed border-white/5">
+                        No se encontraron usuarios que coincidan con la búsqueda.
+                    </div>
+                )}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden lg:block rounded-3xl border border-white/[0.08] bg-zinc-950/40 backdrop-blur-xl overflow-hidden w-full shadow-2xl ring-1 ring-white/5">
                 <Table>
                     <TableHeader className="bg-white/[0.03]">
                         <TableRow className="hover:bg-transparent border-white/[0.05]">
@@ -228,7 +336,7 @@ export function AccountsClient({ initialProfiles }: { initialProfiles: any[] }) 
                                                     key={r}
                                                     onClick={() => handleUpdateRole(profile.user_id, r)}
                                                     className={`uppercase font-black text-[10px] tracking-[0.2em] cursor-pointer rounded-lg py-2.5 px-4 my-1 transition-all duration-200 ${profile.role_level === r
-                                                        ? 'bg-primary text-white shadow-[0_0_20px_rgba(var(--primary),0.3)]'
+                                                        ? 'bg-primary text-zinc-950 shadow-[0_0_20px_rgba(var(--primary),0.3)]'
                                                         : 'text-zinc-500 hover:bg-white/5 hover:text-white hover:pl-5'
                                                         }`}
                                                 >
@@ -335,6 +443,132 @@ export function AccountsClient({ initialProfiles }: { initialProfiles: any[] }) 
                     </TableBody>
                 </Table>
             </div>
-        </div>
+
+            {/* Edit/Details Modal */}
+            <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+                <DialogContent className="max-w-lg bg-zinc-950 border-white/10 text-white rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.8)] p-0 overflow-hidden">
+                    {editingProfile && (
+                        <>
+                            <DialogHeader className="p-8 pb-0">
+                                <div className="flex items-center gap-6">
+                                    <div className="relative size-20 rounded-2xl overflow-hidden border-2 border-white/10 shadow-2xl bg-zinc-900">
+                                        {editingProfile.discord_avatar ? (
+                                            <Image src={editingProfile.discord_avatar} alt="Avatar" fill className="object-cover" />
+                                        ) : (
+                                            <div className="flex items-center justify-center h-full">
+                                                <IconBrandDiscord className="size-10 text-white/5" />
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <DialogTitle className="text-3xl font-black uppercase tracking-tight text-white leading-none">
+                                            {editingProfile.discord_username}
+                                        </DialogTitle>
+                                        <DialogDescription className="text-zinc-500 font-bold uppercase tracking-widest text-[10px] flex items-center gap-2">
+                                            <IconBrandDiscord className="size-3" />
+                                            ID: {editingProfile.user_id}
+                                        </DialogDescription>
+                                    </div>
+                                </div>
+                            </DialogHeader>
+
+                            <div className="p-8 space-y-6">
+                                {/* Role Section */}
+                                <div className="space-y-3">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Nivel de Autorización</span>
+                                    <div className="flex flex-wrap gap-2">
+                                        {['gm', 'officer', 'raider', 'member', 'invitado'].map((r) => (
+                                            <button
+                                                key={r}
+                                                onClick={() => handleUpdateRole(editingProfile.user_id, r)}
+                                                className={cn(
+                                                    "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all duration-300",
+                                                    editingProfile.role_level === r
+                                                        ? "bg-blue-500 text-white border-blue-400 shadow-[0_5px_15px_rgba(59,130,246,0.3)]"
+                                                        : "bg-white/5 text-zinc-500 border-white/5 hover:border-white/10 hover:text-white"
+                                                )}
+                                            >
+                                                {r}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    {/* Battle.net Info */}
+                                    <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 space-y-2">
+                                        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-amber-500/80">
+                                            <IconBrandOpenSource className="size-3.5" />
+                                            BattleTag
+                                        </div>
+                                        <div className="text-sm font-bold text-white truncate">
+                                            {editingProfile.battlenet_battletag || "No vinculado"}
+                                        </div>
+                                    </div>
+
+                                    {/* Character Count */}
+                                    <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 space-y-2">
+                                        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-400/80">
+                                            <IconUsers className="size-3.5" />
+                                            Personajes
+                                        </div>
+                                        <div className="text-sm font-bold text-white">
+                                            {editingProfile.character_count || 0} vinculados
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Sync Info */}
+                                <div className="space-y-3">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Información de Sistema</span>
+                                    <div className="grid grid-cols-1 gap-2">
+                                        <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                                            <div className="flex items-center gap-3 text-xs font-bold text-zinc-400">
+                                                <IconTimeline className="size-4 text-zinc-600" />
+                                                Registro
+                                            </div>
+                                            <span className="text-xs font-black text-white">
+                                                {editingProfile.created_at ? new Date(editingProfile.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }) : '---'}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                                            <div className="flex items-center gap-3 text-xs font-bold text-zinc-400">
+                                                <IconClock className="size-4 text-zinc-600" />
+                                                Última Verificación
+                                            </div>
+                                            <span className="text-xs font-black text-white">
+                                                {editingProfile.last_verification_check ? new Date(editingProfile.last_verification_check).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'Nunca'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <DialogFooter className="p-8 pt-0 flex gap-3 sm:justify-between items-center mt-4">
+                                <Button
+                                    variant="outline"
+                                    className="w-full bg-white/5 border-white/10 hover:bg-white/10 text-zinc-300 font-bold uppercase tracking-widest text-[10px] h-12 rounded-2xl"
+                                    onClick={() => setIsEditModalOpen(false)}
+                                >
+                                    Cerrar
+                                </Button>
+                                <Button
+                                    className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-widest text-[10px] h-12 rounded-2xl shadow-[0_10px_20px_rgba(59,130,246,0.3)]"
+                                    onClick={() => {
+                                        handleVerifySync(editingProfile.user_id)
+                                        setIsEditModalOpen(false)
+                                    }}
+                                    disabled={loadingMap[editingProfile.user_id]}
+                                >
+                                    <IconRotate className={cn("size-4 mr-2", loadingMap[editingProfile.user_id] && "animate-spin")} />
+                                    Forzar Verificación
+                                </Button>
+                            </DialogFooter>
+                        </>
+                    )
+                    }
+                </DialogContent >
+            </Dialog >
+        </div >
     )
 }
