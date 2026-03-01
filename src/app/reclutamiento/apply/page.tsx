@@ -46,9 +46,9 @@ export default async function ApplyPage({ searchParams }: { searchParams: Promis
         .eq("category", "wow_class")
 
     // 4. Verificar si ya es miembro (GM, Officer, Raider o Member)
-    // Permitir saltar la comprobación si es GM y viene con ?simulate=true
-    const isMember = ["gm", "officer", "raider", "member"].includes(session.user.roleLevel) && simulate !== "true"
     const canSimulate = ["gm", "officer"].includes(session.user.roleLevel)
+    // Permitir saltar la comprobación solo si tiene permiso para simular Y viene con ?simulate=true
+    const isMember = ["gm", "officer", "raider", "member"].includes(session.user.roleLevel) && !(canSimulate && simulate === "true")
 
     return (
         <main className="min-h-screen bg-black">
