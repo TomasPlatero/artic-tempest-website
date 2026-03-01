@@ -12,8 +12,23 @@ export function NotificationToastListener() {
 
     // Request notification permission and fetch guild info on mount
     React.useEffect(() => {
-        if ("Notification" in window && Notification.permission === "default") {
-            Notification.requestPermission()
+        if ("Notification" in window) {
+            if (Notification.permission === "default") {
+                toast("Notificaciones de Escritorio", {
+                    description: "¿Quieres recibir avisos en Windows cuando haya noticias de la hermandad?",
+                    action: {
+                        label: "Activar",
+                        onClick: () => {
+                            Notification.requestPermission().then(permission => {
+                                if (permission === "granted") {
+                                    toast.success("¡Notificaciones activadas!")
+                                }
+                            })
+                        }
+                    },
+                    duration: 10000,
+                })
+            }
         }
 
         fetch("/api/guild/info")
