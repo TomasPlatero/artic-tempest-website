@@ -595,7 +595,7 @@ export function RaidEditorClient({
                         opacity: 0.3
                     }}
                 />
-                <div className="relative z-10 grid grid-cols-2 md:grid-cols-8 gap-8 md:gap-6">
+                <div className="relative z-10 flex flex-wrap items-start gap-x-12 gap-y-6">
                     <div className="flex flex-col gap-1.5">
                         <Label className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em]">Fecha y Hora</Label>
                         {isReadOnly ? (
@@ -688,7 +688,7 @@ export function RaidEditorClient({
                 </div>
 
                 {!isReadOnly && (
-                    <div className="flex items-center gap-3 pt-4 border-t border-border/10">
+                    <div className="flex items-center gap-2 mt-2">
                         <Button
                             size="lg"
                             onClick={handleSave}
@@ -700,7 +700,6 @@ export function RaidEditorClient({
                         </Button>
                         {initialRaid && (
                             <>
-                                <div className="h-6 w-px bg-border/20 mx-1" />
                                 <Button
                                     variant="outline"
                                     size="lg"
@@ -725,7 +724,6 @@ export function RaidEditorClient({
                                     <IconClipboardText className="size-4 mr-2 group-hover:scale-110 transition-transform" />
                                     <span className="text-sm font-black uppercase tracking-widest">Nota MRT</span>
                                 </Button>
-                                <div className="h-6 w-px bg-border/20 mx-1" />
                                 <Button
                                     variant="outline"
                                     size="lg"
@@ -735,7 +733,7 @@ export function RaidEditorClient({
                                     title="Eliminar Evento"
                                 >
                                     <IconTrash className="size-4 mr-2" />
-                                    <span className="text-xs uppercase font-bold">Eliminar</span>
+                                    <span className="text-xs uppercase font-bold text-red-500">Eliminar</span>
                                 </Button>
                             </>
                         )}
