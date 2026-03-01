@@ -173,12 +173,12 @@ export function SettingsDiscordClient({ initialCredentials, initialCommands }: S
     };
 
     return (
-        <div className="flex flex-col gap-8 p-4 md:p-8 w-full animate-in fade-in duration-500">
+        <div className="flex flex-col gap-8 p-4 md:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-6">
                     <Link href="/dashboard/settings">
-                        <Button variant="ghost" size="icon" className="rounded-full bg-white/5 hover:bg-white/10">
-                            <IconArrowLeft className="size-5" />
+                        <Button variant="outline" size="icon" className="size-12 rounded-2xl bg-white/5 border-white/10 hover:bg-white/10 transition-all shadow-xl">
+                            <IconArrowLeft className="size-6" />
                         </Button>
                     </Link>
                     <div>
@@ -219,12 +219,6 @@ export function SettingsDiscordClient({ initialCredentials, initialCommands }: S
                             className="rounded-xl font-black uppercase text-[10px] tracking-[0.2em] gap-2 data-[state=active]:bg-[#5865F2] data-[state=active]:text-white transition-all duration-300"
                         >
                             <IconCommand className="size-3.5" /> Comandos
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="permissions"
-                            className="rounded-xl font-black uppercase text-[10px] tracking-[0.2em] gap-2 data-[state=active]:bg-[#5865F2] data-[state=active]:text-white transition-all duration-300"
-                        >
-                            <IconShieldLock className="size-3.5" /> Permisos
                         </TabsTrigger>
                     </TabsList>
                 </div>
@@ -424,24 +418,6 @@ export function SettingsDiscordClient({ initialCredentials, initialCommands }: S
                     </Card>
                 </TabsContent>
 
-                <TabsContent value="permissions" className="animate-in fade-in slide-in-from-bottom-4 duration-700 outline-none">
-                    <Card className="border-2 border-primary/10 shadow-2xl bg-card/40 backdrop-blur-md overflow-hidden">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-3 font-black uppercase text-xs tracking-[0.3em] text-emerald-400">
-                                <IconShieldLock className="size-5" />
-                                Vinculación de Permisos
-                            </CardTitle>
-                            <CardDescription className="text-xs font-medium italic opacity-60">
-                                Próximamente: Gestiona qué roles de Discord tienen acceso administrativo en la web.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="h-[300px] flex flex-col items-center justify-center text-center p-12 opacity-30">
-                            <IconShieldLock className="size-20 mb-6 text-muted-foreground" />
-                            <h3 className="text-lg font-black uppercase tracking-[0.3em]">Módulo en Desarrollo</h3>
-                            <p className="text-xs italic mt-2">La sincronización de permisos basada en roles de Discord estará disponible en la v0.9.5.</p>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
             </Tabs>
         </div>
     );
