@@ -60,51 +60,53 @@ export default function AppsSettingsHubPage() {
     ]
 
     return (
-        <div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6 lg:px-8">
-            <div className="flex items-center gap-4">
+        <div className="flex flex-col gap-8 p-6 md:p-10 pb-32 w-full max-w-full">
+            <div className="flex items-center gap-6">
                 <Link href="/dashboard/settings">
-                    <Button variant="outline" size="icon" className="h-8 w-8 rounded-full border-border/40">
-                        <IconArrowLeft className="h-4 w-4" />
+                    <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl hover:bg-white/5 border-white/10 shadow-xl transition-all">
+                        <IconArrowLeft className="h-5 w-5" />
                     </Button>
                 </Link>
                 <div>
-                    <h1 className="text-2xl font-bold">Configuración de Apps</h1>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <h1 className="text-3xl font-black tracking-tighter text-white uppercase">Configuración de Apps</h1>
+                    <p className="text-sm text-white/40 font-medium mt-1 tracking-wide">
                         Ajustes específicos para cada módulo del Dashboard
                     </p>
                 </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 mt-4 max-w-5xl">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mt-4 w-full">
                 {apps.map((app) => {
                     const Icon = app.icon;
                     return app.disabled ? (
-                        <Card key={app.href} className="opacity-60 cursor-not-allowed border-dashed bg-card/10">
-                            <CardHeader className="flex flex-row items-center gap-4 py-4 px-5">
-                                <div className={`p-2.5 rounded-xl ${app.bg} ${app.color} shrink-0`}>
-                                    <Icon className="w-6 h-6" />
+                        <Card key={app.href} className="opacity-40 cursor-not-allowed border-dashed bg-zinc-950/20 rounded-[2rem] border-white/5 relative overflow-hidden group/disabled grayscale">
+                            <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/20" />
+                            <CardHeader className="flex flex-row items-center gap-6 p-8 relative z-10">
+                                <div className={`p-4 rounded-2xl ${app.bg} ${app.color} shrink-0 border border-white/5 shadow-xl`}>
+                                    <Icon className="w-8 h-8" />
                                 </div>
                                 <div className="flex flex-col text-left">
-                                    <div className="flex items-center gap-2">
-                                        <CardTitle className="text-lg">{app.title}</CardTitle>
-                                        <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded border border-border/50 uppercase font-bold text-muted-foreground tracking-wider">Próximamente</span>
+                                    <div className="flex items-center gap-3">
+                                        <CardTitle className="text-xl font-black uppercase tracking-tight">{app.title}</CardTitle>
+                                        <span className="text-[9px] bg-white/5 px-2 py-0.5 rounded-lg border border-white/10 uppercase font-black text-white/30 tracking-[0.2em]">Próximamente</span>
                                     </div>
-                                    <CardDescription className="mt-1.5 leading-snug">
+                                    <CardDescription className="mt-2 leading-relaxed text-sm font-medium">
                                         {app.description}
                                     </CardDescription>
                                 </div>
                             </CardHeader>
                         </Card>
                     ) : (
-                        <Link href={app.href} key={app.href} className="transition-all hover:scale-[1.02]">
-                            <Card className="h-full hover:border-primary/50 cursor-pointer overflow-hidden border-border/40 bg-card/40 backdrop-blur-sm">
-                                <CardHeader className="flex flex-row items-center gap-4 py-4 px-5">
-                                    <div className={`p-2.5 rounded-xl ${app.bg} ${app.color} shrink-0 shadow-sm border border-white/5`}>
-                                        <Icon className="w-6 h-6" />
+                        <Link href={app.href} key={app.href} className="group/card transition-all duration-500 hover:-translate-y-2">
+                            <Card className="h-full relative overflow-hidden bg-zinc-950/40 border-white/[0.08] backdrop-blur-3xl rounded-[2rem] shadow-2xl ring-1 ring-white/5 group-hover/card:ring-primary/30 group-hover/card:border-primary/20 transition-all duration-500">
+                                <div className="absolute inset-x-0 bottom-0 h-1 bg-primary scale-x-0 group-hover/card:scale-x-100 transition-transform duration-700 origin-center rounded-full blur-[1px]" />
+                                <CardHeader className="flex flex-row items-center gap-6 p-8">
+                                    <div className={`p-4 rounded-2xl ${app.bg} ${app.color} shrink-0 shadow-2xl border border-white/10 group-hover/card:scale-110 group-hover/card:rotate-3 transition-all duration-500`}>
+                                        <Icon className="w-8 h-8" />
                                     </div>
                                     <div className="flex flex-col text-left">
-                                        <CardTitle className="text-lg">{app.title}</CardTitle>
-                                        <CardDescription className="mt-1.5 leading-snug">
+                                        <CardTitle className="text-xl font-black uppercase tracking-tight text-white group-hover/card:text-primary transition-colors duration-500">{app.title}</CardTitle>
+                                        <CardDescription className="mt-2 leading-relaxed text-sm font-medium text-white/40 group-hover/card:text-white/60 transition-colors duration-500">
                                             {app.description}
                                         </CardDescription>
                                     </div>

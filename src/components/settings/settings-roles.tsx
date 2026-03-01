@@ -161,44 +161,44 @@ export function SettingsRolesClient({ initialDiscordRoles, initialPermissions }:
     };
 
     return (
-        <div className="flex flex-col gap-6 p-4 md:p-6 pb-20 max-w-6xl mx-auto">
-            <div className="flex items-center gap-4">
+        <div className="flex flex-col gap-8 p-6 md:p-10 pb-32 w-full max-w-full">
+            <div className="flex items-center gap-6">
                 <Link href="/dashboard/settings">
-                    <Button variant="outline" size="icon" className="h-8 w-8 hover:bg-muted">
-                        <IconArrowLeft className="h-4 w-4" />
+                    <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl hover:bg-white/5 border-white/10 shadow-xl transition-all">
+                        <IconArrowLeft className="h-5 w-5" />
                     </Button>
                 </Link>
                 <div>
-                    <h1 className="text-2xl font-bold">Roles y Accesos</h1>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <h1 className="text-3xl font-black tracking-tighter text-white uppercase">Roles y Accesos</h1>
+                    <p className="text-sm text-white/40 font-medium mt-1 tracking-wide">
                         Configura la matriz de permisos y el mapeo de rangos de Discord.
                     </p>
                 </div>
             </div>
 
-            <Tabs defaultValue="apps" className="mt-2 w-full">
-                <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
-                    <TabsTrigger value="apps">Permisos de Apps</TabsTrigger>
-                    <TabsTrigger value="discord">Mapeo de Rangos</TabsTrigger>
+            <Tabs defaultValue="apps" className="mt-4 w-full">
+                <TabsList className="bg-white/5 p-1 rounded-2xl border border-white/5 inline-flex h-12">
+                    <TabsTrigger value="apps" className="px-8 rounded-xl font-bold uppercase text-[10px] tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white shadow-lg transition-all">Permisos de Apps</TabsTrigger>
+                    <TabsTrigger value="discord" className="px-8 rounded-xl font-bold uppercase text-[10px] tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white shadow-lg transition-all">Mapeo de Rangos</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="apps" className="pt-4">
-                    <Card className="bg-card/40 border-border/40 backdrop-blur-sm">
-                        <CardHeader>
-                            <CardTitle>Matriz de Permisos</CardTitle>
-                            <CardDescription>
+                <TabsContent value="apps" className="pt-8 w-full">
+                    <Card className="bg-zinc-950/40 border-white/[0.08] backdrop-blur-3xl rounded-[2rem] shadow-2xl ring-1 ring-white/5 overflow-hidden">
+                        <CardHeader className="p-8 pb-4">
+                            <CardTitle className="text-xl font-black uppercase tracking-widest text-primary">Matriz de Permisos</CardTitle>
+                            <CardDescription className="text-sm font-medium text-white/40">
                                 Los roles de Miembro e Invitado tienen restricciones por defecto.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent>
-                            <div className="border rounded-xl overflow-hidden text-sm bg-black/20">
-                                <div className="grid grid-cols-6 bg-white/5 border-b border-white/5 p-3 font-semibold text-muted-foreground text-[10px] uppercase tracking-wider">
+                        <CardContent className="p-8">
+                            <div className="rounded-3xl border border-white/5 overflow-hidden bg-black/40 shadow-inner">
+                                <div className="grid grid-cols-6 bg-white/[0.03] border-b border-white/[0.05] p-5 font-black text-white/30 text-[10px] uppercase tracking-[0.3em]">
                                     <div className="col-span-1">Aplicación</div>
-                                    <div className="col-span-1 text-center text-amber-500">GM</div>
-                                    <div className="col-span-1 text-center text-blue-500">Oficial</div>
-                                    <div className="col-span-1 text-center text-emerald-500">Raider</div>
-                                    <div className="col-span-1 text-center text-blue-400">Miembro</div>
-                                    <div className="col-span-1 text-center text-zinc-500">Invitado</div>
+                                    <div className="col-span-1 text-center text-amber-500/80">Guild Master</div>
+                                    <div className="col-span-1 text-center text-blue-500/80">Oficial</div>
+                                    <div className="col-span-1 text-center text-emerald-500/80">Raider</div>
+                                    <div className="col-span-1 text-center text-blue-400/80">Miembro</div>
+                                    <div className="col-span-1 text-center text-zinc-500/80">Invitado</div>
                                 </div>
 
                                 {[
@@ -208,27 +208,29 @@ export function SettingsRolesClient({ initialDiscordRoles, initialPermissions }:
                                     { id: 'planificador-cds', name: 'Planificador CD\'s' },
                                     { id: 'bis', name: 'BiS / Wishlist' },
                                 ].map((app) => (
-                                    <div key={app.id} className="grid grid-cols-6 items-center p-3 border-b border-white/5 last:border-0 hover:bg-white/[0.02]">
-                                        <div className="col-span-1 font-bold">{app.name}</div>
+                                    <div key={app.id} className="grid grid-cols-6 items-center p-5 border-b border-white/[0.03] last:border-0 hover:bg-white/[0.02] transition-colors group">
+                                        <div className="col-span-1 font-black text-white text-base group-hover:text-primary transition-colors">{app.name}</div>
                                         {(['gm', 'officer', 'raider', 'member', 'invitado'] as const).map((role) => (
-                                            <div key={role} className="col-span-1 flex justify-center gap-1.5">
-                                                <div className="flex flex-col items-center">
+                                            <div key={role} className="col-span-1 flex justify-center gap-3">
+                                                <div className="flex flex-col items-center gap-2 group/switch">
                                                     <Switch
                                                         size="sm"
                                                         checked={hasPermission(role, app.id, 'can_view')}
                                                         onCheckedChange={(v) => handlePermissionToggle(role, app.id, 'can_view', v)}
                                                         disabled={role === 'gm'}
+                                                        className="data-[state=checked]:bg-primary/80"
                                                     />
-                                                    <span className="text-[8px] text-zinc-600 mt-1 uppercase font-bold">Ver</span>
+                                                    <span className="text-[9px] text-zinc-600 group-hover/switch:text-zinc-400 mt-1 uppercase font-black tracking-widest transition-colors">Ver</span>
                                                 </div>
-                                                <div className="flex flex-col items-center">
+                                                <div className="flex flex-col items-center gap-2 group/switch">
                                                     <Switch
                                                         size="sm"
                                                         checked={hasPermission(role, app.id, 'can_edit')}
                                                         onCheckedChange={(v) => handlePermissionToggle(role, app.id, 'can_edit', v)}
                                                         disabled={role === 'gm'}
+                                                        className="data-[state=checked]:bg-primary/80"
                                                     />
-                                                    <span className="text-[8px] text-zinc-600 mt-1 uppercase font-bold">Edit</span>
+                                                    <span className="text-[9px] text-zinc-600 group-hover/switch:text-zinc-400 mt-1 uppercase font-black tracking-widest transition-colors">Edit</span>
                                                 </div>
                                             </div>
                                         ))}
@@ -239,86 +241,87 @@ export function SettingsRolesClient({ initialDiscordRoles, initialPermissions }:
                     </Card>
                 </TabsContent>
 
-                <TabsContent value="discord" className="pt-4 space-y-4">
-                    <Card className="bg-card/40 border-border/40 backdrop-blur-sm">
-                        <CardHeader>
-                            <CardTitle>Configurar Mapeo</CardTitle>
-                            <CardDescription>
+                <TabsContent value="discord" className="pt-8 space-y-8">
+                    <Card className="bg-zinc-950/40 border-white/[0.08] backdrop-blur-3xl rounded-[2rem] shadow-2xl ring-1 ring-white/5 overflow-hidden">
+                        <CardHeader className="p-8 pb-4">
+                            <CardTitle className="text-xl font-black uppercase tracking-widest text-primary">Configurar Mapeo</CardTitle>
+                            <CardDescription className="text-sm font-medium text-white/40">
                                 Asocia IDs de roles de Discord con roles internos de la App.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="flex flex-col sm:flex-row gap-4 items-end bg-white/5 p-4 rounded-xl border border-white/5">
-                                <div className="space-y-2 flex-1 w-full relative">
-                                    <Label className="text-[10px] uppercase font-bold text-zinc-500 ml-1">Discord Role ID</Label>
+                        <CardContent className="p-8 space-y-10">
+                            <div className="flex flex-col lg:flex-row gap-6 items-end bg-white/[0.03] p-8 rounded-[2rem] border border-white/[0.05] shadow-inner">
+                                <div className="space-y-3 flex-1 w-full relative">
+                                    <Label className="text-[10px] uppercase font-black text-white/30 ml-2 tracking-[0.2em]">Discord Role ID</Label>
                                     <Input
-                                        placeholder="112233..."
-                                        className="bg-black/40 border-white/10 h-10 font-mono text-sm rounded-lg"
+                                        placeholder="112233445566778899"
+                                        className="bg-black/60 border-white/10 h-14 font-mono text-base rounded-2xl px-6 focus:ring-primary/20 transition-all"
                                         value={newRoleId}
                                         onChange={e => setNewRoleId(e.target.value)}
                                     />
                                 </div>
-                                <div className="space-y-2 flex-1 w-full relative">
-                                    <Label className="text-[10px] uppercase font-bold text-zinc-500 ml-1">Nombre</Label>
+                                <div className="space-y-3 flex-[1.5] w-full relative">
+                                    <Label className="text-[10px] uppercase font-black text-white/30 ml-2 tracking-[0.2em]">Nombre del Rango</Label>
                                     <Input
-                                        placeholder="Oficiales"
-                                        className="bg-black/40 border-white/10 h-10 text-sm rounded-lg"
+                                        placeholder="Oficiales de Hermandad"
+                                        className="bg-black/60 border-white/10 h-14 text-base font-bold rounded-2xl px-6 focus:ring-primary/20 transition-all"
                                         value={newRoleName}
                                         onChange={e => setNewRoleName(e.target.value)}
                                     />
                                 </div>
-                                <div className="space-y-2 sm:w-[180px] w-full relative">
-                                    <Label className="text-[10px] uppercase font-bold text-zinc-500 ml-1">Rango App</Label>
+                                <div className="space-y-3 lg:w-[220px] w-full relative">
+                                    <Label className="text-[10px] uppercase font-black text-white/30 ml-2 tracking-[0.2em]">Nivel App</Label>
                                     <Select value={newRoleLevel} onValueChange={(v: RoleLevel) => setNewRoleLevel(v)}>
-                                        <SelectTrigger className="bg-black/40 border-white/10 h-10 text-sm rounded-lg">
+                                        <SelectTrigger className="bg-black/60 border-white/10 h-14 text-sm font-black uppercase tracking-widest rounded-2xl px-6">
                                             <SelectValue />
                                         </SelectTrigger>
-                                        <SelectContent className="bg-zinc-900 border-white/10 text-white">
-                                            <SelectItem value="gm">Guild Master</SelectItem>
-                                            <SelectItem value="officer">Oficial</SelectItem>
-                                            <SelectItem value="raider">Raider</SelectItem>
-                                            <SelectItem value="member">Miembro</SelectItem>
+                                        <SelectContent className="bg-zinc-950/90 backdrop-blur-2xl border-white/10 text-white rounded-2xl p-2 shadow-2xl">
+                                            <SelectItem value="gm" className="rounded-xl font-black uppercase text-[10px] tracking-widest py-3">Guild Master</SelectItem>
+                                            <SelectItem value="officer" className="rounded-xl font-black uppercase text-[10px] tracking-widest py-3">Oficial</SelectItem>
+                                            <SelectItem value="raider" className="rounded-xl font-black uppercase text-[10px] tracking-widest py-3">Raider</SelectItem>
+                                            <SelectItem value="member" className="rounded-xl font-black uppercase text-[10px] tracking-widest py-3">Miembro</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
                                 <Button
-                                    className="bg-blue-600 hover:bg-blue-500 h-10 rounded-lg"
+                                    className="bg-primary hover:bg-primary/80 h-14 px-10 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-[0_0_20px_rgba(var(--primary),0.3)] active:scale-95 transition-all w-full lg:w-auto"
                                     disabled={!newRoleId || !newRoleName || creatingRole}
                                     onClick={handleSaveDiscordMapping}
                                 >
-                                    {editingRoleId ? "Guardar" : "+ Añadir"}
+                                    {editingRoleId ? "Guardar Cambios" : "+ Añadir Mapeo"}
                                 </Button>
                             </div>
 
-                            <div className="border border-white/5 rounded-xl overflow-hidden bg-black/20">
-                                <div className="grid grid-cols-12 bg-white/5 p-3 font-semibold text-zinc-500 text-[10px] uppercase tracking-wider">
-                                    <div className="col-span-5">Rol Discord</div>
-                                    <div className="col-span-4">Rango Asignado</div>
-                                    <div className="col-span-3"></div>
+                            <div className="rounded-[2rem] overflow-hidden bg-black/40 border border-white/5 shadow-inner">
+                                <div className="grid grid-cols-12 bg-white/[0.03] p-6 font-black text-white/30 text-[10px] uppercase tracking-[0.3em] border-b border-white/[0.05]">
+                                    <div className="col-span-12 lg:col-span-5">Rol Discord</div>
+                                    <div className="col-span-12 lg:col-span-4">Rango Asignado</div>
+                                    <div className="col-span-12 lg:col-span-3"></div>
                                 </div>
 
                                 {discordRoles.length === 0 ? (
-                                    <div className="p-8 text-center text-zinc-600 text-xs italic">
-                                        No hay mapeos activos.
+                                    <div className="p-20 text-center flex flex-col items-center gap-4">
+                                        <IconShield className="size-12 text-white/5" />
+                                        <span className="text-zinc-500 font-bold uppercase tracking-widest text-[10px]">No hay mapeos activos configurados</span>
                                     </div>
                                 ) : (
                                     discordRoles.map((role) => (
-                                        <div key={role.role_id} className="grid grid-cols-12 items-center p-3 border-t border-white/5 hover:bg-white/[0.02]">
-                                            <div className="col-span-5 flex flex-col">
-                                                <span className="font-bold text-white text-sm">{role.name}</span>
-                                                <span className="text-[9px] font-mono text-zinc-600">{role.role_id}</span>
+                                        <div key={role.role_id} className="grid grid-cols-12 items-center p-6 border-b border-white/[0.03] last:border-0 hover:bg-white/[0.02] transition-colors group">
+                                            <div className="col-span-12 lg:col-span-5 flex flex-col gap-1">
+                                                <span className="font-black text-white text-base group-hover:text-primary transition-colors">{role.name}</span>
+                                                <span className="text-[10px] font-mono font-bold text-zinc-600 group-hover:text-zinc-500 transition-colors uppercase tracking-widest">{role.role_id}</span>
                                             </div>
-                                            <div className="col-span-4">
-                                                <Badge variant="outline" className={`${getRoleDisplay(role.level).badge} text-[9px] font-black uppercase tracking-widest`}>
+                                            <div className="col-span-12 lg:col-span-4 py-4 lg:py-0">
+                                                <Badge variant="outline" className={`${getRoleDisplay(role.level).badge} px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg border-2`}>
                                                     {getRoleDisplay(role.level).label}
                                                 </Badge>
                                             </div>
-                                            <div className="col-span-3 flex justify-end gap-1">
-                                                <Button variant="ghost" size="icon" className="size-8 hover:bg-white/5" onClick={() => startEditDiscordMapping(role)}>
-                                                    <IconEdit className="size-4" />
+                                            <div className="col-span-12 lg:col-span-3 flex justify-end gap-3 translate-x-4 lg:opacity-0 lg:group-hover:opacity-100 lg:group-hover:translate-x-0 transition-all duration-300">
+                                                <Button variant="outline" size="icon" className="size-11 rounded-xl border-white/10 bg-white/5 hover:bg-white/10 shadow-xl transition-all" onClick={() => startEditDiscordMapping(role)}>
+                                                    <IconEdit className="size-5" />
                                                 </Button>
-                                                <Button variant="ghost" size="icon" className="size-8 hover:bg-rose-500/10 text-rose-500" onClick={() => handleDeleteDiscordMapping(role.role_id)}>
-                                                    <IconTrash className="size-4" />
+                                                <Button variant="outline" size="icon" className="size-11 rounded-xl border-rose-500/20 bg-rose-500/5 text-rose-500 hover:bg-rose-500/10 shadow-xl transition-all" onClick={() => handleDeleteDiscordMapping(role.role_id)}>
+                                                    <IconTrash className="size-5" />
                                                 </Button>
                                             </div>
                                         </div>
