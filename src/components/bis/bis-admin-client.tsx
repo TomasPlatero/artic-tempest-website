@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import {
     IconSword, IconSearch, IconUser, IconListCheck,
     IconChevronRight, IconRefresh, IconArrowLeft,
@@ -74,11 +74,7 @@ export function BisAdminClient() {
         return names
     }, [rankConfigs])
 
-    useEffect(() => {
-        fetchMembers()
-    }, [])
-
-    const fetchMembers = async () => {
+    const fetchMembers = useCallback(async () => {
         setLoading(true)
         try {
             const res = await fetch("/api/bis/admin")
@@ -91,9 +87,13 @@ export function BisAdminClient() {
         } finally {
             setLoading(false)
         }
-    }
+    }, [])
 
-    const fetchMemberSelections = async (member: MemberSummary) => {
+    useEffect(() => {
+        fetchMembers()
+    }, [fetchMembers])
+
+    const fetchMemberSelections = useCallback(async (member: MemberSummary) => {
         setLoadingSelections(true)
         setSelectedMember(member)
         try {
@@ -109,14 +109,14 @@ export function BisAdminClient() {
         } finally {
             setLoadingSelections(false)
         }
-    }
+    }, [instanceId, difficulty])
 
     // Refresh selections when filters change
     useEffect(() => {
         if (selectedMember) {
             fetchMemberSelections(selectedMember)
         }
-    }, [instanceId, difficulty])
+    }, [selectedMember, fetchMemberSelections])
 
     const filteredMembers = useMemo(() => {
         return members.filter(m =>
