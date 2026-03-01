@@ -64,6 +64,7 @@ export async function GET(_req: Request) {
                         endTime
                         zone { name }
                         fights(killType: All) {
+                            id
                             name
                             difficulty
                             kill
@@ -99,7 +100,7 @@ export async function GET(_req: Request) {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({ query }),
-            next: { revalidate: 300 } // Revalidate every 5 mins
+            next: { revalidate: 0 } // No cache to ensure deleted logs disappear immediately
         });
 
         if (!gqlRes.ok) {
