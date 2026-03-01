@@ -739,6 +739,57 @@ export function RaidEditorClient({
                 </div>
             </div> */}
 
+            {/* Boss Selection */}
+            {currentRaid?.bosses && currentRaid.bosses.length > 0 && !isReadOnly && (
+                <div className="bg-card/30 border border-border/20 rounded-xl p-4 md:p-6 shadow-sm flex flex-col gap-4">
+                    <div className="flex flex-col gap-1">
+                        <h2 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+                            <IconCheck className="size-4" />
+                            Selección de Jefes
+                        </h2>
+                        <p className="text-xs text-muted-foreground">Selecciona qué jefes se van a enfrentar en esta planifiación.</p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                        <button
+                            onClick={() => setRaid({ ...raid, selected_bosses: [] })}
+                            className={cn(
+                                "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all uppercase tracking-tighter border",
+                                raid.selected_bosses.length === 0
+                                    ? "bg-primary/20 text-primary border-primary/30"
+                                    : "bg-background/50 border-border/20 text-muted-foreground hover:bg-muted/50"
+                            )}
+                        >
+                            Todos (Completa)
+                        </button>
+                        {currentRaid.bosses.map((boss: string) => {
+                            const isSelected = raid.selected_bosses.includes(boss);
+                            return (
+                                <button
+                                    key={boss}
+                                    onClick={() => {
+                                        setRaid((prev: any) => {
+                                            const newArray = isSelected
+                                                ? prev.selected_bosses.filter((b: string) => b !== boss)
+                                                : [...(prev.selected_bosses || []), boss];
+                                            return { ...prev, selected_bosses: newArray };
+                                        });
+                                    }}
+                                    className={cn(
+                                        "flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-bold transition-all uppercase border",
+                                        isSelected
+                                            ? "bg-primary text-primary-foreground border-primary"
+                                            : "bg-background/50 border-border/20 text-muted-foreground hover:border-primary/30 hover:text-primary"
+                                    )}
+                                >
+                                    {boss}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+
             {/* Main Planning Area */}
             {
                 !hasMounted ? (

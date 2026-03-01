@@ -26,9 +26,9 @@ export async function POST(request: Request) {
         // Fake standard backgrounds based on destination
         let background_url = null
         const destLower = destination.toLowerCase()
-        if (destLower.includes("voidspire")) {
+        if (destLower.includes("voidspire") || destLower.includes("aguja")) {
             background_url = "/assets/images/raids/voidspire.webp"
-        } else if (destLower.includes("dreamrift")) {
+        } else if (destLower.includes("dreamrift") || destLower.includes("falla") || destLower.includes("sueño")) {
             background_url = "/assets/images/raids/dreamrift.webp"
         } else if (destLower.includes("quel'danas") || destLower.includes("sunwell")) {
             background_url = "/assets/images/raids/marchonqueldanas.webp"
