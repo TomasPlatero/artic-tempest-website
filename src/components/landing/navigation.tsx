@@ -19,8 +19,9 @@ import {
     SheetHeader,
     SheetTitle,
 } from "@/components/ui/sheet"
-import { IconUser, IconDashboard, IconLogout, IconMenu2, IconChevronRight } from "@tabler/icons-react"
+import { IconUser, IconDashboard, IconLogout, IconMenu2, IconChevronRight, IconFileSearch, IconShieldCheck, IconClock, IconFlame, IconBriefcase } from "@tabler/icons-react"
 import { NotificationBell } from "@/components/notifications/notification-bell"
+import { supabase } from "@/infrastructure/supabase/client"
 
 const NAV_LINKS = [
     { href: "/#progreso", label: "Progreso", title: "Consulta nuestro progreso en Midnight" },
@@ -32,10 +33,25 @@ export function LandingNavigation() {
     const { data: session } = useSession()
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const [mounted, setMounted] = useState(false)
+    const [hasApplied, setHasApplied] = useState(false)
 
     useEffect(() => {
         setMounted(true)
-    }, [])
+
+        async function checkApplication() {
+            if (!session?.user?.id) return
+            const { data } = await supabase
+                .from("recruitment_applications")
+                .select("id")
+                .eq("user_id", session.user.id)
+                .in("status", ["pending", "reviewing", "interview"])
+                .limit(1)
+
+            if (data && data.length > 0) setHasApplied(true)
+        }
+
+        checkApplication()
+    }, [session])
 
     if (!mounted) {
         return <nav className="fixed top-0 left-0 right-0 z-50 h-20 bg-black/50 backdrop-blur-md border-b border-white/10" />
@@ -43,12 +59,12 @@ export function LandingNavigation() {
 
     return (
         <nav className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-md border-b border-white/10 dark">
-            <div className="max-w-7xl mx-auto px-4 md:px-6 h-20 flex items-center justify-between gap-4">
+            <div className="max-w-7xl mx-auto px-6 md:px-10 h-20 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
                     {/* Botón de Menú Mobile */}
                     <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                         <SheetTrigger asChild>
-                            <Button variant="ghost" size="icon" className="lg:hidden h-10 w-10 text-white/70 hover:text-white hover:bg-white/5 transition-colors">
+                            <Button variant="ghost" size="icon" className="lg:hidden h-10 w-10 text-white/70 hover:text-white hover:bg-white/5 transition-colors -ml-2">
                                 <IconMenu2 className="size-6" />
                             </Button>
                         </SheetTrigger>
@@ -79,6 +95,32 @@ export function LandingNavigation() {
                                         <IconChevronRight className="size-4 text-white/30 group-hover:text-white/70 transition-colors" />
                                     </Link>
                                 ))}
+                                {session && hasApplied && (
+                                    <Link
+                                        href="/reclutamiento/apply-en-curso"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="group flex items-center justify-between p-4 rounded-2xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/10 transition-all active:scale-[0.98]"
+                                    >
+                                        <div className="flex flex-col gap-1 text-left">
+                                            <span className="text-[10px] font-black uppercase text-blue-400/60 tracking-widest leading-none">Tu Proceso</span>
+                                            <span className="font-bold tracking-tight text-white">Revisar mi aplicación</span>
+                                        </div>
+                                        <IconFileSearch className="size-4 text-blue-400" />
+                                    </Link>
+                                )}
+                                {!session && (
+                                    <>
+                                        <div className="h-px bg-white/5 my-2 mx-4" />
+                                        <Link
+                                            href="/login"
+                                            onClick={() => setMobileMenuOpen(false)}
+                                            className="group flex items-center justify-between p-4 rounded-2xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/10 transition-all active:scale-[0.98]"
+                                        >
+                                            <span className="font-black uppercase text-[10px] tracking-widest text-blue-400">Acceso Miembros</span>
+                                            <IconUser className="size-4 text-blue-400/70" />
+                                        </Link>
+                                    </>
+                                )}
                             </div>
                             <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-zinc-950 to-transparent">
                                 <p className="text-[10px] text-white/20 font-medium uppercase tracking-[0.2em]">Artic Tempest Hermandad</p>
@@ -112,9 +154,19 @@ export function LandingNavigation() {
                             {link.label}
                         </Link>
                     ))}
+                    {session && hasApplied && (
+                        <Link
+                            href="/reclutamiento/apply-en-curso"
+                            className="flex items-center gap-2 group px-4 py-2 rounded-full border border-blue-500/10 bg-blue-500/5 hover:bg-blue-500/10 hover:border-blue-500/30 transition-all"
+                            title="Ver el estado de tu aplicación"
+                        >
+                            <IconFileSearch className="size-4 text-blue-400 group-hover:rotate-12 transition-transform" />
+                            <span className="text-sm font-black uppercase tracking-widest text-white/80 group-hover:text-white">Mi Aplicación</span>
+                        </Link>
+                    )}
                 </div>
 
-                <div className="flex items-center gap-2 md:gap-4 shrink-0">
+                <div className="flex items-center gap-2 md:gap-4 shrink-0 px-1">
                     <NotificationBell />
                     {session ? (
                         <DropdownMenu>
@@ -163,13 +215,15 @@ export function LandingNavigation() {
                         </DropdownMenu>
                     ) : (
                         <Button
+                            asChild
                             variant="glass"
                             size="sm"
-                            onClick={() => signIn('discord')}
-                            className="rounded-full px-4 md:px-6 transition-all min-w-[80px]"
+                            className="rounded-full px-6 transition-all min-w-[80px] -mr-2"
                         >
-                            <span className="hidden xs:inline">Acceso Miembros</span>
-                            <span className="xs:hidden">Entrar</span>
+                            <Link href="/login">
+                                <span className="hidden xs:inline">Acceso Miembros</span>
+                                <span className="xs:hidden">Entrar</span>
+                            </Link>
                         </Button>
                     )}
                 </div>

@@ -130,20 +130,20 @@ export function ApplyClient({ user, characters, questions, classConstants }: Pro
     return (
         <div className="space-y-8">
             {/* Progress breadcrumb */}
-            <div className="flex items-center gap-4 mb-8">
-                <div className={`flex items-center gap-2 text-sm font-bold uppercase tracking-widest ${step >= 1 ? 'text-blue-500' : 'text-zinc-600'}`}>
-                    <span className={`size-6 rounded-full flex items-center justify-center text-[10px] ${step >= 1 ? 'bg-blue-500 text-black' : 'bg-zinc-800 text-zinc-500'}`}>1</span>
-                    Personaje
+            <div className="flex items-center gap-2 sm:gap-4 mb-8 overflow-hidden">
+                <div className={`flex items-center gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest shrink-0 ${step >= 1 ? 'text-blue-500' : 'text-zinc-600'}`}>
+                    <span className={`size-6 rounded-full shrink-0 flex items-center justify-center text-[10px] ${step >= 1 ? 'bg-blue-500 text-black' : 'bg-zinc-800 text-zinc-500'}`}>1</span>
+                    <span className="hidden sm:inline">Personaje</span>
                 </div>
-                <div className="h-px bg-zinc-800 flex-1" />
-                <div className={`flex items-center gap-2 text-sm font-bold uppercase tracking-widest ${step >= 2 ? 'text-blue-500' : 'text-zinc-600'}`}>
-                    <span className={`size-6 rounded-full flex items-center justify-center text-[10px] ${step >= 2 ? 'bg-blue-500 text-black' : 'bg-zinc-800 text-zinc-500'}`}>2</span>
-                    Preguntas
+                <div className="h-px bg-zinc-800 flex-1 min-w-[20px]" />
+                <div className={`flex items-center gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest shrink-0 ${step >= 2 ? 'text-blue-500' : 'text-zinc-600'}`}>
+                    <span className={`size-6 rounded-full shrink-0 flex items-center justify-center text-[10px] ${step >= 2 ? 'bg-blue-500 text-black' : 'bg-zinc-800 text-zinc-500'}`}>2</span>
+                    <span className="hidden sm:inline">Preguntas</span>
                 </div>
-                <div className="h-px bg-zinc-800 flex-1" />
-                <div className={`flex items-center gap-2 text-sm font-bold uppercase tracking-widest ${step >= 3 ? 'text-blue-500' : 'text-zinc-600'}`}>
-                    <span className={`size-6 rounded-full flex items-center justify-center text-[10px] ${step >= 3 ? 'bg-blue-500 text-black' : 'bg-zinc-800 text-zinc-500'}`}>3</span>
-                    Finalizar
+                <div className="h-px bg-zinc-800 flex-1 min-w-[20px]" />
+                <div className={`flex items-center gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest shrink-0 ${step >= 3 ? 'text-blue-500' : 'text-zinc-600'}`}>
+                    <span className={`size-6 rounded-full shrink-0 flex items-center justify-center text-[10px] ${step >= 3 ? 'bg-blue-500 text-black' : 'bg-zinc-800 text-zinc-500'}`}>3</span>
+                    <span className="hidden sm:inline">Finalizar</span>
                 </div>
             </div>
 
@@ -419,14 +419,19 @@ export function ApplyClient({ user, characters, questions, classConstants }: Pro
                             </div>
                         </div>
 
-                        <div className="flex justify-between pt-4">
-                            <Button variant="ghost" className="rounded-xl px-10 text-zinc-500 hover:text-white" onClick={handleBack} disabled={isSubmitting}>
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4">
+                            <Button
+                                variant="ghost"
+                                className="rounded-xl px-10 text-zinc-500 hover:text-white order-2 sm:order-1"
+                                onClick={handleBack}
+                                disabled={isSubmitting}
+                            >
                                 <IconArrowLeft className="size-5 mr-2" />
                                 Atrás
                             </Button>
                             <Button
                                 size="xl"
-                                className="rounded-xl px-12 font-black uppercase tracking-widest bg-emerald-600 hover:bg-emerald-500 text-white shadow-xl shadow-emerald-600/20 disabled:opacity-40 disabled:grayscale"
+                                className="rounded-xl px-8 sm:px-12 font-black uppercase tracking-widest bg-emerald-600 hover:bg-emerald-500 text-white shadow-xl shadow-emerald-600/20 disabled:opacity-40 disabled:grayscale order-1 sm:order-2 w-full sm:w-auto text-xs sm:text-base"
                                 onClick={handleSubmit}
                                 disabled={isSubmitting || !acceptedRGPD}
                             >

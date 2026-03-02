@@ -131,9 +131,9 @@ export function WantedClasses() {
                         >
                             <Card className="bg-zinc-950/40 border-white/5 hover:border-blue-500/30 transition-all duration-500 overflow-hidden backdrop-blur-md group h-full">
                                 <CardHeader className="py-4 border-b border-white/5 flex flex-row items-center gap-3 bg-white/5">
-                                    <div className="relative size-10 rounded shadow-inner overflow-hidden border border-white/10 group-hover:scale-110 transition-transform">
+                                    <div className="relative size-10 rounded shadow-inner overflow-hidden border border-white/10 group-hover:scale-110 transition-transform flex-shrink-0">
                                         <Image
-                                            src={`/assets/images/classes/${cls.id}.jpg`}
+                                            src={`/assets/images/classes/${cls.id}.webp`}
                                             alt={cls.name}
                                             fill
                                             className="object-cover"
@@ -189,34 +189,36 @@ export function WantedClasses() {
                             <Button
                                 size="xl"
                                 variant="glow"
-                                className="rounded-full px-12 font-black uppercase tracking-widest group shadow-[0_20px_40px_-15px_rgba(var(--primary-rgb),0.3)]"
+                                className="rounded-full px-8 md:px-12 font-black uppercase tracking-widest group shadow-xl hover:shadow-2xl transition-all duration-500 w-full max-w-sm sm:w-auto"
                                 asChild
                             >
                                 <Link href="/reclutamiento/apply-en-curso">
                                     Ver Mi Aplicación
-                                    <ChevronRight className="size-6 group-hover:translate-x-1 transition-transform ml-2" />
+                                    <ChevronRight className="size-5 md:size-6 group-hover:translate-x-1 transition-transform ml-2" />
                                 </Link>
                             </Button>
                         ) : (
                             <Button
                                 size="xl"
-                                className="rounded-full px-12 font-black uppercase tracking-widest group shadow-[0_20px_40px_-15px_rgba(var(--primary-rgb),0.3)]"
+                                className="rounded-full px-8 md:px-12 font-black uppercase tracking-widest group shadow-xl hover:shadow-2xl transition-all duration-500 w-full max-w-sm sm:w-auto"
                                 asChild
                             >
                                 <Link href="/reclutamiento">
                                     Aplica Ya!
-                                    <ChevronRight className="size-6 group-hover:translate-x-1 transition-transform ml-2" />
+                                    <ChevronRight className="size-5 md:size-6 group-hover:translate-x-1 transition-transform ml-2" />
                                 </Link>
                             </Button>
                         )
                     ) : (
                         <Button
+                            asChild
                             size="xl"
-                            className="rounded-full px-12 font-black uppercase tracking-widest group shadow-[0_20px_40px_-15px_rgba(var(--primary-rgb),0.3)]"
-                            onClick={() => signIn('discord')}
+                            className="rounded-full px-8 md:px-12 font-black uppercase tracking-widest group shadow-xl hover:shadow-2xl transition-all duration-500 w-full max-w-sm sm:w-auto mx-auto flex sm:inline-flex"
                         >
-                            Inicia Sesión para Aplicar
-                            <ChevronRight className="size-6 group-hover:translate-x-1 transition-transform ml-2" />
+                            <Link href="/login">
+                                Inicia Sesión para Aplicar
+                                <ChevronRight className="size-5 md:size-6 group-hover:translate-x-1 transition-transform ml-2" />
+                            </Link>
                         </Button>
                     )}
                 </div>

@@ -7,6 +7,8 @@ import { CookieConsentLoader } from "@/components/common/cookie-consent"
 import { NotificationToastListener } from "@/components/notifications/notification-toast-listener"
 import { NotificationPermissionModal } from "@/components/notifications/notification-permission-modal"
 import { Analytics } from "@vercel/analytics/next"
+import { GoogleAnalytics, GoogleTagManager } from '@next/third-parties/google'
+import { ScrollToTop } from "@/components/ui/scroll-to-top"
 import "./globals.css";
 
 const geistSans = Geist({
@@ -105,6 +107,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
+      {process.env.NEXT_PUBLIC_GTM_ID && (
+        <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID} />
+      )}
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
@@ -117,6 +122,7 @@ export default function RootLayout({
           <SessionProvider>
             <NotificationToastListener />
             <NotificationPermissionModal />
+            <ScrollToTop />
             {children}
           </SessionProvider>
           <CookieConsentLoader />
@@ -124,6 +130,9 @@ export default function RootLayout({
           <Analytics />
         </ThemeProvider>
       </body>
+      {process.env.NEXT_PUBLIC_GA_ID && (
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+      )}
     </html>
   );
 }

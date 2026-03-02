@@ -1,15 +1,34 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { useSession, signIn } from "next-auth/react"
 import { LandingNavigation } from "@/components/landing/navigation"
 import { WantedClasses } from "@/components/landing/wanted-classes"
 import { Button } from "@/components/ui/button"
-import { IconArrowRight, IconShieldCheck, IconClock, IconFlame } from "@tabler/icons-react"
+import { IconArrowRight, IconShieldCheck, IconClock, IconFlame, IconFileSearch } from "@tabler/icons-react"
 import Link from "next/link"
 import Image from "next/image"
+import { supabase } from "@/infrastructure/supabase/client"
 
 export function RecruitmentPageClient() {
     const { data: session } = useSession()
+    const [hasApplied, setHasApplied] = useState(false)
+
+    useEffect(() => {
+        async function checkApplication() {
+            if (!session?.user?.id) return
+            const { data } = await supabase
+                .from("recruitment_applications")
+                .select("id")
+                .eq("user_id", session.user.id)
+                .in("status", ["pending", "reviewing", "interview"])
+                .limit(1)
+
+            if (data && data.length > 0) setHasApplied(true)
+        }
+
+        checkApplication()
+    }, [session])
     return (
         <main className="min-h-screen bg-black overflow-x-hidden dark">
             <LandingNavigation />
@@ -63,20 +82,31 @@ export function RecruitmentPageClient() {
                             </div>
 
                             {session ? (
-                                <Button size="xl" className="w-full sm:w-auto rounded-xl px-6 md:px-10 group" asChild>
-                                    <Link href="/reclutamiento/apply">
-                                        Empezar Apply
-                                        <IconArrowRight className="size-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                                    </Link>
-                                </Button>
+                                hasApplied ? (
+                                    <Button size="xl" variant="glow" className="w-full sm:w-auto rounded-xl px-6 md:px-10 group" asChild>
+                                        <Link href="/reclutamiento/apply-en-curso">
+                                            Ver Mi Apply
+                                            <IconFileSearch className="size-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                                        </Link>
+                                    </Button>
+                                ) : (
+                                    <Button size="xl" className="w-full sm:w-auto rounded-xl px-6 md:px-10 group" asChild>
+                                        <Link href="/reclutamiento/apply">
+                                            Empezar Apply
+                                            <IconArrowRight className="size-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                                        </Link>
+                                    </Button>
+                                )
                             ) : (
                                 <Button
+                                    asChild
                                     size="xl"
                                     className="w-full sm:w-auto rounded-xl px-6 md:px-10 group"
-                                    onClick={() => signIn('discord')}
                                 >
-                                    Inicia Sesión para Aplicar
-                                    <IconArrowRight className="size-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                                    <Link href="/login">
+                                        Inicia Sesión para Aplicar
+                                        <IconArrowRight className="size-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                                    </Link>
                                 </Button>
                             )}
                         </div>

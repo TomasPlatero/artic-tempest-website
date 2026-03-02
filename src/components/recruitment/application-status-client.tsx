@@ -4,6 +4,7 @@ import { useState } from "react"
 import { motion } from "framer-motion"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -138,6 +139,17 @@ export function ApplicationStatusClient({ application }: { application: Applicat
                                         Ver Warcraft Logs
                                     </a>
                                 </Button>
+                                {application.status === 'interview' && (
+                                    <Button
+                                        className="w-full rounded-xl h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black uppercase text-[10px] tracking-[0.15em] shadow-xl shadow-blue-500/20 border-t border-white/20 group justify-center gap-2 px-4 ring-1 ring-white/5 mt-2"
+                                        asChild
+                                    >
+                                        <Link href="/reclutamiento/apply-en-curso/chat">
+                                            <IconMessageCircle className="size-4 group-hover:translate-x-[-2px] group-hover:rotate-[-10deg] transition-all duration-300" />
+                                            <span className="truncate">Chat con Oficiales</span>
+                                        </Link>
+                                    </Button>
+                                )}
                             </div>
                         </CardContent>
                     </Card>
