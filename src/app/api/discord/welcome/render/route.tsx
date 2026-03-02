@@ -17,6 +17,26 @@ export async function GET(req: NextRequest) {
         const titleTemplate = searchParams.get("title") || "¡Bienvenido/a {user}!";
         const subtitleTemplate = searchParams.get("subtitle") || "Esperamos que disfrutes tu estancia";
         const overlayOpacity = parseFloat(searchParams.get("overlay") || "0.5");
+        const fontName = searchParams.get("font") || "Inter";
+
+        let fonts: any[] | undefined = undefined;
+        try {
+            if (fontName === 'Bebas Neue') {
+                const fontData = await fetch('https://github.com/google/fonts/raw/main/ofl/bebasneue/BebasNeue-Regular.ttf').then((res) => res.arrayBuffer());
+                fonts = [{ name: 'Bebas Neue', data: fontData, style: 'normal' }];
+            } else if (fontName === 'Oswald') {
+                const fontData = await fetch('https://github.com/google/fonts/raw/main/ofl/oswald/Oswald-Bold.ttf').then((res) => res.arrayBuffer());
+                fonts = [{ name: 'Oswald', data: fontData, style: 'normal', weight: 700 }];
+            } else if (fontName === 'Cinzel') {
+                const fontData = await fetch('https://github.com/google/fonts/raw/main/ofl/cinzel/Cinzel-Bold.ttf').then((res) => res.arrayBuffer());
+                fonts = [{ name: 'Cinzel', data: fontData, style: 'normal', weight: 700 }];
+            } else if (fontName === 'Montserrat') {
+                const fontData = await fetch('https://github.com/google/fonts/raw/main/ofl/montserrat/Montserrat-Black.ttf').then((res) => res.arrayBuffer());
+                fonts = [{ name: 'Montserrat', data: fontData, style: 'normal', weight: 900 }];
+            }
+        } catch (fe) {
+            console.error("Font loading error", fe);
+        }
 
         const title = titleTemplate.replace("{user}", username).replace("{guild}", guildName);
         const subtitle = subtitleTemplate.replace("{user}", username).replace("{guild}", guildName);
@@ -31,7 +51,7 @@ export async function GET(req: NextRequest) {
             backgroundColor: bgColor,
             position: "relative",
             overflow: "hidden",
-            fontFamily: "sans-serif",
+            fontFamily: `"${fontName}", sans-serif`,
             textAlign: "center",
         } as React.CSSProperties;
 
@@ -132,6 +152,7 @@ export async function GET(req: NextRequest) {
             {
                 width: 1200,
                 height: 500,
+                fonts: fonts
             }
         );
     } catch (e: any) {

@@ -235,6 +235,7 @@ client.on('guildMemberAdd', async (member) => {
         renderUrl.searchParams.set("title", config.card_title_template.replaceAll("{user}", member.user.username).replaceAll("{guild}", guildName));
         renderUrl.searchParams.set("subtitle", config.card_subtitle_template.replaceAll("{user}", member.user.username).replaceAll("{guild}", guildName));
         renderUrl.searchParams.set("overlay", config.card_overlay_opacity.toString());
+        renderUrl.searchParams.set("font", config.card_font_family || "Inter");
 
         // 4. Download image buffer from Vercel Edge API
         const channel = await client.channels.fetch(config.channel_id);

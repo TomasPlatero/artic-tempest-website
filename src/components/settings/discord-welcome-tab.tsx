@@ -46,6 +46,14 @@ interface WelcomeConfig {
     card_subtitle_template: string;
 }
 
+const FONT_OPTIONS = [
+    { label: "Inter (Moderna)", value: "Inter" },
+    { label: "Montserrat (Impacto)", value: "Montserrat" },
+    { label: "Bebas Neue (Titular)", value: "Bebas Neue" },
+    { label: "Oswald (Condensada)", value: "Oswald" },
+    { label: "Cinzel (Épica / WoW)", value: "Cinzel" }
+];
+
 export function DiscordWelcomeTab() {
     const [config, setConfig] = useState<WelcomeConfig | null>(null);
     const [loading, setLoading] = useState(true);
@@ -145,6 +153,8 @@ export function DiscordWelcomeTab() {
 
     return (
         <div className="space-y-8 max-w-[1200px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-1000">
+            <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@700&family=Montserrat:wght@900&family=Oswald:wght@700&display=swap" rel="stylesheet" />
+
             {/* Header & Main Toggle */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white/5 border border-white/5 p-8 rounded-[2.5rem] backdrop-blur-xl shadow-2xl">
                 <div className="flex items-center gap-6">
@@ -167,7 +177,19 @@ export function DiscordWelcomeTab() {
                     <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Botón de encendido</span>
                     <Switch
                         checked={config.is_enabled}
-                        onCheckedChange={(val) => setConfig(p => ({ ...p!, is_enabled: val }))}
+                        onCheckedChange={async (val) => {
+                            setConfig(p => ({ ...p!, is_enabled: val }));
+                            try {
+                                await fetch("/api/discord/welcome/config", {
+                                    method: "PUT",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ ...config, is_enabled: val })
+                                });
+                                toast.success(val ? "Sistema de Bienvenidas: Encendido" : "Sistema de Bienvenidas: Apagado");
+                            } catch (e) {
+                                toast.error("Error al guardar estado");
+                            }
+                        }}
                     />
                 </div>
             </div>
@@ -296,6 +318,27 @@ export function DiscordWelcomeTab() {
                                 </div>
                             </div>
 
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1 flex items-center gap-2">
+                                    <IconTypography className="size-3" /> Fuente del Texto
+                                </label>
+                                <Select
+                                    value={config.card_font_family || "Inter"}
+                                    onValueChange={(val) => setConfig(p => ({ ...p!, card_font_family: val }))}
+                                >
+                                    <SelectTrigger className="h-12 bg-white/5 border-white/5 text-sm font-medium rounded-xl">
+                                        <SelectValue placeholder="Selecciona una fuente" />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-[#121214] border-white/10 rounded-xl shadow-2xl">
+                                        {FONT_OPTIONS.map(f => (
+                                            <SelectItem key={f.value} value={f.value} className="font-medium" style={{ fontFamily: f.value }}>
+                                                {f.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
                             <hr className="border-white/5" />
 
                             <div className="space-y-4">
@@ -385,14 +428,14 @@ export function DiscordWelcomeTab() {
 
                                         <div className="space-y-1">
                                             <h3
-                                                className="text-xl font-black uppercase tracking-tighter italic drop-shadow-2xl"
-                                                style={{ color: config.card_text_color }}
+                                                className="text-2xl font-black uppercase tracking-tighter drop-shadow-2xl"
+                                                style={{ color: config.card_text_color, fontFamily: config.card_font_family, fontWeight: config.card_font_family === 'Montserrat' ? 900 : 700 }}
                                             >
                                                 {config.card_title_template.replace("{user}", "Tomas").replace("{guild}", "Artic Tempest")}
                                             </h3>
                                             <p
-                                                className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-80"
-                                                style={{ color: config.card_text_color }}
+                                                className="text-[11px] font-bold uppercase tracking-[0.2em] opacity-80"
+                                                style={{ color: config.card_text_color, fontFamily: config.card_font_family, fontWeight: config.card_font_family === 'Montserrat' ? 700 : 600 }}
                                             >
                                                 {config.card_subtitle_template.replace("{user}", "Tomas").replace("{guild}", "Artic Tempest")}
                                             </p>
