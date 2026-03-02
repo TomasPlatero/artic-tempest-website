@@ -3,6 +3,52 @@ import { getServerSession } from "next-auth"
 import { authOptions, sb } from "@/infrastructure/auth/auth-options"
 import { getGuildCredentials } from "@/infrastructure/auth/credentials"
 
+export async function GET(req: Request) {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+        return NextResponse.json({ error: "No autenticado" }, { status: 401 })
+    }
+
+    const { searchParams } = new URL(req.url)
+    const applicationId = searchParams.get("applicationId")
+
+    if (!applicationId) {
+        return NextResponse.json({ error: "Falta id de solicitud" }, { status: 400 })
+    }
+
+    try {
+        const { data: application, error: appError } = await sb
+            .from("recruitment_applications")
+            .select("user_id")
+            .eq("id", applicationId)
+            .single()
+
+        if (appError || !application) {
+            return NextResponse.json({ error: "Solicitud no encontrada" }, { status: 404 })
+        }
+
+        const isOfficial = ["gm", "officer"].includes(session.user.roleLevel)
+        const isApplicant = session.user.id === application.user_id
+
+        if (!isOfficial && !isApplicant) {
+            return NextResponse.json({ error: "Acceso denegado" }, { status: 403 })
+        }
+
+        const { data: messages, error: msgError } = await sb
+            .from("application_messages")
+            .select("*, author:profiles(discord_username, discord_avatar, role_level)")
+            .eq("application_id", applicationId)
+            .order("created_at", { ascending: true })
+
+        if (msgError) throw msgError
+
+        return NextResponse.json(messages || [])
+    } catch (error: any) {
+        console.error("GET Chat Error:", error)
+        return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
+    }
+}
+
 export async function POST(req: Request) {
     const session = await getServerSession(authOptions)
     if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
