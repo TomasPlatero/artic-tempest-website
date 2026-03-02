@@ -198,5 +198,77 @@ client.on('guildMemberAdd', async (member) => {
     }
 });
 
+client.on('guildMemberAdd', async (member) => {
+    try {
+        console.log(`👋 Nuevo miembro en Discord: ${member.user.username}`);
+
+        // 1. Fetch config for this guild
+        const { data: managed } = await supabase.from("guilds_managed").select("guild_id, name").limit(1).single();
+        if (!managed) return;
+
+        const { data: config } = await supabase
+            .from("discord_welcome_configs")
+            .select("*")
+            .eq("guild_id", managed.guild_id)
+            .single();
+
+        if (!config || !config.is_enabled || !config.channel_id) return;
+
+        // 2. Format message and card elements
+        const messageText = config.message_text.replaceAll("{user}", `<@${member.user.id}>`).replaceAll("{guild}", managed.name);
+        // Usamos una URL de placeholder segura si el usuario no tiene avatar
+        const avatarUrl = member.user.displayAvatarURL({ extension: 'png', size: 256 }) || "https://cdn.discordapp.com/embed/avatars/0.png";
+        const guildName = managed.name;
+
+        console.log(`📡 Solicitando imagen renderizada a Vercel para ${member.user.username}...`);
+
+        // 3. Build render URL request to the Vercel API
+        const baseUrl = process.env.NEXTAUTH_URL || "https://artictempest.es"; // fallback a prod si falta env
+        const renderUrl = new URL(`${baseUrl}/api/discord/welcome/render`);
+
+        renderUrl.searchParams.set("username", member.user.username);
+        renderUrl.searchParams.set("avatar", avatarUrl);
+        renderUrl.searchParams.set("guildName", guildName);
+        renderUrl.searchParams.set("bg_url", config.card_background_url || "");
+        renderUrl.searchParams.set("bg_color", config.card_background_color);
+        renderUrl.searchParams.set("text_color", config.card_text_color);
+        renderUrl.searchParams.set("title", config.card_title_template.replaceAll("{user}", member.user.username).replaceAll("{guild}", guildName));
+        renderUrl.searchParams.set("subtitle", config.card_subtitle_template.replaceAll("{user}", member.user.username).replaceAll("{guild}", guildName));
+        renderUrl.searchParams.set("overlay", config.card_overlay_opacity.toString());
+
+        // 4. Download image buffer from Vercel Edge API
+        const channel = await client.channels.fetch(config.channel_id);
+        if (channel && channel.isTextBased()) {
+            const imageRes = await fetch(renderUrl.href);
+            if (!imageRes.ok) throw new Error("API devolvió " + imageRes.status);
+
+            const arrayBuffer = await imageRes.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+
+            // 5. Send to Discord
+            await channel.send({
+                content: messageText,
+                files: [{ attachment: buffer, name: "welcome.png" }]
+            });
+            console.log(`✅ ¡Bienvenida enviada a ${member.user.username}!`);
+        }
+    } catch (e) {
+        console.error("❌ Error en bienvenida:", e.message);
+    }
+});
+
 client.login(DISCORD_BOT_TOKEN);
 
+// --- DUMMY HTTP SERVER FOR RENDER FREE TIER ---
+// Render "Web Services" (which have a free tier) require the app to bind to a port
+import http from 'http';
+
+const port = process.env.PORT || 10000;
+const server = http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('Discord Relay Bot is running!\n');
+});
+
+server.listen(port, () => {
+    console.log(`🌐 Servidor HTTP fantasma escuchando en el puerto ${port} (Para engañar a Render)`);
+});
