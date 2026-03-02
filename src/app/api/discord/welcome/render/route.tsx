@@ -45,18 +45,21 @@ export async function GET(req: NextRequest) {
                                 src={bgUrl}
                                 style={{
                                     position: "absolute",
-                                    inset: 0,
+                                    top: 0,
+                                    left: 0,
                                     width: "100%",
                                     height: "100%",
                                     objectFit: "cover",
-                                    opacity: 0.8,
                                 }}
                             />
                             {/* Dark Overlay */}
                             <div
                                 style={{
                                     position: "absolute",
-                                    inset: 0,
+                                    top: 0,
+                                    left: 0,
+                                    width: "100%",
+                                    height: "100%",
                                     backgroundColor: "rgba(0,0,0,1)",
                                     opacity: overlayOpacity,
                                 }}
