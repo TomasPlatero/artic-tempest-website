@@ -38,7 +38,7 @@ export function LandingStreamers({ limit }: { limit?: number }) {
                         <div className="aspect-video w-full rounded-xl overflow-hidden bg-black/50 mb-4 relative">
                             {/* Generic Twitch Embed iframe for each streamer */}
                             <iframe
-                                src={`https://player.twitch.tv/?channel=${s.twitch_username}&parent=localhost&parent=artictempest.es&parent=www.artictempest.es&muted=true`}
+                                src={`https://player.twitch.tv/?channel=${s.twitch_username}&parent=localhost&parent=127.0.0.1&parent=artictempest.es&parent=www.artictempest.es&muted=true`}
                                 className="w-full h-full border-none"
                                 allowFullScreen
                             />
@@ -47,8 +47,14 @@ export function LandingStreamers({ limit }: { limit?: number }) {
                             href={`https://twitch.tv/${s.twitch_username}`}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-purple-600/20 text-purple-400 font-bold hover:bg-purple-600 hover:text-white transition-colors"
+                            className="inline-flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-purple-600/20 text-purple-400 font-bold hover:bg-purple-600 hover:text-white transition-colors relative overflow-hidden"
                         >
+                            {s.is_live && (
+                                <span className="absolute left-4 flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                                </span>
+                            )}
                             <IconBrandTwitch className="size-5" />
                             Ver a {s.twitch_username}
                         </a>
