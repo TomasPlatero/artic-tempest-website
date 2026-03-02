@@ -47,7 +47,7 @@ export function HomePageClient() {
             <section id="progreso" className="py-24 px-6 max-w-7xl mx-auto text-center">
                 <h2 className="text-4xl font-black text-white mb-12 uppercase tracking-tight">Progreso en Midnight</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {progression.map((raid) => (
+                    {progression.filter(r => r.expansion !== 'The War Within').map((raid) => (
                         <div key={raid.name} className={`bg-white/5 border border-white/10 rounded-2xl p-8 hover:border-blue-500/30 transition-all ${raid.status === 'Próximamente' ? 'opacity-50 grayscale blur-[1px]' : ''}`}>
                             <p className="text-blue-400 font-bold mb-2 uppercase tracking-widest text-[10px]">{raid.tier || raid.expansion}</p>
                             <h3 className="text-xl font-bold text-white mb-4">{raid.name}</h3>
@@ -56,6 +56,22 @@ export function HomePageClient() {
                         </div>
                     ))}
                 </div>
+
+                {progression.some(r => r.expansion === 'The War Within') && (
+                    <div className="mt-16">
+                        <h2 className="text-2xl font-black text-white/50 mb-8 uppercase tracking-tight">Progreso Pasado (TWW)</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            {progression.filter(r => r.expansion === 'The War Within').map((raid) => (
+                                <div key={raid.name} className="bg-white/5 border border-white/10 rounded-2xl p-8 hover:border-blue-500/30 transition-all">
+                                    <p className="text-blue-400 font-bold mb-2 uppercase tracking-widest text-[10px]">{raid.tier || raid.expansion}</p>
+                                    <h3 className="text-xl font-bold text-white mb-4">{raid.name}</h3>
+                                    <div className="text-5xl font-black text-white tracking-tighter mb-2">{raid.progress}</div>
+                                    <p className="text-white/40 text-sm font-medium">{raid.rank !== '-' ? raid.rank : raid.status}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
                 <p className="mt-12 text-zinc-500 text-xs uppercase tracking-[0.3em] font-bold flex items-center justify-center gap-2">
                     <span className="size-1.5 bg-red-500 rounded-full animate-pulse" />
                     Live Data from WarcraftLogs
