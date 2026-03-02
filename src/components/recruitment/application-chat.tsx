@@ -73,6 +73,22 @@ export function ApplicationChat({ applicationId, otherPartyName }: Props) {
         const content = newMessage.trim()
         setNewMessage("")
 
+        // Optimistic UI update
+        const tempId = `temp-${Date.now()}`
+        const tempMsg = {
+            id: tempId,
+            application_id: applicationId,
+            author_id: session.user.id,
+            content: content,
+            created_at: new Date().toISOString(),
+            author: {
+                discord_username: session.user.username,
+                discord_avatar: session.user.avatarUrl,
+                role_level: session.user.roleLevel
+            }
+        }
+        setMessages(prev => [...prev, tempMsg])
+
         try {
             const res = await fetch("/api/recruitment/chat", {
                 method: "POST",
@@ -87,10 +103,18 @@ export function ApplicationChat({ applicationId, otherPartyName }: Props) {
                 const err = await res.json()
                 throw new Error(err.error || "Error al enviar mensaje")
             }
+
+            // Re-fetch instantly after ok response
+            const newRes = await fetch(`/api/recruitment/chat?applicationId=${applicationId}`)
+            if (newRes.ok) {
+                const data = await newRes.json()
+                setMessages(data)
+            }
         } catch (err: any) {
             console.error("Error sending message:", err)
             toast.error("Error al enviar mensaje", { description: err.message })
             setNewMessage(content)
+            setMessages(prev => prev.filter(m => m.id !== tempId)) // Revert optimistic message
         } finally {
             setSending(false)
         }

@@ -47,27 +47,22 @@ client.on('messageCreate', async (message) => {
             console.log(`📩 Recibido DM de ${message.author.username}: ${message.content}`);
             await handleApplicantDiscordReply(message);
         }
-
-        // CASE B: Message in a Staff Thread (Official reply)
-        if (message.channel.isThread()) {
-            console.log(`🧵 Mensaje en hilo ${message.channel.name}: ${message.content}`);
-            await handleStaffDiscordReply(message);
-        }
     } catch (err) {
         console.error("❌ Error procesando mensaje de Discord:", err);
     }
 });
 
 async function handleApplicantDiscordReply(message) {
-    // Find the latest active application for this Discord user
+    // 1. Find the latest active application for this Discord user (Applicant speaking)
     const { data: profile } = await supabase
         .from("profiles")
-        .select("user_id")
+        .select("user_id, discord_username")
         .eq("discord_user_id", message.author.id)
         .single();
 
     if (!profile) return;
 
+    // Check if they have an active application
     const { data: application } = await supabase
         .from("recruitment_applications")
         .select("id")
@@ -78,39 +73,63 @@ async function handleApplicantDiscordReply(message) {
 
     if (!application) return;
 
-    // Insert into DB
+    // 2. Insert into DB (this will make it show on the web instantly via polling)
     await supabase.from("application_messages").insert({
         application_id: application.id,
         author_id: profile.user_id,
         content: message.content
     });
-}
 
-async function handleStaffDiscordReply(message) {
-    // Find application by thread ID
-    const { data: application } = await supabase
-        .from("recruitment_applications")
-        .select("id")
-        .eq("discord_chat_thread_id", message.channel.id)
-        .single();
+    console.log(`✅ Mensaje guardado en BD del aplicante ${profile.discord_username}`);
 
-    if (!application) return;
-
-    // Find official profile
-    const { data: profile } = await supabase
+    // 3. Mirror the message to ALL Officers via DM
+    const { data: officers } = await supabase
         .from("profiles")
-        .select("user_id")
-        .eq("discord_user_id", message.author.id)
-        .single();
+        .select("discord_user_id")
+        .in("role_level", ["gm", "officer"])
+        .not("discord_user_id", "is", null);
 
-    if (!profile) return;
+    if (officers && officers.length > 0) {
+        const staffMsg = `**Mensaje de la solicitud [${profile.discord_username}]:** ${message.content}`;
 
-    // Insert into DB (will trigger Realtime on the web)
-    await supabase.from("application_messages").insert({
-        application_id: application.id,
-        author_id: profile.user_id,
-        content: message.content
-    });
+        for (const officer of officers) {
+            if (!officer.discord_user_id) continue;
+            try {
+                // DM Channel
+                const dmRes = await fetch("https://discord.com/api/v10/users/@me/channels", {
+                    method: "POST",
+                    headers: { "Authorization": `Bot ${DISCORD_BOT_TOKEN}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ recipient_id: officer.discord_user_id })
+                });
+                const dmChannel = await dmRes.json();
+                if (!dmChannel.id) continue;
+
+                // Enviar el boton de ver en web
+                await fetch(`https://discord.com/api/v10/channels/${dmChannel.id}/messages`, {
+                    method: "POST",
+                    headers: { "Authorization": `Bot ${DISCORD_BOT_TOKEN}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        content: staffMsg,
+                        components: [
+                            {
+                                type: 1,
+                                components: [
+                                    {
+                                        type: 2,
+                                        style: 5,
+                                        label: `Ver solicitud de ${profile.discord_username}`,
+                                        url: `${process.env.NEXTAUTH_URL}/dashboard/settings/recruitment/${application.id}/chat`
+                                    }
+                                ]
+                            }
+                        ]
+                    })
+                });
+            } catch (e) {
+                console.error(`No pude mandar DM al oficial ${officer.discord_user_id}:`, e.message);
+            }
+        }
+    }
 }
 
 client.login(DISCORD_BOT_TOKEN);

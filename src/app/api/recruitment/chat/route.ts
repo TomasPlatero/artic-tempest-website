@@ -116,10 +116,11 @@ export async function POST(req: Request) {
                 }
             }
 
-            // B. If Applicant speaks -> Mirror to Staff
-            // We should mirror BOTH ways to keep staff channel in sync
-            const staffMsg = `**[${session.user.username || 'Sistema'}]:** ${content}`
-            await mirrorToStaffChannel(botToken, staffChannelId, staffMsg, application)
+            // B. If Applicant speaks -> Mirror to all Officials via DM
+            if (isApplicant) {
+                const staffMsg = `**Mensaje de la solicitud [${session.user.username}]:** ${content}`
+                await mirrorToAllOfficials(botToken, staffMsg, session.user.username || 'Desconocido', application.id)
+            }
         }
 
         return NextResponse.json({ success: true })
@@ -173,57 +174,63 @@ async function sendDiscordDM(botToken: string, userId: string, message: string, 
     }
 }
 
-async function mirrorToStaffChannel(botToken: string, channelId: string, message: string, application: any) {
-    // We try to use a Thread for each application to keep it clean
+async function mirrorToAllOfficials(botToken: string, message: string, applicantName: string, applicationId: string) {
     try {
-        let threadId = application.discord_chat_thread_id
+        // 1. Get all GMs and Officers
+        const { data: officers } = await sb
+            .from("profiles")
+            .select("discord_user_id")
+            .in("role_level", ["gm", "officer"])
+            .not("discord_user_id", "is", null)
 
-        // If no thread exists, create one in the staff channel
-        if (!threadId) {
-            // Find the original recruitment announcement message if it exists
-            const { discord_message_id } = application
+        if (!officers || officers.length === 0) return
 
-            if (discord_message_id) {
-                // Create thread from message
-                const threadRes = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages/${discord_message_id}/threads`, {
+        // 2. DM each officer
+        await Promise.all(officers.map(async (officer) => {
+            if (!officer.discord_user_id) return
+            try {
+                // Create DM channel
+                const dmRes = await fetch("https://discord.com/api/v10/users/@me/channels", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bot ${botToken}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ recipient_id: officer.discord_user_id })
+                })
+                const dmChannel = await dmRes.json()
+                if (!dmChannel.id) return
+
+                // Send message
+                await fetch(`https://discord.com/api/v10/channels/${dmChannel.id}/messages`, {
                     method: "POST",
                     headers: {
                         "Authorization": `Bot ${botToken}`,
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        name: `Chat con ${application.character_name}`,
-                        auto_archive_duration: 1440 // 24h
+                        content: message,
+                        components: [
+                            {
+                                type: 1,
+                                components: [
+                                    {
+                                        type: 2,
+                                        style: 5,
+                                        label: `Ver solicitud de ${applicantName}`,
+                                        url: `${process.env.NEXTAUTH_URL}/dashboard/settings/recruitment/${applicationId}/chat`
+                                    }
+                                ]
+                            }
+                        ]
                     })
                 })
-                const threadData = await threadRes.json()
-                threadId = threadData.id
-
-                // Update application with thread ID
-                if (threadId) {
-                    await sb
-                        .from("recruitment_applications")
-                        .update({ discord_chat_thread_id: threadId })
-                        .eq("id", application.id)
-                }
-            } else {
-                // Create standalone thread (public/private depending on channel)
-                // Fallback to channel if message thread fails
-                threadId = channelId
+            } catch (err) {
+                console.error(`Failed to DM officer ${officer.discord_user_id}`, err)
             }
-        }
-
-        if (threadId) {
-            await fetch(`https://discord.com/api/v10/channels/${threadId}/messages`, {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bot ${botToken}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ content: message })
-            })
-        }
+        }))
     } catch (e) {
-        console.error("Error mirroring to staff channel:", e)
+        console.error("Error mirroring to officials:", e)
     }
 }
+
