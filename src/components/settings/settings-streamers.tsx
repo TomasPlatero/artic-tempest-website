@@ -4,14 +4,88 @@ import { useState, useEffect } from "react"
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { IconBrandTwitch, IconTrash, IconPlus, IconLoader2, IconExternalLink } from "@tabler/icons-react"
+import { IconBrandTwitch, IconTrash, IconPlus, IconLoader2, IconExternalLink, IconGripVertical } from "@tabler/icons-react"
 import { toast } from "sonner"
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragEndEvent
+} from '@dnd-kit/core'
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+    useSortable
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+
+function SortableStreamerItem({ streamer, onDelete }: { streamer: any, onDelete: (id: string, username: string) => void }) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+    } = useSortable({ id: streamer.id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    };
+
+    return (
+        <div ref={setNodeRef} style={style} className="flex items-center justify-between p-3 rounded-lg bg-black/20 border border-white/5 relative bg-card">
+            <div className="flex items-center gap-2">
+                <div
+                    {...attributes}
+                    {...listeners}
+                    className="cursor-grab hover:bg-white/10 p-1.5 rounded text-muted-foreground mr-1"
+                >
+                    <IconGripVertical className="size-4" />
+                </div>
+                <div className="size-8 rounded bg-purple-500/10 flex items-center justify-center text-purple-400">
+                    <IconBrandTwitch className="size-4" />
+                </div>
+                <div>
+                    <p className="font-bold text-sm tracking-tight">{streamer.twitch_username}</p>
+                </div>
+            </div>
+            <div className="flex items-center gap-2">
+                <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-purple-400" asChild>
+                    <a href={`https://twitch.tv/${streamer.twitch_username}`} target="_blank" rel="noreferrer">
+                        <IconExternalLink className="size-4" />
+                    </a>
+                </Button>
+                <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8 text-muted-foreground hover:text-red-400 hover:bg-red-400/10"
+                    onClick={() => onDelete(streamer.id, streamer.twitch_username)}
+                >
+                    <IconTrash className="size-4" />
+                </Button>
+            </div>
+        </div>
+    )
+}
 
 export function StreamersSettings() {
     const [streamers, setStreamers] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [newStreamer, setNewStreamer] = useState("")
     const [submitting, setSubmitting] = useState(false)
+
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
 
     useEffect(() => {
         fetchStreamers()
@@ -66,6 +140,42 @@ export function StreamersSettings() {
         }
     }
 
+    const saveOrder = async (orderedItems: any[]) => {
+        try {
+            const updates = orderedItems.map((item, index) => ({
+                id: item.id,
+                sort_order: index,
+            }));
+
+            const res = await fetch("/api/streamers", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ items: updates })
+            });
+            if (!res.ok) throw new Error("Guardado falló");
+        } catch (error) {
+            console.error("Failed to save order", error);
+            toast.error("Error guardando el nuevo orden.")
+        }
+    }
+
+    const handleDragEnd = async (event: DragEndEvent) => {
+        const { active, over } = event;
+
+        if (over && active.id !== over.id) {
+            setStreamers((items) => {
+                const oldIndex = items.findIndex((i) => i.id === active.id);
+                const newIndex = items.findIndex((i) => i.id === over.id);
+
+                const newItems = arrayMove(items, oldIndex, newIndex);
+
+                // Immediately save the new order
+                saveOrder(newItems);
+                return newItems;
+            });
+        }
+    }
+
     return (
         <div className="flex flex-col gap-6 p-4 md:p-6 lg:px-8 max-w-4xl mx-auto w-full">
             <div>
@@ -74,7 +184,7 @@ export function StreamersSettings() {
                     Twitch Streamers
                 </h1>
                 <p className="text-sm text-muted-foreground mt-1">
-                    Gestiona la lista de creadores de contenido de tu hermandad. Aparecerán listados automáticamente en la web y en la sección Streamers.
+                    Gestiona la lista de creadores de contenido de tu hermandad. Aparecerán ordenados automáticamente en la web según configures aquí.
                 </p>
             </div>
 
@@ -116,33 +226,20 @@ export function StreamersSettings() {
                         </div>
                     ) : (
                         <div className="flex flex-col gap-2">
-                            {streamers.map((streamer) => (
-                                <div key={streamer.id} className="flex items-center justify-between p-3 rounded-lg bg-black/20 border border-white/5">
-                                    <div className="flex items-center gap-3">
-                                        <div className="size-8 rounded bg-purple-500/10 flex items-center justify-center text-purple-400">
-                                            <IconBrandTwitch className="size-4" />
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-sm tracking-tight">{streamer.twitch_username}</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-purple-400" asChild>
-                                            <a href={`https://twitch.tv/${streamer.twitch_username}`} target="_blank" rel="noreferrer">
-                                                <IconExternalLink className="size-4" />
-                                            </a>
-                                        </Button>
-                                        <Button
-                                            size="icon"
-                                            variant="ghost"
-                                            className="h-8 w-8 text-muted-foreground hover:text-red-400 hover:bg-red-400/10"
-                                            onClick={() => handleDelete(streamer.id, streamer.twitch_username)}
-                                        >
-                                            <IconTrash className="size-4" />
-                                        </Button>
-                                    </div>
-                                </div>
-                            ))}
+                            <DndContext
+                                sensors={sensors}
+                                collisionDetection={closestCenter}
+                                onDragEnd={handleDragEnd}
+                            >
+                                <SortableContext
+                                    items={streamers.map(s => s.id)}
+                                    strategy={verticalListSortingStrategy}
+                                >
+                                    {streamers.map((streamer) => (
+                                        <SortableStreamerItem key={streamer.id} streamer={streamer} onDelete={handleDelete} />
+                                    ))}
+                                </SortableContext>
+                            </DndContext>
                         </div>
                     )}
                 </CardContent>
