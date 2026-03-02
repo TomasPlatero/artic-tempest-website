@@ -9,6 +9,7 @@ import { NotificationPermissionModal } from "@/components/notifications/notifica
 import { Analytics } from "@vercel/analytics/next"
 import { GoogleAnalytics, GoogleTagManager } from '@next/third-parties/google'
 import { ScrollToTop } from "@/components/ui/scroll-to-top"
+import { PwaPrompt } from "@/components/pwa-prompt"
 import "./globals.css";
 
 const geistSans = Geist({
@@ -126,6 +127,7 @@ export default function RootLayout({
             {children}
           </SessionProvider>
           <CookieConsentLoader />
+          <PwaPrompt />
           <ThemedToaster />
           <Analytics />
         </ThemeProvider>
