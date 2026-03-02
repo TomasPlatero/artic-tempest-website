@@ -229,6 +229,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     }
   }, [roleLevel, session?.user?.id, mounted])
 
+  // Update PWA OS Badge when notification or recruitment numbers change
+  React.useEffect(() => {
+    if (typeof navigator !== 'undefined' && 'setAppBadge' in navigator) {
+      const totalBadges = (badges.notifications || 0) + (badges.recruitment || 0)
+      if (totalBadges > 0) {
+        // @ts-ignore
+        navigator.setAppBadge(totalBadges).catch(err => console.error("Could not set app badge", err))
+      } else {
+        // @ts-ignore
+        navigator.clearAppBadge().catch(err => console.error("Could not clear app badge", err))
+      }
+    }
+  }, [badges])
+
   const hasViewPermission = (appId: string) => {
     if (roleLevel === 'gm') return true
     const p = permissions.find(p => p.role_level === roleLevel && p.app_id === appId)
