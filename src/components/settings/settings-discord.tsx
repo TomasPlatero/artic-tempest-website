@@ -14,7 +14,9 @@ import {
     IconShieldLock,
     IconExternalLink,
     IconInfoCircle,
-    IconCircleCheck
+    IconCircleCheck,
+    IconMessageCircle,
+    IconUserPlus
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +29,9 @@ import { cn } from "@/infrastructure/tailwind/tailwind-utils";
 
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/infrastructure/supabase/client";
+import { DiscordEmbedsTab } from "./discord-embeds-tab";
+import { DiscordWelcomeTab } from "./discord-welcome-tab";
+
 
 interface DiscordCommand {
     name: string;
@@ -219,6 +224,18 @@ export function SettingsDiscordClient({ initialCredentials, initialCommands }: S
                             className="rounded-xl font-black uppercase text-[10px] tracking-[0.2em] gap-2 data-[state=active]:bg-[#5865F2] data-[state=active]:text-white transition-all duration-300"
                         >
                             <IconCommand className="size-3.5" /> Comandos
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="embeds"
+                            className="rounded-xl font-black uppercase text-[10px] tracking-[0.2em] gap-2 data-[state=active]:bg-[#5865F2] data-[state=active]:text-white transition-all duration-300"
+                        >
+                            <IconMessageCircle className="size-3.5" /> Embeds
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="welcome"
+                            className="rounded-xl font-black uppercase text-[10px] tracking-[0.2em] gap-2 data-[state=active]:bg-[#5865F2] data-[state=active]:text-white transition-all duration-300"
+                        >
+                            <IconUserPlus className="size-3.5" /> Bienvenidas
                         </TabsTrigger>
                     </TabsList>
                 </div>
@@ -416,6 +433,14 @@ export function SettingsDiscordClient({ initialCredentials, initialCommands }: S
                             </div>
                         </CardContent>
                     </Card>
+                </TabsContent>
+
+                <TabsContent value="embeds" className="animate-in fade-in slide-in-from-bottom-4 duration-700 outline-none">
+                    <DiscordEmbedsTab />
+                </TabsContent>
+
+                <TabsContent value="welcome" className="animate-in fade-in slide-in-from-bottom-4 duration-700 outline-none">
+                    <DiscordWelcomeTab />
                 </TabsContent>
 
             </Tabs>
