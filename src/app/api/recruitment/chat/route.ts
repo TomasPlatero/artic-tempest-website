@@ -13,16 +13,27 @@ export async function POST(req: Request) {
     }
 
     try {
-        // 1. Get application details + staff channel config
+        // 1. Get application details
         const { data: application, error: appError } = await sb
             .from("recruitment_applications")
-            .select("*, profiles(discord_user_id, discord_username)")
+            .select("*")
             .eq("id", applicationId)
             .single()
 
         if (appError || !application) {
             return NextResponse.json({ error: "Solicitud no encontrada" }, { status: 404 })
         }
+
+        // Fetch applicant profile separately to avoid relation naming issues
+        const { data: applicantProfile } = await sb
+            .from("profiles")
+            .select("discord_user_id, discord_username")
+            .eq("user_id", application.user_id)
+            .single()
+
+        // Attach profile data
+        application.profiles = applicantProfile
+
 
         // 2. Check permissions
         const isOfficial = ["gm", "officer"].includes(session.user.roleLevel)
