@@ -7,8 +7,7 @@
 import { Client, GatewayIntentBits, Partials, ChannelType } from 'discord.js';
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
-
-dotenv.config();
+dotenv.config({ path: '.env.local' });
 
 const {
     NEXT_PUBLIC_SUPABASE_URL,
