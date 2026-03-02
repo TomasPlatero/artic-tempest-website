@@ -27,52 +27,35 @@ export function ApplicationChat({ applicationId, otherPartyName }: Props) {
     useEffect(() => {
         if (!applicationId) return
 
-        // 1. Fetch existing messages
-        async function fetchMessages() {
-            const { data, error } = await supabase
-                .from("application_messages")
-                .select("*, author:profiles(discord_username, discord_avatar, role_level)")
-                .eq("application_id", applicationId)
-                .order("created_at", { ascending: true })
+        let interval: NodeJS.Timeout
 
-            if (error) {
-                console.error("Error fetching messages:", error)
-            } else {
-                setMessages(data || [])
+        async function fetchMessages() {
+            try {
+                const res = await fetch(`/api/recruitment/chat?applicationId=${applicationId}`)
+                if (res.ok) {
+                    const data = await res.json()
+                    setMessages((prev) => {
+                        // Optimización simple para no renderizar si no hay cambios en longitud
+                        if (prev.length !== data.length) return data
+                        return prev
+                    })
+                } else {
+                    console.error("Error fetching messages")
+                }
+            } catch (error) {
+                console.error("Network error fetching messages:", error)
+            } finally {
+                setLoading(false)
             }
-            setLoading(false)
         }
 
         fetchMessages()
 
-        // 2. Subscribe to new messages
-        const channel = supabase
-            .channel(`application_chat_${applicationId}`)
-            .on(
-                'postgres_changes',
-                {
-                    event: 'INSERT',
-                    schema: 'public',
-                    table: 'application_messages',
-                    filter: `application_id=eq.${applicationId}`
-                },
-                async (payload) => {
-                    // Fetch full message with author info
-                    const { data } = await supabase
-                        .from("application_messages")
-                        .select("*, author:profiles(discord_username, discord_avatar, role_level)")
-                        .eq("id", payload.new.id)
-                        .single()
-
-                    if (data) {
-                        setMessages(prev => [...prev, data])
-                    }
-                }
-            )
-            .subscribe()
+        // Polling cada 5 segundos ya que RLS bloquea subscripciones Realtime para clientes con JWT de NextAuth
+        interval = setInterval(fetchMessages, 5000)
 
         return () => {
-            supabase.removeChannel(channel)
+            clearInterval(interval)
         }
     }, [applicationId])
 
