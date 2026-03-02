@@ -34,7 +34,7 @@ export default async function BisAdminPage() {
                 <div className="flex flex-1 flex-col p-4 md:p-6 gap-4">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h1 className="text-2xl font-black italic uppercase tracking-tighter">Gestión de Wishlists</h1>
+                            <h1 className="text-2xl font-black italic uppercase tracking-tighter">Lista de Deseos</h1>
                             <p className="text-xs text-muted-foreground uppercase font-bold tracking-widest mt-1 opacity-60">Panel de Oficiales</p>
                         </div>
                     </div>
