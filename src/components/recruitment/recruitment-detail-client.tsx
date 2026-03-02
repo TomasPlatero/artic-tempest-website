@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useSession, signIn, signOut } from "next-auth/react"
+import Link from "next/link"
+import Image from "next/image"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -17,9 +20,9 @@ import {
     IconShield,
     IconHeartHandshake,
     IconLoader2,
-    IconBrandDiscord
+    IconBrandDiscord,
+    IconMessageCircle
 } from "@tabler/icons-react"
-import Image from "next/image"
 import { toast } from "sonner"
 import { Label } from "@/components/ui/label"
 import { supabase } from "@/infrastructure/supabase/client"
@@ -308,6 +311,21 @@ export function RecruitmentDetailClient({ application, answers, classConstants, 
                             ))}
                         </SelectContent>
                     </Select>
+
+                    {currentStatus === 'interview' && (
+                        <div className="pt-3 animate-in fade-in slide-in-from-top-2 duration-500">
+                            <Button
+                                className="w-full rounded-xl h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black uppercase text-[10px] tracking-[0.15em] shadow-xl shadow-blue-500/20 border-t border-white/20 group justify-center gap-2 px-4 ring-1 ring-white/5"
+                                asChild
+                            >
+                                <Link href={`/dashboard/settings/recruitment/${application.id}/chat`}>
+                                    <IconMessageCircle className="size-4 group-hover:translate-x-[-2px] group-hover:rotate-[-10deg] transition-all duration-300" />
+                                    <span className="truncate">Chat con Aspirante</span>
+                                    <IconExternalLink className="size-3 opacity-30 group-hover:opacity-100 group-hover:translate-x-1 transition-all shrink-0" />
+                                </Link>
+                            </Button>
+                        </div>
+                    )}
                 </div>
             </div>
 
