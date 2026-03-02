@@ -40,7 +40,7 @@ const client = new Client({
     partials: [Partials.Channel, Partials.Message, Partials.User, Partials.GuildMember]
 });
 
-client.once('ready', () => {
+client.once('clientReady', () => {
     console.log(`✅ GuildBoard Relay Bot activo como ${client.user.tag}`);
 });
 
@@ -264,7 +264,10 @@ client.on('guildMemberAdd', async (member) => {
     }
 });
 
-client.login(DISCORD_BOT_TOKEN);
+client.login(DISCORD_BOT_TOKEN).catch(err => {
+    console.error(`❌ FATAL ERROR: No se pudo conectar a Discord. Verifica el token en Render. Detalles: ${err.message}`);
+    process.exit(1);
+});
 
 // --- DUMMY HTTP SERVER FOR RENDER FREE TIER ---
 // Render "Web Services" (which have a free tier) require the app to bind to a port
