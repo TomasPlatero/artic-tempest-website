@@ -4,8 +4,15 @@ import { useState, useEffect } from "react"
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { IconBrandTwitch, IconTrash, IconPlus, IconLoader2, IconExternalLink, IconGripVertical } from "@tabler/icons-react"
+import { IconBrandTwitch, IconTrash, IconPlus, IconLoader2, IconExternalLink, IconGripVertical, IconRefresh } from "@tabler/icons-react"
 import { toast } from "sonner"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import {
     DndContext,
     closestCenter,
@@ -23,6 +30,7 @@ import {
     useSortable
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { cn } from "@/infrastructure/tailwind/tailwind-utils"
 
 function SortableStreamerItem({ streamer, onDelete }: { streamer: any, onDelete: (id: string, username: string) => void }) {
     const {
@@ -79,6 +87,10 @@ export function StreamersSettings() {
     const [loading, setLoading] = useState(true)
     const [newStreamer, setNewStreamer] = useState("")
     const [submitting, setSubmitting] = useState(false)
+    const [channelId, setChannelId] = useState("")
+    const [channels, setChannels] = useState<{ id: string, name: string }[]>([])
+    const [savingConfig, setSavingConfig] = useState(false)
+    const [fetchingChannels, setFetchingChannels] = useState(false)
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -89,7 +101,52 @@ export function StreamersSettings() {
 
     useEffect(() => {
         fetchStreamers()
+        fetchConfig()
+        fetchChannels()
     }, [])
+
+    const fetchChannels = async () => {
+        setFetchingChannels(true)
+        try {
+            const res = await fetch("/api/discord/channels")
+            if (res.ok) {
+                const data = await res.json()
+                setChannels(data)
+            }
+        } catch (e) {
+            console.error(e)
+        } finally {
+            setFetchingChannels(false)
+        }
+    }
+
+    const fetchConfig = async () => {
+        try {
+            const res = await fetch("/api/streamers/config")
+            if (res.ok) {
+                const data = await res.json()
+                setChannelId(data.discord_streams_channel_id || "")
+            }
+        } catch (e) { }
+    }
+
+    const handleSaveConfig = async () => {
+        setSavingConfig(true)
+        try {
+            const res = await fetch("/api/streamers/config", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ discord_streams_channel_id: channelId })
+            })
+            if (!res.ok) throw new Error("Error")
+            toast.success("Configuración de notificaciones guardada.")
+            fetchConfig()
+        } catch (error) {
+            toast.error("Error al guardar la configuración.")
+        } finally {
+            setSavingConfig(false)
+        }
+    }
 
     const fetchStreamers = async () => {
         try {
@@ -187,6 +244,46 @@ export function StreamersSettings() {
                     Gestiona la lista de creadores de contenido de tu hermandad. Aparecerán ordenados automáticamente en la web según configures aquí.
                 </p>
             </div>
+
+            <Card className="border-border/40 bg-card/40 backdrop-blur-sm">
+                <CardHeader>
+                    <CardTitle>Configuración de Discord</CardTitle>
+                    <CardDescription>Indica el ID del canal donde el bot mandará las notificaciones de directo.</CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-col sm:flex-row gap-3">
+                    <div className="flex-1 flex gap-2">
+                        <Select value={channelId || undefined} onValueChange={setChannelId}>
+                            <SelectTrigger className="flex-1 bg-black/20 h-10">
+                                <SelectValue placeholder="Selecciona un canal..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {channels.length === 0 ? (
+                                    <div className="p-2 text-xs text-muted-foreground text-center">
+                                        {fetchingChannels ? "Cargando canales..." : "No se encontraron canales"}
+                                    </div>
+                                ) : (
+                                    channels.map(c => (
+                                        <SelectItem key={c.id} value={c.id}>#{c.name}</SelectItem>
+                                    ))
+                                )}
+                            </SelectContent>
+                        </Select>
+                        <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-10 w-10 shrink-0 bg-white/5 hover:bg-white/10"
+                            onClick={fetchChannels}
+                            disabled={fetchingChannels}
+                        >
+                            <IconRefresh className={cn("size-4", fetchingChannels && "animate-spin")} />
+                        </Button>
+                    </div>
+                    <Button onClick={handleSaveConfig} disabled={savingConfig || !channelId} className="shrink-0 bg-purple-600 hover:bg-purple-700 text-white h-10 px-6">
+                        {savingConfig ? <IconLoader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        Guardar Canal
+                    </Button>
+                </CardContent>
+            </Card>
 
             <Card className="border-border/40 bg-card/40 backdrop-blur-sm">
                 <CardHeader>
