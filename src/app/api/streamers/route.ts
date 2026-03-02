@@ -4,18 +4,36 @@ import { authOptions, sb } from "@/infrastructure/auth/auth-options"
 
 export async function GET(req: Request) {
     try {
-        const { data: guild } = await sb.from('guilds_managed').select('id').single()
+        const { data: guild } = await sb.from('guilds_managed').select('guild_id').single()
         if (!guild) return NextResponse.json([])
 
         const { data: streamers, error } = await sb
             .from('guild_streamers')
             .select('*')
-            .eq('guild_id', guild.id)
+            .eq('guild_id', guild.guild_id)
             .order('created_at', { ascending: true })
 
         if (error) throw error
 
-        return NextResponse.json(streamers || [])
+        if (!streamers || streamers.length === 0) return NextResponse.json([])
+
+        // Check if live using public decapi to prevent needing active twitch app auth keys
+        const enrichedStreamers = await Promise.all(streamers.map(async (st) => {
+            try {
+                const uptimeRes = await fetch(`https://decapi.me/twitch/uptime/${st.twitch_username}`, { next: { revalidate: 60 } })
+                const text = await uptimeRes.text()
+                // returns "[name] is offline" if they are not live
+                const isLive = !text.toLowerCase().includes("offline") && !text.includes("User not found")
+                return { ...st, is_live: isLive }
+            } catch (e) {
+                return { ...st, is_live: false }
+            }
+        }))
+
+        // Sort live online first
+        enrichedStreamers.sort((a, b) => (a.is_live === b.is_live ? 0 : a.is_live ? -1 : 1))
+
+        return NextResponse.json(enrichedStreamers)
     } catch (err: any) {
         return NextResponse.json({ error: err.message }, { status: 500 })
     }
@@ -30,13 +48,13 @@ export async function POST(req: Request) {
     try {
         const body = await req.json()
 
-        const { data: guild } = await sb.from('guilds_managed').select('id').single()
+        const { data: guild } = await sb.from('guilds_managed').select('guild_id').single()
         if (!guild) return NextResponse.json({ error: "No guild found" }, { status: 404 })
 
         const { data, error } = await sb
             .from('guild_streamers')
             .insert({
-                guild_id: guild.id,
+                guild_id: guild.guild_id,
                 twitch_username: body.twitch_username.toLowerCase(),
             })
             .select()
