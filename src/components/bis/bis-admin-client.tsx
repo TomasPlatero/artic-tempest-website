@@ -128,9 +128,9 @@ export function BisAdminClient() {
     }, [members, search])
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6 h-[calc(100vh-180px)]">
+        <div className="flex flex-col lg:grid lg:grid-cols-[350px_1fr] gap-6 lg:h-[calc(100vh-180px)]">
             {/* Sidebar: Member List */}
-            <Card className="flex flex-col overflow-hidden border-border/40 bg-card/30 backdrop-blur-sm">
+            <Card className="flex flex-col overflow-hidden border-border/40 bg-card/30 backdrop-blur-sm h-[350px] lg:h-auto shrink-0">
                 <CardHeader className="p-4 space-y-4 border-b border-border/40">
                     <div className="flex items-center justify-between">
                         <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
@@ -201,7 +201,7 @@ export function BisAdminClient() {
             </Card>
 
             {/* Main Area: Selection List */}
-            <div className="flex flex-col gap-6 overflow-hidden">
+            <div className="flex flex-col gap-6 lg:overflow-hidden min-h-[500px] lg:min-h-0 lg:h-full">
                 {!selectedMember ? (
                     <div className="flex-1 flex flex-col items-center justify-center text-center text-muted-foreground bg-card/10 border border-dashed border-border/40 rounded-2xl">
                         <IconListCheck className="size-16 opacity-10 mb-6" />

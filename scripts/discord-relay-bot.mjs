@@ -7,8 +7,14 @@
 import { Client, GatewayIntentBits, Partials, ChannelType } from 'discord.js';
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
+import fs from 'fs';
 
-dotenv.config();
+// Usa .env.local en local, o .env / variables de entorno inyectadas en producción
+if (fs.existsSync('.env.local')) {
+    dotenv.config({ path: '.env.local' });
+} else {
+    dotenv.config();
+}
 
 const {
     NEXT_PUBLIC_SUPABASE_URL,
