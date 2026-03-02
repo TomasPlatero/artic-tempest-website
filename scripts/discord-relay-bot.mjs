@@ -34,9 +34,10 @@ const client = new Client({
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
-        GatewayIntentBits.DirectMessages
+        GatewayIntentBits.DirectMessages,
+        GatewayIntentBits.GuildMembers
     ],
-    partials: [Partials.Channel, Partials.Message, Partials.User]
+    partials: [Partials.Channel, Partials.Message, Partials.User, Partials.GuildMember]
 });
 
 client.once('ready', () => {
@@ -138,4 +139,64 @@ async function handleApplicantDiscordReply(message) {
     }
 }
 
+client.on('guildMemberAdd', async (member) => {
+    try {
+        console.log(`👋 Nuevo miembro en Discord: ${member.user.username}`);
+
+        // 1. Fetch config for this guild
+        const { data: managed } = await supabase.from("guilds_managed").select("guild_id, name").limit(1).single();
+        if (!managed) return;
+
+        const { data: config } = await supabase
+            .from("discord_welcome_configs")
+            .select("*")
+            .eq("guild_id", managed.guild_id)
+            .single();
+
+        if (!config || !config.is_enabled || !config.channel_id) return;
+
+        // 2. Format message and card elements
+        const messageText = config.message_text.replaceAll("{user}", `<@${member.user.id}>`).replaceAll("{guild}", managed.name);
+        const avatarUrl = member.user.displayAvatarURL({ extension: 'png', size: 256 }) || "https://cdn.discordapp.com/embed/avatars/0.png";
+        const guildName = managed.name;
+
+        console.log(`📡 Generando tarjeta de bienvenida para ${member.user.username}...`);
+
+        // 3. Build render URL with config parameters
+        // process.env.NEXTAUTH_URL should be defined, fallback to localhost if missing.
+        const baseUrl = process.env.NEXTAUTH_URL || "http://127.0.0.1:3000";
+        const renderUrl = new URL(`${baseUrl}/api/discord/welcome/render`);
+
+        renderUrl.searchParams.set("username", member.user.username);
+        renderUrl.searchParams.set("avatar", avatarUrl);
+        renderUrl.searchParams.set("guildName", guildName);
+        renderUrl.searchParams.set("bg_url", config.card_background_url || "");
+        renderUrl.searchParams.set("bg_color", config.card_background_color);
+        renderUrl.searchParams.set("text_color", config.card_text_color);
+        renderUrl.searchParams.set("title", config.card_title_template.replaceAll("{user}", member.user.username).replaceAll("{guild}", guildName));
+        renderUrl.searchParams.set("subtitle", config.card_subtitle_template.replaceAll("{user}", member.user.username).replaceAll("{guild}", guildName));
+        renderUrl.searchParams.set("overlay", config.card_overlay_opacity.toString());
+
+        // 4. Send directly via fetch against Discord API (No need to download the image if Discord API can use Buffer)
+        // Let's use discord.js built-in send methods to handle FormData cleanly
+        const channel = await client.channels.fetch(config.channel_id);
+        if (channel && channel.isTextBased()) {
+            // we download the image buffer from our API
+            const imageRes = await fetch(renderUrl.href);
+            if (!imageRes.ok) throw new Error("API devolvió " + imageRes.status);
+            const arrayBuffer = await imageRes.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+
+            await channel.send({
+                content: messageText,
+                files: [{ attachment: buffer, name: "welcome.png" }]
+            });
+            console.log(`✅ Bienvenida enviada a ${member.user.username} (Estilo MEE6)`);
+        }
+    } catch (e) {
+        console.error("❌ Error enviando bienvenida:", e.message);
+    }
+});
+
 client.login(DISCORD_BOT_TOKEN);
+
