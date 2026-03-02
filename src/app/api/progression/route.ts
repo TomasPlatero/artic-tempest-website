@@ -39,11 +39,11 @@ export async function GET() {
             throw new Error("No hay datos de raids en la base de datos");
         }
 
-        const progression = raids.sort((a: any, b: any) => {
+        const progression = raids.filter((r: any) => r.key !== 'Todas las Raids').sort((a: any, b: any) => {
             const keys = ['Voidspire', 'Dreamrift', "March on Quel'Danas"];
             return keys.indexOf(a.key) - keys.indexOf(b.key);
         }).map((r: any) => {
-            const bossCount = r.metadata?.boss_count || 0;
+            const bossCount = r.metadata?.boss_count || r.metadata?.bosses?.length || 0;
             return {
                 name: r.value,
                 expansion: r.metadata?.expansion || "Midnight",
@@ -53,6 +53,39 @@ export async function GET() {
                 status: "Próximamente"
             };
         });
+
+        // Progreso histórico de The War Within (hardcodeado con datos oficiales de WarcraftLogs al finalizar la expansión)
+        const now = new Date();
+        const cutoffDate = new Date("2026-03-17T00:00:00Z");
+
+        if (now < cutoffDate) {
+            progression.push(
+                {
+                    name: "Palacio Nerub'ar",
+                    expansion: "The War Within",
+                    tier: "Temporada 1",
+                    progress: "6/8 M",
+                    rank: "Top 5 Dun Modr",
+                    status: "AotC (En Progreso)"
+                },
+                {
+                    name: "Liberación de Minahonda",
+                    expansion: "The War Within",
+                    tier: "Temporada 2",
+                    progress: "5/8 M",
+                    rank: "Top 9 Dun Modr",
+                    status: "AotC (En Progreso)"
+                },
+                {
+                    name: "Forja de Maná Omega",
+                    expansion: "The War Within",
+                    tier: "Temporada 3",
+                    progress: "8/8 M",
+                    rank: "Top 2 Dun Modr",
+                    status: "Cutting Edge"
+                }
+            );
+        }
 
         return NextResponse.json({ progression });
 
