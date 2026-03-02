@@ -10,12 +10,8 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
 
     const title = guild?.name ? `${guild.name}` : "Artic Tempest";
 
-    // PWA specifications accept any standard web image format including Google's webp
-    // which Discord attachments natively use.
-    const iconBase = guild?.icon_url || '/icon-512x512.png';
-    const iconType = iconBase.endsWith('.webp') ? 'image/webp' :
-        iconBase.endsWith('.jpg') || iconBase.endsWith('.jpeg') ? 'image/jpeg' :
-            'image/png';
+    const icon192 = `/api/app-icon?size=192`;
+    const icon512 = `/api/app-icon?size=512`;
 
     return {
         name: `${title} Guild`,
@@ -27,16 +23,15 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
         theme_color: '#09090b',
         icons: [
             {
-                src: iconBase,
+                src: icon192,
                 sizes: '192x192',
-                type: iconType,
-                // The "any maskable" string signals Android to dynamically crop it nicely
+                type: 'image/png',
                 purpose: 'maskable'
             },
             {
-                src: iconBase,
+                src: icon512,
                 sizes: '512x512',
-                type: iconType,
+                type: 'image/png',
                 purpose: 'maskable'
             },
         ],

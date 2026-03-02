@@ -26,6 +26,7 @@ import { supabase } from "@/infrastructure/supabase/client"
 const NAV_LINKS = [
     { href: "/#progreso", label: "Progreso", title: "Consulta nuestro progreso en Midnight" },
     { href: "/#reclutamiento", label: "Reclutamiento", title: "Mira las clases que necesitamos en Artic Tempest" },
+    { href: "/streamers", label: "Streamers", title: "Sigue en directo a nuestros creadores de contenido" },
     { href: "/#historia", label: "Nuestra Historia", title: "Conoce la trayectoria de nuestra hermandad" },
 ]
 
@@ -34,9 +35,19 @@ export function LandingNavigation() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const [mounted, setMounted] = useState(false)
     const [hasApplied, setHasApplied] = useState(false)
+    const [hasLiveStreamer, setHasLiveStreamer] = useState(false)
 
     useEffect(() => {
         setMounted(true)
+
+        fetch("/api/streamers")
+            .then(res => res.json())
+            .then(data => {
+                if (Array.isArray(data) && data.some(s => s.is_live)) {
+                    setHasLiveStreamer(true)
+                }
+            })
+            .catch(() => { })
 
         async function checkApplication() {
             if (!session?.user?.id) return
@@ -91,7 +102,15 @@ export function LandingNavigation() {
                                         className="group flex items-center justify-between p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all active:scale-[0.98]"
                                         title={link.title}
                                     >
-                                        <span className="font-bold tracking-tight">{link.label}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-bold tracking-tight">{link.label}</span>
+                                            {link.label === "Streamers" && hasLiveStreamer && (
+                                                <span className="flex h-2 w-2 relative">
+                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                                                </span>
+                                            )}
+                                        </div>
                                         <IconChevronRight className="size-4 text-white/30 group-hover:text-white/70 transition-colors" />
                                     </Link>
                                 ))}
@@ -148,10 +167,16 @@ export function LandingNavigation() {
                         <Link
                             key={link.href}
                             href={link.href}
-                            className="text-sm font-medium text-white/70 hover:text-white transition-colors"
+                            className="text-sm font-medium text-white/70 hover:text-white transition-colors relative"
                             title={link.title}
                         >
                             {link.label}
+                            {link.label === "Streamers" && hasLiveStreamer && (
+                                <span className="absolute -top-0.5 -right-3 flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                                </span>
+                            )}
                         </Link>
                     ))}
                     {session && hasApplied && (

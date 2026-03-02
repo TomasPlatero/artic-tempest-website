@@ -6,6 +6,7 @@ import { LandingHero } from "@/components/landing/hero"
 import { WantedClasses } from "@/components/landing/wanted-classes"
 import { Separator } from "@/components/ui/separator"
 import { LandingFooter } from "@/components/landing/footer"
+import { LandingStreamers } from "@/components/landing/streamers"
 
 interface RaidProgression {
     name: string
@@ -77,6 +78,10 @@ export function HomePageClient() {
                     Live Data from WarcraftLogs
                 </p>
             </section>
+
+            <Separator className="bg-white/5 max-w-7xl mx-auto" />
+
+            <LandingStreamers limit={3} />
 
             <Separator className="bg-white/5 max-w-7xl mx-auto" />
 

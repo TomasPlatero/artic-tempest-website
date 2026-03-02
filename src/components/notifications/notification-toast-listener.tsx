@@ -36,6 +36,28 @@ export function NotificationToastListener() {
                 const unread = data.filter((n: any) => !n.isRead).length
                 const latest = data.find((n: any) => !n.isRead)
 
+                // Check recruitment applications count (returns 0 if not officer/gm)
+                let appCount = 0
+                try {
+                    const appRes = await fetch("/api/recruitment/count")
+                    if (appRes.ok) {
+                        const appData = await appRes.json()
+                        appCount = appData.count || 0
+                    }
+                } catch (e) {
+                    // Ignore error on fetch applications
+                }
+
+                // Update native App Icon Badge using the badging API
+                const totalBadgeCount = unread + appCount
+                if ('setAppBadge' in navigator) {
+                    if (totalBadgeCount > 0) {
+                        (navigator as any).setAppBadge(totalBadgeCount).catch(console.error)
+                    } else {
+                        (navigator as any).clearAppBadge().catch(console.error)
+                    }
+                }
+
                 // On initial check (login), if there are unread notifications
                 if (isInitial || lastNotifiedCount === null) {
                     if (unread > 0) {
@@ -81,9 +103,20 @@ export function NotificationToastListener() {
             .on(
                 'postgres_changes',
                 {
-                    event: 'INSERT',
+                    event: '*',
                     schema: 'public',
                     table: 'system_notifications',
+                },
+                () => {
+                    checkNotifications()
+                }
+            )
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'recruitment_applications',
                 },
                 () => {
                     checkNotifications()
