@@ -214,6 +214,12 @@ client.on('guildMemberAdd', async (member) => {
 
         if (!config || !config.is_enabled || !config.channel_id) return;
 
+        // Evitar dobles mensajes si el bot corre en local y en render a la vez
+        if (process.env.NODE_ENV === 'development' || (!process.env.RENDER && fs.existsSync('.env.local'))) {
+            console.log("🛠️ Local environment detectado. Omitiendo tarjeta de bienvenida para evitar mensaje duplicado con Render.");
+            return;
+        }
+
         // 2. Format message and card elements
         const messageText = config.message_text.replaceAll("{user}", `<@${member.user.id}>`).replaceAll("{guild}", managed.name);
         // Usamos una URL de placeholder segura si el usuario no tiene avatar
