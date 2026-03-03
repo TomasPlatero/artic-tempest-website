@@ -8,6 +8,11 @@ import { Client, GatewayIntentBits, Partials, ChannelType } from 'discord.js';
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 import fs from 'fs';
+import dns from 'dns';
+
+// Forzar DNS a IPv4 primero. Las redes de Render a veces se quedan colgadas 
+// intentando usar IPv6 para contactar con las APIs de Discord (undici/fetch hang).
+dns.setDefaultResultOrder('ipv4first');
 
 // Usa .env.local en local, o .env / variables de entorno inyectadas en producción
 if (fs.existsSync('.env.local')) {
