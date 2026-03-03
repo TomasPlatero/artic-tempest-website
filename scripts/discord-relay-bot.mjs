@@ -40,7 +40,7 @@ const client = new Client({
     partials: [Partials.Channel, Partials.Message, Partials.User, Partials.GuildMember]
 });
 
-client.once('clientReady', () => {
+client.once('ready', () => {
     console.log(`✅ GuildBoard Relay Bot activo como ${client.user.tag}`);
 });
 
@@ -212,13 +212,20 @@ client.on('guildMemberAdd', async (member) => {
             .eq("guild_id", managed.guild_id)
             .single();
 
-        if (!config || !config.is_enabled || !config.channel_id) return;
+        console.log(`📋 Configuración leída de BD: enabled=${config?.is_enabled}, channel=${config?.channel_id}`);
+
+        if (!config || !config.is_enabled || !config.channel_id) {
+            console.log("❌ Bienvenida cancelada: No activada o sin canal.");
+            return;
+        }
 
         // Evitar dobles mensajes si el bot corre en local y en render a la vez
         if (process.env.NODE_ENV === 'development' || (!process.env.RENDER && fs.existsSync('.env.local'))) {
             console.log("🛠️ Local environment detectado. Omitiendo tarjeta de bienvenida para evitar mensaje duplicado con Render.");
             return;
         }
+
+        console.log("🚀 Continuando formato de mensaje...");
 
         // 2. Format message and card elements
         const messageText = config.message_text.replaceAll("{user}", `<@${member.user.id}>`).replaceAll("{guild}", managed.name);
@@ -245,7 +252,10 @@ client.on('guildMemberAdd', async (member) => {
 
         // 4. Download image buffer from Vercel Edge API
         const channel = await client.channels.fetch(config.channel_id);
+        console.log(`🔍 Canal fetch completado: ${channel ? 'Encontrado (' + channel.name + ')' : 'No encontrado'}`);
+
         if (channel && channel.isTextBased()) {
+            console.log(`⬇️ Descargando imagen de API Vercel...`);
             const imageRes = await fetch(renderUrl.href);
             if (!imageRes.ok) throw new Error("API devolvió " + imageRes.status);
 
@@ -253,11 +263,14 @@ client.on('guildMemberAdd', async (member) => {
             const buffer = Buffer.from(arrayBuffer);
 
             // 5. Send to Discord
+            console.log("📤 Enviando tarjeta al canal de Discord...");
             await channel.send({
                 content: messageText,
                 files: [{ attachment: buffer, name: "welcome.png" }]
             });
             console.log(`✅ ¡Bienvenida enviada a ${member.user.username}!`);
+        } else {
+            console.log("❌ Error fatal: El canal no se encontró o no permite enviar texto.");
         }
     } catch (e) {
         console.error("❌ Error en bienvenida:", e.message);
