@@ -29,6 +29,7 @@ if (!NEXT_PUBLIC_SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !DISCORD_BOT_TOKE
 
 const supabase = createClient(NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+console.log("⏳ Instanciando cliente de Discord...");
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -40,9 +41,14 @@ const client = new Client({
     partials: [Partials.Channel, Partials.Message, Partials.User, Partials.GuildMember]
 });
 
-client.once('ready', () => {
-    console.log(`✅ GuildBoard Relay Bot activo como ${client.user.tag}`);
+client.on('ready', () => {
+    console.log(`✅ GuildBoard Relay Bot ACTIVO (evento ready disparado como ${client.user?.tag})`);
 });
+
+client.on('error', (err) => {
+    console.error(`⚠️ Discord Client Error Event:`, err);
+});
+
 
 client.on('messageCreate', async (message) => {
     // 1. Ignorar mensajes del propio bot
@@ -277,8 +283,16 @@ client.on('guildMemberAdd', async (member) => {
     }
 });
 
-client.login(DISCORD_BOT_TOKEN).catch(err => {
-    console.error(`❌ FATAL ERROR: No se pudo conectar a Discord. Verifica el token en Render. Detalles: ${err.message}`);
+const rawToken = DISCORD_BOT_TOKEN || "";
+const cleanToken = rawToken.trim().replace(/^"|"$/g, '');
+console.log(`🔑 Token de discord leído. Longitud: ${cleanToken.length}. Comienza por: ${cleanToken.substring(0, 5)}...`);
+
+console.log("⏳ Llamando a client.login()...");
+client.login(cleanToken).then(() => {
+    console.log("✅ client.login() Promesa resuelta con éxito.");
+}).catch(err => {
+    console.error(`❌ FATAL ERROR: No se pudo conectar a Discord.`);
+    console.error(`Detalles del error:`, err);
     process.exit(1);
 });
 
