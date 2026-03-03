@@ -49,6 +49,10 @@ client.on('error', (err) => {
     console.error(`⚠️ Discord Client Error Event:`, err);
 });
 
+client.on('debug', (info) => {
+    console.log(`🐛 DISCORD DEBUG: ${info}`);
+});
+
 
 client.on('messageCreate', async (message) => {
     // 1. Ignorar mensajes del propio bot
