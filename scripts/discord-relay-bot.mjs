@@ -43,7 +43,12 @@ const client = new Client({
         GatewayIntentBits.DirectMessages,
         GatewayIntentBits.GuildMembers
     ],
-    partials: [Partials.Channel, Partials.Message, Partials.User, Partials.GuildMember]
+    partials: [Partials.Channel, Partials.Message, Partials.User, Partials.GuildMember],
+    rest: {
+        timeout: 60000,
+        retries: 5,
+        globalRequestsPerSecond: 50
+    }
 });
 
 client.on('ready', () => {
@@ -296,33 +301,14 @@ const rawToken = DISCORD_BOT_TOKEN || "";
 const cleanToken = rawToken.trim().replace(/^"|"$/g, '');
 console.log(`🔑 Token de discord leído. Longitud: ${cleanToken.length}. Comienza por: ${cleanToken.substring(0, 5)}...`);
 
-async function startBot() {
-    console.log("🌐 [DIAGNOSTICO] Testeando conexión HTTP directa a Discord...");
-    try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
-        const res = await fetch('https://discord.com/api/v10/gateway/bot', {
-            headers: { Authorization: `Bot ${cleanToken}` },
-            signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-        console.log(`✅ [DIAGNOSTICO] Test fetch a Discord funcionó: HTTP ${res.status} ${res.statusText}`);
-    } catch (e) {
-        console.log(`❌ [DIAGNOSTICO] Test fetch a Discord FALLÓ o se colgó: ${e.message}`);
-        console.log(`❌ [DIAGNOSTICO] Significa que Render está bloqueando la conexión web estática hacia Discord.com por completo.`);
-    }
-
-    console.log("⏳ Llamando a client.login()...");
-    client.login(cleanToken).then(() => {
-        console.log("✅ client.login() Promesa resuelta con éxito.");
-    }).catch(err => {
-        console.error(`❌ FATAL ERROR: No se pudo conectar a Discord.`);
-        console.error(`Detalles del error:`, err);
-        process.exit(1);
-    });
-}
-
-startBot();
+console.log("⏳ Llamando a client.login()...");
+client.login(cleanToken).then(() => {
+    console.log("✅ client.login() Promesa resuelta con éxito.");
+}).catch(err => {
+    console.error(`❌ FATAL ERROR: No se pudo conectar a Discord.`);
+    console.error(`Detalles del error:`, err);
+    process.exit(1);
+});
 
 // --- DUMMY HTTP SERVER FOR RENDER FREE TIER ---
 // Render "Web Services" (which have a free tier) require the app to bind to a port
