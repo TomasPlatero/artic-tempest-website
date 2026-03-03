@@ -2,6 +2,9 @@
   "name": "artic-tempest-website",
   "version": "0.9.0 beta",
   "private": true,
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "dev": "next dev --turbopack",
     "dev:debug": "cross-env NODE_OPTIONS=--inspect next dev --turbopack",
@@ -64,7 +67,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "discord-interactions": "^4.4.0",
-    "discord.js": "^14.18.0",
+    "discord.js": "^14.25.1",
     "framer-motion": "^12.34.3",
     "isomorphic-dompurify": "^3.0.0",
     "jsdom": "^28.1.0",
@@ -82,6 +85,7 @@
     "tweetnacl": "^1.0.3",
     "vanilla-cookieconsent": "^3.1.0",
     "vaul": "^1.1.2",
+    "ws": "^8.19.0",
     "zod": "^4.1.8"
   },
   "devDependencies": {
