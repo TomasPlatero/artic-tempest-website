@@ -7,6 +7,7 @@ export async function GET(_req: Request) {
     try {
         const { searchParams } = new URL(_req.url);
         const reportCode = searchParams.get("code");
+        const zoneID = searchParams.get("zoneID");
 
         const session = await getServerSession(authOptions);
         if (!session?.user) {
@@ -78,10 +79,11 @@ export async function GET(_req: Request) {
             }`;
         } else {
             // Fetch recent reports list
+            const zoneFilter = zoneID ? `, zoneID: ${zoneID}` : '';
             query = `
             query {
                 reportData {
-                    reports(guildID: 743623, limit: 50) {
+                    reports(guildID: 743623, limit: 50${zoneFilter}) {
                         data {
                             code
                             title

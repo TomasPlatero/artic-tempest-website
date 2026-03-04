@@ -59,12 +59,22 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
     const [isFetchingWclDetail, setIsFetchingWclDetail] = useState(false)
     const [wclZoneFilter, setWclZoneFilter] = useState<string>("all")
 
-    // Derive unique zones from loaded reports
-    const wclZones = useMemo(() => {
-        const zones = new Set<string>()
-        wclReports.forEach(r => { if (r.zone?.name) zones.add(r.zone.name) })
-        return Array.from(zones).sort()
-    }, [wclReports])
+    // WCL Zone IDs grouped by expansion/season
+    const WCL_ZONES = [
+        {
+            group: "Midnight", zones: [
+                { id: "46", name: "Todas las Raids (VS/DR/MQD)" },
+                { id: "44", name: "Forja de Maná Omega" },
+            ]
+        },
+        {
+            group: "The War Within", zones: [
+                { id: "42", name: "Liberación de Minahonda" },
+                { id: "38", name: "Palacio Nerub'ar" },
+                { id: "40", name: "Blackrock Depths" },
+            ]
+        },
+    ]
 
     const handleViewWclReport = async (report: any) => {
         setSelectedWclReport(report)
@@ -86,18 +96,19 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
         return wclReports.filter(report => {
             // Filter out empty logs (no combat segments)
             if (report.segments === 0) return false
-            // Zone filter
-            if (wclZoneFilter !== 'all' && report.zone?.name !== wclZoneFilter) return false
             // Text search filter
             return report.title.toLowerCase().includes(wclSearchQuery.toLowerCase()) ||
                 report.zone?.name?.toLowerCase().includes(wclSearchQuery.toLowerCase())
         })
-    }, [wclReports, wclSearchQuery, wclZoneFilter])
+    }, [wclReports, wclSearchQuery])
 
+    // Fetch WCL reports (re-fetches when zone filter changes)
     useEffect(() => {
         async function fetchWCL() {
+            setIsLoadingWcl(true)
             try {
-                const res = await fetch("/api/wcl?t=" + Date.now())
+                const zoneParam = wclZoneFilter !== 'all' ? `&zoneID=${wclZoneFilter}` : ''
+                const res = await fetch(`/api/wcl?t=${Date.now()}${zoneParam}`)
                 const data = await res.json()
                 if (!res.ok) {
                     throw new Error(data.error || "Error al cargar datos de WCL")
@@ -112,7 +123,7 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
             }
         }
         fetchWCL()
-    }, [])
+    }, [wclZoneFilter])
 
     const [searchQuery, setSearchQuery] = useState("")
     const [topMembers, setTopMembers] = useState<any[]>([])
@@ -336,13 +347,18 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                                         Perfil de Hermandad
                                     </a>
                                     <Select value={wclZoneFilter} onValueChange={setWclZoneFilter}>
-                                        <SelectTrigger className="h-9 w-auto min-w-[160px] bg-background/50 border-border/40 text-xs">
+                                        <SelectTrigger className="h-9 w-auto min-w-[200px] bg-background/50 border-border/40 text-xs">
                                             <SelectValue placeholder="Raid / Zona" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="all">Todas las zonas</SelectItem>
-                                            {wclZones.map(z => (
-                                                <SelectItem key={z} value={z}>{z}</SelectItem>
+                                            {WCL_ZONES.map((group) => (
+                                                <div key={group.group}>
+                                                    <div className="px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">{group.group}</div>
+                                                    {group.zones.map((z) => (
+                                                        <SelectItem key={z.id} value={z.id}>{z.name}</SelectItem>
+                                                    ))}
+                                                </div>
                                             ))}
                                         </SelectContent>
                                     </Select>
