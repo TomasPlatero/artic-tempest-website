@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, useRef, useCallback } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import {
@@ -162,6 +162,42 @@ export function RaidEditorClient({
     useEffect(() => {
         setHasMounted(true)
     }, [])
+
+    // Debounced auto-save roster when signups change (role, status, etc.)
+    const isFirstRender = useRef(true)
+    useEffect(() => {
+        // Skip the initial render (don't save on mount)
+        if (isFirstRender.current) {
+            isFirstRender.current = false
+            return
+        }
+        // Only auto-save if the event already exists
+        if (!initialRaid?.id) return
+
+        const timer = setTimeout(async () => {
+            try {
+                await fetch(`/api/guild/events/${initialRaid.id}/roster`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        selections: signups.map((s, idx) => ({
+                            member_id: s.member_id,
+                            selection_status: s.selection_status,
+                            event_role: s.event_role,
+                            signup_order: idx,
+                            selected_bosses: s.selected_bosses || [],
+                            is_absent: s.is_absent,
+                            is_late: s.is_late
+                        }))
+                    })
+                })
+            } catch (error) {
+                console.error("Auto-save roster error:", error)
+            }
+        }, 1000)
+
+        return () => clearTimeout(timer)
+    }, [signups, initialRaid?.id])
 
     const initialDuration = initialRaid?.end_date && initialRaid?.event_date
         ? Math.max(1, (new Date(initialRaid.end_date).getTime() - new Date(initialRaid.event_date).getTime()) / 3600000)
@@ -443,9 +479,7 @@ export function RaidEditorClient({
             })
             if (!signupRes.ok) throw new Error("Error al guardar el roster")
 
-            toast.success("Evento guardados con éxito")
-            router.push("/dashboard/calendario")
-            router.refresh()
+            toast.success("Evento guardado con éxito")
         } catch (error: any) {
             toast.error("Error", { description: error.message })
         } finally {

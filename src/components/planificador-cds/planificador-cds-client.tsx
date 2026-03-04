@@ -756,46 +756,48 @@ export function PlanificadorCdsClient() {
                 </Card>
 
                 {/* Boss Planning Details Card (Viserio Style) */}
-                <div className="bg-[#121217]/60 border border-border/20 rounded-xl p-4 flex flex-col gap-3 shadow-inner">
-                    <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest">Planificaciones</span>
-                        <span className="text-[9px] font-bold text-blue-400/60 uppercase tracking-tighter">Historial</span>
-                    </div>
+                {!eventIdParam && (
+                    <div className="bg-[#121217]/60 border border-border/20 rounded-xl p-4 flex flex-col gap-3 shadow-inner">
+                        <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest">Planificaciones</span>
+                            <span className="text-[9px] font-bold text-blue-400/60 uppercase tracking-tighter">Historial</span>
+                        </div>
 
-                    {bossSummaries.filter(s => s.boss_name === boss).length > 0 ? (
-                        <div className="flex flex-col gap-2">
-                            {bossSummaries.filter(s => s.boss_name === boss).slice(0, 3).map((ev) => (
-                                <div
-                                    key={ev.id}
-                                    className="group/plan flex items-center justify-between bg-black/40 border border-white/5 p-2 rounded-lg hover:border-blue-500/30 cursor-pointer transition-all"
-                                    onClick={() => {
-                                        window.location.href = `/dashboard/planificador-cds?event_id=${ev.id}&boss=${encodeURIComponent(boss)}`;
-                                    }}
-                                >
-                                    <div className="flex flex-col">
-                                        <span className="text-[11px] font-bold text-white/80 group-hover/plan:text-white">{boss}</span>
-                                        <span className="text-[9px] text-muted-foreground/50 font-bold uppercase overflow-hidden text-ellipsis whitespace-nowrap max-w-[140px]">
-                                            {new Date(ev.event_date).toLocaleDateString("es-ES", { day: '2-digit', month: 'short' })} • {ev.difficulty}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <div className="flex -space-x-2">
-                                            <div className="size-5 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-[8px] font-black text-blue-400" title={`${ev.assignment_count} asignaciones`}>
-                                                {ev.assignment_count}
-                                            </div>
+                        {bossSummaries.filter(s => s.boss_name === boss).length > 0 ? (
+                            <div className="flex flex-col gap-2">
+                                {bossSummaries.filter(s => s.boss_name === boss).slice(0, 3).map((ev) => (
+                                    <div
+                                        key={ev.id}
+                                        className="group/plan flex items-center justify-between bg-black/40 border border-white/5 p-2 rounded-lg hover:border-blue-500/30 cursor-pointer transition-all"
+                                        onClick={() => {
+                                            window.location.href = `/dashboard/planificador-cds?event_id=${ev.id}&boss=${encodeURIComponent(boss)}`;
+                                        }}
+                                    >
+                                        <div className="flex flex-col">
+                                            <span className="text-[11px] font-bold text-white/80 group-hover/plan:text-white">{boss}</span>
+                                            <span className="text-[9px] text-muted-foreground/50 font-bold uppercase overflow-hidden text-ellipsis whitespace-nowrap max-w-[140px]">
+                                                {new Date(ev.event_date).toLocaleDateString("es-ES", { day: '2-digit', month: 'short' })} • {ev.difficulty}
+                                            </span>
                                         </div>
-                                        <IconTimeline className="size-3.5 text-muted-foreground/40 group-hover/plan:text-blue-400 transition-colors" />
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex -space-x-2">
+                                                <div className="size-5 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-[8px] font-black text-blue-400" title={`${ev.assignment_count} asignaciones`}>
+                                                    {ev.assignment_count}
+                                                </div>
+                                            </div>
+                                            <IconTimeline className="size-3.5 text-muted-foreground/40 group-hover/plan:text-blue-400 transition-colors" />
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="flex flex-col items-center justify-center py-4 bg-black/20 rounded-lg border border-dashed border-white/5">
-                            <IconTimeline className="size-5 text-muted-foreground/30 mb-2" />
-                            <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest">Sin registros</span>
-                        </div>
-                    )}
-                </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-4 bg-black/20 rounded-lg border border-dashed border-white/5">
+                                <IconTimeline className="size-5 text-muted-foreground/30 mb-2" />
+                                <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest">Sin registros</span>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         )
     }

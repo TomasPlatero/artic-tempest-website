@@ -68,10 +68,13 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
     }
 
     const filteredWclReports = useMemo(() => {
-        return wclReports.filter(report =>
-            report.title.toLowerCase().includes(wclSearchQuery.toLowerCase()) ||
-            report.zone?.name?.toLowerCase().includes(wclSearchQuery.toLowerCase())
-        )
+        return wclReports.filter(report => {
+            // Filter out empty logs (no combat segments)
+            if (report.segments === 0) return false
+            // Text search filter
+            return report.title.toLowerCase().includes(wclSearchQuery.toLowerCase()) ||
+                report.zone?.name?.toLowerCase().includes(wclSearchQuery.toLowerCase())
+        })
     }, [wclReports, wclSearchQuery])
 
     useEffect(() => {
