@@ -8,6 +8,8 @@ export async function GET(_req: Request) {
         const { searchParams } = new URL(_req.url);
         const reportCode = searchParams.get("code");
         const zoneID = searchParams.get("zoneID");
+        const tagID = searchParams.get("tagID");
+        const action = searchParams.get("action");
 
         const session = await getServerSession(authOptions);
         if (!session?.user) {
@@ -53,7 +55,20 @@ export async function GET(_req: Request) {
         // 2. Fetch data via GraphQL
         let query = "";
 
-        if (reportCode) {
+        if (action === 'tags') {
+            // Fetch guild tags
+            query = `
+            query {
+                guildData {
+                    guild(id: 743623) {
+                        tags {
+                            id
+                            name
+                        }
+                    }
+                }
+            }`;
+        } else if (reportCode) {
             // Fetch detailed report fights
             query = `
             query {
@@ -80,10 +95,11 @@ export async function GET(_req: Request) {
         } else {
             // Fetch recent reports list
             const zoneFilter = zoneID ? `, zoneID: ${zoneID}` : '';
+            const tagFilter = tagID ? `, tagID: ${tagID}` : '';
             query = `
             query {
                 reportData {
-                    reports(guildID: 743623, limit: 50${zoneFilter}) {
+                    reports(guildID: 743623, limit: 50${zoneFilter}${tagFilter}) {
                         data {
                             code
                             title
