@@ -81,13 +81,14 @@ export async function GET(_req: Request) {
             query = `
             query {
                 reportData {
-                    reports(guildID: 743623, limit: 20) {
+                    reports(guildID: 743623, limit: 50) {
                         data {
                             code
                             title
                             startTime
                             zone { name }
                             segments
+                            tag
                         }
                     }
                 }

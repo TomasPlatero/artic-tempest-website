@@ -16,6 +16,13 @@ import { Input } from "@/components/ui/input"
 import Image from "next/image"
 import { cn } from "@/infrastructure/tailwind/tailwind-utils"
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import {
     Dialog,
     DialogContent,
     DialogDescription,
@@ -50,6 +57,21 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
     const [selectedWclReport, setSelectedWclReport] = useState<any>(null)
     const [wclReportDetails, setWclReportDetails] = useState<any>(null)
     const [isFetchingWclDetail, setIsFetchingWclDetail] = useState(false)
+    const [wclZoneFilter, setWclZoneFilter] = useState<string>("all")
+    const [wclTagFilter, setWclTagFilter] = useState<string>("all")
+
+    // Derive unique zones and tags from loaded reports
+    const wclZones = useMemo(() => {
+        const zones = new Set<string>()
+        wclReports.forEach(r => { if (r.zone?.name) zones.add(r.zone.name) })
+        return Array.from(zones).sort()
+    }, [wclReports])
+
+    const wclTags = useMemo(() => {
+        const tags = new Set<string>()
+        wclReports.forEach(r => { if (r.tag) tags.add(r.tag) })
+        return Array.from(tags).sort()
+    }, [wclReports])
 
     const handleViewWclReport = async (report: any) => {
         setSelectedWclReport(report)
@@ -71,11 +93,15 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
         return wclReports.filter(report => {
             // Filter out empty logs (no combat segments)
             if (report.segments === 0) return false
+            // Zone filter
+            if (wclZoneFilter !== 'all' && report.zone?.name !== wclZoneFilter) return false
+            // Tag filter
+            if (wclTagFilter !== 'all' && report.tag !== wclTagFilter) return false
             // Text search filter
             return report.title.toLowerCase().includes(wclSearchQuery.toLowerCase()) ||
                 report.zone?.name?.toLowerCase().includes(wclSearchQuery.toLowerCase())
         })
-    }, [wclReports, wclSearchQuery])
+    }, [wclReports, wclSearchQuery, wclZoneFilter, wclTagFilter])
 
     useEffect(() => {
         async function fetchWCL() {
@@ -308,7 +334,7 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                                         Accede a los últimos reportes y análisis de combate de la hermandad.
                                     </CardDescription>
                                 </div>
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-3 flex-wrap">
                                     <a
                                         href="https://www.warcraftlogs.com/guild/id/743623"
                                         target="_blank"
@@ -318,7 +344,31 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                                         <IconSwords className="size-4" />
                                         Perfil de Hermandad
                                     </a>
-                                    <div className="relative w-full md:w-64">
+                                    <Select value={wclZoneFilter} onValueChange={setWclZoneFilter}>
+                                        <SelectTrigger className="h-9 w-auto min-w-[160px] bg-background/50 border-border/40 text-xs">
+                                            <SelectValue placeholder="Raid / Zona" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">Todas las zonas</SelectItem>
+                                            {wclZones.map(z => (
+                                                <SelectItem key={z} value={z}>{z}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {wclTags.length > 0 && (
+                                        <Select value={wclTagFilter} onValueChange={setWclTagFilter}>
+                                            <SelectTrigger className="h-9 w-auto min-w-[130px] bg-background/50 border-border/40 text-xs">
+                                                <SelectValue placeholder="Tag" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">Todos los tags</SelectItem>
+                                                {wclTags.map(t => (
+                                                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                    <div className="relative w-full md:w-48">
                                         <IconSearch className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
                                         <Input
                                             placeholder="Buscar reporte..."
