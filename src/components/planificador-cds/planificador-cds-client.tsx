@@ -5,11 +5,10 @@ import Image from "next/image"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { IconTimeline, IconSettings, IconClock, IconArrowLeft, IconClipboardText, IconCopy, IconCheck, IconTrash, IconZoomIn, IconZoomOut, IconZoomReset, IconLayoutList, IconFilter, IconEye, IconEyeOff, IconGripVertical, IconShield, IconPlus, IconSword, IconBow, IconChevronLeft, IconChevronRight } from "@tabler/icons-react"
+import { IconTimeline, IconSettings, IconClock, IconArrowLeft, IconClipboardText, IconCopy, IconCheck, IconTrash, IconZoomIn, IconZoomOut, IconZoomReset, IconLayoutList, IconFilter, IconEye, IconEyeOff, IconGripVertical, IconShield, IconPlus, IconSword, IconBow } from "@tabler/icons-react"
 import { useSearchParams } from "next/navigation"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { cn } from "@/infrastructure/tailwind/tailwind-utils"
-import { useSidebar } from "@/components/common/sidebar"
 import {
     Dialog,
     DialogContent,
@@ -157,7 +156,6 @@ function TimelineZoomOverlay({
 }
 
 export function PlanificadorCdsClient() {
-    const { toggleSidebar, state: sidebarState } = useSidebar()
     const searchParams = useSearchParams()
     const eventIdParam = searchParams.get("event_id")
     const bossParam = searchParams.get("boss")
@@ -808,21 +806,6 @@ export function PlanificadorCdsClient() {
 
     return (
         <div className="flex flex-col h-[calc(100vh-80px)] overflow-hidden bg-background">
-            {/* Sidebar toggle arrow — only in event mode */}
-            {eventIdParam && (
-                <button
-                    onClick={() => toggleSidebar()}
-                    className="fixed top-1/2 -translate-y-1/2 z-50 size-7 rounded-r-lg bg-[#1a1a2e] hover:bg-blue-600/30 border border-l-0 border-border/30 flex items-center justify-center text-muted-foreground hover:text-blue-400 transition-all shadow-lg"
-                    style={{ left: sidebarState === 'collapsed' ? '3rem' : 'calc(var(--sidebar-width, 16rem) + 1rem)' }}
-                    title={sidebarState === 'collapsed' ? 'Abrir menú' : 'Cerrar menú'}
-                >
-                    {sidebarState === 'collapsed' ? (
-                        <IconChevronRight className="size-4" />
-                    ) : (
-                        <IconChevronLeft className="size-4" />
-                    )}
-                </button>
-            )}
             {/* Dragging Zoom Overlay */}
             {draggingAssignment && (
                 <TimelineZoomOverlay
