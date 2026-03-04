@@ -11,11 +11,11 @@ export default function PlanificadorCdsPage() {
     } as React.CSSProperties
 
     return (
-        <SidebarProvider style={style}>
+        <SidebarProvider defaultOpen={false} style={style}>
             <AppSidebar variant="inset" />
             <SidebarInset>
                 <SiteHeader />
-                <div className="flex flex-1 flex-col py-6 max-w-[1600px] mx-auto w-full px-4 gap-6">
+                <div className="flex flex-1 flex-col py-6 mx-auto w-full px-4 gap-6">
                     <Suspense fallback={<div className="flex items-center justify-center min-h-[400px]">Cargando planificador...</div>}>
                         <PlanificadorCdsClient />
                     </Suspense>
