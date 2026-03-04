@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { IconSearch, IconShield, IconHeart, IconSword, IconBow, IconUsers } from "@tabler/icons-react";
 import { RosterTable } from "@/components/common/roster-table";
@@ -23,10 +23,18 @@ export function RosterClient({
   classRoleMapping?: Record<number, string>;
 }) {
   const [search, setSearch] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSort = () => {
     // Legacy sort prop for RosterTable, no longer active but required by typing
   };
+
+
+
 
   const filteredMembers = useMemo(() => {
     const baseFiltered = members.filter((m) => {
@@ -77,6 +85,15 @@ export function RosterClient({
 
     return groups;
   }, [filteredMembers, classRoleMapping]);
+
+  if (!mounted) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <p className="mt-4 text-muted-foreground animate-pulse font-medium uppercase tracking-widest text-[10px]">Preparando Roster...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">

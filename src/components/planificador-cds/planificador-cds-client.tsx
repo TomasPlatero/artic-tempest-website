@@ -190,7 +190,7 @@ export function PlanificadorCdsClient() {
     const [timelineZoom, setTimelineZoom] = useState(1)
     const [condensedView, setCondensedView] = useState(false)
     const [showFilters, setShowFilters] = useState(false)
-    const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set(['RAID', 'EXTERNAL', 'PERSONAL', 'UTILITY']))
+    const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set(['RAID', 'EXTERNAL', 'PERSONAL', 'UTILITY', 'ROLE_HEAL', 'ROLE_TANK', 'ROLE_DPS']))
     const [editingAssignment, setEditingAssignment] = useState<any>(null)
     const [editInputValue, setEditInputValue] = useState("")
 
@@ -203,6 +203,12 @@ export function PlanificadorCdsClient() {
         { key: 'EXTERNAL', label: 'Externals', color: '#3b82f6', description: 'Externals (BoS, Pain Sup, Ironbark...)' },
         { key: 'PERSONAL', label: 'Defensivos', color: '#eab308', description: 'CDs personales y defensivos' },
         { key: 'UTILITY', label: 'Utilidad', color: '#a855f7', description: 'Utilidades (Gateway, Rally, AMZ...)' },
+    ] as const
+
+    const ROLE_FILTERS = [
+        { key: 'ROLE_HEAL', label: 'Sanadores', color: '#34d399', description: 'Filtrar healers' },
+        { key: 'ROLE_TANK', label: 'Tanques', color: '#38bdf8', description: 'Filtrar tanques' },
+        { key: 'ROLE_DPS', label: 'DPS', color: '#fb7185', description: 'Filtrar DPS (Melee y Rango)' },
     ] as const
 
     const toggleFilter = (key: string) => {
@@ -1057,7 +1063,7 @@ export function PlanificadorCdsClient() {
                                     <button
                                         className={cn(
                                             "flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[9px] font-black uppercase tracking-wider transition-colors",
-                                            showFilters || activeFilters.size < 4
+                                            showFilters || activeFilters.size < 7
                                                 ? "bg-purple-600/20 border-purple-500/40 text-purple-400"
                                                 : "bg-background/50 border-border/10 text-muted-foreground hover:text-foreground"
                                         )}
@@ -1065,7 +1071,7 @@ export function PlanificadorCdsClient() {
                                     >
                                         <IconFilter className="size-3.5" />
                                         Filtros
-                                        {activeFilters.size < 4 && (
+                                        {activeFilters.size < 7 && (
                                             <span className="bg-purple-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[8px]">{activeFilters.size}</span>
                                         )}
                                     </button>
@@ -1075,7 +1081,7 @@ export function PlanificadorCdsClient() {
                                             <div className="flex gap-1.5 mb-3">
                                                 <button
                                                     className="flex-1 text-[9px] font-black uppercase tracking-wider py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/80 transition-colors"
-                                                    onClick={() => setActiveFilters(new Set(['RAID', 'EXTERNAL', 'PERSONAL', 'UTILITY']))}
+                                                    onClick={() => setActiveFilters(new Set(['RAID', 'EXTERNAL', 'PERSONAL', 'UTILITY', 'ROLE_HEAL', 'ROLE_TANK', 'ROLE_DPS']))}
                                                 >
                                                     Todos
                                                 </button>
@@ -1087,7 +1093,7 @@ export function PlanificadorCdsClient() {
                                                 </button>
                                                 <button
                                                     className="flex-1 text-[9px] font-black uppercase tracking-wider py-1.5 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 transition-colors"
-                                                    onClick={() => setActiveFilters(new Set(['RAID', 'EXTERNAL']))}
+                                                    onClick={() => setActiveFilters(new Set(['RAID', 'EXTERNAL', 'ROLE_HEAL', 'ROLE_TANK', 'ROLE_DPS']))}
                                                 >
                                                     Default
                                                 </button>
@@ -1095,6 +1101,30 @@ export function PlanificadorCdsClient() {
                                             {/* Category toggles */}
                                             <div className="flex flex-col gap-1">
                                                 {FILTER_CATEGORIES.map(cat => (
+                                                    <button
+                                                        key={cat.key}
+                                                        className={cn(
+                                                            "flex items-center gap-2.5 px-3 py-2 rounded-lg border transition-all text-left",
+                                                            activeFilters.has(cat.key)
+                                                                ? "border-white/20 bg-white/5"
+                                                                : "border-transparent bg-transparent opacity-40 hover:opacity-70"
+                                                        )}
+                                                        onClick={() => toggleFilter(cat.key)}
+                                                    >
+                                                        <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
+                                                        <div className="flex flex-col leading-tight">
+                                                            <span className="text-[10px] font-black text-white">{cat.label}</span>
+                                                            <span className="text-[8px] text-white/40">{cat.description}</span>
+                                                        </div>
+                                                        {activeFilters.has(cat.key) ? (
+                                                            <IconEye className="size-3.5 ml-auto text-white/50 shrink-0" />
+                                                        ) : (
+                                                            <IconEyeOff className="size-3.5 ml-auto text-white/20 shrink-0" />
+                                                        )}
+                                                    </button>
+                                                ))}
+                                                <div className="h-px bg-border/20 mx-2 my-1" />
+                                                {ROLE_FILTERS.map(cat => (
                                                     <button
                                                         key={cat.key}
                                                         className={cn(
@@ -1280,6 +1310,11 @@ export function PlanificadorCdsClient() {
                                     ) : condensedView ? (
                                         /* ===== CONDENSED VIEW ===== */
                                         healers.map((h: any, hIndex: number) => {
+                                            const role = h.role || 'ranged';
+                                            if (role === 'heal' && !activeFilters.has('ROLE_HEAL')) return null;
+                                            if (role === 'tank' && !activeFilters.has('ROLE_TANK')) return null;
+                                            if ((role === 'melee' || role === 'ranged') && !activeFilters.has('ROLE_DPS')) return null;
+
                                             const hCooldowns = cooldownDefinitions.filter((c: CooldownDefinition) => {
                                                 if (!activeFilters.has(c.ability_type)) return false;
                                                 if (c.class_id !== h.class_id) return false;
@@ -1446,6 +1481,11 @@ export function PlanificadorCdsClient() {
                                     ) : (
                                         /* ===== EXPANDED VIEW ===== */
                                         healers.map((h: any, hIndex: number) => {
+                                            const role = h.role || 'ranged';
+                                            if (role === 'heal' && !activeFilters.has('ROLE_HEAL')) return null;
+                                            if (role === 'tank' && !activeFilters.has('ROLE_TANK')) return null;
+                                            if ((role === 'melee' || role === 'ranged') && !activeFilters.has('ROLE_DPS')) return null;
+
                                             const hCooldowns = cooldownDefinitions.filter((c: CooldownDefinition) => {
                                                 if (!activeFilters.has(c.ability_type)) return false;
                                                 if (c.class_id !== h.class_id) return false;
