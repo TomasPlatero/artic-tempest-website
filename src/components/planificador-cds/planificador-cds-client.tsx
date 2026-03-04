@@ -380,6 +380,10 @@ export function PlanificadorCdsClient() {
                 };
             }).filter((h: any) => h !== null);
 
+            // Sort: heals first, then tanks, then DPS
+            const ROLE_ORDER: Record<string, number> = { heal: 0, tank: 1, melee: 2, ranged: 3 };
+            mapped.sort((a: any, b: any) => (ROLE_ORDER[a.role] ?? 3) - (ROLE_ORDER[b.role] ?? 3));
+
             setHealers(mapped);
             console.log(`Event ${id} members with CDs fetched:`, mapped.length);
         } catch (error) {
@@ -461,6 +465,10 @@ export function PlanificadorCdsClient() {
             if (isGeneralRoster) return true;
             return h.selected_bosses.includes(selectedBoss);
         });
+
+        // Sort: heals first, then tanks, then DPS
+        const ROLE_ORDER: Record<string, number> = { heal: 0, tank: 1, melee: 2, ranged: 3 };
+        filtered.sort((a: any, b: any) => (ROLE_ORDER[a.role] ?? 3) - (ROLE_ORDER[b.role] ?? 3));
 
         setHealers(filtered);
     }, [selectedBoss, currentEvent, eventSignups])
