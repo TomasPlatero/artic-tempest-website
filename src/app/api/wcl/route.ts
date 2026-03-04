@@ -95,11 +95,10 @@ export async function GET(_req: Request) {
         } else {
             // Fetch recent reports list
             const zoneFilter = zoneID ? `, zoneID: ${zoneID}` : '';
-            const tagFilter = tagID ? `, tagID: ${tagID}` : '';
             query = `
             query {
                 reportData {
-                    reports(guildID: 743623, limit: 50${zoneFilter}${tagFilter}) {
+                    reports(guildID: 743623, limit: 50${zoneFilter}) {
                         data {
                             code
                             title
@@ -128,6 +127,12 @@ export async function GET(_req: Request) {
         }
 
         const responseData = await gqlRes.json();
+
+        if (responseData.errors) {
+            console.error("WCL GraphQL errors:", JSON.stringify(responseData.errors));
+            return NextResponse.json({ error: "Error en la consulta a WarcraftLogs" }, { status: 502 });
+        }
+
         return NextResponse.json(responseData.data);
 
     } catch (e: any) {
