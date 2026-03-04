@@ -88,7 +88,6 @@ export async function GET(_req: Request) {
                             startTime
                             zone { name }
                             segments
-                            tag
                         }
                     }
                 }
