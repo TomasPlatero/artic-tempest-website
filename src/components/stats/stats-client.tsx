@@ -456,7 +456,7 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
 
                     {/* WCL REPORT MODAL */}
                     <Dialog open={!!selectedWclReport} onOpenChange={(open) => !open && setSelectedWclReport(null)}>
-                        <DialogContent className="max-w-[95vw] bg-[#0a0a0c] border-border/40 max-h-[85vh] flex flex-col p-0 overflow-hidden">
+                        <DialogContent className="max-w-[95vw] sm:max-w-[95vw] bg-[#0a0a0c] border-border/40 max-h-[85vh] flex flex-col p-0 overflow-hidden">
                             <DialogHeader className="p-6 pb-4 border-b border-border/10 bg-blue-500/5">
                                 <div className="flex items-center justify-between pr-4">
                                     <div>
