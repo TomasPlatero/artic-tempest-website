@@ -535,57 +535,45 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                                             const duration = (wclReportDetails.damageDone?.data?.totalTime || wclReportDetails.healingDone?.data?.totalTime || (wclReportDetails.endTime - wclReportDetails.startTime)) / 1000
                                             const dmgSorted = [...(wclReportDetails.damageDone?.data?.entries || [])].sort((a: any, b: any) => b.total - a.total)
                                             const healSorted = [...(wclReportDetails.healingDone?.data?.entries || [])].sort((a: any, b: any) => b.total - a.total)
+                                            const classColors: Record<string, string> = {
+                                                'DeathKnight': '#C41E3A', 'DemonHunter': '#A330C9', 'Druid': '#FF7C0A',
+                                                'Evoker': '#33937F', 'Hunter': '#AAD372', 'Mage': '#3FC7EB',
+                                                'Monk': '#00FF98', 'Paladin': '#F48CBA', 'Priest': '#FFFFFF',
+                                                'Rogue': '#FFF468', 'Shaman': '#0070DD', 'Warlock': '#8788EE',
+                                                'Warrior': '#C69B6D'
+                                            }
+                                            const getColor = (type: string) => classColors[type] || '#888888'
+
+                                            const renderTable = (entries: any[], label: string, icon: React.ReactNode, metricLabel: string) => (
+                                                <div>
+                                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 mb-3 flex items-center gap-2">
+                                                        {icon} {label}
+                                                    </h3>
+                                                    <div className="rounded-lg border border-border/10 overflow-hidden">
+                                                        <div className="grid grid-cols-[1fr_90px_80px] text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 px-3 py-1.5 border-b border-border/10 bg-muted/5">
+                                                            <span>Nombre</span><span className="text-right">Amount</span><span className="text-right">{metricLabel}</span>
+                                                        </div>
+                                                        {entries.slice(0, 15).map((entry: any, i: number) => {
+                                                            const maxTotal = entries[0]?.total || 1
+                                                            const pct = (entry.total / maxTotal) * 100
+                                                            const color = getColor(entry.type)
+                                                            return (
+                                                                <div key={i} className="relative grid grid-cols-[1fr_90px_80px] items-center px-3 py-1.5 text-xs">
+                                                                    <div className="absolute inset-0 opacity-15" style={{ width: `${pct}%`, backgroundColor: color }} />
+                                                                    <span className="relative font-bold truncate" style={{ color }}>{entry.name}</span>
+                                                                    <span className="relative text-right text-[10px] font-bold text-muted-foreground/60 tabular-nums">{fmt(entry.total)}</span>
+                                                                    <span className="relative text-right text-[10px] font-black text-muted-foreground/80 tabular-nums">{fmt(entry.total / duration)}</span>
+                                                                </div>
+                                                            )
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            )
+
                                             return (
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                    {dmgSorted.length > 0 && (
-                                                        <div>
-                                                            <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 mb-3 flex items-center gap-2">
-                                                                <IconSwords className="size-3.5" /> Damage Done By Source
-                                                            </h3>
-                                                            <div className="rounded-lg border border-border/10 overflow-hidden">
-                                                                <div className="grid grid-cols-[1fr_90px_80px] text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 px-3 py-1.5 border-b border-border/10 bg-muted/5">
-                                                                    <span>Nombre</span><span className="text-right">Amount</span><span className="text-right">DPS</span>
-                                                                </div>
-                                                                {dmgSorted.slice(0, 15).map((entry: any, i: number) => {
-                                                                    const maxTotal = dmgSorted[0]?.total || 1
-                                                                    const pct = (entry.total / maxTotal) * 100
-                                                                    return (
-                                                                        <div key={i} className="relative grid grid-cols-[1fr_90px_80px] items-center px-3 py-1.5 text-xs">
-                                                                            <div className="absolute inset-0 bg-red-500/8" style={{ width: `${pct}%` }} />
-                                                                            <span className="relative font-bold truncate">{entry.name}</span>
-                                                                            <span className="relative text-right text-[10px] font-bold text-muted-foreground/60 tabular-nums">{fmt(entry.total)}</span>
-                                                                            <span className="relative text-right text-[10px] font-black text-muted-foreground/80 tabular-nums">{fmt(entry.total / duration)}</span>
-                                                                        </div>
-                                                                    )
-                                                                })}
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    {healSorted.length > 0 && (
-                                                        <div>
-                                                            <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 mb-3 flex items-center gap-2">
-                                                                <IconTrophy className="size-3.5" /> Healing Done By Source
-                                                            </h3>
-                                                            <div className="rounded-lg border border-border/10 overflow-hidden">
-                                                                <div className="grid grid-cols-[1fr_90px_80px] text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 px-3 py-1.5 border-b border-border/10 bg-muted/5">
-                                                                    <span>Nombre</span><span className="text-right">Amount</span><span className="text-right">HPS</span>
-                                                                </div>
-                                                                {healSorted.slice(0, 15).map((entry: any, i: number) => {
-                                                                    const maxTotal = healSorted[0]?.total || 1
-                                                                    const pct = (entry.total / maxTotal) * 100
-                                                                    return (
-                                                                        <div key={i} className="relative grid grid-cols-[1fr_90px_80px] items-center px-3 py-1.5 text-xs">
-                                                                            <div className="absolute inset-0 bg-emerald-500/8" style={{ width: `${pct}%` }} />
-                                                                            <span className="relative font-bold truncate">{entry.name}</span>
-                                                                            <span className="relative text-right text-[10px] font-bold text-muted-foreground/60 tabular-nums">{fmt(entry.total)}</span>
-                                                                            <span className="relative text-right text-[10px] font-black text-muted-foreground/80 tabular-nums">{fmt(entry.total / duration)}</span>
-                                                                        </div>
-                                                                    )
-                                                                })}
-                                                            </div>
-                                                        </div>
-                                                    )}
+                                                    {dmgSorted.length > 0 && renderTable(dmgSorted, 'Damage Done By Source', <IconSwords className="size-3.5" />, 'DPS')}
+                                                    {healSorted.length > 0 && renderTable(healSorted, 'Healing Done By Source', <IconTrophy className="size-3.5" />, 'HPS')}
                                                 </div>
                                             )
                                         })()}
