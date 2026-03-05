@@ -13,6 +13,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  useSidebar,
 } from "@/components/common/sidebar"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -22,7 +23,7 @@ import {
   IconUsers,
   IconCalendarEvent,
   IconListCheck,
-  IconStethoscope,
+  IconTimeline,
   IconWorld,
   IconFileText,
   IconSearch,
@@ -32,8 +33,11 @@ import {
   IconHistory,
   IconShieldCheck,
   IconInnerShadowTop,
-  IconBell
+  IconBell,
+  IconArrowBarLeft,
+  IconArrowBarRight
 } from "@tabler/icons-react"
+import { usePathname, useSearchParams } from "next/navigation"
 
 const navigationData = {
   general: [
@@ -76,7 +80,7 @@ const navigationData = {
     {
       title: "Planificador",
       url: "/dashboard/planificador-cds",
-      icon: IconStethoscope,
+      icon: IconTimeline,
       appId: "planificador-cds",
     },
     {
@@ -113,6 +117,10 @@ import { supabase } from "@/infrastructure/supabase/client"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession()
+  const { toggleSidebar, state: sidebarState } = useSidebar()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const showCollapseToggle = pathname === '/dashboard/planificador-cds' && searchParams.get('event_id')
   const roleLevel = session?.user?.roleLevel ?? "member"
   const [iconUrl, setIconUrl] = React.useState<string | null>(null)
   const [guildName, setGuildName] = React.useState<string>("Artic Tempest")
@@ -309,6 +317,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         ))}
       </SidebarContent>
       <SidebarFooter>
+        {showCollapseToggle && (
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() => toggleSidebar()}
+                tooltip={sidebarState === 'collapsed' ? 'Expandir menú' : 'Colapsar menú'}
+              >
+                {sidebarState === 'collapsed' ? (
+                  <IconArrowBarRight className="size-4" />
+                ) : (
+                  <IconArrowBarLeft className="size-4" />
+                )}
+                <span>Colapsar menú</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        )}
         <NavUser />
       </SidebarFooter>
     </Sidebar >

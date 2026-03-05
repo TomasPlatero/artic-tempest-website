@@ -12,7 +12,7 @@ import { SidebarInset, SidebarProvider } from "@/components/common/sidebar"
 import React from "react"
 
 export default function SettingsHubPage() {
-    const categories = [
+    const internalSettings = [
         {
             title: "Configuración del Dashboard",
             description: "Información de la hermandad, logotipo y visibilidad de rangos de World of Warcraft.",
@@ -62,12 +62,23 @@ export default function SettingsHubPage() {
             bg: "bg-rose-500/10"
         },
         {
-            title: "Reclutamiento",
-            description: "Gestiona las vacantes de clase, prioridades y el formulario de aplicación público.",
-            icon: IconSearch,
-            href: "/dashboard/settings/recruitment",
-            color: "text-blue-400",
-            bg: "bg-blue-400/10"
+            title: "Documentación API",
+            description: "Información técnica sobre los endpoints del sistema (estilo Swagger) para consultas externas.",
+            icon: IconApi,
+            href: "/dashboard/settings/api",
+            color: "text-purple-500",
+            bg: "bg-purple-500/10"
+        },
+    ]
+
+    const publicSettings = [
+        {
+            title: "Bot de Discord",
+            description: "Vinculación de la App, gestión de Slash Commands y sincronización de comandos.",
+            icon: IconBrandDiscord,
+            href: "/dashboard/settings/discord",
+            color: "text-[#5865F2]",
+            bg: "bg-[#5865F2]/10"
         },
         {
             title: "Twitch Streamers",
@@ -78,22 +89,39 @@ export default function SettingsHubPage() {
             bg: "bg-purple-400/10"
         },
         {
-            title: "Bot de Discord",
-            description: "Vinculación de la App, gestión de Slash Commands y sincronización de comandos.",
-            icon: IconBrandDiscord,
-            href: "/dashboard/settings/discord",
-            color: "text-[#5865F2]",
-            bg: "bg-[#5865F2]/10"
-        },
-        {
-            title: "Documentación API",
-            description: "Información técnica sobre los endpoints del sistema (estilo Swagger) para consultas externas.",
-            icon: IconApi,
-            href: "/dashboard/settings/api",
-            color: "text-purple-500",
-            bg: "bg-purple-500/10"
+            title: "Reclutamiento",
+            description: "Gestiona las vacantes de clase, prioridades y el formulario de aplicación público.",
+            icon: IconSearch,
+            href: "/dashboard/settings/recruitment",
+            color: "text-blue-400",
+            bg: "bg-blue-400/10"
         },
     ]
+
+    const renderCards = (items: typeof internalSettings) => (
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 w-full">
+            {items.map((category) => {
+                const Icon = category.icon;
+                return (
+                    <Link href={category.href} key={category.href} className="transition-all hover:scale-[1.02]">
+                        <Card className="h-full hover:border-primary/50 cursor-pointer overflow-hidden border-border/40 bg-card/40 backdrop-blur-sm">
+                            <CardHeader className="flex flex-row items-center gap-4 py-4 px-5">
+                                <div className={`p-2.5 rounded-xl ${category.bg} ${category.color} shrink-0 shadow-sm border border-white/5`}>
+                                    <Icon className="w-6 h-6" />
+                                </div>
+                                <div className="flex flex-col text-left">
+                                    <CardTitle className="text-lg">{category.title}</CardTitle>
+                                    <CardDescription className="mt-1.5 leading-snug">
+                                        {category.description}
+                                    </CardDescription>
+                                </div>
+                            </CardHeader>
+                        </Card>
+                    </Link>
+                );
+            })}
+        </div>
+    )
 
     return (
         <div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6 lg:px-8">
@@ -104,27 +132,16 @@ export default function SettingsHubPage() {
                 </p>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 mt-4 max-w-5xl">
-                {categories.map((category) => {
-                    const Icon = category.icon;
-                    return (
-                        <Link href={category.href} key={category.href} className="transition-all hover:scale-[1.02]">
-                            <Card className="h-full hover:border-primary/50 cursor-pointer overflow-hidden border-border/40 bg-card/40 backdrop-blur-sm">
-                                <CardHeader className="flex flex-row items-center gap-4 py-4 px-5">
-                                    <div className={`p-2.5 rounded-xl ${category.bg} ${category.color} shrink-0 shadow-sm border border-white/5`}>
-                                        <Icon className="w-6 h-6" />
-                                    </div>
-                                    <div className="flex flex-col text-left">
-                                        <CardTitle className="text-lg">{category.title}</CardTitle>
-                                        <CardDescription className="mt-1.5 leading-snug">
-                                            {category.description}
-                                        </CardDescription>
-                                    </div>
-                                </CardHeader>
-                            </Card>
-                        </Link>
-                    );
-                })}
+            <div className="flex flex-col gap-8 mt-4">
+                <section>
+                    <h2 className="text-sm font-black uppercase tracking-widest text-muted-foreground/60 mb-4">Gestión Interna</h2>
+                    {renderCards(internalSettings)}
+                </section>
+
+                <section>
+                    <h2 className="text-sm font-black uppercase tracking-widest text-muted-foreground/60 mb-4">Parte Pública</h2>
+                    {renderCards(publicSettings)}
+                </section>
             </div>
         </div>
     )

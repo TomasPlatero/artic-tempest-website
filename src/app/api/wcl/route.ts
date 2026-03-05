@@ -7,6 +7,9 @@ export async function GET(_req: Request) {
     try {
         const { searchParams } = new URL(_req.url);
         const reportCode = searchParams.get("code");
+        const zoneID = searchParams.get("zoneID");
+        const guildTagID = searchParams.get("guildTagID");
+        const action = searchParams.get("action");
 
         const session = await getServerSession(authOptions);
         if (!session?.user) {
@@ -52,8 +55,21 @@ export async function GET(_req: Request) {
         // 2. Fetch data via GraphQL
         let query = "";
 
-        if (reportCode) {
-            // Fetch detailed report fights
+        if (action === 'tags') {
+            // Fetch guild tags
+            query = `
+            query {
+                guildData {
+                    guild(id: 743623) {
+                        tags {
+                            id
+                            name
+                        }
+                    }
+                }
+            }`;
+        } else if (reportCode) {
+            // Fetch detailed report fights + summary tables + composition
             query = `
             query {
                 reportData {
@@ -63,6 +79,8 @@ export async function GET(_req: Request) {
                         startTime
                         endTime
                         zone { name }
+                        owner { name }
+                        playerDetails(startTime: 0, endTime: 999999999999, killType: Kills)
                         fights(killType: All) {
                             id
                             name
@@ -73,20 +91,26 @@ export async function GET(_req: Request) {
                             lastPhase
                             friendlyPlayers
                         }
+                        damageDone: table(dataType: DamageDone, startTime: 0, endTime: 999999999999, killType: Kills)
+                        healingDone: table(dataType: Healing, startTime: 0, endTime: 999999999999, killType: Kills)
                     }
                 }
             }`;
         } else {
             // Fetch recent reports list
+            const zoneFilter = zoneID ? `, zoneID: ${zoneID}` : '';
+            const tagFilter = guildTagID ? `, guildTagID: ${guildTagID}` : '';
             query = `
             query {
                 reportData {
-                    reports(guildID: 743623, limit: 12) {
+                    reports(guildID: 743623, limit: 50${zoneFilter}${tagFilter}) {
                         data {
                             code
                             title
                             startTime
                             zone { name }
+                            segments
+                            guildTag { id name }
                         }
                     }
                 }
@@ -109,6 +133,12 @@ export async function GET(_req: Request) {
         }
 
         const responseData = await gqlRes.json();
+
+        if (responseData.errors) {
+            console.error("WCL GraphQL errors:", JSON.stringify(responseData.errors));
+            return NextResponse.json({ error: "Error en la consulta a WarcraftLogs" }, { status: 502 });
+        }
+
         return NextResponse.json(responseData.data);
 
     } catch (e: any) {

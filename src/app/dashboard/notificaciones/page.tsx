@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { Suspense } from "react"
 import { useSession } from "next-auth/react"
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { SiteHeader } from "@/components/layout/site-header"
@@ -142,159 +142,159 @@ export default function NotificationsPage() {
     ]
 
     return (
-        <SidebarProvider style={style}>
-            <AppSidebar variant="inset" />
-            <SidebarInset>
-                <SiteHeader />
-                <div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6 max-w-5xl mx-auto w-full animate-in fade-in duration-500">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div>
-                            <h1 className="text-2xl font-black flex items-center gap-3 tracking-tighter uppercase">
-                                <IconBell className="size-7 text-blue-500" />
-                                Bandeja de Entrada
-                            </h1>
-                            <p className="text-sm text-muted-foreground mt-1 font-medium">
-                                Comunicados oficiales y actualizaciones del equipo de Artic Tempest.
-                            </p>
-                        </div>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="bg-blue-500/5 text-blue-400 border-blue-500/20 hover:bg-blue-500/10 h-10 rounded-xl font-black uppercase text-[10px] tracking-widest"
-                            onClick={markAllAsRead}
-                            disabled={!notifications.some(n => !n.isRead)}
-                        >
-                            <IconCheck className="size-4 mr-2" />
-                            Marcar todo como leído
-                        </Button>
-                    </div>
-
-                    {/* Filtros */}
-                    <div className="flex items-center gap-2 overflow-x-auto pb-4 no-scrollbar scrollbar-hide mt-4 w-full flex-nowrap touch-pan-x translate-z-0 relative z-10">
-                        {filters.map((filter) => (
+        <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-background text-muted-foreground font-black uppercase tracking-[0.3em] text-[10px] italic">Cargando sistema...</div>}>
+            <SidebarProvider style={style}>
+                <AppSidebar variant="inset" />
+                <SidebarInset>
+                    <SiteHeader />
+                    <div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6 max-w-5xl mx-auto w-full animate-in fade-in duration-500">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                                <h1 className="text-2xl font-black flex items-center gap-3 tracking-tighter uppercase">
+                                    <IconBell className="size-7 text-blue-500" />
+                                    Bandeja de Entrada
+                                </h1>
+                                <p className="text-sm text-muted-foreground mt-1 font-medium">
+                                    Comunicados oficiales y actualizaciones del equipo de Artic Tempest.
+                                </p>
+                            </div>
                             <button
-                                key={filter.id}
-                                onClick={() => setActiveFilter(filter.id as any)}
-                                className={cn(
-                                    "whitespace-nowrap px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all duration-300 flex items-center gap-2 shrink-0",
-                                    activeFilter === filter.id
-                                        ? "bg-blue-500 text-white border-blue-400 shadow-[0_5px_15px_rgba(59,130,246,0.3)]"
-                                        : "bg-background/50 text-muted-foreground border-border/40 hover:border-blue-500/30 hover:text-blue-400"
-                                )}
+                                type="button"
+                                className="inline-flex items-center justify-center whitespace-nowrap rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors h-10 px-4 py-2 bg-blue-500/5 text-blue-400 border border-blue-500/20 hover:bg-blue-500/10 disabled:opacity-50 disabled:pointer-events-none"
+                                onClick={markAllAsRead}
+                                disabled={!notifications.some(n => !n.isRead)}
                             >
-                                {filter.label}
-                                {((filter.id === 'all' && notifications.filter(n => !n.isRead).length > 0) || (filter.count !== undefined && filter.count > 0)) && (
-                                    <span className={cn(
-                                        "px-1.5 py-0.5 rounded text-[9px] min-w-4 flex items-center justify-center font-bold",
-                                        activeFilter === filter.id ? "bg-white/20 text-white" : "bg-blue-500/10 text-blue-500"
-                                    )}>
-                                        {filter.id === 'all' ? notifications.filter(n => !n.isRead).length : filter.count}
-                                    </span>
-                                )}
+                                <IconCheck className="size-4 mr-2" />
+                                Marcar todo como leído
                             </button>
-                        ))}
-                    </div>
+                        </div>
 
-                    <div className="flex flex-col gap-4 mt-2">
-                        {loading ? (
-                            <div className="space-y-4">
-                                {[1, 2, 3].map(i => (
-                                    <div key={i} className="h-32 w-full bg-muted/20 animate-pulse rounded-2xl border border-border/20" />
-                                ))}
-                            </div>
-                        ) : filteredNotifications.length === 0 ? (
-                            <Card className="bg-card/30 border-dashed border-border/40 backdrop-blur-sm animate-in fade-in zoom-in duration-500">
-                                <CardContent className="py-24 flex flex-col items-center justify-center text-center">
-                                    <div className="size-16 rounded-3xl bg-muted/20 flex items-center justify-center mb-6 opacity-30">
-                                        <IconBell className="size-8 text-muted-foreground" />
-                                    </div>
-                                    <h3 className="text-xl font-black uppercase tracking-tight">
-                                        {activeFilter === 'unread' || activeFilter === 'all'
-                                            ? "¡Todo al día!"
-                                            : activeFilter === 'read'
-                                                ? "No hay leídos"
-                                                : "Sin resultados"}
-                                    </h3>
-                                    <p className="text-sm text-muted-foreground max-w-xs mt-2 italic font-medium">
-                                        {activeFilter === 'unread' || activeFilter === 'all'
-                                            ? "No tienes mensajes nuevos por revisar en esta sección."
-                                            : activeFilter === 'read'
-                                                ? "Todavía no has marcado ninguna notificación como leída."
-                                                : "No se han encontrado mensajes sin leer en esta categoría."}
-                                    </p>
-                                </CardContent>
-                            </Card>
-                        ) : (
-                            <div className="grid gap-4">
-                                {filteredNotifications.map((n) => (
-                                    <Card
-                                        key={n.id}
-                                        className={cn(
-                                            "relative overflow-hidden transition-all duration-500 border-border/40 group hover:border-blue-500/30",
-                                            !n.isRead
-                                                ? "bg-blue-500/[0.03] border-blue-500/20"
-                                                : "bg-card/20 opacity-70"
-                                        )}
-                                    >
-                                        {!n.isRead && (
-                                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
-                                        )}
-                                        <CardHeader className="flex flex-row items-start gap-4 pb-3">
-                                            <div className={cn(
-                                                "p-3 rounded-xl border shadow-sm transition-colors duration-500",
-                                                !n.isRead ? "bg-blue-500/10 border-blue-500/20" : "bg-muted/10 border-border/20"
-                                            )}>
-                                                {getTypeIcon(n.type)}
-                                            </div>
-                                            <div className="flex-1 flex flex-col gap-1 min-w-0">
-                                                <div className="flex items-center justify-between gap-4">
-                                                    <CardTitle className={cn(
-                                                        "text-xl font-black tracking-tight transition-colors duration-500 truncate",
-                                                        !n.isRead ? "text-white" : "text-zinc-500"
-                                                    )}>
-                                                        {n.title}
-                                                    </CardTitle>
-                                                    {!n.isRead && (
-                                                        <Badge className="bg-blue-500 text-white text-[9px] font-black uppercase tracking-[0.2em] px-2 h-5 rounded-md animate-pulse">Nuevo</Badge>
-                                                    )}
-                                                </div>
-                                                <div className="flex items-center gap-2 text-[10px] text-muted-foreground/60 font-black uppercase tracking-widest">
-                                                    <IconClock className="size-3" />
-                                                    {new Date(n.created_at).toLocaleDateString("es-ES", { day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit' })}
-                                                </div>
-                                            </div>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div
-                                                className={cn(
-                                                    "text-sm leading-relaxed transition-colors duration-500 prose prose-invert prose-sm max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-2 prose-li:my-0.5 prose-img:rounded-xl",
-                                                    !n.isRead ? "text-zinc-200" : "text-zinc-600"
-                                                )}
-                                                dangerouslySetInnerHTML={{
-                                                    __html: DOMPurify.sanitize(n.content)
-                                                }}
-                                            />
-                                            {!n.isRead && (
-                                                <div className="flex justify-end mt-6">
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        className="h-9 px-5 text-[10px] font-black uppercase tracking-widest text-emerald-400 border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 hover:border-emerald-500/40 rounded-xl"
-                                                        onClick={() => markAsRead(n.id)}
-                                                    >
-                                                        <IconCheck className="size-3.5 mr-2" />
-                                                        Marcar como leído
-                                                    </Button>
-                                                </div>
+                        {/* Filtros */}
+                        <div className="flex items-center gap-2 overflow-x-auto pb-4 no-scrollbar scrollbar-hide mt-4 w-full flex-nowrap touch-pan-x translate-z-0 relative z-10">
+                            {filters.map((filter) => (
+                                <button
+                                    key={filter.id}
+                                    onClick={() => setActiveFilter(filter.id as any)}
+                                    className={cn(
+                                        "whitespace-nowrap px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all duration-300 flex items-center gap-2 shrink-0",
+                                        activeFilter === filter.id
+                                            ? "bg-blue-500 text-white border-blue-400 shadow-[0_5px_15px_rgba(59,130,246,0.3)]"
+                                            : "bg-background/50 text-muted-foreground border-border/40 hover:border-blue-500/30 hover:text-blue-400"
+                                    )}
+                                >
+                                    {filter.label}
+                                    {((filter.id === 'all' && notifications.filter(n => !n.isRead).length > 0) || (filter.count !== undefined && filter.count > 0)) && (
+                                        <span className={cn(
+                                            "px-1.5 py-0.5 rounded text-[9px] min-w-4 flex items-center justify-center font-bold",
+                                            activeFilter === filter.id ? "bg-white/20 text-white" : "bg-blue-500/10 text-blue-500"
+                                        )}>
+                                            {filter.id === 'all' ? notifications.filter(n => !n.isRead).length : filter.count}
+                                        </span>
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="flex flex-col gap-4 mt-2">
+                            {loading ? (
+                                <div className="space-y-4">
+                                    {[1, 2, 3].map(i => (
+                                        <div key={i} className="h-32 w-full bg-muted/20 animate-pulse rounded-2xl border border-border/20" />
+                                    ))}
+                                </div>
+                            ) : filteredNotifications.length === 0 ? (
+                                <Card className="bg-card/30 border-dashed border-border/40 backdrop-blur-sm animate-in fade-in zoom-in duration-500">
+                                    <CardContent className="py-24 flex flex-col items-center justify-center text-center">
+                                        <div className="size-16 rounded-3xl bg-muted/20 flex items-center justify-center mb-6 opacity-30">
+                                            <IconBell className="size-8 text-muted-foreground" />
+                                        </div>
+                                        <h3 className="text-xl font-black uppercase tracking-tight">
+                                            {activeFilter === 'unread' || activeFilter === 'all'
+                                                ? "¡Todo al día!"
+                                                : activeFilter === 'read'
+                                                    ? "No hay leídos"
+                                                    : "Sin resultados"}
+                                        </h3>
+                                        <p className="text-sm text-muted-foreground max-w-xs mt-2 italic font-medium">
+                                            {activeFilter === 'unread' || activeFilter === 'all'
+                                                ? "No tienes mensajes nuevos por revisar en esta sección."
+                                                : activeFilter === 'read'
+                                                    ? "Todavía no has marcado ninguna notificación como leída."
+                                                    : "No se han encontrado mensajes sin leer en esta categoría."}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            ) : (
+                                <div className="grid gap-4">
+                                    {filteredNotifications.map((n) => (
+                                        <Card
+                                            key={n.id}
+                                            className={cn(
+                                                "relative overflow-hidden transition-all duration-500 border-border/40 group hover:border-blue-500/30",
+                                                !n.isRead
+                                                    ? "bg-blue-500/[0.03] border-blue-500/20"
+                                                    : "bg-card/20 opacity-70"
                                             )}
-                                        </CardContent>
-                                    </Card>
-                                ))}
-                            </div>
-                        )}
+                                        >
+                                            {!n.isRead && (
+                                                <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
+                                            )}
+                                            <CardHeader className="flex flex-row items-start gap-4 pb-3">
+                                                <div className={cn(
+                                                    "p-3 rounded-xl border shadow-sm transition-colors duration-500",
+                                                    !n.isRead ? "bg-blue-500/10 border-blue-500/20" : "bg-muted/10 border-border/20"
+                                                )}>
+                                                    {getTypeIcon(n.type)}
+                                                </div>
+                                                <div className="flex-1 flex flex-col gap-1 min-w-0">
+                                                    <div className="flex items-center justify-between gap-4">
+                                                        <CardTitle className={cn(
+                                                            "text-xl font-black tracking-tight transition-colors duration-500 truncate",
+                                                            !n.isRead ? "text-white" : "text-zinc-500"
+                                                        )}>
+                                                            {n.title}
+                                                        </CardTitle>
+                                                        {!n.isRead && (
+                                                            <Badge className="bg-blue-500 text-white text-[9px] font-black uppercase tracking-[0.2em] px-2 h-5 rounded-md animate-pulse">Nuevo</Badge>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground/60 font-black uppercase tracking-widest">
+                                                        <IconClock className="size-3" />
+                                                        {new Date(n.created_at).toLocaleDateString("es-ES", { day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit' })}
+                                                    </div>
+                                                </div>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <div
+                                                    className={cn(
+                                                        "text-sm leading-relaxed transition-colors duration-500 prose prose-invert prose-sm max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-2 prose-li:my-0.5 prose-img:rounded-xl",
+                                                        !n.isRead ? "text-zinc-200" : "text-zinc-600"
+                                                    )}
+                                                    dangerouslySetInnerHTML={{
+                                                        __html: DOMPurify.sanitize(n.content)
+                                                    }}
+                                                />
+                                                {!n.isRead && (
+                                                    <div className="flex justify-end mt-6">
+                                                        <button
+                                                            type="button"
+                                                            className="inline-flex items-center justify-center whitespace-nowrap rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors h-9 px-5 bg-emerald-500/5 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/10 hover:border-emerald-500/40"
+                                                            onClick={() => markAsRead(n.id)}
+                                                        >
+                                                            <IconCheck className="size-3.5 mr-2" />
+                                                            Marcar como leído
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
-                </div>
-            </SidebarInset>
-        </SidebarProvider>
+                </SidebarInset>
+            </SidebarProvider>
+        </Suspense>
     )
 }

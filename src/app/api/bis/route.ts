@@ -52,7 +52,8 @@ export async function GET(req: Request) {
             query = query.eq("difficulty", difficulty)
         }
         if (instanceId) {
-            const numericInstanceId = parseInt(instanceId, 10);
+            const normalizedId = instanceId === "voidspire" ? 1267 : instanceId;
+            const numericInstanceId = parseInt(String(normalizedId), 10);
             if (!isNaN(numericInstanceId) && numericInstanceId !== 0) {
                 query = query.eq("instance_id", numericInstanceId)
             }
@@ -113,7 +114,10 @@ export async function POST(req: Request) {
                 boss_name: boss_name || null,
                 priority: priority || 2,
                 difficulty: difficulty || "heroic",
-                instance_id: (instance_id && instance_id !== "default") ? parseInt(instance_id, 10) : 0,
+                instance_id: (() => {
+                    const normalizedId = instance_id === "voidspire" ? 1267 : instance_id;
+                    return (normalizedId && normalizedId !== "default") ? parseInt(String(normalizedId), 10) : 0;
+                })(),
             }, { onConflict: "member_id,item_id,difficulty" })
             .select()
             .single()

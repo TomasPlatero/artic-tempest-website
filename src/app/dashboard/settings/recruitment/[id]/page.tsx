@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { IconArrowLeft } from "@tabler/icons-react"
 import Link from "next/link"
 import { fetchCharacterRIO } from "@/infrastructure/raiderio/raiderio-client"
+import { fetchCharacterItemLevel, toSlug } from "@/infrastructure/bnet/bnet-client"
 
 export default async function ApplicationDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -43,8 +44,12 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
     const rioData = await fetchCharacterRIO(charName, charRealm)
     console.log(`[Server] RIO Data ${rioData ? 'FOUND' : 'NOT FOUND (404/Error)'}`)
 
+    console.log(`[Server] Fetching BNET iLvl for ${charName} - ${charRealm}`)
+    const bnetData = await fetchCharacterItemLevel(toSlug(charRealm), toSlug(charName))
+    console.log(`[Server] BNET Data ${bnetData ? 'FOUND' : 'NOT FOUND'}`)
+
     return (
-        <div className="flex flex-col gap-6 p-4 md:p-6 lg:px-8 max-w-6xl mx-auto">
+        <div className="flex flex-col gap-6 p-4 md:p-6 lg:px-8 w-full max-w-full">
             <div className="flex items-center gap-4">
                 <Button variant="ghost" size="icon" asChild className="rounded-full">
                     <Link href="/dashboard/settings/recruitment?tab=inbox">
@@ -64,6 +69,7 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
                 answers={answers || []}
                 classConstants={classConstants || []}
                 initialRioData={rioData}
+                initialBnetData={bnetData}
             />
         </div>
     )

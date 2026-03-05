@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { IconBell, IconInfoCircle, IconAlertCircle, IconTimeline, IconCheck } from "@tabler/icons-react";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
@@ -73,81 +73,83 @@ export default function NotificationsPage() {
     } as React.CSSProperties
 
     return (
-        <SidebarProvider style={style}>
-            <AppSidebar variant="inset" />
-            <SidebarInset>
-                <SiteHeader />
-                <div className="p-6 md:p-10 max-w-5xl mx-auto space-y-8 animate-in fade-in duration-700">
-                    <div className="flex flex-col gap-2">
-                        <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
-                            Bandeja de Entrada
-                            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
-                                {notifications.filter(n => !n.isRead).length} Pendientes
-                            </Badge>
-                        </h1>
-                        <p className="text-muted-foreground">Mensajes del sistema y actualizaciones de la hermandad.</p>
-                    </div>
+        <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-background text-muted-foreground font-black uppercase tracking-[0.3em] text-[10px] italic">Cargando sistema...</div>}>
+            <SidebarProvider style={style}>
+                <AppSidebar variant="inset" />
+                <SidebarInset>
+                    <SiteHeader />
+                    <div className="p-6 md:p-10 max-w-5xl mx-auto space-y-8 animate-in fade-in duration-700">
+                        <div className="flex flex-col gap-2">
+                            <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
+                                Bandeja de Entrada
+                                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+                                    {notifications.filter(n => !n.isRead).length} Pendientes
+                                </Badge>
+                            </h1>
+                            <p className="text-muted-foreground">Mensajes del sistema y actualizaciones de la hermandad.</p>
+                        </div>
 
-                    {loading ? (
-                        <div className="flex flex-col gap-4">
-                            {[1, 2, 3].map(i => (
-                                <div key={i} className="h-24 w-full bg-muted/20 animate-pulse rounded-2xl border border-border/40" />
-                            ))}
-                        </div>
-                    ) : notifications.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-50">
-                            <IconBell className="size-16" />
-                            <p className="font-medium">No tienes notificaciones en este momento.</p>
-                        </div>
-                    ) : (
-                        <div className="grid gap-4">
-                            {notifications.map((n) => (
-                                <div
-                                    key={n.id}
-                                    className={cn(
-                                        "group relative p-6 rounded-2xl border transition-all duration-300",
-                                        n.isRead
-                                            ? "bg-muted/10 border-border/20 grayscale-[0.5] opacity-80"
-                                            : "bg-card border-primary/20 shadow-lg shadow-primary/5 ring-1 ring-primary/10"
-                                    )}
-                                >
-                                    <div className="flex items-start gap-4">
-                                        <div className={cn(
-                                            "p-3 rounded-xl border flex-shrink-0",
-                                            n.isRead ? "bg-muted/30 border-border/10" : "bg-primary/10 border-primary/20"
-                                        )}>
-                                            {getTypeIcon(n.type)}
-                                        </div>
-                                        <div className="flex-1 min-w-0 space-y-1">
-                                            <div className="flex items-center justify-between gap-4">
-                                                <h3 className={cn("text-lg font-bold truncate", n.isRead ? "text-muted-foreground" : "text-foreground")}>
-                                                    {n.title}
-                                                </h3>
-                                                <span className="text-[10px] font-mono text-muted-foreground shrink-0 uppercase">
-                                                    {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: es })}
-                                                </span>
-                                            </div>
-                                            <p className="text-sm text-muted-foreground/80 leading-relaxed whitespace-pre-wrap">
-                                                {n.content}
-                                            </p>
-                                        </div>
-                                        {!n.isRead && (
-                                            <Button
-                                                size="icon"
-                                                variant="ghost"
-                                                className="rounded-full hover:bg-primary/20 text-primary opacity-0 group-hover:opacity-100 transition-opacity"
-                                                onClick={() => markAsRead(n.id)}
-                                            >
-                                                <IconCheck className="size-5" />
-                                            </Button>
+                        {loading ? (
+                            <div className="flex flex-col gap-4">
+                                {[1, 2, 3].map(i => (
+                                    <div key={i} className="h-24 w-full bg-muted/20 animate-pulse rounded-2xl border border-border/40" />
+                                ))}
+                            </div>
+                        ) : notifications.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-50">
+                                <IconBell className="size-16" />
+                                <p className="font-medium">No tienes notificaciones en este momento.</p>
+                            </div>
+                        ) : (
+                            <div className="grid gap-4">
+                                {notifications.map((n) => (
+                                    <div
+                                        key={n.id}
+                                        className={cn(
+                                            "group relative p-6 rounded-2xl border transition-all duration-300",
+                                            n.isRead
+                                                ? "bg-muted/10 border-border/20 grayscale-[0.5] opacity-80"
+                                                : "bg-card border-primary/20 shadow-lg shadow-primary/5 ring-1 ring-primary/10"
                                         )}
+                                    >
+                                        <div className="flex items-start gap-4">
+                                            <div className={cn(
+                                                "p-3 rounded-xl border flex-shrink-0",
+                                                n.isRead ? "bg-muted/30 border-border/10" : "bg-primary/10 border-primary/20"
+                                            )}>
+                                                {getTypeIcon(n.type)}
+                                            </div>
+                                            <div className="flex-1 min-w-0 space-y-1">
+                                                <div className="flex items-center justify-between gap-4">
+                                                    <h3 className={cn("text-lg font-bold truncate", n.isRead ? "text-muted-foreground" : "text-foreground")}>
+                                                        {n.title}
+                                                    </h3>
+                                                    <span className="text-[10px] font-mono text-muted-foreground shrink-0 uppercase">
+                                                        {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: es })}
+                                                    </span>
+                                                </div>
+                                                <p className="text-sm text-muted-foreground/80 leading-relaxed whitespace-pre-wrap">
+                                                    {n.content}
+                                                </p>
+                                            </div>
+                                            {!n.isRead && (
+                                                <Button
+                                                    size="icon"
+                                                    variant="ghost"
+                                                    className="rounded-full hover:bg-primary/20 text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    onClick={() => markAsRead(n.id)}
+                                                >
+                                                    <IconCheck className="size-5" />
+                                                </Button>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </SidebarInset>
-        </SidebarProvider>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </SidebarInset>
+            </SidebarProvider>
+        </Suspense>
     );
 }

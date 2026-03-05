@@ -16,6 +16,13 @@ import { Input } from "@/components/ui/input"
 import Image from "next/image"
 import { cn } from "@/infrastructure/tailwind/tailwind-utils"
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import {
     Dialog,
     DialogContent,
     DialogDescription,
@@ -50,6 +57,27 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
     const [selectedWclReport, setSelectedWclReport] = useState<any>(null)
     const [wclReportDetails, setWclReportDetails] = useState<any>(null)
     const [isFetchingWclDetail, setIsFetchingWclDetail] = useState(false)
+    const [wclModalTab, setWclModalTab] = useState<'sumario' | 'intentos'>('sumario')
+    const [wclZoneFilter, setWclZoneFilter] = useState<string>("all")
+    const [wclTagFilter, setWclTagFilter] = useState<string>("all")
+    const [wclTags, setWclTags] = useState<{ id: number, name: string }[]>([])
+
+    // WCL Zone IDs grouped by expansion/season
+    const WCL_ZONES = [
+        {
+            group: "Midnight", zones: [
+                { id: "46", name: "Todas las Raids (VS/DR/MQD)" },
+            ]
+        },
+        {
+            group: "The War Within", zones: [
+                { id: "44", name: "Forja de Maná Omega" },
+                { id: "42", name: "Liberación de Minahonda" },
+                { id: "38", name: "Palacio Nerub'ar" },
+                { id: "40", name: "Blackrock Depths" },
+            ]
+        },
+    ]
 
     const handleViewWclReport = async (report: any) => {
         setSelectedWclReport(report)
@@ -68,16 +96,39 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
     }
 
     const filteredWclReports = useMemo(() => {
-        return wclReports.filter(report =>
-            report.title.toLowerCase().includes(wclSearchQuery.toLowerCase()) ||
-            report.zone?.name?.toLowerCase().includes(wclSearchQuery.toLowerCase())
-        )
+        return wclReports.filter(report => {
+            // Filter out empty logs (no combat segments)
+            if (report.segments === 0) return false
+            // Text search filter
+            return report.title.toLowerCase().includes(wclSearchQuery.toLowerCase()) ||
+                report.zone?.name?.toLowerCase().includes(wclSearchQuery.toLowerCase())
+        })
     }, [wclReports, wclSearchQuery])
 
+    // Fetch guild tags once
+    useEffect(() => {
+        async function fetchTags() {
+            try {
+                const res = await fetch('/api/wcl?action=tags')
+                const data = await res.json()
+                if (data?.guildData?.guild?.tags) {
+                    setWclTags(data.guildData.guild.tags)
+                }
+            } catch (e) {
+                console.error('Error fetching WCL tags:', e)
+            }
+        }
+        fetchTags()
+    }, [])
+
+    // Fetch WCL reports (re-fetches when zone or tag filter changes)
     useEffect(() => {
         async function fetchWCL() {
+            setIsLoadingWcl(true)
             try {
-                const res = await fetch("/api/wcl?t=" + Date.now())
+                const zoneParam = wclZoneFilter !== 'all' ? `&zoneID=${wclZoneFilter}` : ''
+                const tagParam = wclTagFilter !== 'all' ? `&guildTagID=${wclTagFilter}` : ''
+                const res = await fetch(`/api/wcl?t=${Date.now()}${zoneParam}${tagParam}`)
                 const data = await res.json()
                 if (!res.ok) {
                     throw new Error(data.error || "Error al cargar datos de WCL")
@@ -92,7 +143,7 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
             }
         }
         fetchWCL()
-    }, [])
+    }, [wclZoneFilter, wclTagFilter])
 
     const [searchQuery, setSearchQuery] = useState("")
     const [topMembers, setTopMembers] = useState<any[]>([])
@@ -305,7 +356,7 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                                         Accede a los últimos reportes y análisis de combate de la hermandad.
                                     </CardDescription>
                                 </div>
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-3 flex-wrap">
                                     <a
                                         href="https://www.warcraftlogs.com/guild/id/743623"
                                         target="_blank"
@@ -315,7 +366,36 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                                         <IconSwords className="size-4" />
                                         Perfil de Hermandad
                                     </a>
-                                    <div className="relative w-full md:w-64">
+                                    <Select value={wclZoneFilter} onValueChange={setWclZoneFilter}>
+                                        <SelectTrigger className="h-9 w-auto min-w-[200px] bg-background/50 border-border/40 text-xs">
+                                            <SelectValue placeholder="Raid / Zona" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">Todas las zonas</SelectItem>
+                                            {WCL_ZONES.map((group) => (
+                                                <div key={group.group}>
+                                                    <div className="px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">{group.group}</div>
+                                                    {group.zones.map((z) => (
+                                                        <SelectItem key={z.id} value={z.id}>{z.name}</SelectItem>
+                                                    ))}
+                                                </div>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {wclTags.length > 0 && (
+                                        <Select value={wclTagFilter} onValueChange={setWclTagFilter}>
+                                            <SelectTrigger className="h-9 w-auto min-w-[130px] bg-background/50 border-border/40 text-xs">
+                                                <SelectValue placeholder="Tag" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">Todos los Tags</SelectItem>
+                                                {wclTags.map((tag) => (
+                                                    <SelectItem key={tag.id} value={String(tag.id)}>{tag.name}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                    <div className="relative w-full md:w-48">
                                         <IconSearch className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
                                         <Input
                                             placeholder="Buscar reporte..."
@@ -344,28 +424,29 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                                     <p className="italic">No se encontraron reportes{wclSearchQuery && ` para "${wclSearchQuery}"`}</p>
                                 </div>
                             ) : (
-                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                <div className="flex flex-col divide-y divide-border/10">
                                     {filteredWclReports.map((report: any) => (
                                         <div
                                             key={report.code}
                                             onClick={() => handleViewWclReport(report)}
-                                            className="block group cursor-pointer"
+                                            className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-blue-500/5 transition-colors group"
                                         >
-                                            <div className="flex flex-col gap-3 p-4 rounded-xl border border-border/30 bg-muted/10 hover:bg-blue-500/5 hover:border-blue-500/30 transition-all duration-300 relative overflow-hidden h-full">
-                                                <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <IconSwords className="size-4 text-blue-500/50" />
-                                                </div>
-                                                <div className="font-bold text-sm group-hover:text-blue-400 transition-colors line-clamp-2 min-h-[40px]">
-                                                    {report.title}
-                                                </div>
-                                                <div className="mt-auto pt-3 border-t border-border/10 flex items-center justify-between">
-                                                    <Badge variant="secondary" className="bg-background/80 text-[10px] font-bold text-muted-foreground/80 py-0 px-1.5">
-                                                        {report.zone?.name || "Desconocido"}
+                                            <IconSwords className="size-4 text-muted-foreground/30 group-hover:text-blue-500/60 transition-colors shrink-0" />
+                                            <span className="font-bold text-sm group-hover:text-blue-400 transition-colors truncate flex-1 min-w-0">
+                                                {report.title}
+                                            </span>
+                                            <div className="flex items-center gap-2 shrink-0">
+                                                <Badge variant="secondary" className="bg-background/80 text-[10px] font-bold text-muted-foreground/80 py-0 px-1.5">
+                                                    {report.zone?.name || "Desconocido"}
+                                                </Badge>
+                                                {report.guildTag?.name && (
+                                                    <Badge variant="outline" className="text-[10px] font-bold py-0 px-1.5 border-blue-500/30 text-blue-400/80">
+                                                        {report.guildTag.name}
                                                     </Badge>
-                                                    <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-wider">
-                                                        {new Date(report.startTime).toLocaleDateString()}
-                                                    </span>
-                                                </div>
+                                                )}
+                                                <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-wider w-20 text-right">
+                                                    {new Date(report.startTime).toLocaleDateString()}
+                                                </span>
                                             </div>
                                         </div>
                                     ))}
@@ -376,15 +457,15 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
 
                     {/* WCL REPORT MODAL */}
                     <Dialog open={!!selectedWclReport} onOpenChange={(open) => !open && setSelectedWclReport(null)}>
-                        <DialogContent className="max-w-2xl bg-[#0a0a0c] border-border/40 max-h-[90vh] flex flex-col p-0 overflow-hidden">
+                        <DialogContent className="max-w-[95vw] sm:max-w-[95vw] bg-[#0a0a0c] border-border/40 max-h-[85vh] flex flex-col p-0 overflow-hidden">
                             <DialogHeader className="p-6 pb-4 border-b border-border/10 bg-blue-500/5">
                                 <div className="flex items-center justify-between pr-4">
                                     <div>
-                                        <DialogTitle className="text-xl font-black text-blue-400">
+                                        <DialogTitle className="text-xl font-black text-blue-400 capitalize">
                                             {selectedWclReport?.title}
                                         </DialogTitle>
                                         <DialogDescription className="text-xs mt-1">
-                                            {selectedWclReport?.zone?.name} • {selectedWclReport && new Date(selectedWclReport.startTime).toLocaleDateString()}
+                                            {selectedWclReport?.zone?.name} • {selectedWclReport && new Date(selectedWclReport.startTime).toLocaleDateString()}{wclReportDetails?.owner?.name && <> • Creado por <span className="text-blue-400/70 font-bold">{wclReportDetails.owner.name}</span></>}
                                         </DialogDescription>
                                     </div>
                                     {selectedWclReport && (
@@ -401,6 +482,24 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                                 </div>
                             </DialogHeader>
 
+                            {/* TAB BAR */}
+                            <div className="flex border-b border-border/10 px-6">
+                                <button
+                                    onClick={() => setWclModalTab('sumario')}
+                                    className={cn(
+                                        'px-4 py-2.5 text-xs font-black uppercase tracking-widest transition-all border-b-2 -mb-px',
+                                        wclModalTab === 'sumario' ? 'text-blue-400 border-blue-500' : 'text-muted-foreground/50 border-transparent hover:text-muted-foreground'
+                                    )}
+                                >Sumario</button>
+                                <button
+                                    onClick={() => setWclModalTab('intentos')}
+                                    className={cn(
+                                        'px-4 py-2.5 text-xs font-black uppercase tracking-widest transition-all border-b-2 -mb-px',
+                                        wclModalTab === 'intentos' ? 'text-blue-400 border-blue-500' : 'text-muted-foreground/50 border-transparent hover:text-muted-foreground'
+                                    )}
+                                >Intentos</button>
+                            </div>
+
                             <div className="flex-1 overflow-y-auto p-6 scrollbar-thin">
                                 {isFetchingWclDetail ? (
                                     <div className="flex flex-col items-center justify-center py-12 gap-4 animate-pulse">
@@ -409,51 +508,144 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                                     </div>
                                 ) : wclReportDetails ? (
                                     <div className="space-y-6">
-                                        <div className="grid grid-cols-1 gap-2">
-                                            {wclReportDetails.fights && wclReportDetails.fights.length > 0 ? (
-                                                wclReportDetails.fights.map((fight: any, i: number) => (
-                                                    <a
-                                                        href={`https://www.warcraftlogs.com/reports/${selectedWclReport.code}#fight=${fight.id}`}
-                                                        target="_blank"
-                                                        rel="noreferrer"
-                                                        key={i}
-                                                        className="flex items-center justify-between p-3 rounded-lg border border-border/10 bg-background/40 group hover:border-blue-500/30 hover:bg-blue-500/[0.03] transition-all"
-                                                    >
-                                                        <div className="flex items-center gap-3">
-                                                            <div className={cn(
-                                                                "size-6 rounded-md flex items-center justify-center text-[10px] font-black",
-                                                                fight.kill ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"
-                                                            )}>
-                                                                {fight.kill ? <IconCheck className="size-3.5" /> : <IconX className="size-3.5" />}
-                                                            </div>
-                                                            <div className="flex flex-col">
-                                                                <div className="flex items-center gap-2">
-                                                                    <span className="text-sm font-bold group-hover:text-blue-400 transition-colors">{fight.name}</span>
-                                                                    <IconExternalLink className="size-3 opacity-0 group-hover:opacity-40 transition-opacity" />
+                                        {wclModalTab === 'sumario' && (<>
+                                            {/* GROUP COMPOSITION */}
+                                            {wclReportDetails.playerDetails?.data?.playerDetails && (() => {
+                                                const pd = wclReportDetails.playerDetails.data.playerDetails
+                                                const tanks = pd.tanks || []
+                                                const healersList = pd.healers || []
+                                                const dpsList = pd.dps || []
+                                                if (tanks.length === 0 && healersList.length === 0 && dpsList.length === 0) return null
+                                                return (
+                                                    <div className="rounded-lg border border-border/10 bg-background/30 p-4">
+                                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 mb-3">Composición del grupo</h3>
+                                                        <div className="flex flex-col gap-2">
+                                                            {tanks.length > 0 && (
+                                                                <div className="flex items-center gap-2 flex-wrap">
+                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-blue-400/60 w-16 shrink-0">Tanks:</span>
+                                                                    {tanks.map((p: any) => (
+                                                                        <Badge key={p.name} variant="outline" className="text-[10px] font-bold py-0 px-1.5 border-blue-500/20 text-blue-300/70">{p.name}</Badge>
+                                                                    ))}
                                                                 </div>
-                                                                <span className="text-[10px] uppercase font-black text-muted-foreground/50 tracking-tighter">
-                                                                    {fight.difficulty === 3 ? "Normal" : fight.difficulty === 4 ? "Heroico" : fight.difficulty === 5 ? "Mítico" : "Buscador"}
-                                                                </span>
-                                                            </div>
+                                                            )}
+                                                            {healersList.length > 0 && (
+                                                                <div className="flex items-center gap-2 flex-wrap">
+                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400/60 w-16 shrink-0">Healers:</span>
+                                                                    {healersList.map((p: any) => (
+                                                                        <Badge key={p.name} variant="outline" className="text-[10px] font-bold py-0 px-1.5 border-emerald-500/20 text-emerald-300/70">{p.name}</Badge>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                            {dpsList.length > 0 && (
+                                                                <div className="flex items-center gap-2 flex-wrap">
+                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-red-400/60 w-16 shrink-0">DPS:</span>
+                                                                    {dpsList.map((p: any) => (
+                                                                        <Badge key={p.name} variant="outline" className="text-[10px] font-bold py-0 px-1.5 border-red-500/20 text-red-300/70">{p.name}</Badge>
+                                                                    ))}
+                                                                </div>
+                                                            )}
                                                         </div>
+                                                    </div>
+                                                )
+                                            })()}
 
-                                                        <div className="flex items-center gap-4">
-                                                            {!fight.kill && (
-                                                                <div className="flex flex-col items-end">
-                                                                    <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-tighter">Mejor Intento</span>
-                                                                    <span className="text-xs font-black text-red-400/80">{(fight.fightPercentage / 100).toFixed(1)}%</span>
-                                                                </div>
-                                                            )}
-                                                            {fight.kill && (
-                                                                <Badge className="bg-emerald-500/10 text-emerald-500 border-none text-[9px] font-black uppercase">Derrotado</Badge>
-                                                            )}
+                                            {/* DAMAGE & HEALING TABLES */}
+                                            {(wclReportDetails.damageDone?.data?.entries?.length > 0 || wclReportDetails.healingDone?.data?.entries?.length > 0) && (() => {
+                                                const fmt = (n: number) => n >= 1000000 ? (n / 1000000).toFixed(2) + 'm' : n >= 1000 ? (n / 1000).toFixed(1) + 'k' : n.toFixed(0)
+                                                const duration = (wclReportDetails.damageDone?.data?.totalTime || wclReportDetails.healingDone?.data?.totalTime || (wclReportDetails.endTime - wclReportDetails.startTime)) / 1000
+                                                const dmgSorted = [...(wclReportDetails.damageDone?.data?.entries || [])].sort((a: any, b: any) => b.total - a.total)
+                                                const healSorted = [...(wclReportDetails.healingDone?.data?.entries || [])].sort((a: any, b: any) => b.total - a.total)
+                                                const classColors: Record<string, string> = {
+                                                    'DeathKnight': '#C41E3A', 'DemonHunter': '#A330C9', 'Druid': '#FF7C0A',
+                                                    'Evoker': '#33937F', 'Hunter': '#AAD372', 'Mage': '#3FC7EB',
+                                                    'Monk': '#00FF98', 'Paladin': '#F48CBA', 'Priest': '#FFFFFF',
+                                                    'Rogue': '#FFF468', 'Shaman': '#0070DD', 'Warlock': '#8788EE',
+                                                    'Warrior': '#C69B6D'
+                                                }
+                                                const getColor = (type: string) => classColors[type] || '#888888'
+
+                                                const renderTable = (entries: any[], label: string, icon: React.ReactNode, metricLabel: string) => (
+                                                    <div>
+                                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 mb-3 flex items-center gap-2">
+                                                            {icon} {label}
+                                                        </h3>
+                                                        <div className="rounded-lg border border-border/10 overflow-hidden">
+                                                            <div className="grid grid-cols-[1fr_90px_80px] text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 px-3 py-1.5 border-b border-border/10 bg-muted/5">
+                                                                <span>Nombre</span><span className="text-right">Amount</span><span className="text-right">{metricLabel}</span>
+                                                            </div>
+                                                            {entries.slice(0, 15).map((entry: any, i: number) => {
+                                                                const maxTotal = entries[0]?.total || 1
+                                                                const pct = (entry.total / maxTotal) * 100
+                                                                const color = getColor(entry.type)
+                                                                return (
+                                                                    <div key={i} className="relative grid grid-cols-[1fr_90px_80px] items-center px-3 py-1.5 text-xs">
+                                                                        <div className="absolute inset-0 opacity-15" style={{ width: `${pct}%`, backgroundColor: color }} />
+                                                                        <span className="relative font-bold truncate" style={{ color }}>{entry.name}</span>
+                                                                        <span className="relative text-right text-[10px] font-bold text-muted-foreground/60 tabular-nums">{fmt(entry.total)}</span>
+                                                                        <span className="relative text-right text-[10px] font-black text-muted-foreground/80 tabular-nums">{fmt(entry.total / duration)}</span>
+                                                                    </div>
+                                                                )
+                                                            })}
                                                         </div>
-                                                    </a>
-                                                ))
-                                            ) : (
-                                                <div className="text-center py-8 text-xs text-muted-foreground italic">No se encontraron combates registrados.</div>
-                                            )}
-                                        </div>
+                                                    </div>
+                                                )
+
+                                                return (
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                        {dmgSorted.length > 0 && renderTable(dmgSorted, 'Daño hecho por fuente', <IconSwords className="size-3.5" />, 'DPS')}
+                                                        {healSorted.length > 0 && renderTable(healSorted, 'Sanación hecha por fuente', <IconTrophy className="size-3.5" />, 'HPS')}
+                                                    </div>
+                                                )
+                                            })()}
+                                        </>)}
+
+                                        {wclModalTab === 'intentos' && (
+                                            <div className="grid grid-cols-1 gap-2">
+                                                {wclReportDetails.fights && wclReportDetails.fights.length > 0 ? (
+                                                    wclReportDetails.fights.map((fight: any, i: number) => (
+                                                        <a
+                                                            href={`https://www.warcraftlogs.com/reports/${selectedWclReport?.code}#fight=${fight.id}`}
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                            key={i}
+                                                            className="flex items-center justify-between p-3 rounded-lg border border-border/10 bg-background/40 group hover:border-blue-500/30 hover:bg-blue-500/[0.03] transition-all"
+                                                        >
+                                                            <div className="flex items-center gap-3">
+                                                                <div className={cn(
+                                                                    "size-6 rounded-md flex items-center justify-center text-[10px] font-black",
+                                                                    fight.kill ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"
+                                                                )}>
+                                                                    {fight.kill ? <IconCheck className="size-3.5" /> : <IconX className="size-3.5" />}
+                                                                </div>
+                                                                <div className="flex flex-col">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className="text-sm font-bold group-hover:text-blue-400 transition-colors">{fight.name}</span>
+                                                                        <IconExternalLink className="size-3 opacity-0 group-hover:opacity-40 transition-opacity" />
+                                                                    </div>
+                                                                    <span className="text-[10px] uppercase font-black text-muted-foreground/50 tracking-tighter">
+                                                                        {fight.difficulty === 3 ? "Normal" : fight.difficulty === 4 ? "Heroico" : fight.difficulty === 5 ? "Mítico" : "Buscador"}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="flex items-center gap-4">
+                                                                {!fight.kill && (
+                                                                    <div className="flex flex-col items-end">
+                                                                        <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-tighter">Mejor Intento</span>
+                                                                        <span className="text-xs font-black text-red-400/80">{(fight.fightPercentage / 100).toFixed(1)}%</span>
+                                                                    </div>
+                                                                )}
+                                                                {fight.kill && (
+                                                                    <Badge className="bg-emerald-500/10 text-emerald-500 border-none text-[9px] font-black uppercase">Derrotado</Badge>
+                                                                )}
+                                                            </div>
+                                                        </a>
+                                                    ))
+                                                ) : (
+                                                    <div className="text-center py-8 text-xs text-muted-foreground italic">No se encontraron combates registrados.</div>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 ) : (
                                     <div className="text-center py-12 text-sm text-red-400">Error al cargar el sumario.</div>

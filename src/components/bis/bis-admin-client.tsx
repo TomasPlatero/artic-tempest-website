@@ -173,16 +173,14 @@ export function BisAdminClient() {
                                         src={CLASS_IMAGES[m.class_id] || "/assets/images/classes/1.jpg"}
                                         alt="" fill className="object-cover rounded-md border border-white/5 shadow-lg"
                                     />
-                                    <div className="absolute -bottom-1 -right-1 size-4 bg-background rounded-full border border-border/50 flex items-center justify-center">
-                                        <span className="text-[8px] font-bold">{m.rank}</span>
-                                    </div>
+
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="font-bold text-sm truncate group-hover:text-primary transition-colors">
                                         {m.character_name}
                                     </p>
                                     <p className="text-[10px] text-muted-foreground uppercase font-medium tracking-tight">
-                                        {rankNames[m.rank] || "???"} · {m.realm_slug}
+                                        {m.realm_slug}
                                     </p>
                                 </div>
                                 <div className="text-right">
@@ -222,11 +220,8 @@ export function BisAdminClient() {
                                         />
                                     </div>
                                     <div>
-                                        <h2 className="text-2xl font-black uppercase tracking-tighter italic flex items-center gap-3">
+                                        <h2 className="text-2xl font-black uppercase tracking-tighter italic">
                                             {selectedMember.character_name}
-                                            <Badge className="bg-primary/20 text-primary border-primary/20 font-black italic">
-                                                {rankNames[selectedMember.rank] || "???"}
-                                            </Badge>
                                         </h2>
                                         <p className="text-sm text-muted-foreground flex items-center gap-2 mt-0.5">
                                             {selectedMember.realm_slug} · {selections.length} ítems seleccionados
@@ -287,7 +282,7 @@ export function BisAdminClient() {
                                                 <div className="p-4 flex items-center gap-4">
                                                     <div className="size-12 relative rounded-lg overflow-hidden border border-white/5 shadow-xl shrink-0">
                                                         {sel.item_icon ? (
-                                                            <Image src={sel.item_icon} alt="" fill className="object-cover" />
+                                                            <Image unoptimized src={sel.item_icon} alt="" fill className="object-cover" />
                                                         ) : (
                                                             <div className="size-12 bg-muted flex items-center justify-center">
                                                                 <IconSword className="size-6 text-muted-foreground/30" />
