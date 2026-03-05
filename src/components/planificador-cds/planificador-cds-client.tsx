@@ -175,7 +175,7 @@ export function PlanificadorCdsClient() {
 
     // Viserio Timeline State
     const [assignments, setAssignments] = useState<{ id: string, member_id: string, cooldown_id: string, time_seconds: number }[]>([])
-    const TOTAL_FIGHT_SECONDS = 555 // 9 minutes 15 seconds
+    const TOTAL_FIGHT_SECONDS = 540 // 9 minutes (enrage)
 
     // Interactive Timeline State
     const [hoverTime, setHoverTime] = useState<number | null>(null)
@@ -844,14 +844,14 @@ export function PlanificadorCdsClient() {
                     </div>
                     <div className="flex-1">
                         <h1 className="text-[28px] font-black uppercase tracking-tight text-white mb-1">Planificador de CD&apos;s</h1>
-                        <p className="text-[10px] font-bold text-blue-400/80 uppercase tracking-[0.3em] font-mono">Midnight Expansion • Coord. de Hermandad</p>
+                        <p className="text-[10px] font-bold text-blue-400/80 uppercase tracking-[0.3em] font-mono">Planificador de Cd's y Asignaciones.</p>
                     </div>
                 </div>
             </Card>
 
             {/* Active Event Information */}
             {eventIdParam && currentEvent && (
-                <div className="mb-2">
+                <div className="mb-2 mt-3">
                     <div className="bg-blue-600/5 border border-blue-500/20 rounded-xl p-4 backdrop-blur-md flex items-center justify-between group/event-banner hover:border-blue-500/40 transition-all duration-300">
                         <div className="flex items-center gap-6">
                             <div className="flex flex-col">
@@ -988,8 +988,8 @@ export function PlanificadorCdsClient() {
                 </TabsContent>
 
                 <TabsContent value="planner" className="flex-1 m-0 flex flex-col min-h-0 bg-[#121217] data-[state=inactive]:hidden">
-                    <Card className="bg-[#121217] flex-1 border-border/50 shadow-2xl rounded-xl flex flex-col min-h-0 overflow-hidden relative">
-                        <div className="flex border-b border-border/40 bg-muted/5 items-center justify-between px-6 h-16 shrink-0 relative z-50">
+                    <Card className="bg-[#121217] flex-1 border-border/50 shadow-2xl rounded-xl flex flex-col min-h-0 overflow-hidden relative pt-2 pb-0">
+                        <div className="flex border-b border-border/40 bg-muted/5 items-center justify-between px-4 h-15 shrink-0 relative z-50">
                             <div className="flex items-center gap-4">
                                 <Button
                                     variant="ghost"
@@ -1178,14 +1178,11 @@ export function PlanificadorCdsClient() {
                                 <div className="h-6 flex relative border-b border-border/10 sticky top-0 z-40 bg-[#0a0a0f] backdrop-blur-md">
                                     <div className="w-[150px] border-r border-border/20 shrink-0 sticky left-0 z-40 bg-[#0a0a0f]/90" />
                                     <div className="flex-1 relative" id="timeline-track-container">
-                                        {[...Array(16)].map((_, i) => {
-                                            const timeMarker = (TOTAL_FIGHT_SECONDS / 16) * i;
-                                            return (
-                                                <div key={i} className="absolute inset-y-0 w-px bg-white/5" style={{ left: `${(timeMarker / TOTAL_FIGHT_SECONDS) * 100}%` }}>
-                                                    <span className="absolute top-1 -left-3 text-[9px] font-bold text-muted-foreground/60">{formatTime(timeMarker)}</span>
-                                                </div>
-                                            )
-                                        })}
+                                        {Array.from({ length: Math.floor(TOTAL_FIGHT_SECONDS / 30) + 1 }, (_, i) => i * 30).map((timeMarker) => (
+                                            <div key={timeMarker} className="absolute inset-y-0 w-px bg-white/5" style={{ left: `${(timeMarker / TOTAL_FIGHT_SECONDS) * 100}%` }}>
+                                                <span className="absolute top-1 -left-3 text-[9px] font-bold text-muted-foreground/60">{formatTime(timeMarker)}</span>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
 
@@ -1259,8 +1256,8 @@ export function PlanificadorCdsClient() {
                                                 <div className="flex-1 flex flex-col relative bg-grid-white/[0.01]">
                                                     {/* Vertical grid lines */}
                                                     <div className="absolute inset-0 pointer-events-none">
-                                                        {[...Array(16)].map((_, i) => (
-                                                            <div key={`grid-boss-${i}`} className="absolute inset-y-0 w-px bg-white/[0.02]" style={{ left: `${((TOTAL_FIGHT_SECONDS / 16) * i) / TOTAL_FIGHT_SECONDS * 100}%` }} />
+                                                        {Array.from({ length: Math.floor(TOTAL_FIGHT_SECONDS / 30) + 1 }, (_, i) => i * 30).map((t) => (
+                                                            <div key={`grid-boss-${t}`} className="absolute inset-y-0 w-px bg-white/[0.02]" style={{ left: `${(t / TOTAL_FIGHT_SECONDS) * 100}%` }} />
                                                         ))}
                                                     </div>
                                                     {/* Header spacer */}
@@ -1581,11 +1578,6 @@ export function PlanificadorCdsClient() {
                                                                                 y: e.clientY,
                                                                                 time: previewTime
                                                                             });
-
-                                                                            const previewEl = e.currentTarget.querySelector('[data-preview-time]') as HTMLElement
-                                                                            if (previewEl) {
-                                                                                previewEl.textContent = formatTime(previewTime)
-                                                                            }
                                                                         }}
                                                                         onMouseLeave={() => setFloatingTooltip(prev => ({ ...prev, visible: false }))}
 
@@ -1616,7 +1608,6 @@ export function PlanificadorCdsClient() {
                                                                             }}
                                                                         >
                                                                             <Image unoptimized src={cd.icon} alt="" width={16} height={16} className="rounded-sm opacity-60 shrink-0" />
-                                                                            <span data-preview-time className="text-[8px] font-bold" style={{ color: cd.color }}>0:00</span>
                                                                         </div>
                                                                         {rowAssignments.map((assign: any) => {
                                                                             const actDurSec = cd.active_duration && cd.active_duration > 0 ? cd.active_duration : 0;
