@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 import { redirect } from "next/navigation"
 import { ScheduleFormClient } from "@/components/calendar/schedule-form-client"
 import { IconArrowLeft } from "@tabler/icons-react"
@@ -22,12 +22,11 @@ export default async function CalendarSettingsPage() {
     }
 
     // Server-side fetch current schedule
-    const { data: guildData } = await sb.from("guilds_managed").select("guild_id").limit(1).single()
+    const { data: guildData } = await supabaseAdmin.from("guilds_managed").select("guild_id").limit(1).single()
 
     let initialSchedule: any[] = []
     if (guildData) {
-        const { data } = await sb
-            .from("guild_raid_schedule")
+        const { data } = await supabaseAdmin.from("guild_raid_schedule")
             .select("*")
             .eq("guild_id", guildData.guild_id)
             .order("day_of_week", { ascending: true })

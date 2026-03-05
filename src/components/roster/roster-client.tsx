@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { IconSearch, IconShield, IconHeart, IconSword, IconBow, IconUsers } from "@tabler/icons-react";
 import { RosterTable } from "@/components/common/roster-table";
+import { useRoster } from "@/infrastructure/roster/use-roster";
 
 export function RosterClient({
   members,
+  canEdit = false,
   roleLevel,
   rankNames,
   rankColors,
@@ -15,6 +17,7 @@ export function RosterClient({
   classRoleMapping = {},
 }: {
   members: any[];
+  canEdit?: boolean;
   roleLevel?: string;
   rankNames?: string[];
   rankColors?: (string | null)[];
@@ -22,69 +25,12 @@ export function RosterClient({
   classColors?: Record<number, string>;
   classRoleMapping?: Record<number, string>;
 }) {
-  const [search, setSearch] = useState("");
-  const [mounted, setMounted] = useState(false);
+  const { search, setSearch, grouped } = useRoster(members, classRoleMapping);
 
+  const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  const handleSort = () => {
-    // Legacy sort prop for RosterTable, no longer active but required by typing
-  };
-
-
-
-
-  const filteredMembers = useMemo(() => {
-    const baseFiltered = members.filter((m) => {
-      if (search && !m.character_name.toLowerCase().includes(search.toLowerCase())) return false;
-      return true;
-    });
-
-    // Default static sort: Rank First, then Name
-    return baseFiltered.sort((a, b) => {
-      if (a.rank !== b.rank) return a.rank - b.rank;
-      return a.character_name.localeCompare(b.character_name);
-    });
-  }, [members, search]);
-
-  const grouped = useMemo(() => {
-    const groups: Record<string, any[]> = {
-      tank: [],
-      heal: [],
-      melee: [],
-      ranged: [],
-      alter_tank: [],
-      alter_heal: [],
-      alter_melee: [],
-      alter_ranged: [],
-      alters_total: [] // Just for the counter
-    };
-
-    filteredMembers.forEach(m => {
-      let role = m.role?.toLowerCase();
-
-      // Fallback to class mapping if explicit role isn't set
-      if (!role || (role !== "tank" && role !== "heal" && role !== "melee" && role !== "ranged")) {
-        role = classRoleMapping[m.class_id ?? 0] ?? "ranged";
-      }
-
-      if (m.rank >= 7) {
-        groups.alters_total.push(m);
-        groups[`alter_${role}`]?.push(m);
-        return;
-      }
-
-      if (groups[role]) {
-        groups[role].push(m);
-      } else {
-        groups["ranged"].push(m);
-      }
-    });
-
-    return groups;
-  }, [filteredMembers, classRoleMapping]);
 
   if (!mounted) {
     return (
@@ -119,6 +65,7 @@ export function RosterClient({
           <div className="flex-1">
             <RosterTable
               members={grouped.tank}
+              canEdit={canEdit}
               roleLevel={roleLevel}
               rankNames={rankNames}
               rankColors={rankColors}
@@ -127,7 +74,6 @@ export function RosterClient({
               classRoleMapping={classRoleMapping}
               sortColumn="rank"
               sortDirection="asc"
-              onSort={handleSort}
             />
           </div>
         </div>
@@ -141,6 +87,7 @@ export function RosterClient({
           <div className="flex-1">
             <RosterTable
               members={grouped.heal}
+              canEdit={canEdit}
               roleLevel={roleLevel}
               rankNames={rankNames}
               rankColors={rankColors}
@@ -149,7 +96,6 @@ export function RosterClient({
               classRoleMapping={classRoleMapping}
               sortColumn="rank"
               sortDirection="asc"
-              onSort={handleSort}
             />
           </div>
         </div>
@@ -163,6 +109,7 @@ export function RosterClient({
           <div className="flex-1">
             <RosterTable
               members={grouped.melee}
+              canEdit={canEdit}
               roleLevel={roleLevel}
               rankNames={rankNames}
               rankColors={rankColors}
@@ -171,7 +118,6 @@ export function RosterClient({
               classRoleMapping={classRoleMapping}
               sortColumn="rank"
               sortDirection="asc"
-              onSort={handleSort}
             />
           </div>
         </div>
@@ -185,6 +131,7 @@ export function RosterClient({
           <div className="flex-1">
             <RosterTable
               members={grouped.ranged}
+              canEdit={canEdit}
               roleLevel={roleLevel}
               rankNames={rankNames}
               rankColors={rankColors}
@@ -193,7 +140,6 @@ export function RosterClient({
               classRoleMapping={classRoleMapping}
               sortColumn="rank"
               sortDirection="asc"
-              onSort={handleSort}
             />
           </div>
         </div>
@@ -216,6 +162,7 @@ export function RosterClient({
                 </div>
                 <RosterTable
                   members={grouped.alter_tank}
+                  canEdit={canEdit}
                   roleLevel={roleLevel}
                   rankNames={rankNames}
                   rankColors={rankColors}
@@ -224,7 +171,6 @@ export function RosterClient({
                   classRoleMapping={classRoleMapping}
                   sortColumn="rank"
                   sortDirection="asc"
-                  onSort={handleSort}
                 />
               </div>
 
@@ -236,6 +182,7 @@ export function RosterClient({
                 </div>
                 <RosterTable
                   members={grouped.alter_heal}
+                  canEdit={canEdit}
                   roleLevel={roleLevel}
                   rankNames={rankNames}
                   rankColors={rankColors}
@@ -244,7 +191,6 @@ export function RosterClient({
                   classRoleMapping={classRoleMapping}
                   sortColumn="rank"
                   sortDirection="asc"
-                  onSort={handleSort}
                 />
               </div>
 
@@ -256,6 +202,7 @@ export function RosterClient({
                 </div>
                 <RosterTable
                   members={grouped.alter_melee}
+                  canEdit={canEdit}
                   roleLevel={roleLevel}
                   rankNames={rankNames}
                   rankColors={rankColors}
@@ -264,7 +211,6 @@ export function RosterClient({
                   classRoleMapping={classRoleMapping}
                   sortColumn="rank"
                   sortDirection="asc"
-                  onSort={handleSort}
                 />
               </div>
 
@@ -276,6 +222,7 @@ export function RosterClient({
                 </div>
                 <RosterTable
                   members={grouped.alter_ranged}
+                  canEdit={canEdit}
                   roleLevel={roleLevel}
                   rankNames={rankNames}
                   rankColors={rankColors}
@@ -284,7 +231,6 @@ export function RosterClient({
                   classRoleMapping={classRoleMapping}
                   sortColumn="rank"
                   sortDirection="asc"
-                  onSort={handleSort}
                 />
               </div>
             </div>

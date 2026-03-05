@@ -1,5 +1,5 @@
 // src/app/dashboard/settings/accounts/page.tsx
-import { sb } from "@/infrastructure/auth/auth-options"
+import { supabaseAdmin } from "@/infrastructure/auth/auth-options"
 import { AccountsClient } from "@/components/settings/accounts-client"
 import { IconArrowLeft } from "@tabler/icons-react"
 import Link from "next/link"
@@ -8,13 +8,13 @@ export const dynamic = 'force-dynamic'
 
 export default async function AccountsSettingsPage() {
     // Fetch all profiles
-    const { data: profiles } = await sb
+    const { data: profiles } = await supabaseAdmin
         .from('profiles')
         .select('*')
         .order('discord_username', { ascending: true })
 
     // Fetch character counts per user
-    const { data: charCounts } = await sb
+    const { data: charCounts } = await supabaseAdmin
         .from('bnet_characters')
         .select('user_id')
 

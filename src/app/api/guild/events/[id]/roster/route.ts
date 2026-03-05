@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export async function PATCH(
     req: Request,
@@ -36,7 +36,7 @@ export async function PATCH(
             status: s.is_absent ? 'absent' : s.is_late ? 'late' : 'present'
         }))
 
-        const { error } = await sb
+        const { error } = await supabaseAdmin
             .from("event_signups")
             .upsert(updates, { onConflict: "event_id, member_id" })
 

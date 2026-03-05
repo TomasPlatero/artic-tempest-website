@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions, sb } from "@/infrastructure/auth/auth-options";
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options";
 
 export const dynamic = "force-dynamic";
 
@@ -13,8 +13,7 @@ export async function GET() {
     const userId = (session.user as any).id;
 
     // Fetch all notifications and join with read status for the current user
-    const { data: notifications, error } = await sb
-        .from("system_notifications")
+    const { data: notifications, error } = await supabaseAdmin.from("system_notifications")
         .select(`
             *,
             user_notifications_read(user_id, read_at)
@@ -55,8 +54,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Título y contenido son requeridos" }, { status: 400 });
     }
 
-    const { data, error } = await sb
-        .from("system_notifications")
+    const { data, error } = await supabaseAdmin.from("system_notifications")
         .insert({
             title,
             content,
@@ -90,8 +88,7 @@ export async function DELETE(request: Request) {
         return NextResponse.json({ error: "ID de notificación requerido" }, { status: 400 });
     }
 
-    const { error } = await sb
-        .from("system_notifications")
+    const { error } = await supabaseAdmin.from("system_notifications")
         .delete()
         .eq("id", id);
 
@@ -119,8 +116,7 @@ export async function PATCH(request: Request) {
         return NextResponse.json({ error: "ID, título y contenido son requeridos" }, { status: 400 });
     }
 
-    const { data, error } = await sb
-        .from("system_notifications")
+    const { data, error } = await supabaseAdmin.from("system_notifications")
         .update({
             title,
             content,

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export async function PATCH(req: Request) {
     const session = await getServerSession(authOptions)
@@ -21,8 +21,7 @@ export async function PATCH(req: Request) {
         if (internal_notes !== undefined) updateData.internal_notes = internal_notes
         if (character_spec) updateData.character_spec = character_spec
 
-        const { data, error } = await sb
-            .from("recruitment_applications")
+        const { data, error } = await supabaseAdmin.from("recruitment_applications")
             .update(updateData)
             .eq("id", id)
             .select()
@@ -68,8 +67,7 @@ export async function DELETE(req: Request) {
             return NextResponse.json({ error: "Falta ID de la solicitud" }, { status: 400 })
         }
 
-        const { error } = await sb
-            .from("recruitment_applications")
+        const { error } = await supabaseAdmin.from("recruitment_applications")
             .delete()
             .eq("id", id)
 

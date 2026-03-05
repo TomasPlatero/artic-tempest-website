@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 import { redirect } from "next/navigation"
 import { LandingNavigation } from "@/components/landing/navigation"
 import { ApplyClient } from "@/components/recruitment/apply-client"
@@ -17,7 +17,7 @@ export default async function ApplyPage({ searchParams }: { searchParams: Promis
     }
 
     // 0. Verificar si ya tiene una solicitud activa
-    const { data: existingApps } = await sb
+    const { data: existingApps } = await supabaseAdmin
         .from("recruitment_applications")
         .select("id, status, created_at")
         .eq("user_id", session.user.id)
@@ -27,20 +27,20 @@ export default async function ApplyPage({ searchParams }: { searchParams: Promis
     const existingApp = existingApps && existingApps.length > 0 ? existingApps[0] : null
 
     // 1. Verificar si tiene personajes de Bnet
-    const { data: bnetCharacters } = await sb
+    const { data: bnetCharacters } = await supabaseAdmin
         .from("bnet_characters")
         .select("id, name, realm, class_id, level, spec")
         .eq("user_id", session.user.id)
         .order("level", { ascending: false })
 
     // 2. Obtener preguntas dinámicas
-    const { data: questions } = await sb
+    const { data: questions } = await supabaseAdmin
         .from("recruitment_questions")
         .select("*")
         .order("order_index", { ascending: true })
 
     // 3. Obtener constantes de clases para enriquecer el selector
-    const { data: classConstants } = await sb
+    const { data: classConstants } = await supabaseAdmin
         .from("game_constants")
         .select("key, value")
         .eq("category", "wow_class")

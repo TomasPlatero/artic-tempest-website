@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { sb } from "@/infrastructure/auth/auth-options";
+import { supabaseAdmin } from "@/infrastructure/auth/auth-options";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/infrastructure/auth/auth-options";
 
@@ -14,7 +14,7 @@ export async function PATCH(req: Request) {
         const { clientId, clientSecret } = body;
 
         // Verify GM role
-        const { data: profile } = await sb
+        const { data: profile } = await supabaseAdmin
             .from("profiles")
             .select("role_level")
             .eq("user_id", session.user.id)
@@ -31,7 +31,7 @@ export async function PATCH(req: Request) {
             updates.wcl_client_secret = clientSecret || null;
         }
 
-        const { error } = await sb
+        const { error } = await supabaseAdmin
             .from("guilds_managed")
             .update(updates)
             .neq("guild_id", "00000000-0000-0000-0000-000000000000"); // Update all, practically just 1

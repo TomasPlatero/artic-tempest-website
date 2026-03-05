@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 import { bnet } from "@/lib/bnet/client"
 
 export const dynamic = "force-dynamic"
@@ -17,8 +17,7 @@ export async function POST(req: Request) {
         const session = await getServerSession(authOptions)
         if (!session?.user) return new NextResponse("No autorizado", { status: 401 })
 
-        const { data: profile } = await sb
-            .from("profiles")
+        const { data: profile } = await supabaseAdmin.from("profiles")
             .select("role_level")
             .eq("user_id", session.user.id)
             .single()
@@ -52,7 +51,7 @@ export async function POST(req: Request) {
 
                     log(`=> Expansión conectada: ${expName}`)
 
-                    await sb.from("bnet_expansions").upsert({
+                    await supabaseAdmin.from("bnet_expansions").upsert({
                         id: expData.id,
                         name: expName
                     })
@@ -69,7 +68,7 @@ export async function POST(req: Request) {
                         const instData = await bnet.getInstance(instRef.id)
                         const instName = typeof instData.name === 'string' ? instData.name : (instData.name?.es_ES || instData.name?.en_US)
 
-                        await sb.from("bnet_instances").upsert({
+                        await supabaseAdmin.from("bnet_instances").upsert({
                             id: instData.id,
                             name: instName,
                             expansion_id: expData.id
@@ -84,7 +83,7 @@ export async function POST(req: Request) {
                             const encData = await bnet.getEncounter(encRef.id)
                             const encName = typeof encData.name === 'string' ? encData.name : (encData.name?.es_ES || encData.name?.en_US)
 
-                            await sb.from("bnet_encounters").upsert({
+                            await supabaseAdmin.from("bnet_encounters").upsert({
                                 id: encData.id,
                                 name: encName,
                                 instance_id: instData.id
@@ -112,7 +111,7 @@ export async function POST(req: Request) {
 
                                     const itemName = typeof itemData.name === 'string' ? itemData.name : (itemData.name?.es_ES || itemData.name?.en_US)
 
-                                    await sb.from("bnet_items").upsert({
+                                    await supabaseAdmin.from("bnet_items").upsert({
                                         id: itemData.id,
                                         name: itemName,
                                         quality: itemData.quality.type,
@@ -124,7 +123,7 @@ export async function POST(req: Request) {
                                         inventory_type: itemData.inventory_type.type
                                     })
 
-                                    await sb.from("bnet_encounter_loot").upsert({
+                                    await supabaseAdmin.from("bnet_encounter_loot").upsert({
                                         encounter_id: encData.id,
                                         item_id: itemData.id
                                     })

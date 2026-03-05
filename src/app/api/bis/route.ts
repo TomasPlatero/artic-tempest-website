@@ -3,7 +3,7 @@
 
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export async function GET(req: Request) {
     try {
@@ -20,8 +20,7 @@ export async function GET(req: Request) {
         }
 
         // Verify the member belongs to the current user via bnet_characters name matching
-        const { data: member } = await sb
-            .from("guild_members")
+        const { data: member } = await supabaseAdmin.from("guild_members")
             .select("id, character_name")
             .eq("id", memberId)
             .single()
@@ -31,8 +30,7 @@ export async function GET(req: Request) {
         }
 
         // Check that the user owns a bnet character with that name
-        const { data: bnetChar } = await sb
-            .from("bnet_characters")
+        const { data: bnetChar } = await supabaseAdmin.from("bnet_characters")
             .select("id")
             .eq("user_id", session.user.id)
             .eq("name", member.character_name)
@@ -43,8 +41,7 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: "No autorizado para este personaje" }, { status: 403 })
         }
 
-        let query = sb
-            .from("bis_selections")
+        let query = supabaseAdmin.from("bis_selections")
             .select("*")
             .eq("member_id", memberId)
 
@@ -81,8 +78,7 @@ export async function POST(req: Request) {
         }
 
         // Verify ownership via bnet_characters
-        const { data: member } = await sb
-            .from("guild_members")
+        const { data: member } = await supabaseAdmin.from("guild_members")
             .select("id, character_name")
             .eq("id", member_id)
             .single()
@@ -91,8 +87,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Personaje no encontrado" }, { status: 404 })
         }
 
-        const { data: bnetChar } = await sb
-            .from("bnet_characters")
+        const { data: bnetChar } = await supabaseAdmin.from("bnet_characters")
             .select("id")
             .eq("user_id", session.user.id)
             .eq("name", member.character_name)
@@ -103,8 +98,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "No autorizado" }, { status: 403 })
         }
 
-        const { data, error } = await sb
-            .from("bis_selections")
+        const { data, error } = await supabaseAdmin.from("bis_selections")
             .upsert({
                 member_id,
                 item_id,
@@ -147,8 +141,7 @@ export async function DELETE(req: Request) {
         }
 
         // Get the selection to verify ownership
-        const { data: selection } = await sb
-            .from("bis_selections")
+        const { data: selection } = await supabaseAdmin.from("bis_selections")
             .select("id, member_id")
             .eq("id", selectionId)
             .single()
@@ -157,8 +150,7 @@ export async function DELETE(req: Request) {
             return NextResponse.json({ error: "No encontrado" }, { status: 404 })
         }
 
-        const { data: member } = await sb
-            .from("guild_members")
+        const { data: member } = await supabaseAdmin.from("guild_members")
             .select("character_name")
             .eq("id", selection.member_id)
             .single()
@@ -167,8 +159,7 @@ export async function DELETE(req: Request) {
             return NextResponse.json({ error: "No autorizado" }, { status: 403 })
         }
 
-        const { data: bnetChar } = await sb
-            .from("bnet_characters")
+        const { data: bnetChar } = await supabaseAdmin.from("bnet_characters")
             .select("id")
             .eq("user_id", session.user.id)
             .eq("name", member.character_name)
@@ -179,7 +170,7 @@ export async function DELETE(req: Request) {
             return NextResponse.json({ error: "No autorizado" }, { status: 403 })
         }
 
-        await sb.from("bis_selections").delete().eq("id", selectionId)
+        await supabaseAdmin.from("bis_selections").delete().eq("id", selectionId)
 
         return NextResponse.json({ success: true })
     } catch (e: any) {

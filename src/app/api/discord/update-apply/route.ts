@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 import { fetchCharacterRIO } from "@/infrastructure/raiderio/raiderio-client"
 import { fetchCharacterItemLevel } from "@/infrastructure/bnet/bnet-client"
 
@@ -43,8 +43,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Falta ID" }, { status: 400 })
         }
 
-        const { data: application, error: appError } = await sb
-            .from("recruitment_applications")
+        const { data: application, error: appError } = await supabaseAdmin.from("recruitment_applications")
             .select("*")
             .eq("id", application_id)
             .single()
@@ -54,8 +53,7 @@ export async function POST(req: Request) {
         }
 
         // Obtener el perfil del usuario de forma segura
-        const { data: profile } = await sb
-            .from("profiles")
+        const { data: profile } = await supabaseAdmin.from("profiles")
             .select("discord_username, discord_avatar, discord_user_id")
             .eq("user_id", application.user_id)
             .single()
@@ -63,8 +61,7 @@ export async function POST(req: Request) {
         application.profiles = profile || {}
 
         // Obtener logo de la guild
-        const { data: guild } = await sb
-            .from("guilds_managed")
+        const { data: guild } = await supabaseAdmin.from("guilds_managed")
             .select("icon_url")
             .limit(1)
             .single()
@@ -72,8 +69,7 @@ export async function POST(req: Request) {
         const guildIconUrl = guild?.icon_url || `${process.env.NEXTAUTH_URL}/favicon.ico`
 
         // Obtener nivel real del personaje de la BD
-        const { data: charData } = await sb
-            .from("bnet_characters")
+        const { data: charData } = await supabaseAdmin.from("bnet_characters")
             .select("level")
             .eq("user_id", application.user_id)
             .eq("name", application.character_name)

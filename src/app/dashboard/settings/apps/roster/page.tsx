@@ -1,4 +1,4 @@
-import { sb } from "@/infrastructure/auth/auth-options"
+import { supabaseAdmin } from "@/infrastructure/auth/auth-options"
 import { SettingsRosterClient } from "@/components/settings/settings-roster"
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { SiteHeader } from "@/components/layout/site-header"
@@ -8,7 +8,7 @@ import React from "react"
 export const runtime = "nodejs"
 
 async function getRosterSettings() {
-    const { data: rawRanks } = await sb
+    const { data: rawRanks } = await supabaseAdmin
         .from("guild_ranks")
         .select("rank, name, is_visible, app_role, color")
         .order("rank", { ascending: true })

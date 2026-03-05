@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export const dynamic = "force-dynamic"
 
@@ -11,8 +11,7 @@ export async function GET() {
             return new NextResponse("No autorizado", { status: 401 })
         }
 
-        const { data, error } = await sb
-            .from("cooldown_definitions")
+        const { data, error } = await supabaseAdmin.from("cooldown_definitions")
             .select("*")
             .order("class_id", { ascending: true })
 

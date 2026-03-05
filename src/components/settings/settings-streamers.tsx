@@ -31,6 +31,15 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { cn } from "@/infrastructure/tailwind/tailwind-utils"
+import {
+    addStreamer,
+    removeStreamer,
+    updateStreamersOrder,
+    getStreamerConfig,
+    updateStreamerConfig,
+    getDiscordChannels,
+    getEnrichedStreamers
+} from "@/infrastructure/streamers/server-actions"
 
 function SortableStreamerItem({ streamer, onDelete }: { streamer: any, onDelete: (id: string, username: string) => void }) {
     const {
@@ -108,11 +117,8 @@ export function StreamersSettings() {
     const fetchChannels = async () => {
         setFetchingChannels(true)
         try {
-            const res = await fetch("/api/discord/channels")
-            if (res.ok) {
-                const data = await res.json()
-                setChannels(data)
-            }
+            const data = await getDiscordChannels()
+            setChannels(data)
         } catch (e) {
             console.error(e)
         } finally {
@@ -122,23 +128,15 @@ export function StreamersSettings() {
 
     const fetchConfig = async () => {
         try {
-            const res = await fetch("/api/streamers/config")
-            if (res.ok) {
-                const data = await res.json()
-                setChannelId(data.discord_streams_channel_id || "")
-            }
+            const data = await getStreamerConfig()
+            setChannelId(data.discord_streams_channel_id || "")
         } catch (e) { }
     }
 
     const handleSaveConfig = async () => {
         setSavingConfig(true)
         try {
-            const res = await fetch("/api/streamers/config", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ discord_streams_channel_id: channelId })
-            })
-            if (!res.ok) throw new Error("Error")
+            await updateStreamerConfig(channelId)
             toast.success("Configuración de notificaciones guardada.")
             fetchConfig()
         } catch (error) {
@@ -150,9 +148,7 @@ export function StreamersSettings() {
 
     const fetchStreamers = async () => {
         try {
-            const res = await fetch("/api/streamers")
-            if (!res.ok) throw new Error("Error obteniendo streamers")
-            const data = await res.json()
+            const data = await getEnrichedStreamers()
             setStreamers(data)
         } catch (error) {
             console.error(error)
@@ -168,13 +164,7 @@ export function StreamersSettings() {
 
         setSubmitting(true)
         try {
-            const res = await fetch("/api/streamers", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ twitch_username: newStreamer.trim() })
-            })
-
-            if (!res.ok) throw new Error("Error")
+            await addStreamer(newStreamer.trim())
             toast.success("Streamer añadido correctamente.")
             setNewStreamer("")
             fetchStreamers()
@@ -188,8 +178,7 @@ export function StreamersSettings() {
     const handleDelete = async (id: string, username: string) => {
         if (!confirm(`¿Estás seguro de que quieres eliminar a ${username}?`)) return
         try {
-            const res = await fetch(`/api/streamers?id=${id}`, { method: "DELETE" })
-            if (!res.ok) throw new Error("Error")
+            await removeStreamer(id)
             toast.success(`${username} eliminado.`)
             fetchStreamers()
         } catch (error) {
@@ -204,12 +193,7 @@ export function StreamersSettings() {
                 sort_order: index,
             }));
 
-            const res = await fetch("/api/streamers", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ items: updates })
-            });
-            if (!res.ok) throw new Error("Guardado falló");
+            await updateStreamersOrder(updates)
         } catch (error) {
             console.error("Failed to save order", error);
             toast.error("Error guardando el nuevo orden.")

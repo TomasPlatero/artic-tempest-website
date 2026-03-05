@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export async function GET(
     _request: Request,
@@ -11,7 +11,7 @@ export async function GET(
         if (!session) return new NextResponse("No autorizado", { status: 401 })
 
         const { id } = await params
-        const { data, error } = await sb
+        const { data, error } = await supabaseAdmin
             .from("guild_events")
             .select("*")
             .eq("id", id)
@@ -64,7 +64,7 @@ export async function PATCH(
         if (status) updateData.status = status
         if (selected_bosses !== undefined) updateData.selected_bosses = selected_bosses
 
-        const { data, error } = await sb
+        const { data, error } = await supabaseAdmin
             .from("guild_events")
             .update(updateData)
             .eq("id", id)
@@ -96,7 +96,7 @@ export async function DELETE(
         if (roleLevel !== "gm" && roleLevel !== "officer") return new NextResponse("Sin permisos", { status: 403 })
 
         const { id } = await params
-        const { error } = await sb.from("guild_events").delete().eq("id", id)
+        const { error } = await supabaseAdmin.from("guild_events").delete().eq("id", id)
 
         if (error) return NextResponse.json({ error: error.message }, { status: 500 })
         return NextResponse.json({ success: true })

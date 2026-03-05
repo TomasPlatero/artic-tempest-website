@@ -3,6 +3,7 @@ import { LandingNavigation } from "@/components/landing/navigation"
 import { LandingStreamers } from "@/components/landing/streamers"
 import { LandingFooter } from "@/components/landing/footer"
 import { BreadcrumbJsonLd } from "@/components/seo/json-ld"
+import { getEnrichedStreamers } from "@/infrastructure/streamers/server-actions"
 
 const baseUrl = process.env.NEXTAUTH_URL || 'https://artictempest.com'
 
@@ -20,7 +21,9 @@ export const metadata: Metadata = {
     }
 }
 
-export default function StreamersPage() {
+export default async function StreamersPage() {
+    const streamers = await getEnrichedStreamers();
+
     return (
         <main className="min-h-screen bg-black selection:bg-blue-500/30 dark flex flex-col">
             <BreadcrumbJsonLd items={[
@@ -30,7 +33,7 @@ export default function StreamersPage() {
             <LandingNavigation />
 
             <div className="flex-1 mt-20">
-                <LandingStreamers />
+                <LandingStreamers initialStreamers={streamers} />
             </div>
 
             <LandingFooter />

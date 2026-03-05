@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export async function DELETE() {
     try {
@@ -17,8 +17,7 @@ export async function DELETE() {
         // Verificamos si hay que borrar algo más manualmente para estar seguros 
         // de cumplir con el derecho al olvido.
 
-        const { error: profileError } = await sb
-            .from("profiles")
+        const { error: profileError } = await supabaseAdmin.from("profiles")
             .delete()
             .eq("user_id", profileId)
 

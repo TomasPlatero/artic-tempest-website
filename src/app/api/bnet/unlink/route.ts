@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export async function DELETE() {
     try {
@@ -16,11 +16,10 @@ export async function DELETE() {
         // rule on bnet_characters when the user_id matches, but since we are just emptying columns in profiles,
         // we have to delete the characters manually.
 
-        await sb.from("bnet_characters").delete().eq("user_id", profileId)
+        await supabaseAdmin.from("bnet_characters").delete().eq("user_id", profileId)
 
         // Clear battlenet fields from user profile
-        const { error: profileError } = await sb
-            .from("profiles")
+        const { error: profileError } = await supabaseAdmin.from("profiles")
             .update({
                 battlenet_id: null,
                 battlenet_battletag: null,

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 import { cookies } from "next/headers"
 import { getGuildCredentials } from "@/infrastructure/auth/credentials"
 import { fetchCharacterSpec } from "@/infrastructure/bnet/bnet-client"
@@ -112,14 +112,14 @@ export async function GET(request: Request) {
         const userId = session.user.id
 
         // Guardamos battletag en su perfil
-        await sb.from("profiles").update({
+        await supabaseAdmin.from("profiles").update({
             battlenet_id: bnetId,
             battlenet_battletag: bnetTag
         }).eq("user_id", userId)
 
         // Limpiamos y reinsertamos sus pjs
         if (characters.length > 0) {
-            await sb.from("bnet_characters").delete().eq("user_id", userId)
+            await supabaseAdmin.from("bnet_characters").delete().eq("user_id", userId)
 
             const charRows = await Promise.all(characters.map(async c => {
                 const spec = await fetchCharacterSpec(c.realm.slug, c.name.toLowerCase(), "eu", accessToken)
@@ -136,7 +136,7 @@ export async function GET(request: Request) {
                 }
             }))
 
-            const { error: insertErr } = await sb.from("bnet_characters").insert(charRows)
+            const { error: insertErr } = await supabaseAdmin.from("bnet_characters").insert(charRows)
             if (insertErr) {
                 console.error("[BNET CALLBACK] DB Insert Error:", insertErr)
             } else {
@@ -145,7 +145,7 @@ export async function GET(request: Request) {
 
             // Finalmente: "Reclamar" los que ya estén en la hermandad (guild_members)
             for (const c of charRows) {
-                await sb.from("guild_members")
+                await supabaseAdmin.from("guild_members")
                     .update({ profile_id: userId })
                     .match({ character_name: c.name, realm_slug: c.realm_slug, profile_id: null })
             }

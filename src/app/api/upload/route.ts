@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export async function POST(req: Request) {
     const session = await getServerSession(authOptions)
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
 
         const buffer = Buffer.from(await file.arrayBuffer())
 
-        const { data, error } = await sb.storage
+        const { data, error } = await supabaseAdmin.storage
             .from(bucket)
             .upload(filePath, buffer, {
                 contentType: file.type,
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
 
         if (error) throw error
 
-        const { data: { publicUrl } } = sb.storage
+        const { data: { publicUrl } } = supabaseAdmin.storage
             .from(bucket)
             .getPublicUrl(filePath)
 

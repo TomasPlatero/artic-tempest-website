@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export const dynamic = "force-dynamic"
 
@@ -17,7 +17,7 @@ export async function GET(
         const { id } = await params
 
         // 1. Fetch visible ranks first since the direct join might fail without explicit FK
-        const { data: visibleRanks } = await sb
+        const { data: visibleRanks } = await supabaseAdmin
             .from("guild_ranks")
             .select("rank")
             .eq("is_visible", true)
@@ -25,7 +25,7 @@ export async function GET(
         const visibleRankIds = visibleRanks?.map(r => r.rank) || []
 
         // 2. Fetch signups for members in visible ranks
-        const { data: roster, error } = await sb
+        const { data: roster, error } = await supabaseAdmin
             .from("event_signups")
             .select(`
                 member_id, 

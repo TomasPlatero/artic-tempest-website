@@ -17,21 +17,19 @@ interface RaidProgression {
     status: string
 }
 
-export function HomePageClient() {
-    const [progression, setProgression] = useState<RaidProgression[]>([
-        { name: "La Aguja del Vacío", tier: "Temporada 1", progress: "0/5 M", rank: "-", status: "Próximamente" },
-        { name: "La Falla del Sueño", tier: "Temporada 1", progress: "0/1 M", rank: "-", status: "Próximamente" },
-        { name: "Marcha sobre Quel'Danas", tier: "Temporada 1", progress: "0/2 M", rank: "-", status: "Próximamente" }
-    ])
+export function HomePageClient({ initialProgression, initialStreamers }: { initialProgression?: RaidProgression[], initialStreamers?: any[] }) {
+    const [progression, setProgression] = useState<RaidProgression[]>(initialProgression || [])
 
     useEffect(() => {
+        if (initialProgression) return; // Skip if already provided by server
+
         fetch("/api/progression")
             .then(res => res.json())
             .then(data => {
                 if (data.progression) setProgression(data.progression)
             })
             .catch(() => { })
-    }, [])
+    }, [initialProgression])
 
     return (
         <main className="min-h-screen bg-black selection:bg-blue-500/30 dark">
@@ -81,7 +79,7 @@ export function HomePageClient() {
 
             <Separator className="bg-white/5 max-w-7xl mx-auto" />
 
-            <LandingStreamers limit={3} />
+            <LandingStreamers limit={3} initialStreamers={initialStreamers} />
 
             <Separator className="bg-white/5 max-w-7xl mx-auto" />
 

@@ -2,7 +2,7 @@
 // POST — Sync guild roster from Battle.net API
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions, sb } from '@/infrastructure/auth/auth-options';
+import { authOptions, supabaseAdmin } from '@/infrastructure/auth/auth-options';
 import { fetchGuildRoster, fetchGuildSummary, toSlug } from '@/infrastructure/bnet/bnet-client';
 
 export const runtime = 'nodejs';
@@ -24,8 +24,7 @@ export async function POST() {
   }
 
   // 2. Get guild info from DB
-  const { data: guild, error: guildError } = await sb
-    .from('guilds_managed')
+  const { data: guild, error: guildError } = await supabaseAdmin.from('guilds_managed')
     .select('name, realm, region')
     .limit(1)
     .single();
@@ -43,8 +42,7 @@ export async function POST() {
 
   try {
     // 3. Fetch Game Constants for Mappings
-    const { data: constantRows } = await sb
-      .from('game_constants')
+    const { data: constantRows } = await supabaseAdmin.from('game_constants')
       .select('category, key, value')
       .eq('category', 'spec_role');
 
@@ -68,8 +66,7 @@ export async function POST() {
 
     // Update guild faction if summary is available
     if (summary?.faction?.type) {
-      await sb
-        .from('guilds_managed')
+      await supabaseAdmin.from('guilds_managed')
         .update({ faction: summary.faction.type.toLowerCase() })
         .eq('name', guild.name);
     }
@@ -87,8 +84,7 @@ export async function POST() {
       synced_at: new Date().toISOString(),
     }));
 
-    const { error: upsertError } = await sb
-      .from('guild_members')
+    const { error: upsertError } = await supabaseAdmin.from('guild_members')
       .upsert(rows, { onConflict: 'character_name,realm_slug' });
 
     if (upsertError) {
@@ -101,16 +97,14 @@ export async function POST() {
 
     // 6b. PROPAGATION: Update roles in event_signups for members whose roles were just synced
     // We fetch current members IDs for these names (since we need UUIDs for event_signups)
-    const { data: updatedMembers } = await sb
-      .from('guild_members')
+    const { data: updatedMembers } = await supabaseAdmin.from('guild_members')
       .select('id, character_name, realm_slug, role')
       .in('character_name', rows.map(r => r.character_name));
 
     if (updatedMembers) {
       for (const m of updatedMembers) {
         if (m.role) {
-          await sb
-            .from('event_signups')
+          await supabaseAdmin.from('event_signups')
             .update({ event_role: m.role.toLowerCase() })
             .eq('member_id', m.id);
         }
@@ -119,13 +113,11 @@ export async function POST() {
 
     // 7. Auto-update profile permissions based on WoW ranks
     // Fetch all members with a linked profile
-    const { data: linkedMembers } = await sb
-      .from('guild_members')
+    const { data: linkedMembers } = await supabaseAdmin.from('guild_members')
       .select('profile_id, rank, profiles(role_level)')
       .not('profile_id', 'is', null);
 
-    const { data: ranksConfig } = await sb
-      .from('guild_ranks')
+    const { data: ranksConfig } = await supabaseAdmin.from('guild_ranks')
       .select('rank, app_role');
 
     if (linkedMembers && ranksConfig) {
@@ -140,8 +132,7 @@ export async function POST() {
           // Update if they differ
           if (currentLevel !== targetLevel) {
             console.log(`Syncing profile ${member.profile_id} permission: ${currentLevel} -> ${targetLevel} (Was Rank ${member.rank})`);
-            await sb
-              .from('profiles')
+            await supabaseAdmin.from('profiles')
               .update({ role_level: targetLevel })
               .eq('user_id', member.profile_id);
           }

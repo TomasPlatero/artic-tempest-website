@@ -1,5 +1,5 @@
 // src/app/dashboard/settings/general/page.tsx
-import { sb } from "@/infrastructure/auth/auth-options"
+import { supabaseAdmin } from "@/infrastructure/auth/auth-options"
 import { SettingsGeneralClient } from "@/components/settings/settings-general"
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { SiteHeader } from "@/components/layout/site-header"
@@ -11,13 +11,13 @@ export const runtime = "nodejs"
 const MASK = "••••••••••••••••"
 
 async function getGeneralData() {
-    const { data: guild } = await sb
+    const { data: guild } = await supabaseAdmin
         .from("guilds_managed")
         .select("name, realm, region, icon_url, discord_client_id, discord_client_secret, discord_guild_id, bnet_client_id, bnet_client_secret, wcl_client_id, wcl_client_secret")
         .limit(1)
         .single()
 
-    const { data: rawRanks } = await sb
+    const { data: rawRanks } = await supabaseAdmin
         .from("guild_ranks")
         .select("rank, name, is_visible, app_role")
 

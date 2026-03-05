@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 import { redirect } from "next/navigation"
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { SiteHeader } from "@/components/layout/site-header"
@@ -22,15 +22,13 @@ export default async function CuentaPage(props: {
     }
 
     // Fecth Profile & BattleTag
-    const { data: profile } = await sb
-        .from("profiles")
+    const { data: profile } = await supabaseAdmin.from("profiles")
         .select("battlenet_battletag")
         .eq("user_id", session.user.id)
         .single()
 
     // Fetch characters
-    const { data: characters } = await sb
-        .from("bnet_characters")
+    const { data: characters } = await supabaseAdmin.from("bnet_characters")
         .select("*")
         .eq("user_id", session.user.id)
         .order("level", { ascending: false })

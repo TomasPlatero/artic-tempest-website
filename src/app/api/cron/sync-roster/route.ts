@@ -1,6 +1,6 @@
 // src/app/api/cron/sync-roster/route.ts
 import { NextResponse } from 'next/server';
-import { sb } from '@/infrastructure/auth/auth-options';
+import { supabaseAdmin } from '@/infrastructure/auth/auth-options';
 import { fetchGuildRoster, toSlug } from '@/infrastructure/bnet/bnet-client';
 
 export const runtime = 'nodejs';
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     }
 
     // 2. Get guild info from DB
-    const { data: guild, error: guildError } = await sb
+    const { data: guild, error: guildError } = await supabaseAdmin
         .from('guilds_managed')
         .select('name, realm, region, guild_id')
         .limit(1)
@@ -51,7 +51,7 @@ export async function GET(request: Request) {
             synced_at: new Date().toISOString(),
         }));
 
-        const { error: upsertError } = await sb
+        const { error: upsertError } = await supabaseAdmin
             .from('guild_members')
             .upsert(rows, { onConflict: 'character_name,realm_slug' });
 
@@ -60,7 +60,7 @@ export async function GET(request: Request) {
         }
 
         // 5. Update last bnet sync in guild metadata
-        await sb
+        await supabaseAdmin
             .from('guilds_managed')
             .update({ last_bnet_sync: new Date().toISOString() })
             .eq('guild_id', guild.guild_id);

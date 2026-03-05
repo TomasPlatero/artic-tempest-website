@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 import { redirect } from "next/navigation"
 import { RecruitmentSettingsClient } from "@/components/settings/recruitment/recruitment-settings-client"
 import { Suspense } from "react"
@@ -12,10 +12,10 @@ export default async function RecruitmentSettingsPage() {
     }
 
     // Fetch data for the client component
-    const { data: spots } = await sb.from("recruitment_spots").select("*")
-    const { data: questions } = await sb.from("recruitment_questions").select("*").order("order_index", { ascending: true })
-    const { data: constants } = await sb.from("game_constants").select("*").in("category", ["wow_class", "spec_role"])
-    const { data: applications } = await sb
+    const { data: spots } = await supabaseAdmin.from("recruitment_spots").select("*")
+    const { data: questions } = await supabaseAdmin.from("recruitment_questions").select("*").order("order_index", { ascending: true })
+    const { data: constants } = await supabaseAdmin.from("game_constants").select("*").in("category", ["wow_class", "spec_role"])
+    const { data: applications } = await supabaseAdmin
         .from("recruitment_applications")
         .select("*")
         .order("created_at", { ascending: false })

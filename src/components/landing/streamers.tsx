@@ -3,11 +3,13 @@
 import { useState, useEffect } from "react"
 import { IconBrandTwitch } from "@tabler/icons-react"
 
-export function LandingStreamers({ limit }: { limit?: number }) {
-    const [streamers, setStreamers] = useState<any[]>([])
-    const [loading, setLoading] = useState(true)
+export function LandingStreamers({ limit, initialStreamers }: { limit?: number, initialStreamers?: any[] }) {
+    const [streamers, setStreamers] = useState<any[]>(initialStreamers || [])
+    const [loading, setLoading] = useState(!initialStreamers)
 
     useEffect(() => {
+        if (initialStreamers) return; // Skip if provided by server
+
         fetch("/api/streamers")
             .then(res => res.json())
             .then(data => {
@@ -17,7 +19,9 @@ export function LandingStreamers({ limit }: { limit?: number }) {
             })
             .catch(() => { })
             .finally(() => setLoading(false))
-    }, [limit])
+            .catch(() => { })
+            .finally(() => setLoading(false))
+    }, [limit, initialStreamers])
 
     if (loading) return null
     if (streamers.length === 0) return null

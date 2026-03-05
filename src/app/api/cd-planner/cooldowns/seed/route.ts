@@ -1,19 +1,20 @@
 import { NextResponse } from 'next/server';
-import { sb } from '@/infrastructure/auth/auth-options';
+import { supabaseAdmin } from '@/infrastructure/auth/auth-options';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/infrastructure/auth/auth-options';
 
 export type AbilityCategory =
-  | 'Major DPS CD'
-  | 'Minor DPS CD'
-  | 'Major Heal CD'
-  | 'Minor Heal CD'
-  | 'Immunities'
-  | 'Defensives'
-  | 'Group DR'
-  | 'Group Mobility'
-  | 'Mobility'
-  | 'Externals'
-  | 'Utility'
-  | 'externals';
+  | 'major_dps'
+  | 'minor_dps'
+  | 'major_heal'
+  | 'minor_heal'
+  | 'immunity'
+  | 'defensive'
+  | 'group_dr'
+  | 'group_mobility'
+  | 'mobility'
+  | 'external'
+  | 'utility';
 
 export interface CooldownDefinition {
   spell_id: number;
@@ -41,7 +42,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'RAID',
       allowed_specs: null,
       color: '#C69B6D',
-      category: 'Group DR',
+      category: 'group_dr',
       active_duration: 10,
     },
     {
@@ -53,7 +54,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [71, 73],
       color: '#C69B6D',
-      category: 'Major DPS CD',
+      category: 'major_dps',
       active_duration: 12,
     },
     {
@@ -65,7 +66,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'UTILITY',
       allowed_specs: null,
       color: '#C69B6D',
-      category: 'Utility',
+      category: 'utility',
       active_duration: 1,
     },
     {
@@ -77,7 +78,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: null,
       color: '#C69B6D',
-      category: 'Defensives',
+      category: 'defensive',
       active_duration: 5,
     },
     {
@@ -89,7 +90,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [71],
       color: '#C69B6D',
-      category: 'Defensives',
+      category: 'defensive',
       active_duration: 8,
     },
     {
@@ -101,7 +102,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [73],
       color: '#C69B6D',
-      category: 'Defensives',
+      category: 'defensive',
       active_duration: 8,
     },
     {
@@ -113,7 +114,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [72],
       color: '#C69B6D',
-      category: 'Defensives',
+      category: 'defensive',
       active_duration: 8,
     },
     {
@@ -125,7 +126,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [71, 72],
       color: '#C69B6D',
-      category: 'Major DPS CD',
+      category: 'major_dps',
       active_duration: 6,
     },
     {
@@ -137,7 +138,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: null,
       color: '#C69B6D',
-      category: 'Major DPS CD',
+      category: 'major_dps',
       active_duration: 20,
     },
     {
@@ -149,7 +150,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: null,
       color: '#C69B6D',
-      category: 'Major DPS CD',
+      category: 'major_dps',
       active_duration: 8,
     },
     {
@@ -161,7 +162,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [72],
       color: '#C69B6D',
-      category: 'Major DPS CD',
+      category: 'major_dps',
       active_duration: 12,
     },
     {
@@ -401,7 +402,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [258],
       color: '#FFFFFF',
-      category: 'Major DPS CD',
+      category: 'major_dps',
       active_duration: 15,
     },
     {
@@ -413,7 +414,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: null,
       color: '#FFFFFF',
-      category: 'Defensives',
+      category: 'defensive',
       active_duration: 10,
     },
     {
@@ -425,7 +426,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'RAID',
       allowed_specs: [256],
       color: '#FFFFFF',
-      category: 'Group DR',
+      category: 'group_dr',
       active_duration: 10,
     },
     {
@@ -437,7 +438,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'RAID',
       allowed_specs: [257],
       color: '#FFFFFF',
-      category: 'Major Heal CD',
+      category: 'major_heal',
       active_duration: 8,
     },
     {
@@ -449,7 +450,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'EXTERNAL',
       allowed_specs: null,
       color: '#FFFFFF',
-      category: 'Utility',
+      category: 'utility',
       active_duration: 20,
     },
     {
@@ -461,7 +462,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [257],
       color: '#FFFFFF',
-      category: 'Major Heal CD',
+      category: 'major_heal',
       active_duration: 20,
     },
     {
@@ -473,7 +474,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'RAID',
       allowed_specs: [256],
       color: '#FFFFFF',
-      category: 'Major Heal CD',
+      category: 'major_heal',
       active_duration: 12,
     },
     {
@@ -485,7 +486,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'RAID',
       allowed_specs: null,
       color: '#FFFFFF',
-      category: 'Minor Heal CD',
+      category: 'minor_heal',
       active_duration: 1,
     },
     {
@@ -497,7 +498,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'RAID',
       allowed_specs: [257],
       color: '#FFFFFF',
-      category: 'Utility',
+      category: 'utility',
       active_duration: 4,
     },
     {
@@ -509,7 +510,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'EXTERNAL',
       allowed_specs: [257],
       color: '#FFFFFF',
-      category: 'Externals',
+      category: 'external',
       active_duration: 10,
     },
     {
@@ -521,7 +522,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [258],
       color: '#FFFFFF',
-      category: 'Defensives',
+      category: 'defensive',
       active_duration: 6,
     },
     {
@@ -533,7 +534,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'EXTERNAL',
       allowed_specs: [256],
       color: '#FFFFFF',
-      category: 'Externals',
+      category: 'external',
       active_duration: 8,
     },
     {
@@ -545,7 +546,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'RAID',
       allowed_specs: [256],
       color: '#FFFFFF',
-      category: 'Minor Heal CD',
+      category: 'minor_heal',
       active_duration: 6,
     },
     {
@@ -557,7 +558,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'UTILITY',
       allowed_specs: null,
       color: '#C41E3A',
-      category: 'Mobility',
+      category: 'mobility',
       active_duration: 4,
     },
     {
@@ -569,7 +570,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'UTILITY',
       allowed_specs: null,
       color: '#C41E3A',
-      category: 'Mobility',
+      category: 'mobility',
       active_duration: 8,
     },
     {
@@ -581,7 +582,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [251],
       color: '#C41E3A',
-      category: 'Minor DPS CD',
+      category: 'minor_dps',
       active_duration: 12,
     },
     {
@@ -593,7 +594,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: null,
       color: '#C41E3A',
-      category: 'Defensives',
+      category: 'defensive',
       active_duration: 10,
     },
     {
@@ -605,7 +606,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [252],
       color: '#C41E3A',
-      category: 'Major DPS CD',
+      category: 'major_dps',
       active_duration: 30,
     },
     {
@@ -617,7 +618,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [251],
       color: '#C41E3A',
-      category: 'Major DPS CD',
+      category: 'major_dps',
       active_duration: 20,
     },
     {
@@ -629,7 +630,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'UTILITY',
       allowed_specs: null,
       color: '#C41E3A',
-      category: 'Mobility',
+      category: 'mobility',
       active_duration: 10,
     },
     {
@@ -641,7 +642,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'UTILITY',
       allowed_specs: null,
       color: '#C41E3A',
-      category: 'Group DR',
+      category: 'group_dr',
       active_duration: 10,
     },
     {
@@ -653,7 +654,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: null,
       color: '#C41E3A',
-      category: 'Defensives',
+      category: 'defensive',
       active_duration: 8,
     },
     {
@@ -665,7 +666,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: null,
       color: '#C41E3A',
-      category: 'Minor DPS CD',
+      category: 'minor_dps',
       active_duration: 60,
     },
     {
@@ -677,7 +678,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [251],
       color: '#C41E3A',
-      category: 'Major DPS CD',
+      category: 'major_dps',
       active_duration: 1,
     },
     {
@@ -689,7 +690,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: null,
       color: '#C41E3A',
-      category: 'Defensives',
+      category: 'defensive',
       active_duration: 5,
     },
     {
@@ -701,7 +702,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [262, 264],
       color: '#0070DE',
-      category: 'Minor DPS CD',
+      category: 'minor_dps',
       active_duration: 15,
     },
     {
@@ -713,7 +714,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: null,
       color: '#0070DE',
-      category: 'Utility',
+      category: 'utility',
       active_duration: 15,
     },
     {
@@ -725,7 +726,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'RAID',
       allowed_specs: [264],
       color: '#0070DE',
-      category: 'Group DR',
+      category: 'group_dr',
       active_duration: 6,
     },
     {
@@ -737,7 +738,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [263],
       color: '#0070DE',
-      category: 'Minor DPS CD',
+      category: 'minor_dps',
       active_duration: 8,
     },
     {
@@ -749,7 +750,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: null,
       color: '#0070DE',
-      category: 'Major DPS CD',
+      category: 'major_dps',
       active_duration: 15,
     },
     {
@@ -761,7 +762,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'RAID',
       allowed_specs: [264],
       color: '#0070DE',
-      category: 'Major Heal CD',
+      category: 'major_heal',
       active_duration: 10,
     },
     {
@@ -785,7 +786,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: null,
       color: '#0070DE',
-      category: 'Defensives',
+      category: 'defensive',
       active_duration: 12,
     },
     {
@@ -797,7 +798,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'RAID',
       allowed_specs: [264],
       color: '#0070DE',
-      category: 'Major Heal CD',
+      category: 'major_heal',
       active_duration: 30,
     },
     {
@@ -809,7 +810,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [263],
       color: '#0070DE',
-      category: 'Minor DPS CD',
+      category: 'minor_dps',
       active_duration: 20,
     },
     {
@@ -821,7 +822,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'UTILITY',
       allowed_specs: null,
       color: '#0070DE',
-      category: 'Defensives',
+      category: 'defensive',
       active_duration: 60,
     },
     {
@@ -845,7 +846,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'UTILITY',
       allowed_specs: null,
       color: '#8788EE',
-      category: 'Utility',
+      category: 'utility',
       active_duration: 1,
     },
     {
@@ -857,7 +858,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: null,
       color: '#8788EE',
-      category: 'Defensives',
+      category: 'defensive',
       active_duration: 20,
     },
     {
@@ -869,7 +870,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [265],
       color: '#8788EE',
-      category: 'Major DPS CD',
+      category: 'major_dps',
       active_duration: 20,
     },
     {
@@ -881,7 +882,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: null,
       color: '#8788EE',
-      category: 'Defensives',
+      category: 'defensive',
       active_duration: 8,
     },
     {
@@ -893,7 +894,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [266],
       color: '#8788EE',
-      category: 'Major DPS CD',
+      category: 'major_dps',
       active_duration: 25,
     },
     {
@@ -905,7 +906,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [265],
       color: '#8788EE',
-      category: 'Major DPS CD',
+      category: 'major_dps',
       active_duration: 20,
     },
     {
@@ -917,7 +918,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [267],
       color: '#8788EE',
-      category: 'Major DPS CD',
+      category: 'major_dps',
       active_duration: 30,
     },
     {
@@ -929,7 +930,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'UTILITY',
       allowed_specs: null,
       color: '#8788EE',
-      category: 'Group Mobility',
+      category: 'group_mobility',
       active_duration: 1,
     },
     {
@@ -941,7 +942,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [266],
       color: '#8788EE',
-      category: 'Minor DPS CD',
+      category: 'minor_dps',
       active_duration: 20,
     },
     {
@@ -953,7 +954,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [266],
       color: '#8788EE',
-      category: 'Minor DPS CD',
+      category: 'minor_dps',
       active_duration: 20,
     },
     {
@@ -965,7 +966,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [266],
       color: '#8788EE',
-      category: 'Major DPS CD',
+      category: 'major_dps',
       active_duration: 15,
     },
     {
@@ -977,7 +978,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [265],
       color: '#8788EE',
-      category: 'Minor DPS CD',
+      category: 'minor_dps',
       active_duration: 3,
     },
     {
@@ -1121,7 +1122,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'EXTERNAL',
       allowed_specs: [105],
       color: '#FF7D0A',
-      category: 'Externals',
+      category: 'external',
       active_duration: 12,
     },
     {
@@ -1133,7 +1134,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'UTILITY',
       allowed_specs: [102],
       color: '#FF7D0A',
-      category: 'Minor DPS CD',
+      category: 'minor_dps',
       active_duration: 10,
     },
     {
@@ -1145,7 +1146,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'UTILITY',
       allowed_specs: null,
       color: '#FF7D0A',
-      category: 'Mobility',
+      category: 'mobility',
       active_duration: 1,
     },
     {
@@ -1157,7 +1158,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [102],
       color: '#FF7D0A',
-      category: 'Major DPS CD',
+      category: 'major_dps',
       active_duration: 30,
     },
     {
@@ -1169,7 +1170,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'UTILITY',
       allowed_specs: null,
       color: '#FF7D0A',
-      category: 'Group Mobility',
+      category: 'group_mobility',
       active_duration: 8,
     },
     {
@@ -1181,7 +1182,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [103, 104],
       color: '#FF7D0A',
-      category: 'Defensives',
+      category: 'defensive',
       active_duration: 6,
     },
     {
@@ -1193,7 +1194,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: null,
       color: '#FF7D0A',
-      category: 'Defensives',
+      category: 'defensive',
       active_duration: 12,
     },
     {
@@ -1205,7 +1206,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [102],
       color: '#FF7D0A',
-      category: 'Major DPS CD',
+      category: 'major_dps',
       active_duration: 20,
     },
     {
@@ -1217,7 +1218,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [102],
       color: '#FF7D0A',
-      category: 'Minor DPS CD',
+      category: 'minor_dps',
       active_duration: 8,
     },
     {
@@ -1229,7 +1230,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [105],
       color: '#FF7D0A',
-      category: 'Major Heal CD',
+      category: 'major_heal',
       active_duration: 30,
     },
     {
@@ -1241,7 +1242,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'RAID',
       allowed_specs: [105],
       color: '#FF7D0A',
-      category: 'Major Heal CD',
+      category: 'major_heal',
       active_duration: 8,
     },
     {
@@ -1253,7 +1254,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: null,
       color: '#FF7D0A',
-      category: 'Defensives',
+      category: 'defensive',
       active_duration: 0,
     },
     {
@@ -1265,7 +1266,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'UTILITY',
       allowed_specs: [102, 105],
       color: '#FF7D0A',
-      category: 'Utility',
+      category: 'utility',
       active_duration: 10,
     },
     {
@@ -1277,7 +1278,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [103, 104],
       color: '#FF7D0A',
-      category: 'Major DPS CD',
+      category: 'major_dps',
       active_duration: 20,
     },
     {
@@ -1289,7 +1290,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'RAID',
       allowed_specs: [102, 103, 105],
       color: '#FF7D0A',
-      category: 'Major DPS CD',
+      category: 'major_dps',
       active_duration: 4,
     },
     {
@@ -1301,7 +1302,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [103, 104],
       color: '#FF7D0A',
-      category: 'Defensives',
+      category: 'defensive',
       active_duration: 7,
     },
     {
@@ -1313,7 +1314,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'UTILITY',
       allowed_specs: null,
       color: '#FF7D0A',
-      category: 'Mobility',
+      category: 'mobility',
       active_duration: 5,
     },
     {
@@ -1325,7 +1326,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [581],
       color: '#A330C9',
-      category: 'Defensives',
+      category: 'defensive',
       active_duration: 6,
     },
     {
@@ -1337,7 +1338,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [581],
       color: '#A330C9',
-      category: 'Minor DPS CD',
+      category: 'minor_dps',
       active_duration: 10,
     },
     {
@@ -1349,7 +1350,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'UTILITY',
       allowed_specs: [577],
       color: '#A330C9',
-      category: 'Mobility',
+      category: 'mobility',
       active_duration: 1,
     },
     {
@@ -1361,7 +1362,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [577],
       color: '#A330C9',
-      category: 'Major DPS CD',
+      category: 'major_dps',
       active_duration: 1,
     },
     {
@@ -1373,7 +1374,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'UTILITY',
       allowed_specs: [581],
       color: '#A330C9',
-      category: 'Utility',
+      category: 'utility',
       active_duration: 6,
     },
     {
@@ -1385,7 +1386,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'EXTERNAL',
       allowed_specs: [581],
       color: '#A330C9',
-      category: 'Externals',
+      category: 'external',
       active_duration: 8,
     },
     {
@@ -1397,7 +1398,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [581],
       color: '#A330C9',
-      category: 'Minor DPS CD',
+      category: 'minor_dps',
       active_duration: 1,
     },
     {
@@ -1409,7 +1410,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: null,
       color: '#A330C9',
-      category: 'Major DPS CD',
+      category: 'major_dps',
       active_duration: 24,
     },
     {
@@ -1421,7 +1422,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'UTILITY',
       allowed_specs: null,
       color: '#A330C9',
-      category: 'Group DR',
+      category: 'group_dr',
       active_duration: 8,
     },
     {
@@ -1433,7 +1434,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [577],
       color: '#A330C9',
-      category: 'Defensives',
+      category: 'defensive',
       active_duration: 10,
     },
     {
@@ -1445,7 +1446,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'UTILITY',
       allowed_specs: null,
       color: '#33937F',
-      category: 'Mobility',
+      category: 'mobility',
       active_duration: 1,
     },
     {
@@ -1457,7 +1458,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'RAID',
       allowed_specs: [1468],
       color: '#33937F',
-      category: 'Major Heal CD',
+      category: 'major_heal',
       active_duration: 1,
     },
     {
@@ -1469,7 +1470,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'UTILITY',
       allowed_specs: null,
       color: '#33937F',
-      category: 'Utility',
+      category: 'utility',
       active_duration: 1,
     },
     {
@@ -1481,7 +1482,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: null,
       color: '#33937F',
-      category: 'Defensives',
+      category: 'defensive',
       active_duration: 8,
     },
     {
@@ -1493,7 +1494,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'RAID',
       allowed_specs: [1468],
       color: '#33937F',
-      category: 'Major Heal CD',
+      category: 'major_heal',
       active_duration: 2,
     },
     {
@@ -1505,7 +1506,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: null,
       color: '#33937F',
-      category: 'Defensives',
+      category: 'defensive',
       active_duration: 12,
     },
     {
@@ -1517,7 +1518,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'RAID',
       allowed_specs: [1468],
       color: '#33937F',
-      category: 'Major Heal CD',
+      category: 'major_heal',
       active_duration: 5,
     },
     {
@@ -1529,7 +1530,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'PERSONAL',
       allowed_specs: [1468],
       color: '#33937F',
-      category: 'Minor Heal CD',
+      category: 'minor_heal',
       active_duration: 1,
     },
     {
@@ -1541,7 +1542,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'UTILITY',
       allowed_specs: [1468, 1473],
       color: '#33937F',
-      category: 'Utility',
+      category: 'utility',
       active_duration: 10,
     },
     {
@@ -1553,7 +1554,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'RAID',
       allowed_specs: null,
       color: '#33937F',
-      category: 'Group DR',
+      category: 'group_dr',
       active_duration: 8,
     },
     {
@@ -1565,7 +1566,7 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'RAID',
       allowed_specs: null,
       color: '#33937F',
-      category: 'Group Mobility',
+      category: 'group_mobility',
       active_duration: 10,
     },
     {
@@ -1577,14 +1578,19 @@ export const SEED_COOLDOWNS: Omit<
       ability_type: 'EXTERNAL',
       allowed_specs: [1468],
       color: '#33937F',
-      category: 'Externals',
+      category: 'external',
       active_duration: 8,
     },
   ];
 
 export async function POST(req: Request) {
   try {
-    const supabase = sb;
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.roleLevel !== 'gm' && session.user.roleLevel !== 'officer') {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const supabase = supabaseAdmin;
 
     // Clear existing
     const { error: deleteError } = await supabase

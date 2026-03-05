@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export async function POST(req: Request) {
     try {
@@ -18,8 +18,7 @@ export async function POST(req: Request) {
         }
 
         // Insert into DB
-        const { data, error } = await sb
-            .from("discord_roles")
+        const { data, error } = await supabaseAdmin.from("discord_roles")
             .insert({
                 role_id: discord_role_id,
                 name: role_name,
@@ -57,8 +56,7 @@ export async function DELETE(req: Request) {
             return NextResponse.json({ error: "Falta el ID" }, { status: 400 })
         }
 
-        const { error } = await sb
-            .from("discord_roles")
+        const { error } = await supabaseAdmin.from("discord_roles")
             .delete()
             .match({ role_id: id }) // Match role_id
 

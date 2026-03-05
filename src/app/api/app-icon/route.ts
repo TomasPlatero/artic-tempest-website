@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { sb } from "@/infrastructure/auth/auth-options";
+import { supabaseAdmin } from "@/infrastructure/auth/auth-options";
 import sharp from 'sharp';
 
 export const runtime = 'nodejs'; // Sharp requires Node.js runtime
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     }
 
     try {
-        const { data: guild } = await sb
+        const { data: guild } = await supabaseAdmin
             .from("guilds_managed")
             .select("icon_url")
             .limit(1)

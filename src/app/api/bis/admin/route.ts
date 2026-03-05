@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export const dynamic = "force-dynamic"
 
@@ -18,8 +18,7 @@ export async function GET(req: Request) {
     try {
         if (member_id) {
             // Fetch specific member selections
-            let query = sb
-                .from("bis_selections")
+            let query = supabaseAdmin.from("bis_selections")
                 .select("*")
                 .eq("member_id", member_id)
 
@@ -36,8 +35,7 @@ export async function GET(req: Request) {
         }
 
         // Fetch rank visibility configurations to match Roster app behavior
-        const { data: rawRanks } = await sb
-            .from("guild_ranks")
+        const { data: rawRanks } = await supabaseAdmin.from("guild_ranks")
             .select("rank, is_visible")
 
         const visibilityMap: Record<number, boolean> = {}
@@ -48,8 +46,7 @@ export async function GET(req: Request) {
         })
 
         // Fetch summary for all members with a character in guild_members
-        const { data: members, error } = await sb
-            .from("guild_members")
+        const { data: members, error } = await supabaseAdmin.from("guild_members")
             .select("id, character_name, class_id, rank, realm_slug")
             .lte("rank", 9)
             .order("character_name")
@@ -59,8 +56,7 @@ export async function GET(req: Request) {
         // Filter members based on rank visibility
         const visibleMembers = (members || []).filter(m => visibilityMap[Number(m.rank)] !== false)
 
-        const { data: selectionsCount } = await sb
-            .from("bis_selections")
+        const { data: selectionsCount } = await supabaseAdmin.from("bis_selections")
             .select("member_id")
 
         const selectionMap = new Map()

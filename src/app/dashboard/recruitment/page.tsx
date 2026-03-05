@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 import { redirect } from "next/navigation"
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { SiteHeader } from "@/components/layout/site-header"
@@ -14,14 +14,12 @@ export default async function RecruitmentListPage() {
     }
 
     // Fetch applications
-    const { data: applications } = await sb
-        .from("recruitment_applications")
+    const { data: applications } = await supabaseAdmin.from("recruitment_applications")
         .select("*")
         .order("created_at", { ascending: false })
 
     // Fetch class constants for mapping
-    const { data: classConstants } = await sb
-        .from("game_constants")
+    const { data: classConstants } = await supabaseAdmin.from("game_constants")
         .select("key, value, metadata")
         .eq("category", "wow_class")
 

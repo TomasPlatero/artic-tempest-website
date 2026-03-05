@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export const dynamic = "force-dynamic"
 
@@ -14,8 +14,7 @@ export async function GET(request: Request) {
             return new NextResponse("event_id and boss_name are required", { status: 400 })
         }
 
-        const { data, error } = await sb
-            .from("cd_assignments")
+        const { data, error } = await supabaseAdmin.from("cd_assignments")
             .select("*")
             .eq("event_id", event_id)
             .eq("boss_name", boss_name)
@@ -44,8 +43,7 @@ export async function POST(request: Request) {
             return new NextResponse("Missing required fields", { status: 400 })
         }
 
-        const { data, error } = await sb
-            .from("cd_assignments")
+        const { data, error } = await supabaseAdmin.from("cd_assignments")
             .upsert({
                 id: id || undefined,
                 event_id,
@@ -81,8 +79,7 @@ export async function DELETE(request: Request) {
             return new NextResponse("ID is required", { status: 400 })
         }
 
-        const { error } = await sb
-            .from("cd_assignments")
+        const { error } = await supabaseAdmin.from("cd_assignments")
             .delete()
             .eq("id", id)
 

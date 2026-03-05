@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 import { addDays, getDay, isAfter, startOfDay, format } from "date-fns"
 
 export const dynamic = "force-dynamic"
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
         if (!session) return new NextResponse("Unauthorized", { status: 401 })
 
         // Check if user is auth'd & guild lookup
-        const { data: guildData } = await sb.from("guilds_managed").select("guild_id, last_schedule_sync").limit(1).single()
+        const { data: guildData } = await supabaseAdmin.from("guilds_managed").select("guild_id, last_schedule_sync").limit(1).single()
         if (!guildData) return NextResponse.json({ error: "Guild not found" }, { status: 404 })
         const guildId = guildData.guild_id
 
@@ -44,8 +44,7 @@ export async function POST(request: Request) {
         }
 
         // 1. Get active schedules
-        const { data: schedules, error: schedError } = await sb
-            .from("guild_raid_schedule")
+        const { data: schedules, error: schedError } = await supabaseAdmin.from("guild_raid_schedule")
             .select("*")
             .eq("guild_id", guildId)
             .eq("is_active", true)
@@ -116,7 +115,7 @@ export async function POST(request: Request) {
         }
 
         if (eventsToInsert.length === 0) {
-            await sb.from("guilds_managed").update({ last_schedule_sync: new Date().toISOString() }).eq("guild_id", guildId)
+            await supabaseAdmin.from("guilds_managed").update({ last_schedule_sync: new Date().toISOString() }).eq("guild_id", guildId)
             return NextResponse.json({ message: "No new events needed", synced: true })
         }
 
@@ -124,8 +123,7 @@ export async function POST(request: Request) {
         const startRange = today.toISOString()
         const endRange = addDays(today, SYNC_DAYS_AHEAD).toISOString()
 
-        const { data: existingEvents, error: existErr } = await sb
-            .from("guild_events")
+        const { data: existingEvents, error: existErr } = await supabaseAdmin.from("guild_events")
             .select("event_date, destination")
             .eq("guild_id", guildId)
             .gte("event_date", startRange)
@@ -144,12 +142,12 @@ export async function POST(request: Request) {
 
         // 5. Insert new events
         if (finalInsertBatch.length > 0) {
-            const { error: insertErr } = await sb.from("guild_events").insert(finalInsertBatch)
+            const { error: insertErr } = await supabaseAdmin.from("guild_events").insert(finalInsertBatch)
             if (insertErr) throw insertErr
         }
 
         // 6. Update last sync time
-        await sb.from("guilds_managed").update({ last_schedule_sync: new Date().toISOString() }).eq("guild_id", guildId)
+        await supabaseAdmin.from("guilds_managed").update({ last_schedule_sync: new Date().toISOString() }).eq("guild_id", guildId)
 
         return NextResponse.json({ message: `Synced ${finalInsertBatch.length} events`, synced: true })
 

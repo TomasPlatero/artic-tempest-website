@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export async function GET() {
     try {
-        const { data, error } = await sb
-            .from("app_permissions")
+        const { data, error } = await supabaseAdmin.from("app_permissions")
             .select("*")
 
         if (error) throw error
@@ -32,8 +31,7 @@ export async function PATCH(request: Request) {
             return NextResponse.json({ error: "Faltan parámetros" }, { status: 400 })
         }
 
-        const { error } = await sb
-            .from("app_permissions")
+        const { error } = await supabaseAdmin.from("app_permissions")
             .upsert({
                 role_level,
                 app_id,

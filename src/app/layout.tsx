@@ -22,10 +22,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-import { sb } from "@/infrastructure/auth/auth-options";
+import { supabaseAdmin } from "@/infrastructure/auth/auth-options";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { data: guild } = await sb
+  const { data: guild } = await supabaseAdmin
     .from("guilds_managed")
     .select("name, icon_url")
     .limit(1)

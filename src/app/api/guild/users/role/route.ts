@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export async function PATCH(request: Request) {
     try {
@@ -34,8 +34,7 @@ export async function PATCH(request: Request) {
 
         // Prevent removing the last GM (safety check)
         if (newRoleLevel !== "gm") {
-            const { count, error: countError } = await sb
-                .from("profiles")
+            const { count, error: countError } = await supabaseAdmin.from("profiles")
                 .select("user_id", { count: "exact", head: true })
                 .eq("role_level", "gm")
 
@@ -45,7 +44,7 @@ export async function PATCH(request: Request) {
             }
 
             // If this user is a GM and they are the ONLY GM left, block the demotion
-            const { data: targetUser } = await sb.from("profiles").select("role_level").eq("user_id", targetUserId).single()
+            const { data: targetUser } = await supabaseAdmin.from("profiles").select("role_level").eq("user_id", targetUserId).single()
 
             if (targetUser?.role_level === "gm" && count === 1) {
                 return NextResponse.json({ error: "No puedes degradar al último Guild Master del sistema." }, { status: 400 })
@@ -53,8 +52,7 @@ export async function PATCH(request: Request) {
         }
 
         // Update the profile
-        const { error: updateError } = await sb
-            .from("profiles")
+        const { error: updateError } = await supabaseAdmin.from("profiles")
             .update({ role_level: newRoleLevel })
             .eq("user_id", targetUserId)
 

@@ -2,7 +2,7 @@
 // GET — Returns cached raid loot entirely from our bnet_* Supabase tables
 
 import { NextResponse } from "next/server"
-import { sb } from "@/infrastructure/auth/auth-options"
+import { supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 // Maps arbitrary frontend IDs to official Bnet Instance IDs
 const INSTANCE_MAP: Record<string, number> = {
@@ -37,7 +37,7 @@ export async function GET(req: Request) {
         }
 
         // 1. Get Instance Name
-        const { data: instanceInfo, error: instErr } = await sb
+        const { data: instanceInfo, error: instErr } = await supabaseAdmin
             .from("bnet_instances")
             .select("name")
             .eq("id", instanceId)
@@ -50,7 +50,7 @@ export async function GET(req: Request) {
         }
 
         // 2. Get Encounters and Loot via Join
-        const { data: encounters, error: encErr } = await sb
+        const { data: encounters, error: encErr } = await supabaseAdmin
             .from("bnet_encounters")
             .select(`
                 id, 

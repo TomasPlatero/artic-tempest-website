@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server"
-import { sb } from "@/infrastructure/auth/auth-options"
+import { supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
 export async function GET() {
     try {
-        const { data, error } = await sb
+        const { data, error } = await supabaseAdmin
             .from("game_constants")
             .select("category, key, value, metadata")
 

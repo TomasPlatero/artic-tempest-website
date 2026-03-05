@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export async function GET() {
     const session = await getServerSession(authOptions)
@@ -9,8 +9,7 @@ export async function GET() {
     }
 
     try {
-        const { data: embeds, error } = await sb
-            .from('discord_embeds')
+        const { data: embeds, error } = await supabaseAdmin.from('discord_embeds')
             .select('*')
             .order('created_at', { ascending: false })
 
@@ -32,13 +31,12 @@ export async function POST(req: Request) {
 
         // Fetch guild_id if not provided
         if (!payload.guild_id) {
-            const { data: g } = await sb.from('guilds_managed').select('guild_id').limit(1).single()
+            const { data: g } = await supabaseAdmin.from('guilds_managed').select('guild_id').limit(1).single()
             if (g) payload.guild_id = g.guild_id
             else throw new Error("No guild found")
         }
 
-        const { data: embed, error } = await sb
-            .from('discord_embeds')
+        const { data: embed, error } = await supabaseAdmin.from('discord_embeds')
             .insert([payload])
             .select()
             .single()

@@ -1,5 +1,5 @@
 // src/infrastructure/verification/sync-engine.ts
-import { sb } from "@/infrastructure/auth/auth-options"
+import { supabaseAdmin } from "@/infrastructure/auth/auth-options"
 import { getGuildCredentials } from "@/infrastructure/auth/credentials"
 import { toSlug } from "@/infrastructure/bnet/bnet-client"
 import { RoleLevel } from "@/types/auth"
@@ -46,7 +46,7 @@ async function checkDiscordMembership(accessToken: string, guildId: string): Pro
  */
 async function checkBnetMembership(userId: string): Promise<boolean> {
     // 1. Obtener personajes vinculados del usuario (de nuestra tabla bnet_characters)
-    const { data: bnetChars } = await sb
+    const { data: bnetChars } = await supabaseAdmin
         .from("bnet_characters")
         .select("name, realm")
         .eq("user_id", userId)
@@ -55,7 +55,7 @@ async function checkBnetMembership(userId: string): Promise<boolean> {
 
     // 2. Consultar si alguno de esos personajes está en el Roster (guild_members)
     // Nota: Podríamos hacer un JOIN o un rpc, pero para simplicidad inmediata:
-    const { count } = await sb
+    const { count } = await supabaseAdmin
         .from("guild_members")
         .select("*", { count: 'exact', head: true })
         .in("name", bnetChars.map(c => c.name))
@@ -68,7 +68,7 @@ async function checkBnetMembership(userId: string): Promise<boolean> {
  * Ejecuta la verificación completa para un usuario 
  */
 export async function verifyUser(userId: string): Promise<SyncResult> {
-    const { data: profile, error: dbError } = await sb
+    const { data: profile, error: dbError } = await supabaseAdmin
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
@@ -118,7 +118,7 @@ export async function verifyUser(userId: string): Promise<SyncResult> {
     }
 
     // --- ACTUALIZAR PERFIL ---
-    await sb.from('profiles').update({
+    await supabaseAdmin.from('profiles').update({
         role_level: newRole,
         discord_refresh_token: newRefreshToken,
         last_verification_check: new Date().toISOString(),
@@ -127,7 +127,7 @@ export async function verifyUser(userId: string): Promise<SyncResult> {
     }).eq('user_id', userId)
 
     // --- LOG ---
-    await sb.from('verification_logs').insert({
+    await supabaseAdmin.from('verification_logs').insert({
         user_id: userId,
         old_role: oldRole,
         new_role: newRole,
@@ -144,7 +144,7 @@ export async function verifyUser(userId: string): Promise<SyncResult> {
  */
 export async function processVerificationBatch(limit: number = 20) {
     // Seleccionamos usuarios que no han sido verificados recientemente
-    const { data: users, error } = await sb
+    const { data: users, error } = await supabaseAdmin
         .from('profiles')
         .select('user_id')
         .order('last_verification_check', { ascending: true, nullsFirst: true })

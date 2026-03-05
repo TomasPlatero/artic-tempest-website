@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export async function DELETE() {
     try {
@@ -16,8 +16,7 @@ export async function DELETE() {
         }
 
         // Wipe all characters from the guild_members table
-        const { error } = await sb
-            .from("guild_members")
+        const { error } = await supabaseAdmin.from("guild_members")
             .delete()
             .neq("id", "00000000-0000-0000-0000-000000000000") // A dummy condition to satisfy PostgREST requiring a condition for DELETE
 

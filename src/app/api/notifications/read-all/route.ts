@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export async function POST() {
     const session = await getServerSession(authOptions)
@@ -12,8 +12,7 @@ export async function POST() {
 
     try {
         // Obtenemos todas las IDs de notificaciones existentes
-        const { data: notifications } = await sb
-            .from("system_notifications")
+        const { data: notifications } = await supabaseAdmin.from("system_notifications")
             .select("id")
 
         if (!notifications || notifications.length === 0) {
@@ -26,8 +25,7 @@ export async function POST() {
             notification_id: n.id
         }))
 
-        const { error } = await sb
-            .from("user_notifications_read")
+        const { error } = await supabaseAdmin.from("user_notifications_read")
             .upsert(readInserts, { onConflict: 'user_id,notification_id' })
 
         if (error) throw error

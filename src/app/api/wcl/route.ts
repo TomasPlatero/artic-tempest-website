@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { sb } from "@/infrastructure/auth/auth-options";
+import { supabaseAdmin } from "@/infrastructure/auth/auth-options";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/infrastructure/auth/auth-options";
 
@@ -17,7 +17,7 @@ export async function GET(_req: Request) {
         }
 
         // Fetch WCL credentials from the guild settings
-        const { data: guild } = await sb
+        const { data: guild } = await supabaseAdmin
             .from("guilds_managed")
             .select("wcl_client_id, wcl_client_secret")
             .limit(1)

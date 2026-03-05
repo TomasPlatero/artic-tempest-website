@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { sb } from "@/infrastructure/auth/auth-options"
+import { supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 // We make this route fully public and dynamic because it's called from a raw script
 export const dynamic = "force-dynamic"
@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic"
 export async function GET() {
     try {
         // Build a set of all valid Item IDs currently stored in our Battle.net cache
-        const { data: encounterLoot, error: lootErr } = await sb
+        const { data: encounterLoot, error: lootErr } = await supabaseAdmin
             .from("bnet_encounter_loot")
             .select("item_id")
 
@@ -17,14 +17,14 @@ export async function GET() {
         encounterLoot?.forEach(l => validItemIds.add(l.item_id))
 
         // Fetch all members with valid realms
-        const { data: members, error: membersError } = await sb
+        const { data: members, error: membersError } = await supabaseAdmin
             .from("guild_members")
             .select("id, character_name, realm_slug")
 
         if (membersError) throw membersError
 
         // Fetch all BiS selections
-        const { data: selections, error: selectionsError } = await sb
+        const { data: selections, error: selectionsError } = await supabaseAdmin
             .from("bis_selections")
             .select("member_id, item_id, difficulty")
 

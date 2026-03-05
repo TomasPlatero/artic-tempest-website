@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export const dynamic = "force-dynamic"
 
@@ -12,8 +12,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "No autorizado" }, { status: 401 })
         }
 
-        const { error } = await sb
-            .from("bis_selections")
+        const { error } = await supabaseAdmin.from("bis_selections")
             .delete()
             .neq("id", "00000000-0000-0000-0000-000000000000") // Generic "delete all" workaround for some SB configs if filter is required
 
