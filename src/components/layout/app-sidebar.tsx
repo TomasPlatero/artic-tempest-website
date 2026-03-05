@@ -23,7 +23,7 @@ import {
   IconUsers,
   IconCalendarEvent,
   IconListCheck,
-  IconStethoscope,
+  IconTimeline,
   IconWorld,
   IconFileText,
   IconSearch,
@@ -80,7 +80,7 @@ const navigationData = {
     {
       title: "Planificador",
       url: "/dashboard/planificador-cds",
-      icon: IconStethoscope,
+      icon: IconTimeline,
       appId: "planificador-cds",
     },
     {
