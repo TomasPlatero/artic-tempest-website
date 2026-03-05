@@ -57,6 +57,7 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
     const [selectedWclReport, setSelectedWclReport] = useState<any>(null)
     const [wclReportDetails, setWclReportDetails] = useState<any>(null)
     const [isFetchingWclDetail, setIsFetchingWclDetail] = useState(false)
+    const [wclModalTab, setWclModalTab] = useState<'sumario' | 'intentos'>('sumario')
     const [wclZoneFilter, setWclZoneFilter] = useState<string>("all")
     const [wclTagFilter, setWclTagFilter] = useState<string>("all")
     const [wclTags, setWclTags] = useState<{ id: number, name: string }[]>([])
@@ -481,6 +482,24 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                                 </div>
                             </DialogHeader>
 
+                            {/* TAB BAR */}
+                            <div className="flex border-b border-border/10 px-6">
+                                <button
+                                    onClick={() => setWclModalTab('sumario')}
+                                    className={cn(
+                                        'px-4 py-2.5 text-xs font-black uppercase tracking-widest transition-all border-b-2 -mb-px',
+                                        wclModalTab === 'sumario' ? 'text-blue-400 border-blue-500' : 'text-muted-foreground/50 border-transparent hover:text-muted-foreground'
+                                    )}
+                                >Sumario</button>
+                                <button
+                                    onClick={() => setWclModalTab('intentos')}
+                                    className={cn(
+                                        'px-4 py-2.5 text-xs font-black uppercase tracking-widest transition-all border-b-2 -mb-px',
+                                        wclModalTab === 'intentos' ? 'text-blue-400 border-blue-500' : 'text-muted-foreground/50 border-transparent hover:text-muted-foreground'
+                                    )}
+                                >Intentos</button>
+                            </div>
+
                             <div className="flex-1 overflow-y-auto p-6 scrollbar-thin">
                                 {isFetchingWclDetail ? (
                                     <div className="flex flex-col items-center justify-center py-12 gap-4 animate-pulse">
@@ -489,141 +508,144 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                                     </div>
                                 ) : wclReportDetails ? (
                                     <div className="space-y-6">
-                                        {/* GROUP COMPOSITION */}
-                                        {wclReportDetails.playerDetails?.data?.playerDetails && (() => {
-                                            const pd = wclReportDetails.playerDetails.data.playerDetails
-                                            const tanks = pd.tanks || []
-                                            const healersList = pd.healers || []
-                                            const dpsList = pd.dps || []
-                                            if (tanks.length === 0 && healersList.length === 0 && dpsList.length === 0) return null
-                                            return (
-                                                <div className="rounded-lg border border-border/10 bg-background/30 p-4">
-                                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 mb-3">Composición del grupo</h3>
-                                                    <div className="flex flex-col gap-2">
-                                                        {tanks.length > 0 && (
-                                                            <div className="flex items-center gap-2 flex-wrap">
-                                                                <span className="text-[10px] font-black uppercase tracking-widest text-blue-400/60 w-16 shrink-0">Tanks:</span>
-                                                                {tanks.map((p: any) => (
-                                                                    <Badge key={p.name} variant="outline" className="text-[10px] font-bold py-0 px-1.5 border-blue-500/20 text-blue-300/70">{p.name}</Badge>
-                                                                ))}
-                                                            </div>
-                                                        )}
-                                                        {healersList.length > 0 && (
-                                                            <div className="flex items-center gap-2 flex-wrap">
-                                                                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400/60 w-16 shrink-0">Healers:</span>
-                                                                {healersList.map((p: any) => (
-                                                                    <Badge key={p.name} variant="outline" className="text-[10px] font-bold py-0 px-1.5 border-emerald-500/20 text-emerald-300/70">{p.name}</Badge>
-                                                                ))}
-                                                            </div>
-                                                        )}
-                                                        {dpsList.length > 0 && (
-                                                            <div className="flex items-center gap-2 flex-wrap">
-                                                                <span className="text-[10px] font-black uppercase tracking-widest text-red-400/60 w-16 shrink-0">DPS:</span>
-                                                                {dpsList.map((p: any) => (
-                                                                    <Badge key={p.name} variant="outline" className="text-[10px] font-bold py-0 px-1.5 border-red-500/20 text-red-300/70">{p.name}</Badge>
-                                                                ))}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )
-                                        })()}
-
-                                        {/* DAMAGE & HEALING TABLES */}
-                                        {(wclReportDetails.damageDone?.data?.entries?.length > 0 || wclReportDetails.healingDone?.data?.entries?.length > 0) && (() => {
-                                            const fmt = (n: number) => n >= 1000000 ? (n / 1000000).toFixed(2) + 'm' : n >= 1000 ? (n / 1000).toFixed(1) + 'k' : n.toFixed(0)
-                                            const duration = (wclReportDetails.damageDone?.data?.totalTime || wclReportDetails.healingDone?.data?.totalTime || (wclReportDetails.endTime - wclReportDetails.startTime)) / 1000
-                                            const dmgSorted = [...(wclReportDetails.damageDone?.data?.entries || [])].sort((a: any, b: any) => b.total - a.total)
-                                            const healSorted = [...(wclReportDetails.healingDone?.data?.entries || [])].sort((a: any, b: any) => b.total - a.total)
-                                            const classColors: Record<string, string> = {
-                                                'DeathKnight': '#C41E3A', 'DemonHunter': '#A330C9', 'Druid': '#FF7C0A',
-                                                'Evoker': '#33937F', 'Hunter': '#AAD372', 'Mage': '#3FC7EB',
-                                                'Monk': '#00FF98', 'Paladin': '#F48CBA', 'Priest': '#FFFFFF',
-                                                'Rogue': '#FFF468', 'Shaman': '#0070DD', 'Warlock': '#8788EE',
-                                                'Warrior': '#C69B6D'
-                                            }
-                                            const getColor = (type: string) => classColors[type] || '#888888'
-
-                                            const renderTable = (entries: any[], label: string, icon: React.ReactNode, metricLabel: string) => (
-                                                <div>
-                                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 mb-3 flex items-center gap-2">
-                                                        {icon} {label}
-                                                    </h3>
-                                                    <div className="rounded-lg border border-border/10 overflow-hidden">
-                                                        <div className="grid grid-cols-[1fr_90px_80px] text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 px-3 py-1.5 border-b border-border/10 bg-muted/5">
-                                                            <span>Nombre</span><span className="text-right">Amount</span><span className="text-right">{metricLabel}</span>
-                                                        </div>
-                                                        {entries.slice(0, 15).map((entry: any, i: number) => {
-                                                            const maxTotal = entries[0]?.total || 1
-                                                            const pct = (entry.total / maxTotal) * 100
-                                                            const color = getColor(entry.type)
-                                                            return (
-                                                                <div key={i} className="relative grid grid-cols-[1fr_90px_80px] items-center px-3 py-1.5 text-xs">
-                                                                    <div className="absolute inset-0 opacity-15" style={{ width: `${pct}%`, backgroundColor: color }} />
-                                                                    <span className="relative font-bold truncate" style={{ color }}>{entry.name}</span>
-                                                                    <span className="relative text-right text-[10px] font-bold text-muted-foreground/60 tabular-nums">{fmt(entry.total)}</span>
-                                                                    <span className="relative text-right text-[10px] font-black text-muted-foreground/80 tabular-nums">{fmt(entry.total / duration)}</span>
-                                                                </div>
-                                                            )
-                                                        })}
-                                                    </div>
-                                                </div>
-                                            )
-
-                                            return (
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                    {dmgSorted.length > 0 && renderTable(dmgSorted, 'Damage Done By Source', <IconSwords className="size-3.5" />, 'DPS')}
-                                                    {healSorted.length > 0 && renderTable(healSorted, 'Healing Done By Source', <IconTrophy className="size-3.5" />, 'HPS')}
-                                                </div>
-                                            )
-                                        })()}
-
-                                        {/* FIGHTS LIST */}
-                                        <div className="grid grid-cols-1 gap-2">
-                                            {wclReportDetails.fights && wclReportDetails.fights.length > 0 ? (
-                                                wclReportDetails.fights.map((fight: any, i: number) => (
-                                                    <a
-                                                        href={`https://www.warcraftlogs.com/reports/${selectedWclReport?.code}#fight=${fight.id}`}
-                                                        target="_blank"
-                                                        rel="noreferrer"
-                                                        key={i}
-                                                        className="flex items-center justify-between p-3 rounded-lg border border-border/10 bg-background/40 group hover:border-blue-500/30 hover:bg-blue-500/[0.03] transition-all"
-                                                    >
-                                                        <div className="flex items-center gap-3">
-                                                            <div className={cn(
-                                                                "size-6 rounded-md flex items-center justify-center text-[10px] font-black",
-                                                                fight.kill ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"
-                                                            )}>
-                                                                {fight.kill ? <IconCheck className="size-3.5" /> : <IconX className="size-3.5" />}
-                                                            </div>
-                                                            <div className="flex flex-col">
-                                                                <div className="flex items-center gap-2">
-                                                                    <span className="text-sm font-bold group-hover:text-blue-400 transition-colors">{fight.name}</span>
-                                                                    <IconExternalLink className="size-3 opacity-0 group-hover:opacity-40 transition-opacity" />
-                                                                </div>
-                                                                <span className="text-[10px] uppercase font-black text-muted-foreground/50 tracking-tighter">
-                                                                    {fight.difficulty === 3 ? "Normal" : fight.difficulty === 4 ? "Heroico" : fight.difficulty === 5 ? "Mítico" : "Buscador"}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="flex items-center gap-4">
-                                                            {!fight.kill && (
-                                                                <div className="flex flex-col items-end">
-                                                                    <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-tighter">Mejor Intento</span>
-                                                                    <span className="text-xs font-black text-red-400/80">{(fight.fightPercentage / 100).toFixed(1)}%</span>
+                                        {wclModalTab === 'sumario' && (<>
+                                            {/* GROUP COMPOSITION */}
+                                            {wclReportDetails.playerDetails?.data?.playerDetails && (() => {
+                                                const pd = wclReportDetails.playerDetails.data.playerDetails
+                                                const tanks = pd.tanks || []
+                                                const healersList = pd.healers || []
+                                                const dpsList = pd.dps || []
+                                                if (tanks.length === 0 && healersList.length === 0 && dpsList.length === 0) return null
+                                                return (
+                                                    <div className="rounded-lg border border-border/10 bg-background/30 p-4">
+                                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 mb-3">Composición del grupo</h3>
+                                                        <div className="flex flex-col gap-2">
+                                                            {tanks.length > 0 && (
+                                                                <div className="flex items-center gap-2 flex-wrap">
+                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-blue-400/60 w-16 shrink-0">Tanks:</span>
+                                                                    {tanks.map((p: any) => (
+                                                                        <Badge key={p.name} variant="outline" className="text-[10px] font-bold py-0 px-1.5 border-blue-500/20 text-blue-300/70">{p.name}</Badge>
+                                                                    ))}
                                                                 </div>
                                                             )}
-                                                            {fight.kill && (
-                                                                <Badge className="bg-emerald-500/10 text-emerald-500 border-none text-[9px] font-black uppercase">Derrotado</Badge>
+                                                            {healersList.length > 0 && (
+                                                                <div className="flex items-center gap-2 flex-wrap">
+                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400/60 w-16 shrink-0">Healers:</span>
+                                                                    {healersList.map((p: any) => (
+                                                                        <Badge key={p.name} variant="outline" className="text-[10px] font-bold py-0 px-1.5 border-emerald-500/20 text-emerald-300/70">{p.name}</Badge>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                            {dpsList.length > 0 && (
+                                                                <div className="flex items-center gap-2 flex-wrap">
+                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-red-400/60 w-16 shrink-0">DPS:</span>
+                                                                    {dpsList.map((p: any) => (
+                                                                        <Badge key={p.name} variant="outline" className="text-[10px] font-bold py-0 px-1.5 border-red-500/20 text-red-300/70">{p.name}</Badge>
+                                                                    ))}
+                                                                </div>
                                                             )}
                                                         </div>
-                                                    </a>
-                                                ))
-                                            ) : (
-                                                <div className="text-center py-8 text-xs text-muted-foreground italic">No se encontraron combates registrados.</div>
-                                            )}
-                                        </div>
+                                                    </div>
+                                                )
+                                            })()}
+
+                                            {/* DAMAGE & HEALING TABLES */}
+                                            {(wclReportDetails.damageDone?.data?.entries?.length > 0 || wclReportDetails.healingDone?.data?.entries?.length > 0) && (() => {
+                                                const fmt = (n: number) => n >= 1000000 ? (n / 1000000).toFixed(2) + 'm' : n >= 1000 ? (n / 1000).toFixed(1) + 'k' : n.toFixed(0)
+                                                const duration = (wclReportDetails.damageDone?.data?.totalTime || wclReportDetails.healingDone?.data?.totalTime || (wclReportDetails.endTime - wclReportDetails.startTime)) / 1000
+                                                const dmgSorted = [...(wclReportDetails.damageDone?.data?.entries || [])].sort((a: any, b: any) => b.total - a.total)
+                                                const healSorted = [...(wclReportDetails.healingDone?.data?.entries || [])].sort((a: any, b: any) => b.total - a.total)
+                                                const classColors: Record<string, string> = {
+                                                    'DeathKnight': '#C41E3A', 'DemonHunter': '#A330C9', 'Druid': '#FF7C0A',
+                                                    'Evoker': '#33937F', 'Hunter': '#AAD372', 'Mage': '#3FC7EB',
+                                                    'Monk': '#00FF98', 'Paladin': '#F48CBA', 'Priest': '#FFFFFF',
+                                                    'Rogue': '#FFF468', 'Shaman': '#0070DD', 'Warlock': '#8788EE',
+                                                    'Warrior': '#C69B6D'
+                                                }
+                                                const getColor = (type: string) => classColors[type] || '#888888'
+
+                                                const renderTable = (entries: any[], label: string, icon: React.ReactNode, metricLabel: string) => (
+                                                    <div>
+                                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 mb-3 flex items-center gap-2">
+                                                            {icon} {label}
+                                                        </h3>
+                                                        <div className="rounded-lg border border-border/10 overflow-hidden">
+                                                            <div className="grid grid-cols-[1fr_90px_80px] text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 px-3 py-1.5 border-b border-border/10 bg-muted/5">
+                                                                <span>Nombre</span><span className="text-right">Amount</span><span className="text-right">{metricLabel}</span>
+                                                            </div>
+                                                            {entries.slice(0, 15).map((entry: any, i: number) => {
+                                                                const maxTotal = entries[0]?.total || 1
+                                                                const pct = (entry.total / maxTotal) * 100
+                                                                const color = getColor(entry.type)
+                                                                return (
+                                                                    <div key={i} className="relative grid grid-cols-[1fr_90px_80px] items-center px-3 py-1.5 text-xs">
+                                                                        <div className="absolute inset-0 opacity-15" style={{ width: `${pct}%`, backgroundColor: color }} />
+                                                                        <span className="relative font-bold truncate" style={{ color }}>{entry.name}</span>
+                                                                        <span className="relative text-right text-[10px] font-bold text-muted-foreground/60 tabular-nums">{fmt(entry.total)}</span>
+                                                                        <span className="relative text-right text-[10px] font-black text-muted-foreground/80 tabular-nums">{fmt(entry.total / duration)}</span>
+                                                                    </div>
+                                                                )
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                )
+
+                                                return (
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                        {dmgSorted.length > 0 && renderTable(dmgSorted, 'Daño hecho por fuente', <IconSwords className="size-3.5" />, 'DPS')}
+                                                        {healSorted.length > 0 && renderTable(healSorted, 'Sanación hecha por fuente', <IconTrophy className="size-3.5" />, 'HPS')}
+                                                    </div>
+                                                )
+                                            })()}
+                                        </>)}
+
+                                        {wclModalTab === 'intentos' && (
+                                            <div className="grid grid-cols-1 gap-2">
+                                                {wclReportDetails.fights && wclReportDetails.fights.length > 0 ? (
+                                                    wclReportDetails.fights.map((fight: any, i: number) => (
+                                                        <a
+                                                            href={`https://www.warcraftlogs.com/reports/${selectedWclReport?.code}#fight=${fight.id}`}
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                            key={i}
+                                                            className="flex items-center justify-between p-3 rounded-lg border border-border/10 bg-background/40 group hover:border-blue-500/30 hover:bg-blue-500/[0.03] transition-all"
+                                                        >
+                                                            <div className="flex items-center gap-3">
+                                                                <div className={cn(
+                                                                    "size-6 rounded-md flex items-center justify-center text-[10px] font-black",
+                                                                    fight.kill ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"
+                                                                )}>
+                                                                    {fight.kill ? <IconCheck className="size-3.5" /> : <IconX className="size-3.5" />}
+                                                                </div>
+                                                                <div className="flex flex-col">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className="text-sm font-bold group-hover:text-blue-400 transition-colors">{fight.name}</span>
+                                                                        <IconExternalLink className="size-3 opacity-0 group-hover:opacity-40 transition-opacity" />
+                                                                    </div>
+                                                                    <span className="text-[10px] uppercase font-black text-muted-foreground/50 tracking-tighter">
+                                                                        {fight.difficulty === 3 ? "Normal" : fight.difficulty === 4 ? "Heroico" : fight.difficulty === 5 ? "Mítico" : "Buscador"}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="flex items-center gap-4">
+                                                                {!fight.kill && (
+                                                                    <div className="flex flex-col items-end">
+                                                                        <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-tighter">Mejor Intento</span>
+                                                                        <span className="text-xs font-black text-red-400/80">{(fight.fightPercentage / 100).toFixed(1)}%</span>
+                                                                    </div>
+                                                                )}
+                                                                {fight.kill && (
+                                                                    <Badge className="bg-emerald-500/10 text-emerald-500 border-none text-[9px] font-black uppercase">Derrotado</Badge>
+                                                                )}
+                                                            </div>
+                                                        </a>
+                                                    ))
+                                                ) : (
+                                                    <div className="text-center py-8 text-xs text-muted-foreground italic">No se encontraron combates registrados.</div>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 ) : (
                                     <div className="text-center py-12 text-sm text-red-400">Error al cargar el sumario.</div>
