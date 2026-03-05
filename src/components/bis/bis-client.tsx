@@ -3,10 +3,12 @@
 import { useState, useEffect, useMemo, useCallback } from "react"
 import {
     IconSword, IconShield, IconCheck, IconX, IconRefresh,
-    IconListCheck, IconLayoutGrid, IconUser, IconFilter, IconSettings
+    IconListCheck, IconLayoutGrid, IconUser, IconFilter, IconSettings,
+    IconBolt, IconExternalLink
 } from "@tabler/icons-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import {
     Card, CardHeader, CardTitle, CardDescription, CardContent,
@@ -71,6 +73,29 @@ const QUALITY_COLORS: Record<string, string> = {
     RARE: "text-blue-400",
     LEGENDARY: "text-orange-400",
     UNCOMMON: "text-green-400",
+}
+
+const WOWHEAD_QUALITY: Record<string, number> = {
+    EPIC: 4,
+    RARE: 3,
+    LEGENDARY: 5,
+    UNCOMMON: 2,
+}
+
+// Map frontend difficulty states to Wowhead diff IDs
+const WOWHEAD_DIFF: Record<string, number> = {
+    normal: 14,
+    heroic: 15,
+    mythic: 16,
+}
+
+// Fixed item level per raid tier difficulty (Midnight Season 2)
+// These are the actual base item levels for each difficulty's loot drops
+const RAID_ILVL: Record<string, Record<string, number>> = {
+    // Voidspire, March on Quel'Danas, Dreamwell
+    "1307": { normal: 206, heroic: 219, mythic: 232 },
+    "1308": { normal: 206, heroic: 219, mythic: 232 },
+    "1314": { normal: 206, heroic: 219, mythic: 232 },
 }
 
 const CLASS_IMAGES: Record<number, string> = {
@@ -165,24 +190,52 @@ function LootItemCard({
     bossName,
     selected,
     onToggle,
+    rbGain,
+    difficulty,
+    instanceId,
 }: {
     item: LootItem
     bossName: string
     selected: boolean
     onToggle: () => void
+    rbGain?: { dps: number; pct: string }
+    difficulty: "normal" | "heroic" | "mythic" | string
+    instanceId: string
 }) {
     const qualityColor = QUALITY_COLORS[item.quality] || "text-foreground"
+
+    // Use fixed ilvl from raid tier table for the selected difficulty
+    const raidIlvl = RAID_ILVL[instanceId]?.[difficulty] || null;
+    const computedItemLevel = raidIlvl || item.itemLevel || null;
+    const diffId = WOWHEAD_DIFF[difficulty] || 15;
+
+    // Map blizzard icon URL to Wowhead CDN URL to avoid 403s
+    const getIconUrl = (url: string | null) => {
+        if (!url) return null;
+        if (url.includes("render.worldofwarcraft.com")) {
+            const parts = url.split("/");
+            const iconName = parts[parts.length - 1]; // e.g. inv_vessel_void_01.jpg
+            return `https://wow.zamimg.com/images/wow/icons/large/${iconName}`;
+        }
+        return url;
+    };
+
+    const iconUrl = getIconUrl(item.icon);
 
     return (
         <a
             href={`https://www.wowhead.com/item=${item.id}`}
             target="_blank"
-            rel="nofollow"
+            rel="nofollow noreferrer"
             onClick={(e) => {
-                e.preventDefault()
-                onToggle()
+                const isMeta = e.metaKey || e.ctrlKey;
+                if (!isMeta) {
+                    e.preventDefault()
+                    onToggle()
+                }
             }}
-            data-wowhead={`item=${item.id}`}
+            // Use item.itemLevel if present (e.g., from Raidbots), otherwise default behavior
+            data-wowhead={`item=${item.id}${item.id > 200000 ? `&domain=beta` : ""}&domain=es&diff=${diffId}${computedItemLevel ? `&ilvl=${computedItemLevel}` : ""}${item.quality && WOWHEAD_QUALITY[item.quality] ? `&qu=${WOWHEAD_QUALITY[item.quality]}` : ""}`}
             className={`
                 flex items-center gap-3 p-2.5 rounded-lg border text-left transition-all w-full no-underline
                 ${selected
@@ -191,8 +244,8 @@ function LootItemCard({
                 }
             `}
         >
-            {item.icon ? (
-                <Image src={item.icon} alt="" width={36} height={36} className="rounded border border-border/50 shadow-sm shrink-0" />
+            {iconUrl ? (
+                <Image unoptimized src={iconUrl} alt="" width={36} height={36} className="rounded border border-border/50 shadow-sm shrink-0" />
             ) : (
                 <div className="size-9 rounded bg-muted border border-border/50 flex items-center justify-center shrink-0">
                     <IconShield className="size-4 text-muted-foreground" />
@@ -201,8 +254,13 @@ function LootItemCard({
             <div className="flex-1 min-w-0">
                 <p className={`text-sm font-medium truncate ${qualityColor}`}>{item.name}</p>
                 <p className="text-xs text-muted-foreground truncate">
-                    {item.itemLevel ? `${item.itemLevel} · ` : ""}{bossName}
+                    {computedItemLevel ? `${computedItemLevel} · ` : ""}{bossName}
                 </p>
+                {rbGain && (
+                    <p className="text-[10px] font-bold text-green-400 mt-0.5 animate-in fade-in slide-in-from-left-1">
+                        +{rbGain.dps} DPS · +{rbGain.pct}%
+                    </p>
+                )}
             </div>
             {selected && (
                 <div className="shrink-0">
@@ -220,6 +278,8 @@ function WishlistCard({
     loadingSelections,
     translateSlot,
     setSelections,
+    bosses,
+    instanceId,
 }: {
     selectedMember: EligibleMember | undefined
     difficulty: string
@@ -227,6 +287,8 @@ function WishlistCard({
     loadingSelections: boolean
     translateSlot: (s: string) => string
     setSelections: React.Dispatch<React.SetStateAction<BisSelection[]>>
+    bosses: Boss[]
+    instanceId: string
 }) {
     return (
         <Card className="h-fit sticky top-20">
@@ -255,44 +317,68 @@ function WishlistCard({
                     </div>
                 ) : (
                     <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
-                        {selections.map(sel => (
-                            <a
-                                key={sel.id}
-                                href={`https://www.wowhead.com/item=${sel.item_id}`}
-                                target="_blank"
-                                rel="nofollow"
-                                className="flex items-center gap-2.5 p-2 rounded-lg border border-border/50 bg-muted/20 hover:bg-muted/40 transition-colors group no-underline"
-                                data-wowhead={`item=${sel.item_id}`}
-                                onClick={(e) => {
-                                    // Prevent navigation if clicking on anything EXCEPT the delete button
-                                    const isDeleteBtn = (e.target as HTMLElement).closest('button');
-                                    if (!isDeleteBtn) e.preventDefault();
-                                }}
-                            >
-                                {sel.item_icon && (
-                                    <Image
-                                        src={sel.item_icon}
-                                        alt=""
-                                        width={32} height={32}
-                                        className="rounded border border-border/50 shadow-sm"
-                                    />
-                                )}
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium text-purple-400 truncate">{sel.item_name}</p>
-                                    <p className="text-xs text-muted-foreground truncate">{sel.boss_name} · {translateSlot(sel.slot)}</p>
-                                </div>
-                                <button
-                                    className="opacity-0 group-hover:opacity-100 text-destructive hover:bg-destructive/10 rounded p-1 transition-all"
-                                    onClick={async (e) => {
-                                        e.stopPropagation();
-                                        await fetch(`/api/bis?id=${sel.id}`, { method: "DELETE" })
-                                        setSelections(prev => prev.filter(s => s.id !== sel.id))
+                        {selections.map(sel => {
+                            const raidIlvl = RAID_ILVL[instanceId]?.[difficulty] || null;
+                            let matchQuality = null;
+                            const diffId = WOWHEAD_DIFF[difficulty] || 15;
+
+                            for (const b of bosses) {
+                                const i = b.items.find((it: LootItem) => it.id === sel.item_id);
+                                if (i) {
+                                    matchQuality = i.quality;
+                                    break;
+                                }
+                            }
+
+                            const computedItemLevel = raidIlvl || null;
+
+                            return (
+                                <a
+                                    key={sel.id}
+                                    href={`https://www.wowhead.com/item=${sel.item_id}`}
+                                    target="_blank"
+                                    rel="nofollow"
+                                    className="flex items-center gap-2.5 p-2 rounded-lg border border-border/50 bg-muted/20 hover:bg-muted/40 transition-colors group no-underline"
+                                    data-wowhead={`item=${sel.item_id}${sel.item_id > 200000 ? "&domain=beta" : ""}&domain=es&diff=${diffId}${computedItemLevel ? `&ilvl=${computedItemLevel}` : ""}${matchQuality && WOWHEAD_QUALITY[matchQuality] ? `&qu=${WOWHEAD_QUALITY[matchQuality]}` : ""}`}
+                                    onClick={(e) => {
+                                        // Prevent navigation ONLY if clicking on the delete button
+                                        const isDeleteBtn = (e.target as HTMLElement).closest('button');
+                                        if (isDeleteBtn) e.preventDefault();
                                     }}
                                 >
-                                    <IconX className="size-3.5" />
-                                </button>
-                            </a>
-                        ))}
+                                    {(() => {
+                                        const iconUrl = sel.item_icon?.includes("render.worldofwarcraft.com")
+                                            ? `https://wow.zamimg.com/images/wow/icons/large/${sel.item_icon.split("/").pop()}`
+                                            : sel.item_icon;
+
+                                        return iconUrl && (
+                                            <Image
+                                                unoptimized
+                                                src={iconUrl}
+                                                alt=""
+                                                width={32} height={32}
+                                                className="rounded border border-border/50 shadow-sm"
+                                            />
+                                        );
+                                    })()}
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-purple-400 truncate">{sel.item_name}</p>
+                                        <p className="text-xs text-muted-foreground truncate">{sel.boss_name} · {translateSlot(sel.slot)}</p>
+                                    </div>
+                                    <button
+                                        className="opacity-0 group-hover:opacity-100 text-destructive hover:bg-destructive/10 rounded p-1 transition-all"
+                                        onClick={async (e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            await fetch(`/api/bis?id=${sel.id}`, { method: "DELETE" })
+                                            setSelections(prev => prev.filter(s => s.id !== sel.id))
+                                        }}
+                                    >
+                                        <IconX className="size-3.5" />
+                                    </button>
+                                </a>
+                            )
+                        })}
                     </div>
                 )}
             </CardContent>
@@ -308,7 +394,7 @@ export function BisClient({
     canEdit?: boolean
 }) {
     const [selectedMemberId, setSelectedMemberId] = useState<string>(eligibleMembers[0]?.id || "")
-    const [difficulty, setDifficulty] = useState<"heroic" | "mythic">("heroic")
+    const [difficulty, setDifficulty] = useState<"normal" | "heroic" | "mythic">("heroic")
     const [viewMode, setViewMode] = useState<"slot" | "boss">("slot")
     const [selectedRaidId, setSelectedRaidId] = useState<string>("default")
     const [bosses, setBosses] = useState<Boss[]>([])
@@ -318,6 +404,10 @@ export function BisClient({
     const [raidName, setRaidName] = useState("")
     const [resolvedInstanceId, setResolvedInstanceId] = useState<string>("")
     const [mounted, setMounted] = useState(false)
+    const [raidbotsUrl, setRaidbotsUrl] = useState("")
+    const [isImporting, setIsImporting] = useState(false)
+    const [importStats, setImportStats] = useState<{ dps: number; pct: string } | null>(null)
+    const [rbItemGains, setRbItemGains] = useState<Record<number, { dps: number; pct: string }>>({})
 
     useEffect(() => {
         if (!mounted) setMounted(true)
@@ -325,10 +415,23 @@ export function BisClient({
 
     // Refresh Wowhead tooltips when content changes
     useEffect(() => {
-        if (typeof window !== "undefined" && (window as any).$WH && (window as any).$WH.Tooltips) {
-            (window as any).$WH.Tooltips.refreshLinks();
-        }
-    }, [bosses, selections, viewMode])
+        const refreshTooltips = () => {
+            if (typeof window !== "undefined") {
+                const wh = (window as any).WH;
+                const $wh = (window as any).$WH;
+                if (wh?.Tooltips?.refreshLinks) wh.Tooltips.refreshLinks();
+                if ($wh?.Tooltips?.refreshLinks) $wh.Tooltips.refreshLinks();
+            }
+        };
+
+        // Multiple attempts to refresh as Wowhead script might take time to initialize
+        const timers = [
+            setTimeout(refreshTooltips, 100),
+            setTimeout(refreshTooltips, 500),
+            setTimeout(refreshTooltips, 2000)
+        ];
+        return () => timers.forEach(clearTimeout);
+    }, [bosses, selections, viewMode, mounted])
 
     const fetchLoot = useCallback(async (forceRefresh = false) => {
         setLoading(true)
@@ -412,11 +515,91 @@ export function BisClient({
                 })
                 if (!res.ok) throw new Error("API error")
                 const newSel = await res.json()
-                setSelections(prev => [...prev, newSel])
+                setSelections(prev => {
+                    // Avoid duplicates in local state
+                    if (prev.some(s => s.id === newSel.id)) return prev;
+                    return [...prev, newSel];
+                })
                 toast.success("Añadido", { description: `${item.name} añadido a tu lista BiS.` })
             } catch {
                 toast.error("Error", { description: "No se pudo guardar la selección." })
             }
+        }
+    }
+
+    async function handleRaidbotsImport() {
+        if (!raidbotsUrl) {
+            toast.error("Error", { description: "Introduce una URL de Raidbots válida." })
+            return
+        }
+        if (!selectedMemberId) {
+            toast.error("Error", { description: "Selecciona un personaje primero." })
+            return
+        }
+
+        setIsImporting(true)
+        try {
+            const res = await fetch(`/api/raidbots?url=${encodeURIComponent(raidbotsUrl)}`)
+            if (!res.ok) throw new Error(await res.text())
+            const data = await res.json()
+
+            let importedCount = 0
+            const rbItems = data.items || []
+
+            // Find matching items in the current raid loot
+            for (const rbItem of rbItems) {
+                // Search in all bosses
+                for (const boss of bosses) {
+                    const match = boss.items.find(it => it.id === rbItem.id)
+                    if (match) {
+                        // Check if already selected
+                        if (!isSelected(match.id)) {
+                            // Select it
+                            await fetch("/api/bis", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                    member_id: selectedMemberId,
+                                    item_id: match.id,
+                                    item_name: match.name,
+                                    item_icon: match.icon,
+                                    slot: match.slotDisplay || match.slot,
+                                    boss_name: boss.name,
+                                    priority: 2,
+                                    difficulty,
+                                    instance_id: resolvedInstanceId,
+                                }),
+                            })
+                            importedCount++
+                        }
+                    }
+                }
+            }
+
+            setImportStats({ dps: Math.round(data.dpsGain), pct: data.percentGain })
+
+            // Map item gains for the UI
+            const gainsMap: Record<number, { dps: number; pct: string }> = {}
+            rbItems.forEach((it: any) => {
+                gainsMap[it.id] = { dps: it.dpsGain, pct: it.percentGain }
+            })
+            setRbItemGains(gainsMap)
+
+            fetchSelections() // Refresh local list
+
+            if (importedCount > 0) {
+                toast.success("Sincronización Completa", {
+                    description: `Se han añadido ${importedCount} ítems del reporte (+${Math.round(data.dpsGain)} DPS).`
+                })
+            } else {
+                toast.info("Importado", {
+                    description: `Reporte leído (+${Math.round(data.dpsGain)} DPS). Los ítems ya estaban en tu lista o no son de esta banda.`
+                })
+            }
+        } catch (e: any) {
+            toast.error("Error de Importación", { description: e.message || "No se pudo leer el reporte." })
+        } finally {
+            setIsImporting(false)
         }
     }
 
@@ -476,15 +659,42 @@ export function BisClient({
     return (
         <div className="flex flex-col gap-6">
             <Script
-                id="wowhead-tooltips"
+                id="wowhead-tooltips-setup"
                 strategy="afterInteractive"
                 dangerouslySetInnerHTML={{
-                    __html: `window.whTooltips = {colorLinks: true, iconizeLinks: true, renameLinks: true};`,
+                    __html: `
+                        window.whTooltips = { 
+                            colorLinks: true, 
+                            iconizeLinks: false, 
+                            renameLinks: false,
+                            applyToRoot: true
+                        };
+                    `,
                 }}
             />
+            <style dangerouslySetInnerHTML={{
+                __html: `
+                    .wowhead-tooltip {
+                        background-color: rgba(15, 23, 42, 0.95) !important;
+                        border: 1px solid #334155 !important;
+                        border-radius: 8px !important;
+                        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5) !important;
+                        backdrop-filter: blur(8px) !important;
+                    }
+                    .wowhead-tooltip-name {
+                        font-size: 15px !important;
+                        font-weight: 700 !important;
+                    }
+                `
+            }} />
             <Script
                 src="https://wow.zamimg.com/js/tooltips.js"
                 strategy="afterInteractive"
+                onLoad={() => {
+                    if ((window as any).WH && (window as any).WH.Tooltips && (window as any).WH.Tooltips.init) {
+                        (window as any).WH.Tooltips.init();
+                    }
+                }}
             />
 
             {/* Header */}
@@ -549,6 +759,12 @@ export function BisClient({
                     {/* Difficulty */}
                     <div className="flex rounded-md border overflow-hidden">
                         <button
+                            className={`px-3 py-1.5 text-xs font-medium transition-colors ${difficulty === "normal" ? "bg-blue-600 text-white" : "bg-background text-muted-foreground hover:text-foreground"}`}
+                            onClick={() => setDifficulty("normal")}
+                        >
+                            Normal
+                        </button>
+                        <button
                             className={`px-3 py-1.5 text-xs font-medium transition-colors ${difficulty === "heroic" ? "bg-green-600 text-white" : "bg-background text-muted-foreground hover:text-foreground"}`}
                             onClick={() => setDifficulty("heroic")}
                         >
@@ -592,6 +808,48 @@ export function BisClient({
                 </div>
             </div>
 
+            {/* Raidbots Importer Section */}
+            <Card className="border-purple-500/20 bg-purple-500/5">
+                <CardContent className="p-4">
+                    <div className="flex flex-col md:flex-row items-end gap-4">
+                        <div className="flex-1 space-y-2 w-full">
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-purple-400">Importar BiS desde Raidbots (Top Gear)</label>
+                            <div className="relative">
+                                <IconBolt className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-purple-400/50" />
+                                <Input
+                                    placeholder="https://www.raidbots.com/simbot/report/..."
+                                    value={raidbotsUrl}
+                                    onChange={(e) => setRaidbotsUrl(e.target.value)}
+                                    className="pl-9 h-10 border-purple-500/20 bg-background/50 focus-visible:ring-purple-500/40"
+                                />
+                            </div>
+                        </div>
+                        <Button
+                            onClick={handleRaidbotsImport}
+                            disabled={isImporting}
+                            className="bg-purple-600 hover:bg-purple-500 text-white gap-2 h-10 px-6 shrink-0 w-full md:w-auto"
+                        >
+                            {isImporting ? <IconRefresh className="size-4 animate-spin" /> : <IconBolt className="size-4" />}
+                            {isImporting ? "Sincronizando..." : "Sincronizar BiS"}
+                        </Button>
+                    </div>
+                    {importStats && (
+                        <div className="mt-3 flex items-center gap-4 animate-in fade-in slide-in-from-top-1">
+                            <div className="flex items-center gap-1.5 text-xs">
+                                <span className="text-muted-foreground">Mejora detectada:</span>
+                                <span className="font-bold text-green-400">+{importStats.dps} DPS</span>
+                                <Badge variant="outline" className="text-[10px] py-0 h-4 border-green-500/20 text-green-400">+{importStats.pct}%</Badge>
+                            </div>
+                            <Button variant="link" className="h-auto p-0 text-[10px] text-purple-400 h-4 gap-1" asChild>
+                                <a href={raidbotsUrl} target="_blank" rel="noreferrer">
+                                    Ver reporte completo <IconExternalLink className="size-2.5" />
+                                </a>
+                            </Button>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+
             {loading ? (
                 <div className="flex items-center justify-center py-20 gap-3 text-muted-foreground">
                     <IconRefresh className="size-5 animate-spin" />
@@ -617,6 +875,8 @@ export function BisClient({
                                 loadingSelections={loadingSelections}
                                 translateSlot={translateSlot}
                                 setSelections={setSelections}
+                                bosses={bosses}
+                                instanceId={resolvedInstanceId}
                             />
                         </div>
 
@@ -640,6 +900,9 @@ export function BisClient({
                                                         bossName={bossName}
                                                         selected={isSelected(item.id)}
                                                         onToggle={() => toggleItem(item, bossName)}
+                                                        rbGain={rbItemGains[item.id]}
+                                                        difficulty={difficulty}
+                                                        instanceId={resolvedInstanceId}
                                                     />
                                                 ))}
                                             </div>
@@ -667,6 +930,9 @@ export function BisClient({
                                                         bossName={boss.name}
                                                         selected={isSelected(item.id)}
                                                         onToggle={() => toggleItem(item, boss.name)}
+                                                        rbGain={rbItemGains[item.id]}
+                                                        difficulty={difficulty}
+                                                        instanceId={resolvedInstanceId}
                                                     />
                                                 ))}
                                             </div>
@@ -686,6 +952,8 @@ export function BisClient({
                             loadingSelections={loadingSelections}
                             translateSlot={translateSlot}
                             setSelections={setSelections}
+                            bosses={bosses}
+                            instanceId={resolvedInstanceId}
                         />
                     </div>
                 </div>

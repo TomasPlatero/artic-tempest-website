@@ -264,3 +264,8 @@ html #cc-main,
     --cc-footer-color: #ffffff;
   }
 }
+
+/* Wowhead Tooltip Overrides */
+.wowhead-tooltip {
+  padding: 12px !important;
+}

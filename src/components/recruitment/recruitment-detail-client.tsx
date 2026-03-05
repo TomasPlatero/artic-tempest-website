@@ -41,6 +41,7 @@ type Props = {
     answers: any[]
     classConstants: any[]
     initialRioData?: any
+    initialBnetData?: { equipped: number; average: number } | null
 }
 
 const statusConfig: Record<string, { label: string, color: string }> = {
@@ -53,14 +54,15 @@ const statusConfig: Record<string, { label: string, color: string }> = {
 
 const RAID_CONFIG: Record<string, { name: string, tier: number }> = {
     // Midnight (Tier 35)
+    'tier-mn-1': { name: 'Midnight', tier: 35 },
     'voidspire': { name: 'Voidspire', tier: 35 },
     'dreamrift': { name: 'Dreamrift', tier: 35 },
     'march-on-queldanas': { name: 'March on Quel\'Danas', tier: 35 },
-    // TWW (Tier 34 & 33)
-    'manaforge-omega': { name: 'Manaforge Omega', tier: 34 },
-    'liberation-of-undermine': { name: 'Lib. of Undermine', tier: 34 },
-    'blackrock-depths': { name: 'Blackrock Depths', tier: 34 },
-    'nerubar-palace': { name: 'Nerub-ar Palace', tier: 33 },
+    // TWW (Tier 34, 33...)
+    'manaforge-omega': { name: 'Forja de Maná Omega', tier: 34 },
+    'liberation-of-undermine': { name: 'Lib. of Undermine', tier: 33 },
+    'blackrock-depths': { name: 'Blackrock Depths', tier: 33 },
+    'nerubar-palace': { name: 'Nerub-ar Palace', tier: 32 },
     // Dragonflight
     'amirdrassil-the-dreams-hope': { name: "Amirdrassil", tier: 31 },
     'aberrus-the-shadowed-crucible': { name: "Aberrus", tier: 30 },
@@ -77,7 +79,7 @@ const RAID_CONFIG: Record<string, { name: string, tier: number }> = {
     'uldir': { name: "Uldir", tier: 22 }
 }
 
-export function RecruitmentDetailClient({ application, answers, classConstants, initialRioData }: Props) {
+export function RecruitmentDetailClient({ application, answers, classConstants, initialRioData, initialBnetData }: Props) {
     const router = useRouter()
 
     // Initial season detection
@@ -211,12 +213,20 @@ export function RecruitmentDetailClient({ application, answers, classConstants, 
     const groupedSeasons = uniqueSeasons.reduce((acc: any, s: any) => {
         let expansion = "Otros"
         const sid = s.season.toLowerCase()
-        if (sid.includes("mn")) expansion = "Midnight"
-        else if (sid.includes("tww")) expansion = "The War Within"
+
+        // Expanded logic to handle 'current' and 'previous' slugs
+        if (sid.includes("mn") || sid.includes("midnight")) expansion = "Midnight"
+        else if (sid.includes("tww") || sid.includes("war-within")) expansion = "The War Within"
         else if (sid.includes("dragonflight") || sid.includes("df-")) expansion = "Dragonflight"
         else if (sid.includes("shadowlands") || sid.includes("sl-")) expansion = "Shadowlands"
         else if (sid.includes("bfa")) expansion = "Battle for Azeroth"
         else if (sid.includes("legion")) expansion = "Legion"
+
+        // Final fallback for 'current'/'previous' based on RIO structure if possible
+        if (sid === 'current' || sid === 'previous') {
+            // Usually 'current' in 2026 is Midnight
+            expansion = "Midnight"
+        }
 
         if (!acc[expansion]) acc[expansion] = []
         acc[expansion].push(s)
@@ -227,6 +237,8 @@ export function RecruitmentDetailClient({ application, answers, classConstants, 
 
     const getSeasonLabel = (id: string) => {
         const s = id.toLowerCase()
+        if (s === 'current') return 'Midnight S1 (Actual)'
+        if (s === 'previous') return 'Midnight S1 (Prev)'
         if (s.includes('mn')) return `MN S${s.split('-').pop()}`
         if (s.includes('tww')) return `TWW S${s.split('-').pop()}`
         if (s.includes('df')) return `DF S${s.split('-').pop()}`
@@ -241,11 +253,11 @@ export function RecruitmentDetailClient({ application, answers, classConstants, 
         const sid = seasonId.toLowerCase()
         let matchingRaids: [string, any][] = []
 
-        if (sid.includes("mn") || sid.includes("midnight")) {
-            matchingRaids = raids.filter(([k]) => k.includes("voidspire") || k.includes("dreamrift") || k.includes("queldanas"))
+        if (sid.includes("mn") || sid.includes("midnight") || sid === 'current' || sid === 'previous') {
+            matchingRaids = raids.filter(([k]) => k.includes("voidspire") || k.includes("dreamrift") || k.includes("queldanas") || k.includes("tier-mn"))
         } else if (sid.includes("tww") || sid.includes("war-within")) {
             matchingRaids = raids.filter(([k]) =>
-                k.includes("manaforge") || k.includes("nerubar") || k.includes("undermine") || k.includes("blackrock") || k.includes("liberation")
+                k.includes("manaforge") || k.includes("nerubar") || k.includes("undermine") || k.includes("blackrock") || k.includes("liberation") || k.includes("tier-34") || k.includes("tier-33") || k.includes("tier-32")
             )
         } else if (sid.includes("df") || sid.includes("dragonflight")) {
             matchingRaids = raids.filter(([k]) => k.includes("amirdrassil") || k.includes("aberrus") || k.includes("vault"))
@@ -266,14 +278,15 @@ export function RecruitmentDetailClient({ application, answers, classConstants, 
     const activeRaids = getRaidForSeason(selectedSeason)
 
     return (
-        <div className="space-y-8 max-w-5xl mx-auto pb-20 dark">
+        <div className="space-y-8 w-full pb-20 dark">
             {/* CLEAN HEADER SECTION */}
             <div className="flex flex-col md:flex-row justify-between items-start gap-4">
                 <div className="flex items-center gap-6">
-                    <div className="relative size-20 md:size-24 rounded-2xl overflow-hidden border-2 border-white/10 shadow-2xl shadow-blue-500/10">
+                    <div className="relative size-20 md:size-24 rounded-2xl overflow-hidden border-2 border-white/10 shadow-2xl shadow-blue-500/10 bg-zinc-900">
                         <Image
-                            src={`/assets/images/classes/${application.character_class}.jpg`}
-                            alt="Clase" fill className="object-cover"
+                            src={rioData?.thumbnail_url || `/assets/images/classes/${application.character_class}.jpg`}
+                            alt="Avatar" fill className="object-cover"
+                            unoptimized={!!rioData?.thumbnail_url}
                         />
                     </div>
                     <div>
@@ -281,9 +294,6 @@ export function RecruitmentDetailClient({ application, answers, classConstants, 
                             <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tighter">
                                 {application.character_name}
                             </h2>
-                            <Badge variant="outline" className={`uppercase font-bold ${statusConfig[currentStatus].color}`}>
-                                {statusConfig[currentStatus].label}
-                            </Badge>
                         </div>
                         <p className="text-lg font-medium" style={{ color: cls?.color }}>
                             {application.character_spec === "Unknown" ? (syncedChar?.spec || rioData?.active_spec_name || "Unknown") : application.character_spec} {cls?.name}
@@ -401,7 +411,19 @@ export function RecruitmentDetailClient({ application, answers, classConstants, 
                                     </div>
                                     <div className="bg-white/5 border border-white/5 rounded-2xl p-4 flex flex-col items-center justify-center hover:bg-white/10 transition-colors">
                                         <span className="text-[10px] uppercase font-bold text-zinc-500 mb-1">iLvl</span>
-                                        <span className="text-xs font-black text-white">Próx. Sinc.</span>
+                                        <span className="text-xs font-black text-white">
+                                            {initialBnetData?.equipped ? (
+                                                <>
+                                                    {initialBnetData.equipped}
+                                                    {initialBnetData.average > 0 && <span className="text-zinc-500 ml-1">/ {initialBnetData.average}</span>}
+                                                </>
+                                            ) : rioData?.gear?.item_level_equipped ? (
+                                                <>
+                                                    {rioData.gear.item_level_equipped}
+                                                    {rioData.gear.item_level_total > 0 && <span className="text-zinc-500 ml-1">/ {rioData.gear.item_level_total}</span>}
+                                                </>
+                                            ) : "Próx. Sinc."}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -412,7 +434,7 @@ export function RecruitmentDetailClient({ application, answers, classConstants, 
                                     <IconSword className="size-4 text-rose-500" />
                                     <h4 className="text-[10px] uppercase font-black text-zinc-500 tracking-[0.2em]">Progreso en Bandas por Tier</h4>
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {activeRaids.map(([key, data]: [string, any], i: number) => (
                                         <div key={i} className="bg-zinc-950/60 border border-white/5 rounded-2xl overflow-hidden hover:border-blue-500/30 transition-all group shadow-xl">
                                             <div className="p-4 bg-white/[0.03] border-b border-white/5 flex flex-col gap-1">

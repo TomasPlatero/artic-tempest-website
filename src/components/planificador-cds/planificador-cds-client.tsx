@@ -5,7 +5,7 @@ import Image from "next/image"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { IconTimeline, IconSettings, IconClock, IconArrowLeft, IconClipboardText, IconCopy, IconCheck, IconTrash, IconZoomIn, IconZoomOut, IconZoomReset, IconLayoutList, IconFilter, IconEye, IconEyeOff, IconGripVertical, IconShield, IconPlus, IconSword, IconBow } from "@tabler/icons-react"
+import { IconTimeline, IconSettings, IconClock, IconArrowLeft, IconClipboardText, IconCopy, IconCheck, IconTrash, IconZoomIn, IconZoomOut, IconZoomReset, IconLayoutList, IconFilter, IconEye, IconEyeOff, IconGripVertical, IconShield, IconPlus, IconSword, IconBow, IconHelpCircle } from "@tabler/icons-react"
 import { useSearchParams } from "next/navigation"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { cn } from "@/infrastructure/tailwind/tailwind-utils"
@@ -175,6 +175,7 @@ export function PlanificadorCdsClient() {
 
     // Viserio Timeline State
     const [assignments, setAssignments] = useState<{ id: string, member_id: string, cooldown_id: string, time_seconds: number }[]>([])
+    const [showHelpDialog, setShowHelpDialog] = useState(false)
     const TOTAL_FIGHT_SECONDS = 540 // 9 minutes (enrage)
 
     // Interactive Timeline State
@@ -813,7 +814,7 @@ export function PlanificadorCdsClient() {
     if (!mounted) return null
 
     return (
-        <div className="flex flex-col h-[calc(100vh-80px)] overflow-hidden bg-background">
+        <div className="flex flex-col h-[calc(100vh-80px)] overflow-hidden bg-background w-full min-w-0">
             {/* Dragging Zoom Overlay */}
             {draggingAssignment && (
                 <TimelineZoomOverlay
@@ -920,7 +921,7 @@ export function PlanificadorCdsClient() {
                 </div>
             )}
 
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mt-2 flex-1 flex flex-col min-h-0">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mt-2 flex-1 flex flex-col min-h-0 min-w-0">
                 <TabsList className="hidden">
                     <TabsTrigger value="selection">Selection</TabsTrigger>
                     <TabsTrigger value="planner">Planner</TabsTrigger>
@@ -987,7 +988,7 @@ export function PlanificadorCdsClient() {
                     )}
                 </TabsContent>
 
-                <TabsContent value="planner" className="flex-1 m-0 flex flex-col min-h-0 bg-[#121217] data-[state=inactive]:hidden">
+                <TabsContent value="planner" className="flex-1 m-0 flex flex-col min-h-0 bg-[#121217] data-[state=inactive]:hidden min-w-0">
                     <Card className="bg-[#121217] flex-1 border-border/50 shadow-2xl rounded-xl flex flex-col min-h-0 overflow-hidden relative pt-2 pb-0">
                         <div className="flex border-b border-border/40 bg-muted/5 items-center justify-between px-4 h-15 shrink-0 relative z-50">
                             <div className="flex items-center gap-4">
@@ -1007,10 +1008,16 @@ export function PlanificadorCdsClient() {
                                 </div>
                             </div>
                             <div className="flex items-center gap-3">
-                                <div className="flex items-center gap-3 px-4 py-2 bg-background/50 rounded-lg border border-border/10 cursor-help" title="Duración estimada del encuentro para la planificación">
-                                    <IconClock className="size-3.5 text-muted-foreground" />
-                                    <span className="text-[11px] font-black uppercase tracking-[0.2em] text-foreground">0:00 - {formatTime(TOTAL_FIGHT_SECONDS)}</span>
-                                </div>
+                                {/* Help Info */}
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="flex items-center gap-2 px-3 py-1.5 bg-blue-600/10 rounded-lg border border-blue-500/30 text-blue-400 hover:bg-blue-600/20 hover:text-blue-300 transition-colors h-9"
+                                    onClick={() => setShowHelpDialog(true)}
+                                >
+                                    <IconHelpCircle className="size-4" />
+                                    <span className="text-[10px] font-black uppercase tracking-wider">Ayuda</span>
+                                </Button>
                                 {/* Time segments */}
                                 <div className="flex items-center gap-0.5 bg-background/50 rounded-lg border border-border/10 p-1">
                                     {Array.from({ length: Math.ceil(TOTAL_FIGHT_SECONDS / 60) }, (_, i) => {
@@ -1168,7 +1175,7 @@ export function PlanificadorCdsClient() {
                         {/* TIMELINE RENDERER       */}
                         {/* ======================= */}
                         <div
-                            className="flex-1 min-h-0 overflow-x-auto overflow-y-auto select-none bg-gradient-to-b from-[#0a0a0f] to-[#050508] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent relative"
+                            className="flex-1 min-h-0 overflow-x-auto overflow-y-auto select-none bg-gradient-to-b from-[#0a0a0f] to-[#050508] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent relative w-full max-w-full"
                             ref={setTimelineRef}
                             onMouseMove={handleTimelineMouseMove}
                             onMouseLeave={handleTimelineMouseLeave}
@@ -1374,8 +1381,8 @@ export function PlanificadorCdsClient() {
                                                     >
                                                         {/* Grid lines */}
                                                         <div className="absolute inset-0 pointer-events-none z-0">
-                                                            {[...Array(16)].map((_, i) => (
-                                                                <div key={`grid-c-${i}`} className="absolute inset-y-0 w-px bg-white/[0.02]" style={{ left: `${((TOTAL_FIGHT_SECONDS / 16) * i) / TOTAL_FIGHT_SECONDS * 100}%` }} />
+                                                            {Array.from({ length: Math.floor(TOTAL_FIGHT_SECONDS / 30) + 1 }, (_, i) => i * 30).map((t) => (
+                                                                <div key={`grid-c-${t}`} className="absolute inset-y-0 w-px bg-white/[0.02]" style={{ left: `${(t / TOTAL_FIGHT_SECONDS) * 100}%` }} />
                                                             ))}
                                                         </div>
                                                         {/* All assignments on one row */}
@@ -1546,8 +1553,8 @@ export function PlanificadorCdsClient() {
                                                         <div className="flex-1 flex flex-col relative bg-grid-white/[0.01]">
                                                             {/* Vertical grid lines */}
                                                             <div className="absolute inset-0 pointer-events-none z-0">
-                                                                {[...Array(16)].map((_, i) => (
-                                                                    <div key={`grid-${i}`} className="absolute inset-y-0 w-px bg-white/[0.02]" style={{ left: `${((TOTAL_FIGHT_SECONDS / 16) * i) / TOTAL_FIGHT_SECONDS * 100}%` }} />
+                                                                {Array.from({ length: Math.floor(TOTAL_FIGHT_SECONDS / 30) + 1 }, (_, i) => i * 30).map((t) => (
+                                                                    <div key={`grid-${t}`} className="absolute inset-y-0 w-px bg-white/[0.02]" style={{ left: `${(t / TOTAL_FIGHT_SECONDS) * 100}%` }} />
                                                                 ))}
                                                             </div>
 
@@ -1850,7 +1857,42 @@ export function PlanificadorCdsClient() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </div >
+            {/* Help Dialog */}
+            <Dialog open={showHelpDialog} onOpenChange={setShowHelpDialog}>
+                <DialogContent className="max-w-md bg-[#0d0d12]/95 border-border/30 backdrop-blur-xl">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-white font-black uppercase tracking-tight">
+                            <IconHelpCircle className="size-5 text-blue-400" />
+                            Instrucciones de Ayuda
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4 flex flex-col gap-6">
+                        <div className="flex items-start gap-4 p-4 rounded-xl bg-blue-600/10 border border-blue-500/20 shadow-inner">
+                            <div className="p-2 rounded-lg bg-blue-500/20">
+                                <IconCheck className="size-5 text-blue-400" />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <span className="text-xs font-black text-white uppercase tracking-wider">Edición Manual de Tiempos</span>
+                                <p className="text-xs text-white/70 leading-relaxed">
+                                    Para ajustar el tiempo de una habilidad con precisión milimétrica, mantén presionado <kbd className="px-1.5 py-0.5 rounded bg-white/10 border border-white/10 font-sans text-[10px] text-white">Ctrl</kbd> y haz <span className="text-blue-400 font-bold">Click Izquierdo</span> sobre el icono en la línea de tiempo.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-4 p-4 rounded-xl bg-red-600/10 border border-red-500/20">
+                            <div className="p-2 rounded-lg bg-red-500/20">
+                                <IconTrash className="size-5 text-red-500" />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <span className="text-xs font-black text-white uppercase tracking-wider">Borrar Asignación</span>
+                                <p className="text-xs text-white/70 leading-relaxed">
+                                    Haz <span className="text-red-400 font-bold">Click Derecho</span> sobre cualquier habilidad asignada para eliminarla permanentemente de la planificación.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        </div>
 
     )
 }

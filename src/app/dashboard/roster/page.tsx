@@ -18,6 +18,7 @@ async function getRoster() {
     const { data } = await sb
         .from("guild_members")
         .select("id, character_name, realm_slug, realm_name, class_id, race_id, level, rank, synced_at, note, role")
+        .order("rank", { ascending: true })
         .order("character_name", { ascending: true })
 
     // Fetch rank configurations

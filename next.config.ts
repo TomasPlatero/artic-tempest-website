@@ -29,6 +29,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "vrniyndhfaawwqzcrqng.supabase.co" },
       { protocol: "https", hostname: "render.worldofwarcraft.com" },
       { protocol: "https", hostname: "cdn.discordapp.com" },
+      { protocol: "https", hostname: "wow.zamimg.com" },
     ],
     qualities: [50, 75, 90], // NextJS 15+ Image qualities allowed
   },
@@ -46,11 +47,11 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' va.vercel-scripts.com",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' va.vercel-scripts.com wow.zamimg.com *.wowhead.com",
               "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
-              "img-src 'self' blob: data: cdn.discordapp.com render.worldofwarcraft.com *.supabase.co *.google.com *.akamaihd.net *.raider.io *.warcraftlogs.com bnetcmsus-a.akamaihd.net static-cdn.jtvnw.net",
+              "img-src 'self' blob: data: cdn.discordapp.com render.worldofwarcraft.com wow.zamimg.com *.supabase.co *.google.com *.akamaihd.net *.raider.io *.warcraftlogs.com bnetcmsus-a.akamaihd.net static-cdn.jtvnw.net",
               "font-src 'self' data: fonts.gstatic.com",
-              "connect-src 'self' *.supabase.co wss://*.supabase.co discord.com *.discordapp.com vitals.vercel-insights.com raider.io *.raider.io warcraftlogs.com *.warcraftlogs.com *.supabase.in wss://*.supabase.in",
+              "connect-src 'self' *.supabase.co wss://*.supabase.co discord.com *.discordapp.com vitals.vercel-insights.com raider.io *.raider.io warcraftlogs.com *.warcraftlogs.com *.supabase.in wss://*.supabase.in wow.zamimg.com *.wowhead.com",
               "frame-src 'self' player.twitch.tv",
               "frame-ancestors 'none'",
               "upgrade-insecure-requests",

@@ -50,7 +50,7 @@ export default async function CalendarSettingsPage() {
                 </div>
             </div>
 
-            <div className="max-w-4xl">
+            <div className="w-full max-w-full">
                 <ScheduleFormClient initialSchedule={initialSchedule} />
             </div>
         </div>
