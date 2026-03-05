@@ -534,6 +534,69 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                                                 <div className="text-center py-8 text-xs text-muted-foreground italic">No se encontraron combates registrados.</div>
                                             )}
                                         </div>
+
+                                        {/* SUMMARY: Top DPS & Healers */}
+                                        {(wclReportDetails.damageDone?.data?.entries?.length > 0 || wclReportDetails.healingDone?.data?.entries?.length > 0) && (
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                                                {/* Top DPS */}
+                                                {wclReportDetails.damageDone?.data?.entries?.length > 0 && (
+                                                    <div>
+                                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 mb-3 flex items-center gap-2">
+                                                            <IconSwords className="size-3.5" /> Top DPS
+                                                        </h3>
+                                                        <div className="flex flex-col gap-1">
+                                                            {wclReportDetails.damageDone.data.entries.slice(0, 10).map((entry: any, i: number) => {
+                                                                const maxDps = wclReportDetails.damageDone.data.entries[0]?.total || 1
+                                                                const pct = (entry.total / maxDps) * 100
+                                                                return (
+                                                                    <div key={i} className="flex items-center gap-2 group relative">
+                                                                        <span className="text-[10px] font-black text-muted-foreground/30 w-4 text-right">{i + 1}</span>
+                                                                        <div className="flex-1 relative h-7 rounded overflow-hidden bg-muted/10">
+                                                                            <div className="absolute inset-y-0 left-0 rounded bg-red-500/15" style={{ width: `${pct}%` }} />
+                                                                            <div className="relative flex items-center justify-between h-full px-2">
+                                                                                <span className="text-xs font-bold truncate">{entry.name}</span>
+                                                                                <span className="text-[10px] font-black text-muted-foreground/60 tabular-nums">
+                                                                                    {(entry.total / ((wclReportDetails.endTime - wclReportDetails.startTime) / 1000)).toFixed(1)} DPS
+                                                                                </span>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                )
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Top Healers */}
+                                                {wclReportDetails.healingDone?.data?.entries?.length > 0 && (
+                                                    <div>
+                                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 mb-3 flex items-center gap-2">
+                                                            <IconTrophy className="size-3.5" /> Top Healing
+                                                        </h3>
+                                                        <div className="flex flex-col gap-1">
+                                                            {wclReportDetails.healingDone.data.entries.slice(0, 10).map((entry: any, i: number) => {
+                                                                const maxHps = wclReportDetails.healingDone.data.entries[0]?.total || 1
+                                                                const pct = (entry.total / maxHps) * 100
+                                                                return (
+                                                                    <div key={i} className="flex items-center gap-2 group relative">
+                                                                        <span className="text-[10px] font-black text-muted-foreground/30 w-4 text-right">{i + 1}</span>
+                                                                        <div className="flex-1 relative h-7 rounded overflow-hidden bg-muted/10">
+                                                                            <div className="absolute inset-y-0 left-0 rounded bg-emerald-500/15" style={{ width: `${pct}%` }} />
+                                                                            <div className="relative flex items-center justify-between h-full px-2">
+                                                                                <span className="text-xs font-bold truncate">{entry.name}</span>
+                                                                                <span className="text-[10px] font-black text-muted-foreground/60 tabular-nums">
+                                                                                    {(entry.total / ((wclReportDetails.endTime - wclReportDetails.startTime) / 1000)).toFixed(1)} HPS
+                                                                                </span>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                )
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 ) : (
                                     <div className="text-center py-12 text-sm text-red-400">Error al cargar el sumario.</div>

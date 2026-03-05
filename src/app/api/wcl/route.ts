@@ -69,7 +69,7 @@ export async function GET(_req: Request) {
                 }
             }`;
         } else if (reportCode) {
-            // Fetch detailed report fights
+            // Fetch detailed report fights + summary tables
             query = `
             query {
                 reportData {
@@ -89,6 +89,8 @@ export async function GET(_req: Request) {
                             lastPhase
                             friendlyPlayers
                         }
+                        damageDone: table(dataType: DamageDone)
+                        healingDone: table(dataType: HealingDone)
                     }
                 }
             }`;
