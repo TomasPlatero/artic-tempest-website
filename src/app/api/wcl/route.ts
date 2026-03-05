@@ -79,6 +79,7 @@ export async function GET(_req: Request) {
                         startTime
                         endTime
                         zone { name }
+                        owner { name }
                         playerDetails(startTime: 0, endTime: 999999999999, killType: Kills)
                         fights(killType: All) {
                             id

@@ -461,11 +461,11 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                             <DialogHeader className="p-6 pb-4 border-b border-border/10 bg-blue-500/5">
                                 <div className="flex items-center justify-between pr-4">
                                     <div>
-                                        <DialogTitle className="text-xl font-black text-blue-400">
+                                        <DialogTitle className="text-xl font-black text-blue-400 capitalize">
                                             {selectedWclReport?.title}
                                         </DialogTitle>
                                         <DialogDescription className="text-xs mt-1">
-                                            {selectedWclReport?.zone?.name} • {selectedWclReport && new Date(selectedWclReport.startTime).toLocaleDateString()}
+                                            {selectedWclReport?.zone?.name} • {selectedWclReport && new Date(selectedWclReport.startTime).toLocaleDateString()}{wclReportDetails?.owner?.name && <> • Creado por <span className="text-blue-400/70 font-bold">{wclReportDetails.owner.name}</span></>}
                                         </DialogDescription>
                                     </div>
                                     {selectedWclReport && (
