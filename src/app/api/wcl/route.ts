@@ -90,7 +90,7 @@ export async function GET(_req: Request) {
                             friendlyPlayers
                         }
                         damageDone: table(dataType: DamageDone)
-                        healingDone: table(dataType: HealingDone)
+                        healingDone: table(dataType: Healing)
                     }
                 }
             }`;
