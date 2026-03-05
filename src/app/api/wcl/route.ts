@@ -89,8 +89,8 @@ export async function GET(_req: Request) {
                             lastPhase
                             friendlyPlayers
                         }
-                        damageDone: table(dataType: DamageDone)
-                        healingDone: table(dataType: Healing)
+                        damageDone: table(dataType: DamageDone, startTime: 0, endTime: 999999999999)
+                        healingDone: table(dataType: Healing, startTime: 0, endTime: 999999999999)
                     }
                 }
             }`;
