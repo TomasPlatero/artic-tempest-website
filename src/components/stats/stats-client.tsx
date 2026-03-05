@@ -456,7 +456,7 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
 
                     {/* WCL REPORT MODAL */}
                     <Dialog open={!!selectedWclReport} onOpenChange={(open) => !open && setSelectedWclReport(null)}>
-                        <DialogContent className="max-w-5xl bg-[#0a0a0c] border-border/40 max-h-[70vh] flex flex-col p-0 overflow-hidden">
+                        <DialogContent className="max-w-7xl bg-[#0a0a0c] border-border/40 max-h-[85vh] flex flex-col p-0 overflow-hidden">
                             <DialogHeader className="p-6 pb-4 border-b border-border/10 bg-blue-500/5">
                                 <div className="flex items-center justify-between pr-4">
                                     <div>
@@ -489,68 +489,104 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                                     </div>
                                 ) : wclReportDetails ? (
                                     <div className="space-y-6">
-                                        {/* SUMMARY: Top DPS & Healers */}
-                                        {(wclReportDetails.damageDone?.data?.entries?.length > 0 || wclReportDetails.healingDone?.data?.entries?.length > 0) && (
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                {/* Top DPS */}
-                                                {wclReportDetails.damageDone?.data?.entries?.length > 0 && (
-                                                    <div>
-                                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 mb-3 flex items-center gap-2">
-                                                            <IconSwords className="size-3.5" /> Top DPS
-                                                        </h3>
-                                                        <div className="flex flex-col gap-1">
-                                                            {wclReportDetails.damageDone.data.entries.slice(0, 10).map((entry: any, i: number) => {
-                                                                const maxDps = wclReportDetails.damageDone.data.entries[0]?.total || 1
-                                                                const pct = (entry.total / maxDps) * 100
-                                                                return (
-                                                                    <div key={i} className="flex items-center gap-2 group relative">
-                                                                        <span className="text-[10px] font-black text-muted-foreground/30 w-4 text-right">{i + 1}</span>
-                                                                        <div className="flex-1 relative h-7 rounded overflow-hidden bg-muted/10">
-                                                                            <div className="absolute inset-y-0 left-0 rounded bg-red-500/15" style={{ width: `${pct}%` }} />
-                                                                            <div className="relative flex items-center justify-between h-full px-2">
-                                                                                <span className="text-xs font-bold truncate">{entry.name}</span>
-                                                                                <span className="text-[10px] font-black text-muted-foreground/60 tabular-nums">
-                                                                                    {(entry.total / ((wclReportDetails.endTime - wclReportDetails.startTime) / 1000)).toFixed(1)} DPS
-                                                                                </span>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                )
-                                                            })}
-                                                        </div>
+                                        {/* GROUP COMPOSITION */}
+                                        {wclReportDetails.playerDetails?.data?.playerDetails && (() => {
+                                            const pd = wclReportDetails.playerDetails.data.playerDetails
+                                            const tanks = pd.tanks || []
+                                            const healersList = pd.healers || []
+                                            const dpsList = pd.dps || []
+                                            if (tanks.length === 0 && healersList.length === 0 && dpsList.length === 0) return null
+                                            return (
+                                                <div className="rounded-lg border border-border/10 bg-background/30 p-4">
+                                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 mb-3">Composición del grupo</h3>
+                                                    <div className="flex flex-col gap-2">
+                                                        {tanks.length > 0 && (
+                                                            <div className="flex items-center gap-2 flex-wrap">
+                                                                <span className="text-[10px] font-black uppercase tracking-widest text-blue-400/60 w-16 shrink-0">Tanks:</span>
+                                                                {tanks.map((p: any) => (
+                                                                    <Badge key={p.name} variant="outline" className="text-[10px] font-bold py-0 px-1.5 border-blue-500/20 text-blue-300/70">{p.name}</Badge>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                        {healersList.length > 0 && (
+                                                            <div className="flex items-center gap-2 flex-wrap">
+                                                                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400/60 w-16 shrink-0">Healers:</span>
+                                                                {healersList.map((p: any) => (
+                                                                    <Badge key={p.name} variant="outline" className="text-[10px] font-bold py-0 px-1.5 border-emerald-500/20 text-emerald-300/70">{p.name}</Badge>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                        {dpsList.length > 0 && (
+                                                            <div className="flex items-center gap-2 flex-wrap">
+                                                                <span className="text-[10px] font-black uppercase tracking-widest text-red-400/60 w-16 shrink-0">DPS:</span>
+                                                                {dpsList.map((p: any) => (
+                                                                    <Badge key={p.name} variant="outline" className="text-[10px] font-bold py-0 px-1.5 border-red-500/20 text-red-300/70">{p.name}</Badge>
+                                                                ))}
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                )}
+                                                </div>
+                                            )
+                                        })()}
 
-                                                {/* Top Healers */}
-                                                {wclReportDetails.healingDone?.data?.entries?.length > 0 && (
-                                                    <div>
-                                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 mb-3 flex items-center gap-2">
-                                                            <IconTrophy className="size-3.5" /> Top Healing
-                                                        </h3>
-                                                        <div className="flex flex-col gap-1">
-                                                            {wclReportDetails.healingDone.data.entries.slice(0, 10).map((entry: any, i: number) => {
-                                                                const maxHps = wclReportDetails.healingDone.data.entries[0]?.total || 1
-                                                                const pct = (entry.total / maxHps) * 100
-                                                                return (
-                                                                    <div key={i} className="flex items-center gap-2 group relative">
-                                                                        <span className="text-[10px] font-black text-muted-foreground/30 w-4 text-right">{i + 1}</span>
-                                                                        <div className="flex-1 relative h-7 rounded overflow-hidden bg-muted/10">
-                                                                            <div className="absolute inset-y-0 left-0 rounded bg-emerald-500/15" style={{ width: `${pct}%` }} />
-                                                                            <div className="relative flex items-center justify-between h-full px-2">
-                                                                                <span className="text-xs font-bold truncate">{entry.name}</span>
-                                                                                <span className="text-[10px] font-black text-muted-foreground/60 tabular-nums">
-                                                                                    {(entry.total / ((wclReportDetails.endTime - wclReportDetails.startTime) / 1000)).toFixed(1)} HPS
-                                                                                </span>
-                                                                            </div>
+                                        {/* DAMAGE & HEALING TABLES */}
+                                        {(wclReportDetails.damageDone?.data?.entries?.length > 0 || wclReportDetails.healingDone?.data?.entries?.length > 0) && (() => {
+                                            const fmt = (n: number) => n >= 1000000 ? (n / 1000000).toFixed(2) + 'm' : n >= 1000 ? (n / 1000).toFixed(1) + 'k' : n.toFixed(0)
+                                            const duration = (wclReportDetails.damageDone?.data?.totalTime || wclReportDetails.healingDone?.data?.totalTime || (wclReportDetails.endTime - wclReportDetails.startTime)) / 1000
+                                            return (
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                    {wclReportDetails.damageDone?.data?.entries?.length > 0 && (
+                                                        <div>
+                                                            <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 mb-3 flex items-center gap-2">
+                                                                <IconSwords className="size-3.5" /> Damage Done By Source
+                                                            </h3>
+                                                            <div className="rounded-lg border border-border/10 overflow-hidden">
+                                                                <div className="grid grid-cols-[1fr_80px_70px] text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 px-3 py-1.5 border-b border-border/10 bg-muted/5">
+                                                                    <span>Nombre</span><span className="text-right">Amount</span><span className="text-right">DPS</span>
+                                                                </div>
+                                                                {wclReportDetails.damageDone.data.entries.slice(0, 15).map((entry: any, i: number) => {
+                                                                    const maxTotal = wclReportDetails.damageDone.data.entries[0]?.total || 1
+                                                                    const pct = (entry.total / maxTotal) * 100
+                                                                    return (
+                                                                        <div key={i} className="relative grid grid-cols-[1fr_80px_70px] items-center px-3 py-1.5 text-xs">
+                                                                            <div className="absolute inset-0 bg-red-500/8" style={{ width: `${pct}%` }} />
+                                                                            <span className="relative font-bold truncate">{entry.name}</span>
+                                                                            <span className="relative text-right text-[10px] font-bold text-muted-foreground/60 tabular-nums">{fmt(entry.total)}</span>
+                                                                            <span className="relative text-right text-[10px] font-black text-muted-foreground/80 tabular-nums">{fmt(entry.total / duration)}</span>
                                                                         </div>
-                                                                    </div>
-                                                                )
-                                                            })}
+                                                                    )
+                                                                })}
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
+                                                    )}
+
+                                                    {wclReportDetails.healingDone?.data?.entries?.length > 0 && (
+                                                        <div>
+                                                            <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 mb-3 flex items-center gap-2">
+                                                                <IconTrophy className="size-3.5" /> Healing Done By Source
+                                                            </h3>
+                                                            <div className="rounded-lg border border-border/10 overflow-hidden">
+                                                                <div className="grid grid-cols-[1fr_80px_70px] text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 px-3 py-1.5 border-b border-border/10 bg-muted/5">
+                                                                    <span>Nombre</span><span className="text-right">Amount</span><span className="text-right">HPS</span>
+                                                                </div>
+                                                                {wclReportDetails.healingDone.data.entries.slice(0, 15).map((entry: any, i: number) => {
+                                                                    const maxTotal = wclReportDetails.healingDone.data.entries[0]?.total || 1
+                                                                    const pct = (entry.total / maxTotal) * 100
+                                                                    return (
+                                                                        <div key={i} className="relative grid grid-cols-[1fr_80px_70px] items-center px-3 py-1.5 text-xs">
+                                                                            <div className="absolute inset-0 bg-emerald-500/8" style={{ width: `${pct}%` }} />
+                                                                            <span className="relative font-bold truncate">{entry.name}</span>
+                                                                            <span className="relative text-right text-[10px] font-bold text-muted-foreground/60 tabular-nums">{fmt(entry.total)}</span>
+                                                                            <span className="relative text-right text-[10px] font-black text-muted-foreground/80 tabular-nums">{fmt(entry.total / duration)}</span>
+                                                                        </div>
+                                                                    )
+                                                                })}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )
+                                        })()}
 
                                         {/* FIGHTS LIST */}
                                         <div className="grid grid-cols-1 gap-2">

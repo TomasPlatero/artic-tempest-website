@@ -69,7 +69,7 @@ export async function GET(_req: Request) {
                 }
             }`;
         } else if (reportCode) {
-            // Fetch detailed report fights + summary tables
+            // Fetch detailed report fights + summary tables + composition
             query = `
             query {
                 reportData {
@@ -79,6 +79,7 @@ export async function GET(_req: Request) {
                         startTime
                         endTime
                         zone { name }
+                        playerDetails(startTime: 0, endTime: 999999999999)
                         fights(killType: All) {
                             id
                             name
