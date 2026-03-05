@@ -423,35 +423,29 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                                     <p className="italic">No se encontraron reportes{wclSearchQuery && ` para "${wclSearchQuery}"`}</p>
                                 </div>
                             ) : (
-                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                <div className="flex flex-col divide-y divide-border/10">
                                     {filteredWclReports.map((report: any) => (
                                         <div
                                             key={report.code}
                                             onClick={() => handleViewWclReport(report)}
-                                            className="block group cursor-pointer"
+                                            className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-blue-500/5 transition-colors group"
                                         >
-                                            <div className="flex flex-col gap-3 p-4 rounded-xl border border-border/30 bg-muted/10 hover:bg-blue-500/5 hover:border-blue-500/30 transition-all duration-300 relative overflow-hidden h-full">
-                                                <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <IconSwords className="size-4 text-blue-500/50" />
-                                                </div>
-                                                <div className="font-bold text-sm group-hover:text-blue-400 transition-colors line-clamp-2 min-h-[40px]">
-                                                    {report.title}
-                                                </div>
-                                                <div className="mt-auto pt-3 border-t border-border/10 flex items-center justify-between">
-                                                    <div className="flex items-center gap-1.5">
-                                                        <Badge variant="secondary" className="bg-background/80 text-[10px] font-bold text-muted-foreground/80 py-0 px-1.5">
-                                                            {report.zone?.name || "Desconocido"}
-                                                        </Badge>
-                                                        {report.guildTag?.name && (
-                                                            <Badge variant="outline" className="text-[10px] font-bold py-0 px-1.5 border-blue-500/30 text-blue-400/80">
-                                                                {report.guildTag.name}
-                                                            </Badge>
-                                                        )}
-                                                    </div>
-                                                    <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-wider">
-                                                        {new Date(report.startTime).toLocaleDateString()}
-                                                    </span>
-                                                </div>
+                                            <IconSwords className="size-4 text-muted-foreground/30 group-hover:text-blue-500/60 transition-colors shrink-0" />
+                                            <span className="font-bold text-sm group-hover:text-blue-400 transition-colors truncate flex-1 min-w-0">
+                                                {report.title}
+                                            </span>
+                                            <div className="flex items-center gap-2 shrink-0">
+                                                <Badge variant="secondary" className="bg-background/80 text-[10px] font-bold text-muted-foreground/80 py-0 px-1.5">
+                                                    {report.zone?.name || "Desconocido"}
+                                                </Badge>
+                                                {report.guildTag?.name && (
+                                                    <Badge variant="outline" className="text-[10px] font-bold py-0 px-1.5 border-blue-500/30 text-blue-400/80">
+                                                        {report.guildTag.name}
+                                                    </Badge>
+                                                )}
+                                                <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-wider w-20 text-right">
+                                                    {new Date(report.startTime).toLocaleDateString()}
+                                                </span>
                                             </div>
                                         </div>
                                     ))}
