@@ -489,55 +489,9 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                                     </div>
                                 ) : wclReportDetails ? (
                                     <div className="space-y-6">
-                                        <div className="grid grid-cols-1 gap-2">
-                                            {wclReportDetails.fights && wclReportDetails.fights.length > 0 ? (
-                                                wclReportDetails.fights.map((fight: any, i: number) => (
-                                                    <a
-                                                        href={`https://www.warcraftlogs.com/reports/${selectedWclReport.code}#fight=${fight.id}`}
-                                                        target="_blank"
-                                                        rel="noreferrer"
-                                                        key={i}
-                                                        className="flex items-center justify-between p-3 rounded-lg border border-border/10 bg-background/40 group hover:border-blue-500/30 hover:bg-blue-500/[0.03] transition-all"
-                                                    >
-                                                        <div className="flex items-center gap-3">
-                                                            <div className={cn(
-                                                                "size-6 rounded-md flex items-center justify-center text-[10px] font-black",
-                                                                fight.kill ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"
-                                                            )}>
-                                                                {fight.kill ? <IconCheck className="size-3.5" /> : <IconX className="size-3.5" />}
-                                                            </div>
-                                                            <div className="flex flex-col">
-                                                                <div className="flex items-center gap-2">
-                                                                    <span className="text-sm font-bold group-hover:text-blue-400 transition-colors">{fight.name}</span>
-                                                                    <IconExternalLink className="size-3 opacity-0 group-hover:opacity-40 transition-opacity" />
-                                                                </div>
-                                                                <span className="text-[10px] uppercase font-black text-muted-foreground/50 tracking-tighter">
-                                                                    {fight.difficulty === 3 ? "Normal" : fight.difficulty === 4 ? "Heroico" : fight.difficulty === 5 ? "Mítico" : "Buscador"}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="flex items-center gap-4">
-                                                            {!fight.kill && (
-                                                                <div className="flex flex-col items-end">
-                                                                    <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-tighter">Mejor Intento</span>
-                                                                    <span className="text-xs font-black text-red-400/80">{(fight.fightPercentage / 100).toFixed(1)}%</span>
-                                                                </div>
-                                                            )}
-                                                            {fight.kill && (
-                                                                <Badge className="bg-emerald-500/10 text-emerald-500 border-none text-[9px] font-black uppercase">Derrotado</Badge>
-                                                            )}
-                                                        </div>
-                                                    </a>
-                                                ))
-                                            ) : (
-                                                <div className="text-center py-8 text-xs text-muted-foreground italic">No se encontraron combates registrados.</div>
-                                            )}
-                                        </div>
-
                                         {/* SUMMARY: Top DPS & Healers */}
                                         {(wclReportDetails.damageDone?.data?.entries?.length > 0 || wclReportDetails.healingDone?.data?.entries?.length > 0) && (
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 {/* Top DPS */}
                                                 {wclReportDetails.damageDone?.data?.entries?.length > 0 && (
                                                     <div>
@@ -597,6 +551,53 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                                                 )}
                                             </div>
                                         )}
+
+                                        {/* FIGHTS LIST */}
+                                        <div className="grid grid-cols-1 gap-2">
+                                            {wclReportDetails.fights && wclReportDetails.fights.length > 0 ? (
+                                                wclReportDetails.fights.map((fight: any, i: number) => (
+                                                    <a
+                                                        href={`https://www.warcraftlogs.com/reports/${selectedWclReport.code}#fight=${fight.id}`}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        key={i}
+                                                        className="flex items-center justify-between p-3 rounded-lg border border-border/10 bg-background/40 group hover:border-blue-500/30 hover:bg-blue-500/[0.03] transition-all"
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <div className={cn(
+                                                                "size-6 rounded-md flex items-center justify-center text-[10px] font-black",
+                                                                fight.kill ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"
+                                                            )}>
+                                                                {fight.kill ? <IconCheck className="size-3.5" /> : <IconX className="size-3.5" />}
+                                                            </div>
+                                                            <div className="flex flex-col">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-sm font-bold group-hover:text-blue-400 transition-colors">{fight.name}</span>
+                                                                    <IconExternalLink className="size-3 opacity-0 group-hover:opacity-40 transition-opacity" />
+                                                                </div>
+                                                                <span className="text-[10px] uppercase font-black text-muted-foreground/50 tracking-tighter">
+                                                                    {fight.difficulty === 3 ? "Normal" : fight.difficulty === 4 ? "Heroico" : fight.difficulty === 5 ? "Mítico" : "Buscador"}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex items-center gap-4">
+                                                            {!fight.kill && (
+                                                                <div className="flex flex-col items-end">
+                                                                    <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-tighter">Mejor Intento</span>
+                                                                    <span className="text-xs font-black text-red-400/80">{(fight.fightPercentage / 100).toFixed(1)}%</span>
+                                                                </div>
+                                                            )}
+                                                            {fight.kill && (
+                                                                <Badge className="bg-emerald-500/10 text-emerald-500 border-none text-[9px] font-black uppercase">Derrotado</Badge>
+                                                            )}
+                                                        </div>
+                                                    </a>
+                                                ))
+                                            ) : (
+                                                <div className="text-center py-8 text-xs text-muted-foreground italic">No se encontraron combates registrados.</div>
+                                            )}
+                                        </div>
                                     </div>
                                 ) : (
                                     <div className="text-center py-12 text-sm text-red-400">Error al cargar el sumario.</div>
