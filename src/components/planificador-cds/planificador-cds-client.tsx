@@ -176,7 +176,7 @@ export function PlanificadorCdsClient() {
     // Viserio Timeline State
     const [assignments, setAssignments] = useState<{ id: string, member_id: string, cooldown_id: string, time_seconds: number }[]>([])
     const [showHelpDialog, setShowHelpDialog] = useState(false)
-    const TOTAL_FIGHT_SECONDS = 540 // 9 minutes (enrage)
+    const TOTAL_FIGHT_SECONDS = 570 // 9.5 minutes (includes 30s buffer for rendering visual tails)
 
     // Interactive Timeline State
     const [hoverTime, setHoverTime] = useState<number | null>(null)
@@ -988,8 +988,8 @@ export function PlanificadorCdsClient() {
                     )}
                 </TabsContent>
 
-                <TabsContent value="planner" className="flex-1 m-0 flex flex-col min-h-0 bg-[#121217] data-[state=inactive]:hidden min-w-0">
-                    <Card className="bg-[#121217] flex-1 border-border/50 shadow-2xl rounded-xl flex flex-col min-h-0 overflow-hidden relative pt-2 pb-0">
+                <TabsContent value="planner" className="flex-1 m-0 flex flex-col min-h-0 bg-[#121217] data-[state=inactive]:hidden w-full max-w-full overflow-hidden">
+                    <Card className="bg-[#121217] flex-1 border-border/50 shadow-2xl rounded-xl flex flex-col min-h-0 relative pt-2 pb-0 w-full max-w-full overflow-hidden">
                         <div className="flex border-b border-border/40 bg-muted/5 items-center justify-between px-4 h-15 shrink-0 relative z-50">
                             <div className="flex items-center gap-4">
                                 <Button
@@ -1175,7 +1175,7 @@ export function PlanificadorCdsClient() {
                         {/* TIMELINE RENDERER       */}
                         {/* ======================= */}
                         <div
-                            className="flex-1 min-h-0 overflow-x-auto overflow-y-auto select-none bg-gradient-to-b from-[#0a0a0f] to-[#050508] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent relative w-full max-w-full"
+                            className="flex-1 min-h-0 min-w-0 overflow-x-auto overflow-y-auto select-none bg-gradient-to-b from-[#0a0a0f] to-[#050508] scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent relative w-full max-w-full"
                             ref={setTimelineRef}
                             onMouseMove={handleTimelineMouseMove}
                             onMouseLeave={handleTimelineMouseLeave}
@@ -1187,7 +1187,9 @@ export function PlanificadorCdsClient() {
                                     <div className="flex-1 relative" id="timeline-track-container">
                                         {Array.from({ length: Math.floor(TOTAL_FIGHT_SECONDS / 30) + 1 }, (_, i) => i * 30).map((timeMarker) => (
                                             <div key={timeMarker} className="absolute inset-y-0 w-px bg-white/5" style={{ left: `${(timeMarker / TOTAL_FIGHT_SECONDS) * 100}%` }}>
-                                                <span className="absolute top-1 -left-3 text-[9px] font-bold text-muted-foreground/60">{formatTime(timeMarker)}</span>
+                                                {timeMarker > 0 && (
+                                                    <span className="absolute top-1 -left-3 text-[9px] font-bold text-muted-foreground/60">{formatTime(timeMarker)}</span>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
@@ -1366,11 +1368,6 @@ export function PlanificadorCdsClient() {
                                                             {(h.role === 'ranged' || !h.role) && <IconBow className="size-3.5 opacity-60 shrink-0" />}
                                                             <span className="text-[9px] font-black uppercase tracking-wider truncate" style={{ color: classColor }}>{h.character_name}</span>
                                                         </div>
-                                                        <div className="flex items-center gap-0.5 ml-auto shrink-0">
-                                                            {hCooldowns.map((cd: CooldownDefinition) => (
-                                                                <Image key={cd.id} unoptimized src={cd.icon} alt={cd.name} width={14} height={14} className="rounded-sm opacity-80" />
-                                                            ))}
-                                                        </div>
                                                     </div>
                                                     {/* Single condensed track */}
                                                     <div
@@ -1395,6 +1392,12 @@ export function PlanificadorCdsClient() {
                                                             const actDurSec = Number(cd.active_duration || 0);
                                                             const myEnd = myStart + dur;
 
+                                                            // Rendering bounds to prevent timeline horizontal overflow
+                                                            const renderStart = Math.min(myStart, TOTAL_FIGHT_SECONDS);
+                                                            const maxRenderDur = Math.max(0, TOTAL_FIGHT_SECONDS - renderStart);
+                                                            const renderDur = Math.min(dur, maxRenderDur);
+                                                            const renderActDur = Math.min(actDurSec, maxRenderDur);
+
                                                             // Overlap check
                                                             const isConflict = allAssignments.some((a: any) => {
                                                                 if (a.id === assign.id) return false;
@@ -1405,8 +1408,9 @@ export function PlanificadorCdsClient() {
                                                                 return Math.max(otherStart, myStart) < Math.min(otherEnd, myEnd);
                                                             });
 
-                                                            const actPct = actDurSec > 0 ? (actDurSec / TOTAL_FIGHT_SECONDS) * 100 : 0;
-                                                            const cdPct = dur > 0 ? (dur / TOTAL_FIGHT_SECONDS) * 100 : 0;
+                                                            const startPct = (renderStart / TOTAL_FIGHT_SECONDS) * 100;
+                                                            const actPct = renderActDur > 0 ? (renderActDur / TOTAL_FIGHT_SECONDS) * 100 : 0;
+                                                            const cdPct = renderDur > 0 ? (renderDur / TOTAL_FIGHT_SECONDS) * 100 : 0;
 
                                                             return (
                                                                 <React.Fragment key={assign.id}>
@@ -1415,7 +1419,7 @@ export function PlanificadorCdsClient() {
                                                                         <div
                                                                             className="absolute top-0.5 bottom-0.5 pointer-events-none z-10"
                                                                             style={{
-                                                                                left: `${(myStart / TOTAL_FIGHT_SECONDS) * 100}%`,
+                                                                                left: `${startPct}%`,
                                                                                 width: `${actPct}%`,
                                                                                 backgroundColor: `transparent`,
                                                                                 backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(255,255,255,0.2) 4px, rgba(255,255,255,0.2) 8px)`,
@@ -1431,8 +1435,8 @@ export function PlanificadorCdsClient() {
                                                                         <div
                                                                             className="absolute top-0.5 bottom-0.5 rounded-r pointer-events-none z-0"
                                                                             style={{
-                                                                                left: `${(myStart / TOTAL_FIGHT_SECONDS) * 100}%`,
-                                                                                width: `${(dur / TOTAL_FIGHT_SECONDS) * 100}%`,
+                                                                                left: `${startPct}%`,
+                                                                                width: `${cdPct}%`,
                                                                                 backgroundColor: isConflict ? 'rgba(239, 68, 68, 0.4)' : `${cd.color}60`,
                                                                                 borderColor: isConflict ? '#ef4444' : `${cd.color}90`,
                                                                                 borderStyle: 'solid',
@@ -1447,9 +1451,9 @@ export function PlanificadorCdsClient() {
                                                                         <div
                                                                             className="absolute top-0.5 bottom-0.5 rounded-l pointer-events-none z-0 border-y border-l"
                                                                             style={{
-                                                                                left: `${(myStart / TOTAL_FIGHT_SECONDS) * 100}%`,
+                                                                                left: `${startPct}%`,
                                                                                 transform: `translateX(-100%)`,
-                                                                                width: `${(dur / TOTAL_FIGHT_SECONDS) * 100}%`,
+                                                                                width: `${cdPct}%`,
                                                                                 backgroundColor: `${cd.color}15`,
                                                                                 borderColor: isConflict ? '#ef4444' : `${cd.color}60`,
                                                                                 borderStyle: 'dashed',
@@ -1459,12 +1463,12 @@ export function PlanificadorCdsClient() {
 
                                                                     <div
                                                                         className={cn(
-                                                                            "absolute top-0.5 bottom-0.5 flex items-center justify-center overflow-visible z-20 group/assign shadow-sm transition-all -translate-x-1/2 rounded",
-                                                                            draggingAssignment?.id === assign.id ? "opacity-50 cursor-grabbing scale-95" : "hover:brightness-125 cursor-grab active:cursor-grabbing",
-                                                                            isConflict && "bg-red-500/30 border-red-500/50 ring-1 ring-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.3)] z-30"
+                                                                            "absolute top-0.5 bottom-0.5 flex items-center shadow-sm overflow-visible transition-all z-20 group/assign rounded -translate-x-1/2",
+                                                                            draggingAssignment?.id === assign.id ? "opacity-50 cursor-grabbing scale-95 ring-2 ring-white/20" : "hover:brightness-125 cursor-grab active:cursor-grabbing",
+                                                                            isConflict && "bg-red-500/30 border border-red-500/50 ring-1 ring-red-400/40 shadow-[0_0_15px_rgba(239,68,68,0.3)] z-30"
                                                                         )}
                                                                         style={{
-                                                                            left: `${(myStart / TOTAL_FIGHT_SECONDS) * 100}%`,
+                                                                            left: `${startPct}%`,
                                                                             width: '26px',
                                                                         }}
                                                                         onClick={(e) => e.stopPropagation()}
@@ -1620,13 +1624,21 @@ export function PlanificadorCdsClient() {
                                                                             const actDurSec = cd.active_duration && cd.active_duration > 0 ? cd.active_duration : 0;
                                                                             // Minimum width for clickability if active duration is 0
                                                                             const minWidthPx = actDurSec > 0 ? 0 : 60;
-                                                                            const actPct = actDurSec > 0 ? (actDurSec / TOTAL_FIGHT_SECONDS) * 100 : 0;
-                                                                            const cdPct = cd.duration ? (cd.duration / TOTAL_FIGHT_SECONDS) * 100 : 0;
 
                                                                             // Robust detection logic: An assignment A is in error if there is a conflict in their cooldown periods.
                                                                             const myStart = Number(assign.time_seconds);
                                                                             const dur = Number(cd.duration || 0);
                                                                             const myEnd = myStart + dur;
+
+                                                                            // Rendering bounds to prevent timeline horizontal overflow
+                                                                            const renderStart = Math.min(myStart, TOTAL_FIGHT_SECONDS);
+                                                                            const maxRenderDur = Math.max(0, TOTAL_FIGHT_SECONDS - renderStart);
+                                                                            const renderDur = Math.min(dur, maxRenderDur);
+                                                                            const renderActDur = Math.min(actDurSec, maxRenderDur);
+
+                                                                            const startPct = (renderStart / TOTAL_FIGHT_SECONDS) * 100;
+                                                                            const actPct = renderActDur > 0 ? (renderActDur / TOTAL_FIGHT_SECONDS) * 100 : 0;
+                                                                            const cdPct = renderDur > 0 ? (renderDur / TOTAL_FIGHT_SECONDS) * 100 : 0;
 
                                                                             const isConflict = rowAssignments.some((a: any) => {
                                                                                 if (a.id === assign.id) return false;
@@ -1643,7 +1655,7 @@ export function PlanificadorCdsClient() {
                                                                                         <div
                                                                                             className="absolute top-0.5 bottom-0.5 pointer-events-none z-10"
                                                                                             style={{
-                                                                                                left: `${(myStart / TOTAL_FIGHT_SECONDS) * 100}%`,
+                                                                                                left: `${startPct}%`,
                                                                                                 width: `${actPct}%`,
                                                                                                 backgroundColor: `transparent`,
                                                                                                 backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(255,255,255,0.2) 4px, rgba(255,255,255,0.2) 8px)`,
@@ -1659,8 +1671,8 @@ export function PlanificadorCdsClient() {
                                                                                         <div
                                                                                             className="absolute top-0.5 bottom-0.5 pointer-events-none transition-colors border-y border-r rounded-r z-0"
                                                                                             style={{
-                                                                                                left: `${(myStart / TOTAL_FIGHT_SECONDS) * 100}%`,
-                                                                                                width: `${(dur / TOTAL_FIGHT_SECONDS) * 100}%`,
+                                                                                                left: `${startPct}%`,
+                                                                                                width: `${cdPct}%`,
                                                                                                 backgroundColor: isConflict ? 'rgba(239, 68, 68, 0.4)' : `${cd.color}60`,
                                                                                                 borderColor: isConflict ? '#ef4444' : `${cd.color}90`,
                                                                                                 borderWidth: '1px',
@@ -1675,9 +1687,9 @@ export function PlanificadorCdsClient() {
                                                                                         <div
                                                                                             className="absolute top-0.5 bottom-0.5 rounded-l pointer-events-none z-0 border-y border-l"
                                                                                             style={{
-                                                                                                left: `${(myStart / TOTAL_FIGHT_SECONDS) * 100}%`,
+                                                                                                left: `${startPct}%`,
                                                                                                 transform: `translateX(-100%)`,
-                                                                                                width: `${(dur / TOTAL_FIGHT_SECONDS) * 100}%`,
+                                                                                                width: `${cdPct}%`,
                                                                                                 backgroundColor: `${cd.color}15`,
                                                                                                 borderColor: isConflict ? '#ef4444' : `${cd.color}60`,
                                                                                                 borderStyle: 'dashed',
@@ -1692,7 +1704,7 @@ export function PlanificadorCdsClient() {
                                                                                             isConflict && "bg-red-500/30 border border-red-500/50 ring-1 ring-red-400/40 shadow-[0_0_15px_rgba(239,68,68,0.3)] z-30"
                                                                                         )}
                                                                                         style={{
-                                                                                            left: `${(myStart / TOTAL_FIGHT_SECONDS) * 100}%`,
+                                                                                            left: `${startPct}%`,
                                                                                             width: '58px',
                                                                                             borderLeftColor: cd.color
                                                                                         }}

@@ -17,7 +17,7 @@ export default async function PlanificadorCdsPage({ searchParams }: { searchPara
             <AppSidebar variant="inset" />
             <SidebarInset>
                 <SiteHeader />
-                <div className="flex flex-1 flex-col py-6 mx-auto w-full px-4 gap-6">
+                <div className="flex flex-1 flex-col py-6 mx-auto w-full px-4 gap-6 min-w-0 overflow-hidden">
                     <Suspense fallback={<div className="flex items-center justify-center min-h-[400px]">Cargando planificador...</div>}>
                         <PlanificadorCdsClient />
                     </Suspense>
