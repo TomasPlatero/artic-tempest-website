@@ -456,7 +456,7 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
 
                     {/* WCL REPORT MODAL */}
                     <Dialog open={!!selectedWclReport} onOpenChange={(open) => !open && setSelectedWclReport(null)}>
-                        <DialogContent className="max-w-7xl bg-[#0a0a0c] border-border/40 max-h-[85vh] flex flex-col p-0 overflow-hidden">
+                        <DialogContent className="max-w-[95vw] bg-[#0a0a0c] border-border/40 max-h-[85vh] flex flex-col p-0 overflow-hidden">
                             <DialogHeader className="p-6 pb-4 border-b border-border/10 bg-blue-500/5">
                                 <div className="flex items-center justify-between pr-4">
                                     <div>
@@ -533,22 +533,24 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                                         {(wclReportDetails.damageDone?.data?.entries?.length > 0 || wclReportDetails.healingDone?.data?.entries?.length > 0) && (() => {
                                             const fmt = (n: number) => n >= 1000000 ? (n / 1000000).toFixed(2) + 'm' : n >= 1000 ? (n / 1000).toFixed(1) + 'k' : n.toFixed(0)
                                             const duration = (wclReportDetails.damageDone?.data?.totalTime || wclReportDetails.healingDone?.data?.totalTime || (wclReportDetails.endTime - wclReportDetails.startTime)) / 1000
+                                            const dmgSorted = [...(wclReportDetails.damageDone?.data?.entries || [])].sort((a: any, b: any) => b.total - a.total)
+                                            const healSorted = [...(wclReportDetails.healingDone?.data?.entries || [])].sort((a: any, b: any) => b.total - a.total)
                                             return (
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                    {wclReportDetails.damageDone?.data?.entries?.length > 0 && (
+                                                    {dmgSorted.length > 0 && (
                                                         <div>
                                                             <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 mb-3 flex items-center gap-2">
                                                                 <IconSwords className="size-3.5" /> Damage Done By Source
                                                             </h3>
                                                             <div className="rounded-lg border border-border/10 overflow-hidden">
-                                                                <div className="grid grid-cols-[1fr_80px_70px] text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 px-3 py-1.5 border-b border-border/10 bg-muted/5">
+                                                                <div className="grid grid-cols-[1fr_90px_80px] text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 px-3 py-1.5 border-b border-border/10 bg-muted/5">
                                                                     <span>Nombre</span><span className="text-right">Amount</span><span className="text-right">DPS</span>
                                                                 </div>
-                                                                {wclReportDetails.damageDone.data.entries.slice(0, 15).map((entry: any, i: number) => {
-                                                                    const maxTotal = wclReportDetails.damageDone.data.entries[0]?.total || 1
+                                                                {dmgSorted.slice(0, 15).map((entry: any, i: number) => {
+                                                                    const maxTotal = dmgSorted[0]?.total || 1
                                                                     const pct = (entry.total / maxTotal) * 100
                                                                     return (
-                                                                        <div key={i} className="relative grid grid-cols-[1fr_80px_70px] items-center px-3 py-1.5 text-xs">
+                                                                        <div key={i} className="relative grid grid-cols-[1fr_90px_80px] items-center px-3 py-1.5 text-xs">
                                                                             <div className="absolute inset-0 bg-red-500/8" style={{ width: `${pct}%` }} />
                                                                             <span className="relative font-bold truncate">{entry.name}</span>
                                                                             <span className="relative text-right text-[10px] font-bold text-muted-foreground/60 tabular-nums">{fmt(entry.total)}</span>
@@ -560,20 +562,20 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                                                         </div>
                                                     )}
 
-                                                    {wclReportDetails.healingDone?.data?.entries?.length > 0 && (
+                                                    {healSorted.length > 0 && (
                                                         <div>
                                                             <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 mb-3 flex items-center gap-2">
                                                                 <IconTrophy className="size-3.5" /> Healing Done By Source
                                                             </h3>
                                                             <div className="rounded-lg border border-border/10 overflow-hidden">
-                                                                <div className="grid grid-cols-[1fr_80px_70px] text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 px-3 py-1.5 border-b border-border/10 bg-muted/5">
+                                                                <div className="grid grid-cols-[1fr_90px_80px] text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 px-3 py-1.5 border-b border-border/10 bg-muted/5">
                                                                     <span>Nombre</span><span className="text-right">Amount</span><span className="text-right">HPS</span>
                                                                 </div>
-                                                                {wclReportDetails.healingDone.data.entries.slice(0, 15).map((entry: any, i: number) => {
-                                                                    const maxTotal = wclReportDetails.healingDone.data.entries[0]?.total || 1
+                                                                {healSorted.slice(0, 15).map((entry: any, i: number) => {
+                                                                    const maxTotal = healSorted[0]?.total || 1
                                                                     const pct = (entry.total / maxTotal) * 100
                                                                     return (
-                                                                        <div key={i} className="relative grid grid-cols-[1fr_80px_70px] items-center px-3 py-1.5 text-xs">
+                                                                        <div key={i} className="relative grid grid-cols-[1fr_90px_80px] items-center px-3 py-1.5 text-xs">
                                                                             <div className="absolute inset-0 bg-emerald-500/8" style={{ width: `${pct}%` }} />
                                                                             <span className="relative font-bold truncate">{entry.name}</span>
                                                                             <span className="relative text-right text-[10px] font-bold text-muted-foreground/60 tabular-nums">{fmt(entry.total)}</span>
