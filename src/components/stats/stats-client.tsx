@@ -58,6 +58,8 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
     const [wclReportDetails, setWclReportDetails] = useState<any>(null)
     const [isFetchingWclDetail, setIsFetchingWclDetail] = useState(false)
     const [wclZoneFilter, setWclZoneFilter] = useState<string>("all")
+    const [wclTagFilter, setWclTagFilter] = useState<string>("all")
+    const [wclTags, setWclTags] = useState<{ id: number, name: string }[]>([])
 
     // WCL Zone IDs grouped by expansion/season
     const WCL_ZONES = [
@@ -102,13 +104,30 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
         })
     }, [wclReports, wclSearchQuery])
 
-    // Fetch WCL reports (re-fetches when zone filter changes)
+    // Fetch guild tags once
+    useEffect(() => {
+        async function fetchTags() {
+            try {
+                const res = await fetch('/api/wcl?action=tags')
+                const data = await res.json()
+                if (data?.guildData?.guild?.tags) {
+                    setWclTags(data.guildData.guild.tags)
+                }
+            } catch (e) {
+                console.error('Error fetching WCL tags:', e)
+            }
+        }
+        fetchTags()
+    }, [])
+
+    // Fetch WCL reports (re-fetches when zone or tag filter changes)
     useEffect(() => {
         async function fetchWCL() {
             setIsLoadingWcl(true)
             try {
                 const zoneParam = wclZoneFilter !== 'all' ? `&zoneID=${wclZoneFilter}` : ''
-                const res = await fetch(`/api/wcl?t=${Date.now()}${zoneParam}`)
+                const tagParam = wclTagFilter !== 'all' ? `&guildTagID=${wclTagFilter}` : ''
+                const res = await fetch(`/api/wcl?t=${Date.now()}${zoneParam}${tagParam}`)
                 const data = await res.json()
                 if (!res.ok) {
                     throw new Error(data.error || "Error al cargar datos de WCL")
@@ -123,7 +142,7 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
             }
         }
         fetchWCL()
-    }, [wclZoneFilter])
+    }, [wclZoneFilter, wclTagFilter])
 
     const [searchQuery, setSearchQuery] = useState("")
     const [topMembers, setTopMembers] = useState<any[]>([])
@@ -362,6 +381,19 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                                             ))}
                                         </SelectContent>
                                     </Select>
+                                    {wclTags.length > 0 && (
+                                        <Select value={wclTagFilter} onValueChange={setWclTagFilter}>
+                                            <SelectTrigger className="h-9 w-auto min-w-[130px] bg-background/50 border-border/40 text-xs">
+                                                <SelectValue placeholder="Tag" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">Todos los Tags</SelectItem>
+                                                {wclTags.map((tag) => (
+                                                    <SelectItem key={tag.id} value={String(tag.id)}>{tag.name}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
                                     <div className="relative w-full md:w-48">
                                         <IconSearch className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
                                         <Input
@@ -406,9 +438,16 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                                                     {report.title}
                                                 </div>
                                                 <div className="mt-auto pt-3 border-t border-border/10 flex items-center justify-between">
-                                                    <Badge variant="secondary" className="bg-background/80 text-[10px] font-bold text-muted-foreground/80 py-0 px-1.5">
-                                                        {report.zone?.name || "Desconocido"}
-                                                    </Badge>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <Badge variant="secondary" className="bg-background/80 text-[10px] font-bold text-muted-foreground/80 py-0 px-1.5">
+                                                            {report.zone?.name || "Desconocido"}
+                                                        </Badge>
+                                                        {report.guildTag?.name && (
+                                                            <Badge variant="outline" className="text-[10px] font-bold py-0 px-1.5 border-blue-500/30 text-blue-400/80">
+                                                                {report.guildTag.name}
+                                                            </Badge>
+                                                        )}
+                                                    </div>
                                                     <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-wider">
                                                         {new Date(report.startTime).toLocaleDateString()}
                                                     </span>

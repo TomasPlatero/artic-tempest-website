@@ -8,7 +8,7 @@ export async function GET(_req: Request) {
         const { searchParams } = new URL(_req.url);
         const reportCode = searchParams.get("code");
         const zoneID = searchParams.get("zoneID");
-        const tagID = searchParams.get("tagID");
+        const guildTagID = searchParams.get("guildTagID");
         const action = searchParams.get("action");
 
         const session = await getServerSession(authOptions);
@@ -95,16 +95,18 @@ export async function GET(_req: Request) {
         } else {
             // Fetch recent reports list
             const zoneFilter = zoneID ? `, zoneID: ${zoneID}` : '';
+            const tagFilter = guildTagID ? `, guildTagID: ${guildTagID}` : '';
             query = `
             query {
                 reportData {
-                    reports(guildID: 743623, limit: 50${zoneFilter}) {
+                    reports(guildID: 743623, limit: 50${zoneFilter}${tagFilter}) {
                         data {
                             code
                             title
                             startTime
                             zone { name }
                             segments
+                            guildTag { id name }
                         }
                     }
                 }
