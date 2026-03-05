@@ -595,7 +595,7 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                                             {wclReportDetails.fights && wclReportDetails.fights.length > 0 ? (
                                                 wclReportDetails.fights.map((fight: any, i: number) => (
                                                     <a
-                                                        href={`https://www.warcraftlogs.com/reports/${selectedWclReport.code}#fight=${fight.id}`}
+                                                        href={`https://www.warcraftlogs.com/reports/${selectedWclReport?.code}#fight=${fight.id}`}
                                                         target="_blank"
                                                         rel="noreferrer"
                                                         key={i}
