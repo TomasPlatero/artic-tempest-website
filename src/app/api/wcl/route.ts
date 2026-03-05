@@ -79,7 +79,7 @@ export async function GET(_req: Request) {
                         startTime
                         endTime
                         zone { name }
-                        playerDetails(startTime: 0, endTime: 999999999999)
+                        playerDetails(startTime: 0, endTime: 999999999999, killType: Kills)
                         fights(killType: All) {
                             id
                             name
@@ -90,8 +90,8 @@ export async function GET(_req: Request) {
                             lastPhase
                             friendlyPlayers
                         }
-                        damageDone: table(dataType: DamageDone, startTime: 0, endTime: 999999999999)
-                        healingDone: table(dataType: Healing, startTime: 0, endTime: 999999999999)
+                        damageDone: table(dataType: DamageDone, startTime: 0, endTime: 999999999999, killType: Kills)
+                        healingDone: table(dataType: Healing, startTime: 0, endTime: 999999999999, killType: Kills)
                     }
                 }
             }`;
