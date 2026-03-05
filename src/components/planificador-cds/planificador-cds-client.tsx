@@ -845,7 +845,7 @@ export function PlanificadorCdsClient() {
                     </div>
                     <div className="flex-1">
                         <h1 className="text-[28px] font-black uppercase tracking-tight text-white mb-1">Planificador de CD&apos;s</h1>
-                        <p className="text-[10px] font-bold text-blue-400/80 uppercase tracking-[0.3em] font-mono">Planificador de Cd's y Asignaciones.</p>
+                        <p className="text-[10px] font-bold text-blue-400/80 uppercase tracking-[0.3em] font-mono">Planificador de Cd&apos;s y Asignaciones.</p>
                     </div>
                 </div>
             </Card>

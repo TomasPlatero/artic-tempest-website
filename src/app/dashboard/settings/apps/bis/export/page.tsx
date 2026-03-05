@@ -84,7 +84,7 @@ export default function BisExportPage() {
                         </CardHeader>
                         <CardContent>
                             <p className="text-muted-foreground text-sm">
-                                Pega el código en la sección de "Importar BiS" y presiona el botón de confirmación.
+                                Pega el código en la sección de &quot;Importar BiS&quot; y presiona el botón de confirmación.
                             </p>
                         </CardContent>
                     </Card>

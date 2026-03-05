@@ -202,7 +202,7 @@ export default function BisSettingsPage() {
                             <Database className="w-12 h-12 text-muted-foreground mb-4 opacity-20" />
                             <h3 className="text-lg font-medium text-foreground">Sistema Listo</h3>
                             <p className="text-sm text-muted-foreground max-w-sm mt-2">
-                                Presiona "Sincronizar Expansión" para iniciar el streaming de datos en tiempo real desde los servidores de Blizzard.
+                                Presiona &quot;Sincronizar Expansión&quot; para iniciar el streaming de datos en tiempo real desde los servidores de Blizzard.
                             </p>
                         </div>
                     ) : (
