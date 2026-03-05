@@ -66,11 +66,11 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
         {
             group: "Midnight", zones: [
                 { id: "46", name: "Todas las Raids (VS/DR/MQD)" },
-                { id: "44", name: "Forja de Maná Omega" },
             ]
         },
         {
             group: "The War Within", zones: [
+                { id: "44", name: "Forja de Maná Omega" },
                 { id: "42", name: "Liberación de Minahonda" },
                 { id: "38", name: "Palacio Nerub'ar" },
                 { id: "40", name: "Blackrock Depths" },
