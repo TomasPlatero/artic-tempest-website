@@ -824,7 +824,7 @@ export function PlanificadorCdsClient() {
                 <IconDeviceDesktop className="size-20 text-blue-500 mb-6 opacity-80" />
                 <h2 className="text-2xl font-black italic tracking-tighter mb-4 text-white uppercase">Requiere Pantalla Grande</h2>
                 <p className="text-sm font-medium text-muted-foreground/80 leading-relaxed max-w-sm">
-                    El Planificador de CD's es una herramienta avanzada con una interfaz compleja. Para garantizar una experiencia óptima, está diseñado para ser utilizado en monitores grandes.
+                    El Planificador de CD&apos;s es una herramienta avanzada con una interfaz compleja. Para garantizar una experiencia óptima, está diseñado para ser utilizado en monitores grandes.
                 </p>
             </div>
 
@@ -1280,7 +1280,7 @@ export function PlanificadorCdsClient() {
                                                                             {/* Hover preview */}
                                                                             <div className="absolute bottom-full left-0 mb-1 hidden group-hover/boss:flex items-center gap-2 bg-black/95 border border-border/30 rounded-lg px-2.5 py-1.5 shadow-xl z-50 whitespace-nowrap pointer-events-none">
                                                                                 {meta?.icon && (
-                                                                                    <img src={meta.icon} alt="" width={24} height={24} className="rounded shadow-sm shrink-0" />
+                                                                                    <Image unoptimized src={meta.icon} alt="" width={24} height={24} className="rounded shadow-sm shrink-0" />
                                                                                 )}
 
                                                                                 <div className="flex flex-col leading-tight">
@@ -1457,11 +1457,11 @@ export function PlanificadorCdsClient() {
                                                                             onMouseDown={(e) => handleAssignmentMouseDown(e, assign)}
                                                                             onDragStart={(e) => e.preventDefault()}
                                                                         >
-                                                                            <img src={cd.icon} alt="" width={24} height={24} className="rounded-sm opacity-90 shrink-0 pointer-events-none" />
+                                                                            <Image unoptimized src={cd.icon} alt="" width={24} height={24} className="rounded-sm opacity-90 shrink-0 pointer-events-none" />
 
                                                                             {/* Hover preview */}
                                                                             <div className="absolute bottom-full left-0 mb-1 hidden group-hover/assign:flex items-center gap-2 bg-black/95 border border-border/30 rounded-lg px-2.5 py-1.5 shadow-xl z-50 whitespace-nowrap pointer-events-none">
-                                                                                <img src={cd.icon} alt="" width={24} height={24} className="rounded shadow-sm shrink-0" />
+                                                                                <Image unoptimized src={cd.icon} alt="" width={24} height={24} className="rounded shadow-sm shrink-0" />
 
                                                                                 <div className="flex flex-col leading-tight">
                                                                                     <span className="text-[10px] font-black" style={{ color: cd.color }}>{cd.name}</span>
@@ -1695,12 +1695,12 @@ export function PlanificadorCdsClient() {
                                                                                             onDragStart={(e) => e.preventDefault()}
                                                                                         >
                                                                                             <div className="flex w-full h-full items-center justify-center p-0.5">
-                                                                                                <img src={cd.icon} alt="" width={22} height={22} className="rounded-sm opacity-90 shrink-0 pointer-events-none" />
+                                                                                                <Image unoptimized src={cd.icon} alt="" width={22} height={22} className="rounded-sm opacity-90 shrink-0 pointer-events-none" />
                                                                                             </div>
 
                                                                                             {/* Hover preview */}
                                                                                             <div className="absolute bottom-full left-0 mb-1 hidden group-hover/assign:flex items-center gap-2 bg-black/95 border border-border/30 rounded-lg px-2.5 py-1.5 shadow-xl z-50 whitespace-nowrap pointer-events-none">
-                                                                                                <img src={cd.icon} alt="" width={24} height={24} className="rounded shadow-sm shrink-0" />
+                                                                                                <Image unoptimized src={cd.icon} alt="" width={24} height={24} className="rounded shadow-sm shrink-0" />
 
                                                                                                 <div className="flex flex-col leading-tight">
                                                                                                     <span className="text-[10px] font-black" style={{ color: cd.color }}>{cd.name}</span>
