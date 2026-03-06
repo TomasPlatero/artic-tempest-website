@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
+import { ensureAppPermission } from "@/infrastructure/auth/permissions"
 
 export async function GET() {
     try {
@@ -18,11 +19,8 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
     try {
-        const session = await getServerSession(authOptions)
-        const roleLevel = session?.user?.roleLevel
-        if (roleLevel !== "gm" && roleLevel !== "officer") {
-            return NextResponse.json({ error: "No autorizado" }, { status: 403 })
-        }
+        const session = await ensureAppPermission('roster', 'edit')
+        const roleLevel = session.user.roleLevel
 
         const body = await request.json()
         const { role_level, app_id, can_view, can_edit } = body

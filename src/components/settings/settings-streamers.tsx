@@ -4,8 +4,9 @@ import { useState, useEffect } from "react"
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { IconBrandTwitch, IconTrash, IconPlus, IconLoader2, IconExternalLink, IconGripVertical, IconRefresh } from "@tabler/icons-react"
+import { IconBrandTwitch, IconTrash, IconPlus, IconLoader2, IconExternalLink, IconGripVertical, IconRefresh, IconArrowLeft } from "@tabler/icons-react"
 import { toast } from "sonner"
+import Link from "next/link"
 import {
     Select,
     SelectContent,
@@ -76,8 +77,8 @@ function SortableStreamerItem({ streamer, onDelete }: { streamer: any, onDelete:
                 <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-purple-400" asChild>
                     <a href={`https://twitch.tv/${streamer.twitch_username}`} target="_blank" rel="noreferrer">
                         <IconExternalLink className="size-4" />
-                    </a>
-                </Button>
+                    </a >
+                </Button >
                 <Button
                     size="icon"
                     variant="ghost"
@@ -86,8 +87,8 @@ function SortableStreamerItem({ streamer, onDelete }: { streamer: any, onDelete:
                 >
                     <IconTrash className="size-4" />
                 </Button>
-            </div>
-        </div>
+            </div >
+        </div >
     )
 }
 
@@ -218,15 +219,22 @@ export function StreamersSettings() {
     }
 
     return (
-        <div className="flex flex-col gap-6 p-4 md:p-6 lg:px-8 max-w-4xl mx-auto w-full">
-            <div>
-                <h1 className="text-2xl font-bold flex items-center gap-2">
-                    <IconBrandTwitch className="size-6 text-purple-500" />
-                    Twitch Streamers
-                </h1>
-                <p className="text-sm text-muted-foreground mt-1">
-                    Gestiona la lista de creadores de contenido de tu hermandad. Aparecerán ordenados automáticamente en la web según configures aquí.
-                </p>
+        <div className="flex flex-col gap-6 p-4 md:p-6 lg:px-8 w-full max-w-full">
+            <div className="flex items-center gap-4">
+                <Link href="/dashboard/settings/apps">
+                    <Button variant="outline" size="icon" className="size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 transition-all shadow-xl">
+                        <IconArrowLeft className="size-6" />
+                    </Button>
+                </Link>
+                <div>
+                    <h1 className="text-2xl font-bold flex items-center gap-2">
+                        <IconBrandTwitch className="size-6 text-purple-500" />
+                        Twitch Streamers
+                    </h1>
+                    <p className="text-sm text-muted-foreground mt-1">
+                        Gestiona la lista de creadores de contenido de tu hermandad. Aparecerán ordenados automáticamente en la web según configures aquí.
+                    </p>
+                </div>
             </div>
 
             <Card className="border-border/40 bg-card/40 backdrop-blur-sm">

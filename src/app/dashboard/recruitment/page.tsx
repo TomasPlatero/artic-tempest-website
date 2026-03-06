@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth"
 import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 import { redirect } from "next/navigation"
+import { getAppPermission } from "@/infrastructure/auth/permissions"
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { SiteHeader } from "@/components/layout/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/common/sidebar"
@@ -9,7 +10,12 @@ import React from "react"
 
 export default async function RecruitmentListPage() {
     const session = await getServerSession(authOptions)
-    if (!session || (session.user.roleLevel !== 'gm' && session.user.roleLevel !== 'officer')) {
+    if (!session) redirect("/")
+
+    const roleLevel = session.user?.roleLevel ?? "member"
+    const { canView } = await getAppPermission(roleLevel, 'recruitment')
+
+    if (!canView) {
         redirect("/dashboard")
     }
 

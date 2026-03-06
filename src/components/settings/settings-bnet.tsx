@@ -108,8 +108,8 @@ export function SettingsBnetClient({
         <div className="flex flex-col gap-6 p-4 md:p-6">
             <div className="flex items-center gap-4">
                 <Link href="/dashboard/settings">
-                    <Button variant="outline" size="icon" className="h-8 w-8">
-                        <IconArrowLeft className="h-4 w-4" />
+                    <Button variant="outline" size="icon" className="size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 transition-all shadow-xl">
+                        <IconArrowLeft className="size-6" />
                     </Button>
                 </Link>
                 <div>

@@ -345,18 +345,18 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
 
                 {/* --- PESTAÑA: WARCRAFT LOGS --- */}
                 <TabsContent value="wcl" className="space-y-6 animate-in fade-in-50 mb-10">
-                    <Card className="border-border/40 shadow-sm bg-card/60">
-                        <CardHeader className="border-b bg-muted/20 pb-6">
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                <div className="space-y-1">
-                                    <div className="flex items-center gap-2">
+                    <Card className="border-border/40 shadow-sm bg-card/60 pt-0 overflow-hidden">
+                        <CardHeader className="border-b bg-muted/20 pb-6 pt-6">
+                            <div className="flex flex-col items-center justify-center gap-5">
+                                <div className="space-y-1 text-center flex flex-col items-center">
+                                    <div className="flex items-center justify-center gap-2">
                                         <CardTitle className="text-lg">Rendimiento en WarcraftLogs</CardTitle>
                                     </div>
                                     <CardDescription className="text-xs">
                                         Accede a los últimos reportes y análisis de combate de la hermandad.
                                     </CardDescription>
                                 </div>
-                                <div className="flex items-center gap-3 flex-wrap">
+                                <div className="flex items-center justify-center gap-3 flex-wrap">
                                     <a
                                         href="https://www.warcraftlogs.com/guild/id/743623"
                                         target="_blank"
@@ -707,9 +707,9 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
 
                     <div className="grid gap-6 md:grid-cols-12 items-start">
                         {/* Member Roster List */}
-                        <Card className="md:col-span-4 lg:col-span-3 border-border/40 shadow-sm bg-card/60 flex flex-col max-h-[700px]">
-                            <CardHeader className="py-4 border-b bg-muted/20 pb-3 space-y-3">
-                                <div className="flex flex-col gap-1">
+                        <Card className="md:col-span-4 lg:col-span-3 border-border/40 shadow-sm bg-card/60 flex flex-col max-h-[700px] pt-0 overflow-hidden">
+                            <CardHeader className="pt-4 border-b bg-muted/20 pb-3 space-y-3">
+                                <div className="flex flex-col gap-1 text-center items-center">
                                     <CardTitle className="text-base text-foreground/80">Roster</CardTitle>
                                     <CardDescription className="text-xs">
                                         Busca e inspecciona un jugador
@@ -763,11 +763,11 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                         </Card>
 
                         {/* Inspector Details View */}
-                        <Card className="md:col-span-8 lg:col-span-9 border-border/40 shadow-sm bg-card/60 flex flex-col min-h-[500px]">
-                            <CardHeader className="py-4 border-b bg-muted/20">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <CardTitle className="text-lg text-foreground/80 flex items-center gap-2">
+                        <Card className="md:col-span-8 lg:col-span-9 border-border/40 shadow-sm bg-card/60 flex flex-col min-h-[500px] pt-0 overflow-hidden">
+                            <CardHeader className="pt-4 pb-4 border-b bg-muted/20">
+                                <div className="flex flex-col md:flex-row items-center justify-between gap-2 text-center md:text-left">
+                                    <div className="flex flex-col items-center md:items-start">
+                                        <CardTitle className="text-lg text-foreground/80 flex items-center justify-center md:justify-start gap-2">
                                             {selectedMember ? selectedMember.character_name : "Armería"}
                                             {selectedMember && <Badge variant="outline" className="text-xs ml-2 opacity-70 border-border/50">{selectedMember.character_realm}</Badge>}
                                         </CardTitle>

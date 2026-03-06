@@ -42,8 +42,8 @@ export default function BisExportPage() {
         <div className="flex flex-col gap-6 p-4 md:p-6 lg:px-8 w-full max-w-full">
             <div className="flex items-center gap-4">
                 <Link href="/dashboard/settings/apps/bis">
-                    <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl hover:bg-white/5 border-white/10 shadow-xl transition-all">
-                        <IconArrowLeft className="h-5 w-5" />
+                    <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl hover:bg-white/5 border-white/10 shadow-xl transition-all font-black">
+                        <IconArrowLeft className="h-6 w-6" />
                     </Button>
                 </Link>
                 <div>

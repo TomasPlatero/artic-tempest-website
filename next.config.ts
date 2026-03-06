@@ -48,7 +48,7 @@ const nextConfig: NextConfig = {
             value: [
               "default-src 'self'",
               "script-src 'self' 'unsafe-eval' 'unsafe-inline' va.vercel-scripts.com wow.zamimg.com *.wowhead.com *.googletagmanager.com *.google-analytics.com",
-              "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
+              "style-src 'self' 'unsafe-inline' fonts.googleapis.com wow.zamimg.com",
               "img-src 'self' blob: data: cdn.discordapp.com render.worldofwarcraft.com wow.zamimg.com *.supabase.co *.google.com *.akamaihd.net *.raider.io *.warcraftlogs.com bnetcmsus-a.akamaihd.net static-cdn.jtvnw.net *.googletagmanager.com *.google-analytics.com",
               "font-src 'self' data: fonts.gstatic.com",
               "connect-src 'self' *.supabase.co wss://*.supabase.co discord.com *.discordapp.com vitals.vercel-insights.com raider.io *.raider.io warcraftlogs.com *.warcraftlogs.com *.supabase.in wss://*.supabase.in wow.zamimg.com *.wowhead.com *.google-analytics.com *.analytics.google.com *.googletagmanager.com",

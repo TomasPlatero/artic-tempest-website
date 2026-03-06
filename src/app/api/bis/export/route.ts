@@ -26,7 +26,7 @@ export async function GET() {
         // Fetch all BiS selections
         const { data: selections, error: selectionsError } = await supabaseAdmin
             .from("bis_selections")
-            .select("member_id, item_id, difficulty")
+            .select("member_id, item_id, difficulty, ilvl")
 
         if (selectionsError) throw selectionsError
 
@@ -41,7 +41,7 @@ export async function GET() {
 
         // Build the output JSON format
         const timestamp = Math.floor(Date.now() / 1000)
-        const exportData: Record<string, Record<string, { isBis: boolean }>> = {}
+        const exportData: Record<string, Record<string, { isBis: boolean, ilvl?: number }>> = {}
 
         selections?.forEach(selection => {
             const itemId = parseInt(selection.item_id, 10)
@@ -58,12 +58,19 @@ export async function GET() {
 
             // Append difficulty suffix: N (Normal), H (Heroic), M (Mythic)
             let suffix = ""
-            if (selection.difficulty === "mythic") suffix = "M"
-            else if (selection.difficulty === "heroic") suffix = "H"
-            else if (selection.difficulty === "normal") suffix = "N"
+            if (selection.difficulty === "mythic") {
+                suffix = "M"
+            } else if (selection.difficulty === "heroic") {
+                suffix = "H"
+            } else if (selection.difficulty === "normal") {
+                suffix = "N"
+            }
 
             const keyWithSuffix = `${selection.item_id}${suffix}`
-            exportData[memberKey][keyWithSuffix] = { isBis: true }
+            exportData[memberKey][keyWithSuffix] = {
+                isBis: true,
+                ilvl: selection.ilvl || 0
+            }
         })
 
         const finalOutput = {

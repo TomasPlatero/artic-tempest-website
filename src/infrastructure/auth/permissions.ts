@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth"
 import { authOptions, supabaseAdmin } from "./auth-options"
 
-export type AppId = 'roster' | 'stats' | 'calendar' | 'bis' | 'planificador-cds'
+export type AppId = 'roster' | 'stats' | 'calendar' | 'bis' | 'planificador-cds' | 'recruitment' | 'settings'
 export type RoleLevel = "gm" | "officer" | "raider" | "member" | "invitado"
 
 const ROLE_ORDER: RoleLevel[] = ["invitado", "member", "raider", "officer", "gm"]

@@ -19,6 +19,10 @@ type EligibleMember = {
     realm_slug: string
     class_id: number
     rank: number
+    role: string | null
+    bis_dps_gain: number | null
+    bis_pct_gain: string | null
+    spec_name: string
 }
 
 async function getBisData(userId: string) {
@@ -59,7 +63,7 @@ async function getBisData(userId: string) {
     })
 
     const { data: members } = await supabaseAdmin.from("guild_members")
-        .select("id, character_name, realm_slug, class_id, rank")
+        .select("id, character_name, realm_slug, class_id, rank, role, bis_dps_gain, bis_pct_gain, spec_name")
         .in("character_name", charNames)
         .order("rank", { ascending: true })
 

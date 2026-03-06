@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
+import { supabaseAdmin } from "@/infrastructure/auth/auth-options"
+import { ensureAppPermission } from "@/infrastructure/auth/permissions"
 
 export const dynamic = "force-dynamic"
 
 export async function GET(request: Request) {
     try {
+        await ensureAppPermission('planificador-cds', 'view')
         const { searchParams } = new URL(request.url)
         const event_id = searchParams.get("event_id")
         const boss_name = searchParams.get("boss_name")
@@ -25,16 +26,13 @@ export async function GET(request: Request) {
         return NextResponse.json(data)
     } catch (e: any) {
         console.error("GET /api/cd-planner/assignments error:", e)
-        return NextResponse.json({ error: e.message }, { status: 500 })
+        return NextResponse.json({ error: e.message }, { status: e.message.includes("Unauthorized") ? 403 : 500 })
     }
 }
 
 export async function POST(request: Request) {
     try {
-        const session = await getServerSession(authOptions)
-        if (!session) {
-            return new NextResponse("No autorizado", { status: 401 })
-        }
+        await ensureAppPermission('planificador-cds', 'edit')
 
         const body = await request.json()
         const { id, event_id, boss_name, member_id, cooldown_id, time_seconds } = body
@@ -61,16 +59,13 @@ export async function POST(request: Request) {
         return NextResponse.json(data)
     } catch (e: any) {
         console.error("POST /api/cd-planner/assignments error:", e)
-        return NextResponse.json({ error: e.message }, { status: 500 })
+        return NextResponse.json({ error: e.message }, { status: e.message.includes("Unauthorized") ? 403 : 500 })
     }
 }
 
 export async function DELETE(request: Request) {
     try {
-        const session = await getServerSession(authOptions)
-        if (!session) {
-            return new NextResponse("No autorizado", { status: 401 })
-        }
+        await ensureAppPermission('planificador-cds', 'edit')
 
         const { searchParams } = new URL(request.url)
         const id = searchParams.get("id")
@@ -88,6 +83,6 @@ export async function DELETE(request: Request) {
         return new NextResponse(null, { status: 204 })
     } catch (e: any) {
         console.error("DELETE /api/cd-planner/assignments error:", e)
-        return NextResponse.json({ error: e.message }, { status: 500 })
+        return NextResponse.json({ error: e.message }, { status: e.message.includes("Unauthorized") ? 403 : 500 })
     }
 }

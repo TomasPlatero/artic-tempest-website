@@ -152,7 +152,7 @@ export function DiscordWelcomeTab() {
     }
 
     return (
-        <div className="space-y-8 max-w-[1200px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <div className="space-y-8 w-full max-w-full animate-in fade-in slide-in-from-bottom-4 duration-1000">
             <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@700&family=Montserrat:wght@900&family=Oswald:wght@700&display=swap" rel="stylesheet" />
 
             {/* Header & Main Toggle */}

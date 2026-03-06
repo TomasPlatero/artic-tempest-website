@@ -151,7 +151,7 @@ export function FormBuilder({ initialQuestions }: any) {
     }
 
     return (
-        <div className="space-y-8 max-w-5xl mx-auto pb-24">
+        <div className="space-y-8 w-full max-w-full pb-24">
             <Card className="border-white/5 bg-zinc-950/40 backdrop-blur-3xl rounded-[2.5rem] shadow-2xl overflow-hidden ring-1 ring-white/5">
                 <CardHeader className="p-8 md:p-10 flex flex-col sm:flex-row items-center justify-between gap-6">
                     <div>

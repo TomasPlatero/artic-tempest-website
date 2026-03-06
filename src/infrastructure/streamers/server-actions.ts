@@ -1,3 +1,5 @@
+"use server";
+
 import { supabaseAdmin, authOptions } from "@/infrastructure/auth/auth-options";
 import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";

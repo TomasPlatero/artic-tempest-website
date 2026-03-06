@@ -291,14 +291,14 @@ export function SettingsApiClient({ }: any) {
     };
 
     return (
-        <div className="flex flex-col gap-10 p-6 md:p-10 pb-40 w-full max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="flex flex-col gap-10 p-4 md:p-6 lg:px-8 pb-40 w-full max-w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Header Section */}
             <div className="flex flex-col gap-8 relative">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-6">
                         <Link href="/dashboard/settings">
-                            <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 transition-all shadow-xl">
-                                <IconArrowLeft className="h-5 w-5" />
+                            <Button variant="outline" size="icon" className="size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 transition-all shadow-xl">
+                                <IconArrowLeft className="size-6" />
                             </Button>
                         </Link>
                         <Badge variant="outline" className="bg-purple-500/5 text-purple-400 border-purple-500/20 px-4 py-1.5 text-[10px] font-mono tracking-widest uppercase">

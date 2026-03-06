@@ -1,19 +1,11 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
+import { ensureAppPermission } from "@/infrastructure/auth/permissions"
 
 export async function DELETE() {
     try {
-        const session = await getServerSession(authOptions)
-
-        if (!session?.user) {
-            return NextResponse.json({ error: "No autorizado" }, { status: 401 })
-        }
-
-        const roleLevel = session?.user?.roleLevel
-        if (roleLevel !== "gm" && roleLevel !== "officer") {
-            return NextResponse.json({ error: "Permisos insuficientes" }, { status: 403 })
-        }
+        const session = await ensureAppPermission('roster', 'edit')
 
         // Wipe all characters from the guild_members table
         const { error } = await supabaseAdmin.from("guild_members")

@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
+import { ensureAppPermission } from "@/infrastructure/auth/permissions"
 
 export async function POST(req: Request) {
-    const session = await getServerSession(authOptions)
-    if (!session || (session.user.roleLevel !== 'gm' && session.user.roleLevel !== 'officer')) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+    const session = await ensureAppPermission('recruitment', 'edit')
 
     try {
         const body = await req.json()

@@ -177,11 +177,11 @@ export function SettingsNotificationsClient() {
     }, [notifications, activeHistoryFilter]);
 
     return (
-        <div className="flex flex-col gap-8 p-4 md:p-8 w-full animate-in fade-in duration-500">
+        <div className="flex flex-col gap-6 p-4 md:p-6 lg:px-8 w-full max-w-full animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <Link href="/dashboard/settings">
-                        <Button variant="ghost" size="icon" className="rounded-full bg-white/5 hover:bg-white/10">
+                        <Button variant="outline" size="icon" className="size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 transition-all shadow-xl">
                             <IconArrowLeft className="size-5" />
                         </Button>
                     </Link>
@@ -216,7 +216,7 @@ export function SettingsNotificationsClient() {
                 </div>
 
                 <TabsContent value="send" className="animate-in fade-in slide-in-from-bottom-4 duration-700 outline-none">
-                    <div className="max-w-3xl mx-auto space-y-6">
+                    <div className="w-full space-y-6">
                         <Card className="border-2 border-primary/10 shadow-2xl bg-card/40 backdrop-blur-md overflow-hidden">
                             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 shadow-[0_5px_15px_rgba(59,130,246,0.3)]" />
                             <CardHeader>

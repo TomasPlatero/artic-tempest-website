@@ -4,24 +4,14 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions, supabaseAdmin } from '@/infrastructure/auth/auth-options';
 import { fetchGuildRoster, fetchGuildSummary, toSlug } from '@/infrastructure/bnet/bnet-client';
+import { ensureAppPermission } from '@/infrastructure/auth/permissions';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST() {
-  // 1. Auth check — only GM/Officer
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const role = session.user?.roleLevel;
-  if (role !== 'gm' && role !== 'officer') {
-    return NextResponse.json(
-      { error: 'Solo GM y Officers pueden sincronizar el roster' },
-      { status: 403 },
-    );
-  }
+  // 1. Auth check — dynamic permission
+  const session = await ensureAppPermission('roster', 'edit');
 
   // 2. Get guild info from DB
   const { data: guild, error: guildError } = await supabaseAdmin.from('guilds_managed')

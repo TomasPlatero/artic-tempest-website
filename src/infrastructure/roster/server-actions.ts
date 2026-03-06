@@ -1,3 +1,5 @@
+"use server";
+
 import { supabaseAdmin } from "@/infrastructure/auth/auth-options";
 import { revalidatePath } from "next/cache";
 import { ensureAppPermission } from "@/infrastructure/auth/permissions";

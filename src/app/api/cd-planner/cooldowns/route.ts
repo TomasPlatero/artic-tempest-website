@@ -1,15 +1,12 @@
 import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
+import { supabaseAdmin } from "@/infrastructure/auth/auth-options"
+import { ensureAppPermission } from "@/infrastructure/auth/permissions"
 
 export const dynamic = "force-dynamic"
 
 export async function GET() {
     try {
-        const session = await getServerSession(authOptions)
-        if (!session) {
-            return new NextResponse("No autorizado", { status: 401 })
-        }
+        await ensureAppPermission('planificador-cds', 'view')
 
         const { data, error } = await supabaseAdmin.from("cooldown_definitions")
             .select("*")

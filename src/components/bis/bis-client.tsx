@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react"
 import {
     IconSword, IconShield, IconCheck, IconX, IconRefresh,
-    IconListCheck, IconLayoutGrid, IconUser, IconFilter, IconSettings,
+    IconListCheck, IconLayoutGrid, IconUser, IconUsers, IconFilter, IconSettings,
     IconBolt, IconExternalLink
 } from "@tabler/icons-react"
 import Link from "next/link"
@@ -25,6 +25,7 @@ import {
 import { MIDNIGHT_RAIDS } from "@/infrastructure/constants/raids"
 import Image from "next/image"
 import Script from "next/script"
+import { CLASS_ARMOR, CLASS_WEAPONS, CLASS_SPEC_STAT } from "@/infrastructure/wishlist/item-filter-service"
 import { toast } from "sonner"
 
 type EligibleMember = {
@@ -33,9 +34,13 @@ type EligibleMember = {
     realm_slug: string
     class_id: number
     rank: number
+    role: string | null
+    bis_dps_gain: number | null
+    bis_pct_gain: string | null
+    spec_name: string
 }
 
-type LootItem = {
+export type LootItem = {
     id: number
     name: string
     quality: string
@@ -66,7 +71,17 @@ type BisSelection = {
     priority: number
     difficulty: string
     instance_id: string
+    dps_gain: number | null
+    percent_gain: string | null
+    ilvl?: number
 }
+
+const RAID_DIFFICULTIES = [
+    { id: 'lfr', name: 'LFR', color: 'text-gray-400' },
+    { id: 'normal', name: 'Normal', color: 'text-green-500' },
+    { id: 'heroic', name: 'Heroico', color: 'text-blue-500' },
+    { id: 'mythic', name: 'Mítico', color: 'text-purple-500' }
+]
 
 const QUALITY_COLORS: Record<string, string> = {
     EPIC: "text-purple-400",
@@ -89,13 +104,18 @@ const WOWHEAD_DIFF: Record<string, number> = {
     mythic: 16,
 }
 
-// Fixed item level per raid tier difficulty (Midnight Season 2)
-// These are the actual base item levels for each difficulty's loot drops
-const RAID_ILVL: Record<string, Record<string, number>> = {
-    // Voidspire, March on Quel'Danas, Dreamwell
-    "1307": { normal: 206, heroic: 219, mythic: 232 },
-    "1308": { normal: 206, heroic: 219, mythic: 232 },
-    "1314": { normal: 206, heroic: 219, mythic: 232 },
+// Fixed item level per raid tier difficulty (Midnight Season 1)
+const MIDNIGHT_S1_ILVL: Record<string, number> = {
+    lfr: 250,
+    normal: 263,
+    heroic: 276,
+    mythic: 289,
+}
+
+const CLASS_COLORS: Record<number, string> = {
+    1: '#C69B6D', 2: '#F48CBA', 3: '#ABD473', 4: '#FFF468',
+    5: '#FFFFFF', 6: '#C41E3A', 7: '#0070DD', 8: '#3FC7EB',
+    9: '#8788EE', 10: '#00FF98', 11: '#FF7C0A', 12: '#A330C9', 13: '#33937F'
 }
 
 const CLASS_IMAGES: Record<number, string> = {
@@ -110,34 +130,72 @@ const CLASS_IMAGES: Record<number, string> = {
 
 // ── Class-based item filtering ──────────────────────────────────────────────
 // Armor subclass each class wears (item_class=4)
-const CLASS_ARMOR: Record<number, number> = {
-    1: 4, 2: 4, 6: 4,             // Warrior, Paladin, DK → Plate
-    3: 3, 7: 3, 13: 3,            // Hunter, Shaman, Evoker → Mail
-    4: 2, 10: 2, 11: 2, 12: 2,    // Rogue, Monk, Druid, DH → Leather
-    5: 1, 8: 1, 9: 1,             // Priest, Mage, Warlock → Cloth
-}
 
 // Weapon subclass IDs each class can equip (item_class=2)
 // 0=1hAxe, 1=2hAxe, 2=Bow, 3=Gun, 4=1hMace, 5=2hMace, 6=Polearm,
 // 7=1hSword, 8=2hSword, 9=Warglaive, 10=Staff, 13=Fist, 15=Dagger, 18=Crossbow, 19=Wand
-const CLASS_WEAPONS: Record<number, number[]> = {
-    1: [0, 1, 4, 5, 6, 7, 8, 13, 15],          // Warrior
-    2: [0, 1, 4, 5, 6, 7, 8],                  // Paladin
-    3: [0, 1, 2, 3, 6, 7, 8, 10, 13, 15, 18],  // Hunter
-    4: [0, 4, 7, 13, 15],                       // Rogue
-    5: [4, 10, 15, 19],                         // Priest
-    6: [0, 1, 4, 5, 6, 7, 8],                  // Death Knight
-    7: [0, 1, 4, 5, 10, 13, 15],               // Shaman
-    8: [7, 10, 15, 19],                         // Mage
-    9: [7, 10, 15, 19],                         // Warlock
-    10: [0, 4, 6, 7, 10, 13],                   // Monk
-    11: [4, 5, 6, 10, 13, 15],                  // Druid
-    12: [0, 7, 9, 13],                          // Demon Hunter
-    13: [0, 4, 7, 10, 13, 15],                  // Evoker
-}
 
 // Classes that can use shields (armor subclass 6)
 const SHIELD_CLASSES = new Set([1, 2, 7]) // Warrior, Paladin, Shaman
+
+function canSpecUseItem(classId: number, specName: string, item: any) {
+    if (!canClassUseItem(classId, item)) return false
+
+    // Strict specialization-specific restrictions for off-hands and shields
+    const slotStr = (item.slot || item.inventory_type || "").toString().toUpperCase();
+    const isShield = slotStr === "SHIELD" || item.itemSubclassId === 6;
+    const isOffhand = ["OFF_HAND", "HELD_IN_OFF_HAND", "HOLDABLE"].includes(slotStr);
+
+    if (isShield) {
+        // Only specific specs use shields
+        const canUseShield = (classId === 1 && specName === "Protection") || // Warrior
+            (classId === 2 && (specName === "Protection" || specName === "Holy")) || // Paladin
+            (classId === 7 && (specName === "Elemental" || specName === "Restoration")); // Shaman
+        if (!canUseShield) return false;
+    }
+
+    if (isOffhand) {
+        // Only specific classes/specs use off-hands
+        const canUseOffhand = [8, 9, 5, 13].includes(classId) || // Mage, Warlock, Priest, Evoker (all specs)
+            (classId === 11 && (specName === "Balance" || specName === "Restoration")) || // Druid
+            (classId === 7 && (specName === "Elemental" || specName === "Restoration")) || // Shaman
+            (classId === 10 && specName === "Mistweaver") || // Monk
+            (classId === 2 && specName === "Holy"); // Paladin
+        if (!canUseOffhand) return false;
+    }
+
+    // Primary Stat Check
+    const requiredStatCode = CLASS_SPEC_STAT[classId]?.[specName];
+    if (requiredStatCode && item.stats && item.stats.length > 0) {
+        // Primary stats in WoW: 3=Agi, 4=Str, 5=Int (usually mapped in our API)
+        const primaryStats = item.stats.filter((s: any) => [3, 4, 5].includes(s.stat || s.type));
+        if (primaryStats.length > 0) {
+            const matches = primaryStats.some((s: any) => {
+                const type = s.stat || s.type;
+                if (requiredStatCode === 1) return type === 4; // STR
+                if (requiredStatCode === 2) return type === 3; // AGI
+                if (requiredStatCode === 4) return type === 5; // INT
+                return false;
+            });
+            if (!matches) return false;
+        }
+    }
+
+    // Special case for Retri / Warriors / DKs with 1H weapons in "Weapon" slot
+    // This logic is more about weapon type than stats, so it can remain.
+    const slot = item.slot?.toUpperCase() || "";
+    const sub = item.itemSubclassId;
+    if (slot === "ONE_HAND" || slot === "WEAPON") {
+        const isPlateDps = [1, 2, 6].includes(classId) && ["Arms", "Retribution", "Fury", "Unholy", "Frost"].includes(specName);
+        if (isPlateDps && sub !== 1 && sub !== 5 && sub !== 8 && sub !== 6) {
+            // If it's a 1H axe/sword/mace, it might be for a tank or someone else
+            // Retri and Arms specially ONLY use 2H
+            if (specName === "Retribution" || specName === "Arms") return false;
+        }
+    }
+
+    return true
+}
 
 function canClassUseItem(classId: number, item: LootItem): boolean {
     // If no item metadata (old cache or fetch error), show it to be safe
@@ -166,7 +224,6 @@ function canClassUseItem(classId: number, item: LootItem): boolean {
         return allowed.includes(item.itemSubclassId)
     }
 
-    // Other item classes (consumables, etc) → hide
     return false
 }
 
@@ -178,11 +235,68 @@ const SLOT_TRANSLATIONS: Record<string, string> = {
     ONE_HAND: "Una Mano", TWO_HAND: "Dos Manos", MAIN_HAND: "Mano Principal",
     OFF_HAND: "Mano Secundaria", SHIELD: "Escudo", BACK: "Capa", CLOAK: "Capa",
     HELD_IN_OFF_HAND: "Sostener", RANGED: "A Distancia", THROWN: "Arrojadiza",
-    SHIRT: "Camisa", HAND: "Guantes", HOLDABLE: "Sostener",
-    TWOHWEAPON: "Arma de 2 Manos", WEAPON: "Arma",
+    SHIRT: "Camisa", HOLDABLE: "Sostener", TWOHWEAPON: "Arma de 2 Manos", WEAPON: "Arma",
+    HAND: "Guantes",
 }
 
 const translateSlot = (s: string) => SLOT_TRANSLATIONS[s.toUpperCase()] || s
+
+const constructWowheadParams = (item: any, difficulty: string, customIlvl?: number) => {
+    const diffId = WOWHEAD_DIFF[difficulty] || 15;
+    const raidIlvl = MIDNIGHT_S1_ILVL[difficulty.toLowerCase()];
+    const ilvl = customIlvl || raidIlvl || item.itemLevel || item.ilvl;
+
+    let params = `item=${item.id || item.item_id}`;
+
+    // Domain specifics (Midnight uses beta for some new items, but we stick to ES)
+    if ((item.id || item.item_id) > 200000) params += `&domain=beta`;
+    params += `&domain=es`;
+
+    if (diffId) params += `&diff=${diffId}`;
+    if (ilvl) params += `&ilvl=${ilvl}`;
+
+    // Quality
+    const quality = item.quality || "";
+    if (quality && WOWHEAD_QUALITY[quality]) params += `&qu=${WOWHEAD_QUALITY[quality]}`;
+
+    // Advanced metadata from Raidbots
+    if (item.bonus_ids && item.bonus_ids.length > 0) params += `&bonus=${item.bonus_ids.join(':')}`;
+    else if (item.bonusIds && item.bonusIds.length > 0) params += `&bonus=${item.bonusIds.join(':')}`;
+
+    if (item.enchant) params += `&ench=${item.enchant}`;
+
+    if (item.gems && item.gems.length > 0) params += `&gems=${item.gems.join(':')}`;
+
+    return params;
+};
+
+const getIconUrl = (url: string | null, itemName?: string) => {
+    // Hardcoded fix for specific broken icon - ALWAYS use this for this item
+    if (itemName === "Vestigio rezumante del Dios Inconcebible") {
+        return "https://wow.zamimg.com/images/wow/icons/large/inv_12_trinket_raid_dreamrift-_physdps2_umdreamtgodsoozingvestige.jpg";
+    }
+
+    if (!url) return null;
+
+    // If it's a Blizzard render URL, convert to Wowhead large icon
+    if (url.includes("render.worldofwarcraft.com")) {
+        const parts = url.split("/");
+        let iconName = parts[parts.length - 1]; // e.g. inv_vessel_void_01.jpg
+        if (!iconName.includes(".")) iconName += ".jpg";
+        return `https://wow.zamimg.com/images/wow/icons/large/${iconName.toLowerCase()}`;
+    }
+
+    // If it's already a full URL (wowhead or other), return as is
+    if (url.startsWith("http")) return url;
+
+    // If it's just a raw icon name (no slashes), it's a Wowhead icon name
+    if (!url.includes("/")) {
+        const iconName = url.includes(".") ? url : `${url}.jpg`;
+        return `https://wow.zamimg.com/images/wow/icons/large/${iconName.toLowerCase()}`;
+    }
+
+    return url;
+};
 
 // Individual loot item card helper component
 function LootItemCard({
@@ -205,22 +319,12 @@ function LootItemCard({
     const qualityColor = QUALITY_COLORS[item.quality] || "text-foreground"
 
     // Use fixed ilvl from raid tier table for the selected difficulty
-    const raidIlvl = RAID_ILVL[instanceId]?.[difficulty] || null;
+    const raidIlvl = MIDNIGHT_S1_ILVL[difficulty.toLowerCase()] || null;
     const computedItemLevel = raidIlvl || item.itemLevel || null;
     const diffId = WOWHEAD_DIFF[difficulty] || 15;
 
     // Map blizzard icon URL to Wowhead CDN URL to avoid 403s
-    const getIconUrl = (url: string | null) => {
-        if (!url) return null;
-        if (url.includes("render.worldofwarcraft.com")) {
-            const parts = url.split("/");
-            const iconName = parts[parts.length - 1]; // e.g. inv_vessel_void_01.jpg
-            return `https://wow.zamimg.com/images/wow/icons/large/${iconName}`;
-        }
-        return url;
-    };
-
-    const iconUrl = getIconUrl(item.icon);
+    const iconUrl = getIconUrl(item.icon, item.name);
 
     return (
         <a
@@ -234,8 +338,9 @@ function LootItemCard({
                     onToggle()
                 }
             }}
-            // Use item.itemLevel if present (e.g., from Raidbots), otherwise default behavior
-            data-wowhead={`item=${item.id}${item.id > 200000 ? `&domain=beta` : ""}&domain=es&diff=${diffId}${computedItemLevel ? `&ilvl=${computedItemLevel}` : ""}${item.quality && WOWHEAD_QUALITY[item.quality] ? `&qu=${WOWHEAD_QUALITY[item.quality]}` : ""}`}
+            data-wowhead={constructWowheadParams(item, difficulty)}
+            data-wowhead-icon="false"
+            data-wowhead-rename="false"
             className={`
                 flex items-center gap-3 p-2.5 rounded-lg border text-left transition-all w-full no-underline
                 ${selected
@@ -245,7 +350,13 @@ function LootItemCard({
             `}
         >
             {iconUrl ? (
-                <Image unoptimized src={iconUrl} alt="" width={36} height={36} className="rounded border border-border/50 shadow-sm shrink-0" />
+                <Image
+                    unoptimized
+                    src={iconUrl}
+                    alt=""
+                    width={36} height={36}
+                    className="rounded border border-border/50 shadow-sm shrink-0"
+                />
             ) : (
                 <div className="size-9 rounded bg-muted border border-border/50 flex items-center justify-center shrink-0">
                     <IconShield className="size-4 text-muted-foreground" />
@@ -300,8 +411,30 @@ function WishlistCard({
                         <Badge variant="secondary" className="ml-auto">{selections.length}</Badge>
                     )}
                 </CardTitle>
-                <CardDescription>
-                    {selectedMember ? `${selectedMember.character_name} — ${difficulty === "heroic" ? "Heroico" : "Mítico"}` : "Selecciona un personaje"}
+                <CardDescription className="flex flex-col gap-1">
+                    <span>{selectedMember ? `${selectedMember.character_name} — ${difficulty === "heroic" ? "Heroico" : "Mítico"}` : "Selecciona un personaje"}</span>
+                    {(selections.some(s => s.dps_gain) || (selectedMember?.bis_dps_gain && selectedMember.bis_dps_gain > 0)) && (
+                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-green-400 uppercase tracking-widest mt-1">
+                            <span>Mejora Total:</span>
+                            {(() => {
+                                // Prefer the sum of current selections if they have dps_gain, 
+                                // otherwise fall back to the stored member gain.
+                                const currentSum = selections.reduce((acc, s) => acc + (s.dps_gain || 0), 0);
+                                const totalDps = currentSum > 0 ? currentSum : (selectedMember?.bis_dps_gain || 0);
+                                const currentPctSum = selections.reduce((acc, s) => acc + parseFloat(s.percent_gain || "0"), 0);
+                                const totalPct = currentPctSum > 0 ? currentPctSum : parseFloat(selectedMember?.bis_pct_gain || "0");
+
+                                return (
+                                    <>
+                                        <span>+{Math.round(totalDps)} DPS</span>
+                                        <Badge variant="outline" className="text-[9px] py-0 h-3.5 border-green-500/20 text-green-400">
+                                            +{totalPct.toFixed(2)}%
+                                        </Badge>
+                                    </>
+                                );
+                            })()}
+                        </div>
+                    )}
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -318,7 +451,7 @@ function WishlistCard({
                 ) : (
                     <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
                         {selections.map(sel => {
-                            const raidIlvl = RAID_ILVL[instanceId]?.[difficulty] || null;
+                            const raidIlvl = MIDNIGHT_S1_ILVL[difficulty.toLowerCase()] || null;
                             let matchQuality = null;
                             const diffId = WOWHEAD_DIFF[difficulty] || 15;
 
@@ -339,7 +472,9 @@ function WishlistCard({
                                     target="_blank"
                                     rel="nofollow"
                                     className="flex items-center gap-2.5 p-2 rounded-lg border border-border/50 bg-muted/20 hover:bg-muted/40 transition-colors group no-underline"
-                                    data-wowhead={`item=${sel.item_id}${sel.item_id > 200000 ? "&domain=beta" : ""}&domain=es&diff=${diffId}${computedItemLevel ? `&ilvl=${computedItemLevel}` : ""}${matchQuality && WOWHEAD_QUALITY[matchQuality] ? `&qu=${WOWHEAD_QUALITY[matchQuality]}` : ""}`}
+                                    data-wowhead={constructWowheadParams(sel, difficulty)}
+                                    data-wowhead-icon="false"
+                                    data-wowhead-rename="false"
                                     onClick={(e) => {
                                         // Prevent navigation ONLY if clicking on the delete button
                                         const isDeleteBtn = (e.target as HTMLElement).closest('button');
@@ -347,23 +482,30 @@ function WishlistCard({
                                     }}
                                 >
                                     {(() => {
-                                        const iconUrl = sel.item_icon?.includes("render.worldofwarcraft.com")
-                                            ? `https://wow.zamimg.com/images/wow/icons/large/${sel.item_icon.split("/").pop()}`
-                                            : sel.item_icon;
+                                        const iconUrl = getIconUrl(sel.item_icon, sel.item_name);
 
-                                        return iconUrl && (
+                                        return iconUrl ? (
                                             <Image
                                                 unoptimized
                                                 src={iconUrl}
                                                 alt=""
-                                                width={32} height={32}
-                                                className="rounded border border-border/50 shadow-sm"
+                                                width={36} height={36}
+                                                className="rounded border border-border/50 shadow-sm shrink-0"
                                             />
+                                        ) : (
+                                            <div className="size-9 rounded bg-muted border border-border/50 flex items-center justify-center shrink-0">
+                                                <IconShield className="size-4 text-muted-foreground" />
+                                            </div>
                                         );
                                     })()}
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-medium text-purple-400 truncate">{sel.item_name}</p>
-                                        <p className="text-xs text-muted-foreground truncate">{sel.boss_name} · {translateSlot(sel.slot)}</p>
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground truncate">
+                                            <span>{sel.boss_name} · {translateSlot(sel.slot)}</span>
+                                            {sel.dps_gain && (
+                                                <span className="text-green-400 font-bold">+{Math.round(sel.dps_gain)}</span>
+                                            )}
+                                        </div>
                                     </div>
                                     <button
                                         className="opacity-0 group-hover:opacity-100 text-destructive hover:bg-destructive/10 rounded p-1 transition-all"
@@ -384,6 +526,19 @@ function WishlistCard({
             </CardContent>
         </Card>
     )
+}
+
+type OverviewSelection = {
+    member_id: string
+    item_id: number
+    difficulty: string
+    dps_gain: number | null
+    percent_gain: string | null
+    guild_members: {
+        character_name: string
+        class_id: number
+        role: string | null
+    }
 }
 
 export function BisClient({
@@ -407,8 +562,9 @@ export function BisClient({
     const [raidbotsUrl, setRaidbotsUrl] = useState("")
     const [isImporting, setIsImporting] = useState(false)
     const [importStats, setImportStats] = useState<{ dps: number; pct: string } | null>(null)
-    const [rbItemGains, setRbItemGains] = useState<Record<number, { dps: number; pct: string }>>({})
-
+    const [activeTab, setActiveTab] = useState<"personal" | "guild">("personal")
+    const [overviewData, setOverviewData] = useState<OverviewSelection[]>([])
+    const [loadingOverview, setLoadingOverview] = useState(false)
     useEffect(() => {
         if (!mounted) setMounted(true)
     }, [mounted])
@@ -471,6 +627,27 @@ export function BisClient({
             setLoadingSelections(false)
         }
     }, [selectedMemberId, difficulty, resolvedInstanceId])
+
+    const fetchOverview = useCallback(async () => {
+        setLoadingOverview(true)
+        try {
+            const res = await fetch(`/api/bis/overview?instance_id=${resolvedInstanceId}`)
+            if (res.ok) {
+                const data = await res.json()
+                setOverviewData(data)
+            }
+        } catch (e) {
+            console.error("Failed to load overview:", e)
+        } finally {
+            setLoadingOverview(false)
+        }
+    }, [resolvedInstanceId])
+
+    useEffect(() => {
+        if (activeTab === "guild") {
+            fetchOverview()
+        }
+    }, [activeTab, fetchOverview, difficulty, resolvedInstanceId])
 
     // Fetch loot when difficulty, member or raid changes
     useEffect(() => {
@@ -568,6 +745,9 @@ export function BisClient({
                                     priority: 2,
                                     difficulty,
                                     instance_id: resolvedInstanceId,
+                                    dps_gain: rbItem.dpsGain,
+                                    percent_gain: rbItem.percentGain,
+                                    ilvl: rbItem.ilvl, // Store the item level from Raidbots
                                 }),
                             })
                             importedCount++
@@ -576,14 +756,18 @@ export function BisClient({
                 }
             }
 
-            setImportStats({ dps: Math.round(data.dpsGain), pct: data.percentGain })
-
-            // Map item gains for the UI
-            const gainsMap: Record<number, { dps: number; pct: string }> = {}
-            rbItems.forEach((it: any) => {
-                gainsMap[it.id] = { dps: it.dpsGain, pct: it.percentGain }
+            // Persistence of overall gains
+            await fetch("/api/bis", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    member_id: selectedMemberId,
+                    dps_gain: Math.round(data.dpsGain),
+                    pct_gain: data.percentGain
+                })
             })
-            setRbItemGains(gainsMap)
+
+            setImportStats({ dps: Math.round(data.dpsGain), pct: data.percentGain })
 
             fetchSelections() // Refresh local list
 
@@ -611,7 +795,7 @@ export function BisClient({
         return bosses.map(boss => {
             const seenIds = new Set<number>()
             const uniqueItems = boss.items.filter(item => {
-                if (!canClassUseItem(selectedMember.class_id, item)) return false
+                if (!canSpecUseItem(selectedMember.class_id, selectedMember.spec_name, item)) return false
                 if (seenIds.has(item.id)) return false
                 seenIds.add(item.id)
                 return true
@@ -619,6 +803,20 @@ export function BisClient({
             return { ...boss, items: uniqueItems }
         }).filter(boss => boss.items.length > 0)
     }, [bosses, selectedMember])
+
+    // Map of item ID -> gains for the UI, derived from saved selections
+    const rbItemGains = useMemo(() => {
+        const gains: Record<number, { dps: number; pct: string }> = {}
+        selections.forEach(sel => {
+            if (sel.dps_gain) {
+                gains[sel.item_id] = {
+                    dps: Math.round(sel.dps_gain),
+                    pct: sel.percent_gain || "0"
+                }
+            }
+        })
+        return gains
+    }, [selections])
 
     // Group items by slot for slot view
     const itemsBySlot = useMemo(() => {
@@ -662,82 +860,80 @@ export function BisClient({
                 id="wowhead-tooltips-setup"
                 strategy="afterInteractive"
                 dangerouslySetInnerHTML={{
-                    __html: `
-                        window.whTooltips = { 
-                            colorLinks: true, 
-                            iconizeLinks: false, 
-                            renameLinks: false,
-                            applyToRoot: true
-                        };
-                    `,
+                    __html: `window.whTooltips = { colorLinks: true, iconizeLinks: false, renameLinks: false};`,
                 }}
             />
-            <style dangerouslySetInnerHTML={{
-                __html: `
-                    .wowhead-tooltip {
-                        background-color: rgba(15, 23, 42, 0.95) !important;
-                        border: 1px solid #334155 !important;
-                        border-radius: 8px !important;
-                        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5) !important;
-                        backdrop-filter: blur(8px) !important;
-                    }
-                    .wowhead-tooltip-name {
-                        font-size: 15px !important;
-                        font-weight: 700 !important;
-                    }
-                `
-            }} />
+
             <Script
                 src="https://wow.zamimg.com/js/tooltips.js"
-                strategy="afterInteractive"
-                onLoad={() => {
-                    if ((window as any).WH && (window as any).WH.Tooltips && (window as any).WH.Tooltips.init) {
-                        (window as any).WH.Tooltips.init();
-                    }
-                }}
+                strategy="lazyOnload"
             />
 
             {/* Header */}
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                     <div>
                         <h1 className="text-2xl font-bold">Lista de Deseos BiS</h1>
                         <p className="text-sm text-muted-foreground mt-1">
-                            {raidName ? `Loot disponible en ${raidName}` : "Selecciona los ítems que necesitas de la raid actual."}
+                            {activeTab === "personal"
+                                ? (selectedRaidId === "default" ? "Loot disponible en toda las raids." : `Loot disponible en ${raidName}`)
+                                : "Visión general de las necesidades de toda la hermandad para la Temporada 1."}
                         </p>
                     </div>
-                    {canEdit && (
-                        <Button variant="outline" size="sm" asChild className="ml-4 h-8 bg-blue-500/5 text-blue-400 border-blue-500/20 hover:bg-blue-500/10 hover:text-blue-300 gap-2">
-                            <Link href="/dashboard/bis/admin">
-                                <IconSettings className="size-3.5" />
-                                Gestionar Listas
-                            </Link>
-                        </Button>
-                    )}
-                </div>
+
+                    <div className="flex bg-muted/30 p-1 rounded-lg border border-border/50">
+                        <button
+                            onClick={() => setActiveTab("personal")}
+                            className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-all rounded-md ${activeTab === "personal" ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                        >
+                            <IconUser className="size-3.5" />
+                            Mi Lista
+                        </button>
+                        <button
+                            onClick={() => setActiveTab("guild")}
+                            className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-all rounded-md ${activeTab === "guild" ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                        >
+                            <IconUsers className="size-3.5" />
+                            Visión General
+                        </button>
+                    </div>
+
+                    {
+                        canEdit && (
+                            <Button variant="outline" size="sm" asChild className="h-8 bg-blue-500/5 text-blue-400 border-blue-500/20 hover:bg-blue-500/10 hover:text-blue-300 gap-2">
+                                <Link href="/dashboard/bis/admin">
+                                    <IconSettings className="size-3.5" />
+                                    Gestionar
+                                </Link>
+                            </Button>
+                        )
+                    }
+                </div >
                 <div className="flex items-center gap-3 flex-wrap">
-                    {/* Character Selector */}
-                    <Select value={selectedMemberId} onValueChange={setSelectedMemberId}>
-                        <SelectTrigger className="w-[180px] h-9 text-sm bg-background border-border/40">
-                            <IconUser className="size-4 mr-2 text-muted-foreground" />
-                            <SelectValue placeholder="Personaje" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {eligibleMembers.map(m => (
-                                <SelectItem key={m.id} value={m.id}>
-                                    <div className="flex items-center gap-2">
-                                        <Image
-                                            src={CLASS_IMAGES[m.class_id] || "/assets/images/classes/1.jpg"}
-                                            alt=""
-                                            width={16} height={16}
-                                            className="rounded-full"
-                                        />
-                                        {m.character_name}
-                                    </div>
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    {/* Character Selector - Only for Personal tab */}
+                    {activeTab === "personal" && (
+                        <Select value={selectedMemberId} onValueChange={setSelectedMemberId}>
+                            <SelectTrigger className="w-[180px] h-9 text-sm bg-background border-border/40">
+                                <IconUser className="size-4 mr-2 text-muted-foreground" />
+                                <SelectValue placeholder="Personaje" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {eligibleMembers.map(m => (
+                                    <SelectItem key={m.id} value={m.id}>
+                                        <div className="flex items-center gap-2">
+                                            <Image
+                                                src={CLASS_IMAGES[m.class_id] || "/assets/images/classes/1.jpg"}
+                                                alt=""
+                                                width={16} height={16}
+                                                className="rounded-full"
+                                            />
+                                            {m.character_name}
+                                        </div>
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    )}
 
                     {/* Raid Selector */}
                     <Select value={selectedRaidId} onValueChange={setSelectedRaidId}>
@@ -746,8 +942,8 @@ export function BisClient({
                             <SelectValue placeholder="Seleccionar Banda" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="default">Tier Actual (Auto)</SelectItem>
-                            <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/30 mb-1">Midnight Raids</div>
+                            <SelectItem value="default">Temporada 1 (Todas las Raids)</SelectItem>
+                            <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Raids Específicas</div>
                             {MIDNIGHT_RAIDS.map(raid => (
                                 <SelectItem key={raid.id} value={raid.id}>
                                     {raid.name}
@@ -806,158 +1002,258 @@ export function BisClient({
                         <IconRefresh className={`size-4 ${loading ? "animate-spin" : ""}`} />
                     </Button>
                 </div>
-            </div>
+            </div >
 
-            {/* Raidbots Importer Section */}
-            <Card className="border-purple-500/20 bg-purple-500/5">
-                <CardContent className="p-4">
-                    <div className="flex flex-col md:flex-row items-end gap-4">
-                        <div className="flex-1 space-y-2 w-full">
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-purple-400">Importar BiS desde Raidbots (Top Gear)</label>
-                            <div className="relative">
-                                <IconBolt className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-purple-400/50" />
-                                <Input
-                                    placeholder="https://www.raidbots.com/simbot/report/..."
-                                    value={raidbotsUrl}
-                                    onChange={(e) => setRaidbotsUrl(e.target.value)}
-                                    className="pl-9 h-10 border-purple-500/20 bg-background/50 focus-visible:ring-purple-500/40"
+            {activeTab === "guild" ? (
+                // --- GUILD OVERVIEW TAB ---
+                loadingOverview ? (
+                    <div className="flex flex-col items-center justify-center min-h-[400px]">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary/50"></div>
+                        <p className="mt-4 text-muted-foreground animate-pulse font-medium uppercase tracking-widest text-[10px]">Cargando hermandad...</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {bosses.map((boss) => {
+                            const bossItems = boss.items.filter(item => {
+                                // Only show items that have at least one selector in this difficulty
+                                const selectors = overviewData.filter(s => s.item_id === item.id && s.difficulty === difficulty)
+                                return selectors.length > 0
+                            }).sort((a, b) => {
+                                // Sort items by total number of selectors or priority?
+                                const selectorsA = overviewData.filter(s => s.item_id === a.id && s.difficulty === difficulty).length
+                                const selectorsB = overviewData.filter(s => s.item_id === b.id && s.difficulty === difficulty).length
+                                return selectorsB - selectorsA
+                            })
+
+                            if (bossItems.length === 0) return null
+
+                            return (
+                                <Card key={boss.id} className="bg-card/30 border-border/40 overflow-hidden shadow-none backdrop-blur-sm h-fit">
+                                    <div className="px-4 py-2 bg-muted/20 border-b border-border/40 flex items-center justify-between">
+                                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500/80">{boss.name}</h3>
+                                        <Badge variant="outline" className="text-[10px] h-4 py-0 border-amber-500/10 text-amber-500/40">{bossItems.length}</Badge>
+                                    </div>
+                                    <CardContent className="p-0">
+                                        <div className="divide-y divide-border/20">
+                                            {bossItems.map(item => {
+                                                // Use RAID_ILVL if we detect a raid difficulty
+                                                const midnightIlvl = MIDNIGHT_S1_ILVL[difficulty.toLowerCase()] || item.itemLevel;
+                                                const diffId = WOWHEAD_DIFF[difficulty] || 15;
+                                                const isBis = selections.some(s => s.item_id === item.id)
+                                                const g = rbItemGains[item.id]
+                                                const selectors = overviewData.filter(s => s.item_id === item.id && s.difficulty === difficulty)
+
+                                                return (
+                                                    <div key={item.id} className="p-3 hover:bg-muted/5 transition-colors">
+                                                        <div className="flex items-start gap-2.5 mb-2.5">
+                                                            {item.icon && (
+                                                                <Image
+                                                                    unoptimized
+                                                                    src={getIconUrl(item.icon, item.name) || ""}
+                                                                    alt=""
+                                                                    width={28} height={28}
+                                                                    className="rounded border border-border/50 shadow-sm shrink-0"
+                                                                />
+                                                            )}
+                                                            <div className="min-w-0 flex-1">
+                                                                <a
+                                                                    href={`https://www.wowhead.com/item=${item.id}`}
+                                                                    target="_blank" rel="noreferrer"
+                                                                    className={`text-xs font-bold leading-none truncate block hover:underline ${QUALITY_COLORS[item.quality] || "text-foreground"}`}
+                                                                    data-wowhead={constructWowheadParams(item, difficulty)}
+                                                                >
+                                                                    {item.name}
+                                                                </a>
+                                                                <span className="text-[9px] text-muted-foreground uppercase font-medium tracking-tight mt-1 block">
+                                                                    {midnightIlvl} — {item.slotDisplay || item.slot}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex flex-wrap gap-1.5 ml-1">
+                                                            {selectors.map(sel => (
+                                                                <div
+                                                                    key={`${sel.member_id}-${item.id}`}
+                                                                    className="flex items-center gap-1.5 bg-background/40 border border-border/40 rounded px-1.5 py-0.5 shadow-sm group hover:border-primary/30 transition-all"
+                                                                >
+                                                                    <span
+                                                                        className="text-[10px] font-bold"
+                                                                        style={{ color: CLASS_COLORS[sel.guild_members?.class_id || 1] || "inherit" }}
+                                                                    >
+                                                                        {sel.guild_members?.character_name || "Desconocido"}
+                                                                    </span>
+                                                                    {sel.dps_gain && (
+                                                                        <span className="text-[9px] font-black text-green-400/80">
+                                                                            +{Math.round(sel.dps_gain)}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )
+                        })}
+                    </div>
+                )
+            ) : (
+                <div className="flex flex-col gap-6">
+                    {/* Raidbots Importer Section */}
+                    <Card className="border-purple-500/20 bg-purple-500/5">
+                        <CardContent className="p-4">
+                            <div className="flex flex-col md:flex-row items-end gap-4">
+                                <div className="flex-1 space-y-2 w-full">
+                                    <label className="text-[10px] font-bold uppercase tracking-widest text-purple-400">Importar BiS desde Raidbots (Top Gear)</label>
+                                    <div className="relative">
+                                        <IconBolt className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-purple-400/50" />
+                                        <Input
+                                            placeholder="https://www.raidbots.com/simbot/report/..."
+                                            value={raidbotsUrl}
+                                            onChange={(e) => setRaidbotsUrl(e.target.value)}
+                                            className="pl-9 h-10 border-purple-500/20 bg-background/50 focus-visible:ring-purple-500/40"
+                                        />
+                                    </div>
+                                </div>
+                                <Button
+                                    onClick={handleRaidbotsImport}
+                                    disabled={isImporting}
+                                    className="bg-purple-600 hover:bg-purple-500 text-white gap-2 h-10 px-6 shrink-0 w-full md:w-auto"
+                                >
+                                    {isImporting ? <IconRefresh className="size-4 animate-spin" /> : <IconBolt className="size-4" />}
+                                    {isImporting ? "Sincronizando..." : "Sincronizar BiS"}
+                                </Button>
+                            </div>
+                            {importStats && (
+                                <div className="mt-3 flex items-center gap-4 animate-in fade-in slide-in-from-top-1">
+                                    <div className="flex items-center gap-1.5 text-xs">
+                                        <span className="text-muted-foreground">Mejora detectada:</span>
+                                        <span className="font-bold text-green-400">+{importStats.dps} DPS</span>
+                                        <Badge variant="outline" className="text-[10px] py-0 h-4 border-green-500/20 text-green-400">+{importStats.pct}%</Badge>
+                                    </div>
+                                    <Button variant="link" className="h-auto p-0 text-[10px] text-purple-400 h-4 gap-1" asChild>
+                                        <a href={raidbotsUrl} target="_blank" rel="noreferrer">
+                                            Ver reporte completo <IconExternalLink className="size-2.5" />
+                                        </a>
+                                    </Button>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    {loading ? (
+                        <div className="flex items-center justify-center py-20 gap-3 text-muted-foreground">
+                            <IconRefresh className="size-5 animate-spin" />
+                            <span>Cargando loot de la raid...</span>
+                        </div>
+                    ) : bosses.length === 0 ? (
+                        <Card>
+                            <CardContent className="py-16 text-center text-muted-foreground">
+                                <IconSword className="size-10 mx-auto mb-4 opacity-20" />
+                                <p>No hay datos de loot disponibles.</p>
+                                <p className="text-sm mt-1">Comprueba que las credenciales de Battle.net están configuradas en Ajustes.</p>
+                            </CardContent>
+                        </Card>
+                    ) : (
+                        <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+                            {/* Main Loot Grid */}
+                            <div className="space-y-6">
+                                <div className="lg:hidden mb-6">
+                                    <WishlistCard
+                                        selectedMember={selectedMember}
+                                        difficulty={difficulty}
+                                        selections={selections}
+                                        loadingSelections={loadingSelections}
+                                        translateSlot={translateSlot}
+                                        setSelections={setSelections}
+                                        bosses={bosses}
+                                        instanceId={resolvedInstanceId}
+                                    />
+                                </div>
+
+                                {viewMode === "slot" ? (
+                                    // VIEW BY SLOT
+                                    <Accordion type="multiple" className="space-y-4">
+                                        {[...itemsBySlot.entries()].map(([slotName, entries]) => (
+                                            <AccordionItem key={slotName} value={slotName} className="border border-border/40 rounded-xl px-4 bg-muted/5">
+                                                <AccordionTrigger className="hover:no-underline py-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-sm font-black uppercase tracking-widest text-blue-400">{slotName}</span>
+                                                        <Badge variant="outline" className="text-[10px] border-blue-500/20 text-blue-400/60">{entries.length}</Badge>
+                                                    </div>
+                                                </AccordionTrigger>
+                                                <AccordionContent className="pb-4">
+                                                    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                                                        {entries.map(({ item, bossName }) => (
+                                                            <LootItemCard
+                                                                key={`${item.id}-${bossName}`}
+                                                                item={item}
+                                                                bossName={bossName}
+                                                                selected={isSelected(item.id)}
+                                                                onToggle={() => toggleItem(item, bossName)}
+                                                                rbGain={rbItemGains[item.id]}
+                                                                difficulty={difficulty}
+                                                                instanceId={resolvedInstanceId}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                </AccordionContent>
+                                            </AccordionItem>
+                                        ))}
+                                    </Accordion>
+                                ) : (
+                                    // VIEW BY BOSS
+                                    <Accordion type="multiple" className="space-y-4">
+                                        {filteredBosses.map(boss => (
+                                            <AccordionItem key={boss.id} value={boss.id.toString()} className="border border-border/40 rounded-xl px-4 bg-muted/5">
+                                                <AccordionTrigger className="hover:no-underline py-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-sm font-black uppercase tracking-widest text-amber-400">{boss.name}</span>
+                                                        <Badge variant="outline" className="text-[10px] border-amber-500/20 text-amber-400/60">{boss.items.length}</Badge>
+                                                    </div>
+                                                </AccordionTrigger>
+                                                <AccordionContent className="pb-4">
+                                                    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                                                        {boss.items.map(item => (
+                                                            <LootItemCard
+                                                                key={item.id}
+                                                                item={item}
+                                                                bossName={boss.name}
+                                                                selected={isSelected(item.id)}
+                                                                onToggle={() => toggleItem(item, boss.name)}
+                                                                rbGain={rbItemGains[item.id]}
+                                                                difficulty={difficulty}
+                                                                instanceId={resolvedInstanceId}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                </AccordionContent>
+                                            </AccordionItem>
+                                        ))}
+                                    </Accordion>
+                                )}
+                            </div>
+
+                            {/* Sidebar: My Wishlist */}
+                            <div className="hidden lg:block">
+                                <WishlistCard
+                                    selectedMember={selectedMember}
+                                    difficulty={difficulty}
+                                    selections={selections}
+                                    loadingSelections={loadingSelections}
+                                    translateSlot={translateSlot}
+                                    setSelections={setSelections}
+                                    bosses={bosses}
+                                    instanceId={resolvedInstanceId}
                                 />
                             </div>
                         </div>
-                        <Button
-                            onClick={handleRaidbotsImport}
-                            disabled={isImporting}
-                            className="bg-purple-600 hover:bg-purple-500 text-white gap-2 h-10 px-6 shrink-0 w-full md:w-auto"
-                        >
-                            {isImporting ? <IconRefresh className="size-4 animate-spin" /> : <IconBolt className="size-4" />}
-                            {isImporting ? "Sincronizando..." : "Sincronizar BiS"}
-                        </Button>
-                    </div>
-                    {importStats && (
-                        <div className="mt-3 flex items-center gap-4 animate-in fade-in slide-in-from-top-1">
-                            <div className="flex items-center gap-1.5 text-xs">
-                                <span className="text-muted-foreground">Mejora detectada:</span>
-                                <span className="font-bold text-green-400">+{importStats.dps} DPS</span>
-                                <Badge variant="outline" className="text-[10px] py-0 h-4 border-green-500/20 text-green-400">+{importStats.pct}%</Badge>
-                            </div>
-                            <Button variant="link" className="h-auto p-0 text-[10px] text-purple-400 h-4 gap-1" asChild>
-                                <a href={raidbotsUrl} target="_blank" rel="noreferrer">
-                                    Ver reporte completo <IconExternalLink className="size-2.5" />
-                                </a>
-                            </Button>
-                        </div>
                     )}
-                </CardContent>
-            </Card>
-
-            {loading ? (
-                <div className="flex items-center justify-center py-20 gap-3 text-muted-foreground">
-                    <IconRefresh className="size-5 animate-spin" />
-                    <span>Cargando loot de la raid...</span>
                 </div>
-            ) : bosses.length === 0 ? (
-                <Card>
-                    <CardContent className="py-16 text-center text-muted-foreground">
-                        <IconSword className="size-10 mx-auto mb-4 opacity-20" />
-                        <p>No hay datos de loot disponibles.</p>
-                        <p className="text-sm mt-1">Comprueba que las credenciales de Battle.net están configuradas en Ajustes.</p>
-                    </CardContent>
-                </Card>
-            ) : (
-                <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-                    {/* Main Loot Grid */}
-                    <div className="space-y-6">
-                        <div className="lg:hidden mb-6">
-                            <WishlistCard
-                                selectedMember={selectedMember}
-                                difficulty={difficulty}
-                                selections={selections}
-                                loadingSelections={loadingSelections}
-                                translateSlot={translateSlot}
-                                setSelections={setSelections}
-                                bosses={bosses}
-                                instanceId={resolvedInstanceId}
-                            />
-                        </div>
-
-                        {viewMode === "slot" ? (
-                            // VIEW BY SLOT
-                            <Accordion type="multiple" className="space-y-4">
-                                {[...itemsBySlot.entries()].map(([slotName, entries]) => (
-                                    <AccordionItem key={slotName} value={slotName} className="border border-border/40 rounded-xl px-4 bg-muted/5">
-                                        <AccordionTrigger className="hover:no-underline py-4">
-                                            <div className="flex items-center gap-3">
-                                                <span className="text-sm font-black uppercase tracking-widest text-blue-400">{slotName}</span>
-                                                <Badge variant="outline" className="text-[10px] border-blue-500/20 text-blue-400/60">{entries.length}</Badge>
-                                            </div>
-                                        </AccordionTrigger>
-                                        <AccordionContent className="pb-4">
-                                            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                                                {entries.map(({ item, bossName }) => (
-                                                    <LootItemCard
-                                                        key={`${item.id}-${bossName}`}
-                                                        item={item}
-                                                        bossName={bossName}
-                                                        selected={isSelected(item.id)}
-                                                        onToggle={() => toggleItem(item, bossName)}
-                                                        rbGain={rbItemGains[item.id]}
-                                                        difficulty={difficulty}
-                                                        instanceId={resolvedInstanceId}
-                                                    />
-                                                ))}
-                                            </div>
-                                        </AccordionContent>
-                                    </AccordionItem>
-                                ))}
-                            </Accordion>
-                        ) : (
-                            // VIEW BY BOSS
-                            <Accordion type="multiple" className="space-y-4">
-                                {filteredBosses.map(boss => (
-                                    <AccordionItem key={boss.id} value={boss.id.toString()} className="border border-border/40 rounded-xl px-4 bg-muted/5">
-                                        <AccordionTrigger className="hover:no-underline py-4">
-                                            <div className="flex items-center gap-3">
-                                                <span className="text-sm font-black uppercase tracking-widest text-amber-400">{boss.name}</span>
-                                                <Badge variant="outline" className="text-[10px] border-amber-500/20 text-amber-400/60">{boss.items.length}</Badge>
-                                            </div>
-                                        </AccordionTrigger>
-                                        <AccordionContent className="pb-4">
-                                            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                                                {boss.items.map(item => (
-                                                    <LootItemCard
-                                                        key={item.id}
-                                                        item={item}
-                                                        bossName={boss.name}
-                                                        selected={isSelected(item.id)}
-                                                        onToggle={() => toggleItem(item, boss.name)}
-                                                        rbGain={rbItemGains[item.id]}
-                                                        difficulty={difficulty}
-                                                        instanceId={resolvedInstanceId}
-                                                    />
-                                                ))}
-                                            </div>
-                                        </AccordionContent>
-                                    </AccordionItem>
-                                ))}
-                            </Accordion>
-                        )}
-                    </div>
-
-                    {/* Sidebar: My Wishlist */}
-                    <div className="hidden lg:block">
-                        <WishlistCard
-                            selectedMember={selectedMember}
-                            difficulty={difficulty}
-                            selections={selections}
-                            loadingSelections={loadingSelections}
-                            translateSlot={translateSlot}
-                            setSelections={setSelections}
-                            bosses={bosses}
-                            instanceId={resolvedInstanceId}
-                        />
-                    </div>
-                </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     )
 }
