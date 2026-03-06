@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export async function POST(request: Request) {
     try {
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Nivel de permiso inválido" }, { status: 400 })
         }
 
-        const { error } = await sb.from("discord_roles").insert({
+        const { error } = await supabaseAdmin.from("discord_roles").insert({
             role_id: roleId,
             name,
             level
@@ -56,7 +56,7 @@ export async function DELETE(request: Request) {
             return NextResponse.json({ error: "Falta el roleId" }, { status: 400 })
         }
 
-        const { error } = await sb.from("discord_roles").delete().eq("role_id", roleId)
+        const { error } = await supabaseAdmin.from("discord_roles").delete().eq("role_id", roleId)
 
         if (error) throw error
 
@@ -88,8 +88,8 @@ export async function PUT(request: Request) {
 
         if (oldRoleId !== newRoleId) {
             // Safe PK update ignoring FK restrict (via delete + insert)
-            await sb.from("discord_roles").delete().eq("role_id", oldRoleId)
-            const { error } = await sb.from("discord_roles").insert({
+            await supabaseAdmin.from("discord_roles").delete().eq("role_id", oldRoleId)
+            const { error } = await supabaseAdmin.from("discord_roles").insert({
                 role_id: newRoleId,
                 name,
                 level
@@ -101,7 +101,7 @@ export async function PUT(request: Request) {
                 throw error
             }
         } else {
-            const { error } = await sb.from("discord_roles").update({ name, level }).eq("role_id", oldRoleId)
+            const { error } = await supabaseAdmin.from("discord_roles").update({ name, level }).eq("role_id", oldRoleId)
             if (error) throw error
         }
 

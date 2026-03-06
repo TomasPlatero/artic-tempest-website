@@ -1,20 +1,21 @@
 // src/app/dashboard/settings/accounts/page.tsx
-import { sb } from "@/infrastructure/auth/auth-options"
+import { supabaseAdmin } from "@/infrastructure/auth/auth-options"
 import { AccountsClient } from "@/components/settings/accounts-client"
 import { IconArrowLeft } from "@tabler/icons-react"
 import Link from "next/link"
+import { Button } from "@/components/ui/button"
 
 export const dynamic = 'force-dynamic'
 
 export default async function AccountsSettingsPage() {
     // Fetch all profiles
-    const { data: profiles } = await sb
+    const { data: profiles } = await supabaseAdmin
         .from('profiles')
         .select('*')
         .order('discord_username', { ascending: true })
 
     // Fetch character counts per user
-    const { data: charCounts } = await sb
+    const { data: charCounts } = await supabaseAdmin
         .from('bnet_characters')
         .select('user_id')
 
@@ -31,8 +32,10 @@ export default async function AccountsSettingsPage() {
     return (
         <div className="flex flex-col gap-6 p-6 lg:px-8 w-full max-w-full">
             <div className="flex items-center gap-4">
-                <Link href="/dashboard/settings" className="p-2 rounded-full hover:bg-white/5 transition-colors">
-                    <IconArrowLeft className="size-5 text-white/50" />
+                <Link href="/dashboard/settings">
+                    <Button variant="outline" size="icon" className="size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 transition-all shadow-xl">
+                        <IconArrowLeft className="size-6" />
+                    </Button>
                 </Link>
                 <div>
                     <h1 className="text-2xl font-bold">Gestión de Cuentas</h1>

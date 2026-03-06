@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export async function PATCH(request: Request) {
     try {
@@ -33,8 +33,7 @@ export async function PATCH(request: Request) {
             payload.color = color
         }
 
-        let { error } = await sb
-            .from("guild_ranks")
+        let { error } = await supabaseAdmin.from("guild_ranks")
             .upsert(
                 payload,
                 { onConflict: "rank" }
@@ -53,8 +52,7 @@ export async function PATCH(request: Request) {
             const fallbackPayload = { ...payload };
             delete fallbackPayload.color;
 
-            const { error: retryError } = await sb
-                .from("guild_ranks")
+            const { error: retryError } = await supabaseAdmin.from("guild_ranks")
                 .upsert(fallbackPayload, { onConflict: "rank" });
 
             if (!retryError) {

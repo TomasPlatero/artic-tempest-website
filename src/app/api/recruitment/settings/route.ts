@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
+import { ensureAppPermission } from "@/infrastructure/auth/permissions"
 
 export async function POST(req: Request) {
-    const session = await getServerSession(authOptions)
-    if (!session || (session.user.roleLevel !== 'gm' && session.user.roleLevel !== 'officer')) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+    const session = await ensureAppPermission('recruitment', 'edit')
 
     try {
         const body = await req.json()
@@ -14,8 +12,7 @@ export async function POST(req: Request) {
 
         if (type === 'spot') {
             const { class_id, spec_name, urgency } = data
-            const { data: result, error } = await sb
-                .from("recruitment_spots")
+            const { data: result, error } = await supabaseAdmin.from("recruitment_spots")
                 .upsert({
                     class_id,
                     spec_name,
@@ -35,15 +32,15 @@ export async function POST(req: Request) {
             if (isTemp) delete payload.id
 
             const { data: result, error } = isTemp
-                ? await sb.from("recruitment_questions").insert(payload).select().single()
-                : await sb.from("recruitment_questions").update(payload).eq("id", data.id).select().single()
+                ? await supabaseAdmin.from("recruitment_questions").insert(payload).select().single()
+                : await supabaseAdmin.from("recruitment_questions").update(payload).eq("id", data.id).select().single()
 
             if (error) throw error
             return NextResponse.json(result)
         }
 
         if (type === 'question_delete') {
-            const { error } = await sb.from("recruitment_questions").delete().eq("id", data.id)
+            const { error } = await supabaseAdmin.from("recruitment_questions").delete().eq("id", data.id)
             if (error) throw error
             return NextResponse.json({ success: true })
         }

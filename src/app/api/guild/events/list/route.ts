@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export const dynamic = "force-dynamic"
 
@@ -12,8 +12,7 @@ export async function GET() {
         }
 
         const today = new Date().toISOString().split('T')[0]
-        const { data: events, error } = await sb
-            .from("guild_events")
+        const { data: events, error } = await supabaseAdmin.from("guild_events")
             .select("id, title, destination, event_date, difficulty")
             .gte("event_date", today)
             .order("event_date", { ascending: true })

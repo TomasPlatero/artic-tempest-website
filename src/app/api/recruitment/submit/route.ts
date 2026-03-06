@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export async function POST(req: Request) {
     const session = await getServerSession(authOptions)
@@ -17,8 +17,7 @@ export async function POST(req: Request) {
         }
 
         // 1. Final safety check: Ya tiene una aplicación activa?
-        const { data: activeApps } = await sb
-            .from("recruitment_applications")
+        const { data: activeApps } = await supabaseAdmin.from("recruitment_applications")
             .select("id")
             .eq("user_id", session.user.id)
             .in("status", ["pending", "reviewing", "interview"])
@@ -30,8 +29,7 @@ export async function POST(req: Request) {
 
         // 2. Create Application
         // Usamos 'sb' (Service Role) que se salta las políticas RLS del frontend y nos evita este error.
-        const { data: application, error: appError } = await sb
-            .from("recruitment_applications")
+        const { data: application, error: appError } = await supabaseAdmin.from("recruitment_applications")
             .insert({
                 user_id: session.user.id,
                 character_name: selectedChar.name,
@@ -53,8 +51,7 @@ export async function POST(req: Request) {
                 answer_text: val
             }))
 
-            const { error: ansError } = await sb
-                .from("application_answers")
+            const { error: ansError } = await supabaseAdmin.from("application_answers")
                 .insert(answersToInsert)
 
             if (ansError) {

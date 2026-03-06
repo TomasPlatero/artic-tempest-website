@@ -1,13 +1,15 @@
 import { NextResponse } from "next/server"
-import { sb } from "@/infrastructure/auth/auth-options"
+import { supabaseAdmin } from "@/infrastructure/auth/auth-options"
+import { ensureAppPermission } from "@/infrastructure/auth/permissions"
 
 export const dynamic = "force-dynamic"
 
 export async function GET() {
     try {
+        await ensureAppPermission('planificador-cds', 'view')
         // Fetch all unique event_id and boss_name pairs that have assignments
         // and join with guild_events to get event details
-        const { data, error } = await sb
+        const { data, error } = await supabaseAdmin
             .from("cd_assignments")
             .select(`
                 boss_name,

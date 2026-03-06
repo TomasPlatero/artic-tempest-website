@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export const dynamic = "force-dynamic"
 
@@ -15,13 +15,12 @@ export async function GET(_request: Request) {
         }
 
         // Get guild_id
-        const { data: guildData } = await sb.from("guilds_managed").select("guild_id").limit(1).single()
+        const { data: guildData } = await supabaseAdmin.from("guilds_managed").select("guild_id").limit(1).single()
         if (!guildData) return NextResponse.json({ error: "Guild not found" }, { status: 404 })
 
         const guildId = guildData.guild_id
 
-        const { data, error } = await sb
-            .from("guild_raid_schedule")
+        const { data, error } = await supabaseAdmin.from("guild_raid_schedule")
             .select("*")
             .eq("guild_id", guildId)
             .order("day_of_week", { ascending: true })
@@ -53,7 +52,7 @@ export async function PUT(request: Request) {
         }
 
         // Get guild_id
-        const { data: guildData } = await sb.from("guilds_managed").select("guild_id").limit(1).single()
+        const { data: guildData } = await supabaseAdmin.from("guilds_managed").select("guild_id").limit(1).single()
         if (!guildData) return NextResponse.json({ error: "Guild not found" }, { status: 404 })
 
         const guildId = guildData.guild_id
@@ -70,8 +69,7 @@ export async function PUT(request: Request) {
         }))
 
         // Supabase upsert requires id, but since we have a unique constraint on (guild_id, day_of_week) we can matching on that
-        const { data, error } = await sb
-            .from("guild_raid_schedule")
+        const { data, error } = await supabaseAdmin.from("guild_raid_schedule")
             .upsert(upsertData, { onConflict: 'guild_id, day_of_week' })
             .select()
 

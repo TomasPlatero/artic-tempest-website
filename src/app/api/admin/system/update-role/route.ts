@@ -1,7 +1,7 @@
 // src/app/api/admin/system/update-role/route.ts
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export async function POST(req: Request) {
     const session = await getServerSession(authOptions)
@@ -14,8 +14,7 @@ export async function POST(req: Request) {
         const { userId, role } = await req.json()
         if (!userId || !role) throw new Error("userId y role son requeridos")
 
-        const { error } = await sb
-            .from('profiles')
+        const { error } = await supabaseAdmin.from('profiles')
             .update({
                 role_level: role,
                 last_role_check: new Date().toISOString()

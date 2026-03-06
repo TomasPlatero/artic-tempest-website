@@ -22,10 +22,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-import { sb } from "@/infrastructure/auth/auth-options";
+import { supabaseAdmin } from "@/infrastructure/auth/auth-options";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { data: guild } = await sb
+  const { data: guild } = await supabaseAdmin
     .from("guilds_managed")
     .select("name, icon_url")
     .limit(1)
@@ -38,7 +38,11 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title,
     description: desc,
-    keywords: ["World of Warcraft", "WoW", "Guild", "Hermandad", "Dashboard", "Roster", "Raideo"],
+    keywords: [
+      "World of Warcraft", "WoW", "Guild", "Hermandad", "Dashboard",
+      "Roster", "Raideo", "Midnight", "PvE", "Mítico", "Reclutamiento WoW",
+      "Artic Tempest", "Dun Modr", "Cutting Edge", "Progreso raid",
+    ],
     authors: [{ name: "Artic Tempest" }],
     creator: "Artic Tempest",
     publisher: "Artic Tempest",
@@ -50,6 +54,19 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL(process.env.NEXTAUTH_URL || 'http://localhost:3000'),
     alternates: {
       canonical: '/',
+    },
+    verification: {
+      ...(process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION && {
+        google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION,
+      }),
+      ...(process.env.NEXT_PUBLIC_BING_VERIFICATION && {
+        other: {
+          'msvalidate.01': process.env.NEXT_PUBLIC_BING_VERIFICATION,
+        },
+      }),
+      ...(process.env.NEXT_PUBLIC_YANDEX_VERIFICATION && {
+        yandex: process.env.NEXT_PUBLIC_YANDEX_VERIFICATION,
+      }),
     },
     icons: {
       icon: [
@@ -130,11 +147,11 @@ export default function RootLayout({
           <PwaPrompt />
           <ThemedToaster />
           <Analytics />
+          {process.env.NEXT_PUBLIC_GA_ID && (
+            <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+          )}
         </ThemeProvider>
       </body>
-      {process.env.NEXT_PUBLIC_GA_ID && (
-        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
-      )}
     </html>
   );
 }

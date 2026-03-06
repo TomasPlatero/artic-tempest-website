@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 import { getAppPermission } from "@/infrastructure/auth/permissions"
 import { redirect } from "next/navigation"
 import { RaidEditorClient } from "@/components/calendar/raid-editor-client"
@@ -9,8 +9,7 @@ export const runtime = "nodejs"
 
 async function getEditorData() {
     // 1. Fetch Ranks and Members
-    const { data: rawRanks } = await sb
-        .from("guild_ranks")
+    const { data: rawRanks } = await supabaseAdmin.from("guild_ranks")
         .select("rank, name, is_visible, color")
 
     const visibilityMap: Record<number, boolean> = {}
@@ -19,16 +18,14 @@ async function getEditorData() {
         visibilityMap[i] = found ? found.is_visible : true
     }
 
-    const { data: members } = await sb
-        .from("guild_members")
+    const { data: members } = await supabaseAdmin.from("guild_members")
         .select("*")
         .order("rank", { ascending: true })
 
     const filteredMembers = (members ?? []).filter(m => visibilityMap[Number(m.rank)] ?? true)
 
     // 2. Fetch Game Constants
-    const { data: constantRows } = await sb
-        .from("game_constants")
+    const { data: constantRows } = await supabaseAdmin.from("game_constants")
         .select("category, key, value, metadata")
 
     const classRoles: Record<number, string> = {}
@@ -104,8 +101,7 @@ export default async function RaidEditorPage({
         redirect("/dashboard/calendario")
     }
 
-    const { data: currentMember } = await sb
-        .from("guild_members")
+    const { data: currentMember } = await supabaseAdmin.from("guild_members")
         .select("id")
         .eq("profile_id", session.user.id)
         .single()

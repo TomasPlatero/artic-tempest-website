@@ -214,10 +214,10 @@ export function SettingsRolesClient({ initialDiscordRoles, initialPermissions }:
     };
 
     return (
-        <div className="flex flex-col gap-8 p-4 md:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-500">
+        <div className="flex flex-col gap-8 p-4 md:p-6 lg:px-8 w-full max-w-full animate-in fade-in duration-500">
             <div className="flex items-center gap-6">
                 <Link href="/dashboard/settings">
-                    <Button variant="outline" size="icon" className="size-12 rounded-2xl bg-white/5 border-white/10 hover:bg-white/10 transition-all shadow-xl">
+                    <Button variant="outline" size="icon" className="size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 transition-all shadow-xl">
                         <IconArrowLeft className="size-6" />
                     </Button>
                 </Link>
@@ -280,6 +280,8 @@ export function SettingsRolesClient({ initialDiscordRoles, initialPermissions }:
                                         { id: 'calendar', name: 'Calendario' },
                                         { id: 'planificador-cds', name: 'Planificador CD\'s' },
                                         { id: 'bis', name: 'BiS / Wishlist' },
+                                        { id: 'recruitment', name: 'Reclutamiento' },
+                                        { id: 'settings', name: 'Administración' },
                                     ].map((app) => (
                                         <div key={app.id} className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-5 flex items-center justify-between group active:bg-white/[0.04] transition-all">
                                             <span className="font-black text-white text-sm tracking-tight group-hover:text-primary transition-colors">{app.name}</span>
@@ -328,6 +330,8 @@ export function SettingsRolesClient({ initialDiscordRoles, initialPermissions }:
                                         { id: 'calendar', name: 'Calendario' },
                                         { id: 'planificador-cds', name: 'Planificador CD\'s' },
                                         { id: 'bis', name: 'BiS / Wishlist' },
+                                        { id: 'recruitment', name: 'Reclutamiento' },
+                                        { id: 'settings', name: 'Administración' },
                                     ].map((app) => (
                                         <div key={app.id} className="grid grid-cols-6 items-center p-5 border-b border-white/[0.03] last:border-0 hover:bg-white/[0.02] transition-colors group">
                                             <div className="col-span-1 font-black text-white text-base group-hover:text-primary transition-colors">{app.name}</div>

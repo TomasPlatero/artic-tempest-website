@@ -35,7 +35,7 @@ const {
 if (!NEXTAUTH_SECRET) throw new Error("Falta NEXTAUTH_SECRET")
 if (!NEXT_PUBLIC_SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error("Falta configuración de Supabase")
 
-export const sb = createClient(NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+export const supabaseAdmin = createClient(NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: { persistSession: false },
 })
 
@@ -63,7 +63,7 @@ async function fetchDiscordMember(accessToken: string, guildId: string): Promise
 async function pickTopDiscordRole(roleIds: string[]): Promise<{ roleId: string; level: RoleLevel } | null> {
   if (!roleIds || roleIds.length === 0) return null
 
-  const { data } = await sb.from("discord_roles").select("role_id, level").in("role_id", roleIds)
+  const { data } = await supabaseAdmin.from("discord_roles").select("role_id, level").in("role_id", roleIds)
   if (!data || data.length === 0) return null
 
   const sorted = data.sort((a, b) => rank(b.level as RoleLevel) - rank(a.level as RoleLevel))
@@ -108,7 +108,7 @@ export const authOptions: NextAuthOptions = {
       const topRole = member ? await pickTopDiscordRole(member.roles) : null
 
       // 2. Load existing profile
-      const { data: existing } = await sb
+      const { data: existing } = await supabaseAdmin
         .from("profiles")
         .select("user_id, role_level")
         .eq("discord_user_id", userId)
@@ -123,7 +123,7 @@ export const authOptions: NextAuthOptions = {
       let finalLevel: RoleLevel = existing ? dbLevel : discordLevel
 
       // 4. Save / Update Profile
-      const { data, error } = await sb
+      const { data, error } = await supabaseAdmin
         .from("profiles")
         .upsert(
           {
@@ -172,7 +172,7 @@ export const authOptions: NextAuthOptions = {
       // Periodically refresh role from DB (e.g. if more than 5 minutes have passed or on every check)
       // Since this runs in the edge or server-side, a quick DB fetch is acceptable to keep roles in sync
       try {
-        const { data: profile } = await sb
+        const { data: profile } = await supabaseAdmin
           .from("profiles")
           .select("role_level")
           .eq("user_id", token.userId)

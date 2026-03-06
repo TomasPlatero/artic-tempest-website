@@ -178,11 +178,11 @@ export function SettingsDiscordClient({ initialCredentials, initialCommands }: S
     };
 
     return (
-        <div className="flex flex-col gap-8 p-4 md:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-500">
+        <div className="flex flex-col gap-8 p-4 md:p-6 lg:px-8 w-full max-w-full animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-6">
                     <Link href="/dashboard/settings">
-                        <Button variant="outline" size="icon" className="size-12 rounded-2xl bg-white/5 border-white/10 hover:bg-white/10 transition-all shadow-xl">
+                        <Button variant="outline" size="icon" className="size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 transition-all shadow-xl">
                             <IconArrowLeft className="size-6" />
                         </Button>
                     </Link>

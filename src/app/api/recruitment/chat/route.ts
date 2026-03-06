@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 import { getGuildCredentials } from "@/infrastructure/auth/credentials"
 
 export async function GET(req: Request) {
@@ -17,8 +17,7 @@ export async function GET(req: Request) {
     }
 
     try {
-        const { data: application, error: appError } = await sb
-            .from("recruitment_applications")
+        const { data: application, error: appError } = await supabaseAdmin.from("recruitment_applications")
             .select("user_id")
             .eq("id", applicationId)
             .single()
@@ -34,8 +33,7 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: "Acceso denegado" }, { status: 403 })
         }
 
-        const { data: messages, error: msgError } = await sb
-            .from("application_messages")
+        const { data: messages, error: msgError } = await supabaseAdmin.from("application_messages")
             .select("*, author:profiles(discord_username, discord_avatar, role_level)")
             .eq("application_id", applicationId)
             .order("created_at", { ascending: true })
@@ -60,8 +58,7 @@ export async function POST(req: Request) {
 
     try {
         // 1. Get application details
-        const { data: application, error: appError } = await sb
-            .from("recruitment_applications")
+        const { data: application, error: appError } = await supabaseAdmin.from("recruitment_applications")
             .select("*")
             .eq("id", applicationId)
             .single()
@@ -71,8 +68,7 @@ export async function POST(req: Request) {
         }
 
         // Fetch applicant profile separately to avoid relation naming issues
-        const { data: applicantProfile } = await sb
-            .from("profiles")
+        const { data: applicantProfile } = await supabaseAdmin.from("profiles")
             .select("discord_user_id, discord_username")
             .eq("user_id", application.user_id)
             .single()
@@ -90,8 +86,7 @@ export async function POST(req: Request) {
         }
 
         // 3. Save to database
-        const { data: savedMsg, error: saveError } = await sb
-            .from("application_messages")
+        const { data: savedMsg, error: saveError } = await supabaseAdmin.from("application_messages")
             .insert({
                 application_id: applicationId,
                 author_id: session.user.id,
@@ -177,8 +172,7 @@ async function sendDiscordDM(botToken: string, userId: string, message: string, 
 async function mirrorToAllOfficials(botToken: string, message: string, applicantName: string, applicationId: string) {
     try {
         // 1. Get all GMs and Officers
-        const { data: officers } = await sb
-            .from("profiles")
+        const { data: officers } = await supabaseAdmin.from("profiles")
             .select("discord_user_id")
             .in("role_level", ["gm", "officer"])
             .not("discord_user_id", "is", null)

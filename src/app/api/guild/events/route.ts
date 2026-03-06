@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export const dynamic = "force-dynamic"
 
@@ -37,8 +37,7 @@ export async function POST(request: Request) {
         }
 
         // Get the first guild ID (since the app manages one guild for now)
-        const { data: guildData, error: guildError } = await sb
-            .from("guilds_managed")
+        const { data: guildData, error: guildError } = await supabaseAdmin.from("guilds_managed")
             .select("guild_id")
             .limit(1)
             .single()
@@ -48,8 +47,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Hermandad no encontrada" }, { status: 500 })
         }
 
-        const { data, error } = await sb
-            .from("guild_events")
+        const { data, error } = await supabaseAdmin.from("guild_events")
             .insert({
                 guild_id: guildData.guild_id,
                 author_id: session.user.id,

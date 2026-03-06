@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
+import { ensureAppPermission } from "@/infrastructure/auth/permissions"
 
 export async function PATCH(req: Request) {
-    const session = await getServerSession(authOptions)
-    if (!session || (session.user.roleLevel !== 'gm' && session.user.roleLevel !== 'officer')) {
-        return NextResponse.json({ error: "No autorizado" }, { status: 401 })
-    }
+    const session = await ensureAppPermission('recruitment', 'edit')
 
     try {
         const body = await req.json()
@@ -21,8 +19,7 @@ export async function PATCH(req: Request) {
         if (internal_notes !== undefined) updateData.internal_notes = internal_notes
         if (character_spec) updateData.character_spec = character_spec
 
-        const { data, error } = await sb
-            .from("recruitment_applications")
+        const { data, error } = await supabaseAdmin.from("recruitment_applications")
             .update(updateData)
             .eq("id", id)
             .select()
@@ -55,10 +52,7 @@ export async function PATCH(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-    const session = await getServerSession(authOptions)
-    if (!session || (session.user.roleLevel !== 'gm' && session.user.roleLevel !== 'officer')) {
-        return NextResponse.json({ error: "No autorizado" }, { status: 401 })
-    }
+    const session = await ensureAppPermission('recruitment', 'edit')
 
     try {
         const { searchParams } = new URL(req.url)
@@ -68,8 +62,7 @@ export async function DELETE(req: Request) {
             return NextResponse.json({ error: "Falta ID de la solicitud" }, { status: 400 })
         }
 
-        const { error } = await sb
-            .from("recruitment_applications")
+        const { error } = await supabaseAdmin.from("recruitment_applications")
             .delete()
             .eq("id", id)
 

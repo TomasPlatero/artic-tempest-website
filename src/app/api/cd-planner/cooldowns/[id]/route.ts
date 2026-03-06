@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export const dynamic = "force-dynamic"
 
@@ -14,7 +14,7 @@ export async function DELETE(
 
         const { id } = await params
 
-        const { error } = await sb
+        const { error } = await supabaseAdmin
             .from("cooldown_definitions")
             .delete()
             .eq("id", id)

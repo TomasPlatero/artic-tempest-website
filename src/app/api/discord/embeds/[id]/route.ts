@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -10,7 +10,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     }
 
     try {
-        const { data: embed, error } = await sb
+        const { data: embed, error } = await supabaseAdmin
             .from('discord_embeds')
             .select('*')
             .eq('id', id)
@@ -34,7 +34,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         const payload = await req.json()
         const { id, created_at, updated_at, ...cleanPayload } = payload
 
-        const { data: embed, error } = await sb
+        const { data: embed, error } = await supabaseAdmin
             .from('discord_embeds')
             .update({ ...cleanPayload, updated_at: new Date().toISOString() })
             .eq('id', id)
@@ -56,7 +56,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     }
 
     try {
-        const { error } = await sb
+        const { error } = await supabaseAdmin
             .from('discord_embeds')
             .delete()
             .eq('id', id)

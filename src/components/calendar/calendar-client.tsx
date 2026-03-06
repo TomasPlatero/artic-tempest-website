@@ -36,9 +36,9 @@ function getFirstDayOfMonth(year: number, month: number) {
 
 // --- DND COMPONENTS ---
 
-function DraggableEvent({ evt, isOfficerOrGm, month, onClick, isPast, isInProgress, bgStyle, selectedCount, maxActive, timeStringStart, timeStringEnd }: {
+function DraggableEvent({ evt, canEdit, month, onClick, isPast, isInProgress, bgStyle, selectedCount, maxActive, timeStringStart, timeStringEnd }: {
     evt: GuildEvent,
-    isOfficerOrGm: boolean,
+    canEdit: boolean,
     month: number,
     onClick: (e: React.MouseEvent) => void,
     isPast: boolean,
@@ -51,7 +51,7 @@ function DraggableEvent({ evt, isOfficerOrGm, month, onClick, isPast, isInProgre
 }) {
     const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
         id: evt.id,
-        disabled: !isOfficerOrGm || isPast,
+        disabled: !canEdit || isPast,
         data: evt
     })
 
@@ -112,11 +112,11 @@ function DraggableEvent({ evt, isOfficerOrGm, month, onClick, isPast, isInProgre
     )
 }
 
-function DroppableDay({ dateStr, d, isToday, isOfficerOrGm, dayEvents, children, onClick }: {
+function DroppableDay({ dateStr, d, isToday, canEdit, dayEvents, children, onClick }: {
     dateStr: string,
     d: number,
     isToday: boolean,
-    isOfficerOrGm: boolean,
+    canEdit: boolean,
     dayEvents: GuildEvent[],
     children: React.ReactNode,
     onClick: () => void
@@ -137,7 +137,7 @@ function DroppableDay({ dateStr, d, isToday, isOfficerOrGm, dayEvents, children,
             )}
         >
             <div className="flex justify-between items-start">
-                {isOfficerOrGm && dayEvents.length === 0 && (
+                {canEdit && dayEvents.length === 0 && (
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-primary/20 text-primary text-[10px] px-1.5 py-0.5 rounded border border-primary/30 ml-1 mt-1 font-bold lowercase">
                         crear
                     </div>
@@ -158,13 +158,12 @@ function DroppableDay({ dateStr, d, isToday, isOfficerOrGm, dayEvents, children,
 
 export function CalendarClient({
     initialEvents,
-    roleLevel,
+    canEdit,
 }: {
     initialEvents: GuildEvent[]
-    roleLevel: string
+    canEdit: boolean
 }) {
     const router = useRouter()
-    const isOfficerOrGm = roleLevel === "gm" || roleLevel === "officer"
 
     const [events, setEvents] = useState<GuildEvent[]>(initialEvents)
     const [isUpdating, setIsUpdating] = useState(false)
@@ -223,7 +222,7 @@ export function CalendarClient({
 
     const handleDragEnd = async (event: DragEndEvent) => {
         const { active, over } = event
-        if (!over || !isOfficerOrGm) return
+        if (!over || !canEdit) return
 
         const activeEvent = active.data.current as GuildEvent
         const targetDateStr = over.id as string // format YYYY-MM-DD
@@ -313,10 +312,10 @@ export function CalendarClient({
                 dateStr={dateStr}
                 d={d}
                 isToday={isToday}
-                isOfficerOrGm={isOfficerOrGm}
+                canEdit={canEdit}
                 dayEvents={dayEvents}
                 onClick={() => {
-                    if (isOfficerOrGm) {
+                    if (canEdit) {
                         router.push(`/dashboard/calendario/editor?date=${dateStr}`)
                     }
                 }}
@@ -348,7 +347,7 @@ export function CalendarClient({
                         <DraggableEvent
                             key={evt.id}
                             evt={evt}
-                            isOfficerOrGm={isOfficerOrGm}
+                            canEdit={canEdit}
                             month={month}
                             isPast={isPast}
                             isInProgress={isInProgress}
@@ -359,7 +358,7 @@ export function CalendarClient({
                             timeStringEnd={timeStringEnd}
                             onClick={(e) => {
                                 e.stopPropagation()
-                                if (isOfficerOrGm) {
+                                if (canEdit) {
                                     router.push(`/dashboard/calendario/editor/${evt.id}`)
                                 } else {
                                     router.push(`/dashboard/calendario/${evt.id}`)
@@ -403,7 +402,7 @@ export function CalendarClient({
                     </div>
 
                     {/* Officer Actions */}
-                    {isOfficerOrGm && (
+                    {canEdit && (
                         <div className="flex bg-muted/20 p-1 rounded-lg border border-border/40">
                             <Button
                                 variant="ghost"
@@ -480,7 +479,7 @@ export function CalendarClient({
                                     <div
                                         key={evt.id}
                                         onClick={() => {
-                                            if (isOfficerOrGm) {
+                                            if (canEdit) {
                                                 router.push(`/dashboard/calendario/editor/${evt.id}`)
                                             } else {
                                                 router.push(`/dashboard/calendario/${evt.id}`)

@@ -2,7 +2,7 @@
 import type React from "react"
 import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 import { getAppPermission } from "@/infrastructure/auth/permissions"
 
 import { AppSidebar } from "@/components/layout/app-sidebar"
@@ -14,8 +14,7 @@ export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
 async function getUpcomingEvents() {
-    const { data } = await sb
-        .from("guild_events")
+    const { data } = await supabaseAdmin.from("guild_events")
         .select(`
             id, title, description, event_date, end_date, event_type, destination, difficulty, status, background_url,
             event_signups ( selection_status )
@@ -34,7 +33,7 @@ export default async function CalendarioPage() {
 
     const events = await getUpcomingEvents()
     const roleLevel = session.user?.roleLevel ?? "member"
-    const { canView } = await getAppPermission(roleLevel, 'calendar')
+    const { canView, canEdit } = await getAppPermission(roleLevel, 'calendar')
 
     if (!canView) {
         redirect("/dashboard")
@@ -51,7 +50,7 @@ export default async function CalendarioPage() {
             <SidebarInset>
                 <SiteHeader />
                 <div className="flex flex-1 flex-col p-4 md:p-6 gap-6">
-                    <CalendarClient initialEvents={events} roleLevel={roleLevel} />
+                    <CalendarClient initialEvents={events} canEdit={canEdit} />
                 </div>
             </SidebarInset>
         </SidebarProvider>

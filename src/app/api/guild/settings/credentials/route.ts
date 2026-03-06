@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { sb } from "@/infrastructure/auth/auth-options";
+import { supabaseAdmin } from "@/infrastructure/auth/auth-options";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/infrastructure/auth/auth-options";
 import { invalidateCredentialsCache } from "@/infrastructure/auth/credentials";
@@ -12,7 +12,7 @@ export async function PATCH(req: Request) {
         }
 
         // Verify GM role
-        const { data: profile } = await sb
+        const { data: profile } = await supabaseAdmin
             .from("profiles")
             .select("role_level")
             .eq("user_id", session.user.id)
@@ -69,7 +69,7 @@ export async function PATCH(req: Request) {
             updates.wcl_client_secret = wcl_client_secret || null;
         }
 
-        const { error } = await sb
+        const { error } = await supabaseAdmin
             .from("guilds_managed")
             .update(updates)
             .neq("guild_id", "00000000-0000-0000-0000-000000000000");

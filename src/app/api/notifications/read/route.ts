@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions, sb } from "@/infrastructure/auth/auth-options";
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options";
 
 export async function POST(request: Request) {
     const session = await getServerSession(authOptions);
@@ -15,8 +15,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "ID de notificación requerido" }, { status: 400 });
     }
 
-    const { error } = await sb
-        .from("user_notifications_read")
+    const { error } = await supabaseAdmin.from("user_notifications_read")
         .upsert({
             user_id: userId,
             notification_id: notificationId

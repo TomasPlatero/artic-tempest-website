@@ -2,7 +2,7 @@
 import type React from "react"
 import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 import { getAppPermission } from "@/infrastructure/auth/permissions"
 
 import { AppSidebar } from "@/components/layout/app-sidebar"
@@ -19,12 +19,15 @@ type EligibleMember = {
     realm_slug: string
     class_id: number
     rank: number
+    role: string | null
+    bis_dps_gain: number | null
+    bis_pct_gain: string | null
+    spec_name: string
 }
 
 async function getBisData(userId: string) {
     // Step 1: Get this user's bnet character names
-    const { data: bnetChars } = await sb
-        .from("bnet_characters")
+    const { data: bnetChars } = await supabaseAdmin.from("bnet_characters")
         .select("name")
         .eq("user_id", userId)
 
@@ -35,14 +38,12 @@ async function getBisData(userId: string) {
     }
 
     // 2. Fetch visible ranks with fallback
-    let { data: rawRanks, error: ranksError } = await sb
-        .from("guild_ranks")
+    let { data: rawRanks, error: ranksError } = await supabaseAdmin.from("guild_ranks")
         .select("rank, is_visible")
 
     // Fallback if table doesn't exist or cache is stale
     if (ranksError && (ranksError.code === 'PGRST204' || ranksError.message.includes("schema cache"))) {
-        const { data: fallbackRanks } = await sb
-            .from("guild_rank_visibility")
+        const { data: fallbackRanks } = await supabaseAdmin.from("guild_rank_visibility")
             .select("rank_id, is_visible")
 
         if (fallbackRanks) {
@@ -61,9 +62,8 @@ async function getBisData(userId: string) {
         visibilityMap[Number(r.rank)] = r.is_visible
     })
 
-    const { data: members } = await sb
-        .from("guild_members")
-        .select("id, character_name, realm_slug, class_id, rank")
+    const { data: members } = await supabaseAdmin.from("guild_members")
+        .select("id, character_name, realm_slug, class_id, rank, role, bis_dps_gain, bis_pct_gain, spec_name")
         .in("character_name", charNames)
         .order("rank", { ascending: true })
 

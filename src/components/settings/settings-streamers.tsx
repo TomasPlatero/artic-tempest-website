@@ -4,8 +4,9 @@ import { useState, useEffect } from "react"
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { IconBrandTwitch, IconTrash, IconPlus, IconLoader2, IconExternalLink, IconGripVertical, IconRefresh } from "@tabler/icons-react"
+import { IconBrandTwitch, IconTrash, IconPlus, IconLoader2, IconExternalLink, IconGripVertical, IconRefresh, IconArrowLeft } from "@tabler/icons-react"
 import { toast } from "sonner"
+import Link from "next/link"
 import {
     Select,
     SelectContent,
@@ -31,6 +32,15 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { cn } from "@/infrastructure/tailwind/tailwind-utils"
+import {
+    addStreamer,
+    removeStreamer,
+    updateStreamersOrder,
+    getStreamerConfig,
+    updateStreamerConfig,
+    getDiscordChannels,
+    getEnrichedStreamers
+} from "@/infrastructure/streamers/server-actions"
 
 function SortableStreamerItem({ streamer, onDelete }: { streamer: any, onDelete: (id: string, username: string) => void }) {
     const {
@@ -67,8 +77,8 @@ function SortableStreamerItem({ streamer, onDelete }: { streamer: any, onDelete:
                 <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-purple-400" asChild>
                     <a href={`https://twitch.tv/${streamer.twitch_username}`} target="_blank" rel="noreferrer">
                         <IconExternalLink className="size-4" />
-                    </a>
-                </Button>
+                    </a >
+                </Button >
                 <Button
                     size="icon"
                     variant="ghost"
@@ -77,8 +87,8 @@ function SortableStreamerItem({ streamer, onDelete }: { streamer: any, onDelete:
                 >
                     <IconTrash className="size-4" />
                 </Button>
-            </div>
-        </div>
+            </div >
+        </div >
     )
 }
 
@@ -108,11 +118,8 @@ export function StreamersSettings() {
     const fetchChannels = async () => {
         setFetchingChannels(true)
         try {
-            const res = await fetch("/api/discord/channels")
-            if (res.ok) {
-                const data = await res.json()
-                setChannels(data)
-            }
+            const data = await getDiscordChannels()
+            setChannels(data)
         } catch (e) {
             console.error(e)
         } finally {
@@ -122,23 +129,15 @@ export function StreamersSettings() {
 
     const fetchConfig = async () => {
         try {
-            const res = await fetch("/api/streamers/config")
-            if (res.ok) {
-                const data = await res.json()
-                setChannelId(data.discord_streams_channel_id || "")
-            }
+            const data = await getStreamerConfig()
+            setChannelId(data.discord_streams_channel_id || "")
         } catch (e) { }
     }
 
     const handleSaveConfig = async () => {
         setSavingConfig(true)
         try {
-            const res = await fetch("/api/streamers/config", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ discord_streams_channel_id: channelId })
-            })
-            if (!res.ok) throw new Error("Error")
+            await updateStreamerConfig(channelId)
             toast.success("Configuración de notificaciones guardada.")
             fetchConfig()
         } catch (error) {
@@ -150,9 +149,7 @@ export function StreamersSettings() {
 
     const fetchStreamers = async () => {
         try {
-            const res = await fetch("/api/streamers")
-            if (!res.ok) throw new Error("Error obteniendo streamers")
-            const data = await res.json()
+            const data = await getEnrichedStreamers()
             setStreamers(data)
         } catch (error) {
             console.error(error)
@@ -168,13 +165,7 @@ export function StreamersSettings() {
 
         setSubmitting(true)
         try {
-            const res = await fetch("/api/streamers", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ twitch_username: newStreamer.trim() })
-            })
-
-            if (!res.ok) throw new Error("Error")
+            await addStreamer(newStreamer.trim())
             toast.success("Streamer añadido correctamente.")
             setNewStreamer("")
             fetchStreamers()
@@ -188,8 +179,7 @@ export function StreamersSettings() {
     const handleDelete = async (id: string, username: string) => {
         if (!confirm(`¿Estás seguro de que quieres eliminar a ${username}?`)) return
         try {
-            const res = await fetch(`/api/streamers?id=${id}`, { method: "DELETE" })
-            if (!res.ok) throw new Error("Error")
+            await removeStreamer(id)
             toast.success(`${username} eliminado.`)
             fetchStreamers()
         } catch (error) {
@@ -204,12 +194,7 @@ export function StreamersSettings() {
                 sort_order: index,
             }));
 
-            const res = await fetch("/api/streamers", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ items: updates })
-            });
-            if (!res.ok) throw new Error("Guardado falló");
+            await updateStreamersOrder(updates)
         } catch (error) {
             console.error("Failed to save order", error);
             toast.error("Error guardando el nuevo orden.")
@@ -234,15 +219,22 @@ export function StreamersSettings() {
     }
 
     return (
-        <div className="flex flex-col gap-6 p-4 md:p-6 lg:px-8 max-w-4xl mx-auto w-full">
-            <div>
-                <h1 className="text-2xl font-bold flex items-center gap-2">
-                    <IconBrandTwitch className="size-6 text-purple-500" />
-                    Twitch Streamers
-                </h1>
-                <p className="text-sm text-muted-foreground mt-1">
-                    Gestiona la lista de creadores de contenido de tu hermandad. Aparecerán ordenados automáticamente en la web según configures aquí.
-                </p>
+        <div className="flex flex-col gap-6 p-4 md:p-6 lg:px-8 w-full max-w-full">
+            <div className="flex items-center gap-4">
+                <Link href="/dashboard/settings/apps">
+                    <Button variant="outline" size="icon" className="size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 transition-all shadow-xl">
+                        <IconArrowLeft className="size-6" />
+                    </Button>
+                </Link>
+                <div>
+                    <h1 className="text-2xl font-bold flex items-center gap-2">
+                        <IconBrandTwitch className="size-6 text-purple-500" />
+                        Twitch Streamers
+                    </h1>
+                    <p className="text-sm text-muted-foreground mt-1">
+                        Gestiona la lista de creadores de contenido de tu hermandad. Aparecerán ordenados automáticamente en la web según configures aquí.
+                    </p>
+                </div>
             </div>
 
             <Card className="border-border/40 bg-card/40 backdrop-blur-sm">

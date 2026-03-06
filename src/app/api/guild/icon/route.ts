@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export async function POST(request: Request) {
     try {
@@ -18,8 +18,7 @@ export async function POST(request: Request) {
         }
 
         // Get guild info to update its icon
-        const { data: guild, error: guildResError } = await sb
-            .from("guilds_managed")
+        const { data: guild, error: guildResError } = await supabaseAdmin.from("guilds_managed")
             .select("guild_id")
             .limit(1)
             .single()
@@ -33,8 +32,7 @@ export async function POST(request: Request) {
         const fileName = `icons/guild-logo-${Date.now()}.${fileExt}`
 
         // Upload to Supabase Storage
-        const { error: uploadError } = await sb
-            .storage
+        const { error: uploadError } = await supabaseAdmin.storage
             .from("guild_assets")
             .upload(fileName, file, { upsert: true })
 
@@ -44,14 +42,12 @@ export async function POST(request: Request) {
         }
 
         // Get public URL
-        const { data: { publicUrl } } = sb
-            .storage
+        const { data: { publicUrl } } = supabaseAdmin.storage
             .from("guild_assets")
             .getPublicUrl(fileName)
 
         // Update database
-        const { error: updateError } = await sb
-            .from("guilds_managed")
+        const { error: updateError } = await supabaseAdmin.from("guilds_managed")
             .update({ icon_url: publicUrl })
             .eq("guild_id", guild.guild_id)
 

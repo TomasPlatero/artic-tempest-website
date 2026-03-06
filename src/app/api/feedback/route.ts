@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions, sb } from "@/infrastructure/auth/auth-options";
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options";
 
 /**
  * API Route to handle user feedback.
@@ -20,8 +20,7 @@ export async function POST(req: Request) {
         }
 
         // 1. Save to Database (Reliable storage)
-        const { data, error } = await sb
-            .from("feedback")
+        const { data, error } = await supabaseAdmin.from("feedback")
             .insert({
                 user_id: session?.user?.id || null,
                 user_name: name || session?.user?.username || "Anónimo",

@@ -112,10 +112,10 @@ export function SettingsRosterClient({
     };
 
     return (
-        <div className="flex flex-col gap-8 p-4 md:p-8 max-w-7xl mx-auto w-full">
+        <div className="flex flex-col gap-8 p-4 md:p-6 lg:px-8 w-full max-w-full">
             <div className="flex items-center gap-6">
                 <Link href="/dashboard/settings/apps">
-                    <Button variant="outline" size="icon" className="size-12 rounded-2xl bg-white/5 border-white/10 hover:bg-white/10 transition-all shadow-xl">
+                    <Button variant="outline" size="icon" className="size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 transition-all shadow-xl">
                         <IconArrowLeft className="size-6" />
                     </Button>
                 </Link>
@@ -195,7 +195,7 @@ export function SettingsRosterClient({
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="p-8 space-y-8">
+                    <div className="p-8 space-y-8 w-full animate-in fade-in slide-in-from-bottom-4 duration-1000">
                         {/* Name Input */}
                         <div className="space-y-3">
                             <Label className="text-[10px] uppercase font-black text-white/30 ml-1 tracking-[0.22em]">Nombre del Rango</Label>
@@ -208,7 +208,7 @@ export function SettingsRosterClient({
                         </div>
 
                         {/* Color Selection */}
-                        <div className="space-y-4">
+                        <div className="space-y-4 w-full pb-24">
                             <Label className="text-[10px] uppercase font-black text-white/30 ml-1 tracking-[0.22em]">Color de Identificación</Label>
                             <div className="flex items-center gap-4 bg-white/[0.03] p-4 rounded-2xl border border-white/5 h-20">
                                 <div className="relative size-12 shrink-0 group">

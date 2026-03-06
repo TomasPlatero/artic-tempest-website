@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export async function DELETE(req: Request) {
     const session = await getServerSession(authOptions)
@@ -24,8 +24,7 @@ export async function DELETE(req: Request) {
         // - bnet_characters (REFERENCES public.profiles ON DELETE CASCADE)
         // - application_answers (REFERENCES recruitment_applications ON DELETE CASCADE)
 
-        const { error } = await sb
-            .from('profiles')
+        const { error } = await supabaseAdmin.from('profiles')
             .delete()
             .eq('user_id', userId)
 

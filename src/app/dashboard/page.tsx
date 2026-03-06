@@ -2,7 +2,7 @@
 import type React from "react"
 import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { SiteHeader } from "@/components/layout/site-header"
@@ -23,8 +23,7 @@ interface BnetCharacter {
 
 async function getDashboardData(userId: string | undefined) {
   // Get guild metrics base - We try to select everything but handle fails gracefully
-  const { data: guild, error: guildError } = await sb
-    .from("guilds_managed")
+  const { data: guild, error: guildError } = await supabaseAdmin.from("guilds_managed")
     .select("name, region, realm, faction, last_bnet_sync")
     .maybeSingle()
 
@@ -36,12 +35,10 @@ async function getDashboardData(userId: string | undefined) {
     })
   }
 
-  const { count: rosterCount } = await sb
-    .from("guild_members")
+  const { count: rosterCount } = await supabaseAdmin.from("guild_members")
     .select("*", { count: "exact", head: true })
 
-  const { data: upcomingEvents } = await sb
-    .from("guild_events")
+  const { data: upcomingEvents } = await supabaseAdmin.from("guild_events")
     .select("id, title, destination, event_date")
     .gte("event_date", new Date().toISOString())
     .order("event_date", { ascending: true })
@@ -55,8 +52,7 @@ async function getDashboardData(userId: string | undefined) {
   let isBnetLinked = false
 
   if (userId) {
-    const { data: profile } = await sb
-      .from("profiles")
+    const { data: profile } = await supabaseAdmin.from("profiles")
       .select("battlenet_battletag")
       .eq("user_id", userId)
       .single()
@@ -64,8 +60,7 @@ async function getDashboardData(userId: string | undefined) {
     isBnetLinked = !!profile?.battlenet_battletag
 
     if (isBnetLinked) {
-      const { data: chars } = await sb
-        .from("bnet_characters")
+      const { data: chars } = await supabaseAdmin.from("bnet_characters")
         .select("id, name, realm, class_id, level")
         .eq("user_id", userId)
         .order("level", { ascending: false })

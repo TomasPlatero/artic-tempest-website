@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export async function GET() {
     try {
@@ -9,8 +9,7 @@ export async function GET() {
             return new NextResponse("No autorizado", { status: 401 })
         }
 
-        const { data: guild, error } = await sb
-            .from("guilds_managed")
+        const { data: guild, error } = await supabaseAdmin.from("guilds_managed")
             .select("icon_url, name")
             .limit(1)
             .single()

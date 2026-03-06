@@ -26,6 +26,12 @@ import {
 import { cn } from "@/infrastructure/tailwind/tailwind-utils"
 import { toast } from "sonner";
 import {
+  updateMemberRole,
+  updateMemberRank,
+  updateMemberNote,
+  deleteMember
+} from "@/infrastructure/roster/server-actions";
+import {
   Table,
   TableBody,
   TableCell,
@@ -119,6 +125,18 @@ export function RankBadge({ rank, rankColors, className: extraClassName }: { ran
 
 type SortColumn = "name" | "realm" | "role" | "rank";
 
+const SortIcon = ({ column, sortColumn, sortDirection }: { column: SortColumn, sortColumn: SortColumn, sortDirection: "asc" | "desc" }) => {
+  if (sortColumn !== column)
+    return (
+      <IconArrowsSort className="size-3 text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity" />
+    );
+  return sortDirection === "asc" ? (
+    <IconArrowUp className="size-3 text-primary" />
+  ) : (
+    <IconArrowDown className="size-3 text-primary" />
+  );
+};
+
 export function RosterTable({
   members,
   roleLevel,
@@ -130,11 +148,13 @@ export function RosterTable({
   sortColumn,
   sortDirection,
   onSort,
+  canEdit = false,
 }: {
   members: GuildMember[];
   sortColumn: SortColumn;
   sortDirection: "asc" | "desc";
-  onSort: (column: SortColumn) => void;
+  onSort?: (column: SortColumn) => void;
+  canEdit?: boolean;
   roleLevel?: string;
   rankNames?: string[];
   rankColors?: (string | null)[];
@@ -142,19 +162,7 @@ export function RosterTable({
   classColors?: Record<number, string>;
   classRoleMapping?: Record<number, string>;
 }) {
-  const canViewNote = roleLevel === "gm" || roleLevel === "officer";
-
-  const SortIcon = ({ column }: { column: SortColumn }) => {
-    if (sortColumn !== column)
-      return (
-        <IconArrowsSort className="size-3 text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity" />
-      );
-    return sortDirection === "asc" ? (
-      <IconArrowUp className="size-3 text-primary" />
-    ) : (
-      <IconArrowDown className="size-3 text-primary" />
-    );
-  };
+  const canViewNote = canEdit || roleLevel === "gm" || roleLevel === "officer";
 
   const handleRoleChange = async (
     memberId: string,
@@ -162,16 +170,8 @@ export function RosterTable({
     role: string,
   ) => {
     try {
-      const res = await fetch(`/api/guild/members/${memberId}/role`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          role: role.toLowerCase(),
-        }),
-      });
-      if (!res.ok) throw new Error("Failed to update role");
+      await updateMemberRole(memberId, role);
       toast.success(`Rol de ${name} actualizado`);
-      window.location.reload();
     } catch (e) {
       toast.error("Error al actualizar el rol");
       console.error(e);
@@ -184,14 +184,8 @@ export function RosterTable({
     rankId: string,
   ) => {
     try {
-      const res = await fetch(`/api/guild/members/${memberId}/rank`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rank: rankId }),
-      });
-      if (!res.ok) throw new Error("Failed to update rank");
+      await updateMemberRank(memberId, rankId);
       toast.success(`Rango de ${name} actualizado`);
-      window.location.reload();
     } catch (e) {
       toast.error("Error al actualizar el rango");
       console.error(e);
@@ -209,7 +203,7 @@ export function RosterTable({
               onClick={() => onSort?.("name")}
             >
               <div className="flex items-center gap-2">
-                Nombre <SortIcon column="name" />
+                Nombre <SortIcon column="name" sortColumn={sortColumn} sortDirection={sortDirection} />
               </div>
             </TableHead>
             {canViewNote && (
@@ -418,14 +412,10 @@ export function RosterTable({
                                         )
                                       ) {
                                         try {
-                                          const res = await fetch(
-                                            `/api/guild/members/${m.id}`,
-                                            { method: "DELETE" },
-                                          );
-                                          if (res.ok) {
-                                            window.location.reload();
-                                          }
+                                          await deleteMember(m.id);
+                                          toast.success(`${m.character_name} eliminado`);
                                         } catch (e) {
+                                          toast.error("Error al eliminar");
                                           console.error(e);
                                         }
                                       }
@@ -474,19 +464,12 @@ function NoteCell({
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const res = await fetch(`/api/guild/members/${memberId}/note`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ note }),
-      });
-      if (!res.ok) throw new Error("Failed to save");
-
+      await updateMemberNote(memberId, note);
       if (!note || note.trim() === "") {
         toast.success("Nota borrada");
       } else {
         toast.success("Nota editada");
       }
-
       setIsEditing(false);
     } catch (e) {
       toast.error("Error al guardar la nota");

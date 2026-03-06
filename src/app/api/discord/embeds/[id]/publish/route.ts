@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 import { getGuildCredentials } from "@/infrastructure/auth/credentials"
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -12,7 +12,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     try {
         // 1. Fetch the embed data
-        const { data: embed, error: fetchError } = await sb
+        const { data: embed, error: fetchError } = await supabaseAdmin
             .from('discord_embeds')
             .select('*')
             .eq('id', id)
@@ -79,7 +79,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         const discordMsg = await res.json()
 
         // 5. Update DB with last_message_id and timestamp
-        await sb
+        await supabaseAdmin
             .from('discord_embeds')
             .update({
                 last_message_id: discordMsg.id,

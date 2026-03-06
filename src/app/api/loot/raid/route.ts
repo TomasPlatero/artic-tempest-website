@@ -2,20 +2,20 @@
 // GET — Returns cached raid loot entirely from our bnet_* Supabase tables
 
 import { NextResponse } from "next/server"
-import { sb } from "@/infrastructure/auth/auth-options"
+import { supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 // Maps arbitrary frontend IDs to official Bnet Instance IDs
 const INSTANCE_MAP: Record<string, number> = {
     "voidspire": 1307,
-    "marchonqueldanas": 1308,
-    "dreamwell": 1314,
+    "queldanas": 1308,
+    "dreamrift": 1314,
 }
 
 // Maps Blizzard's inventory types to Spanish names
 const SLOT_DISPLAY: Record<string, string> = {
     HEAD: "Cabeza", NECK: "Cuello", SHOULDER: "Hombreras", CHEST: "Pecho",
     WAIST: "Cinturón", LEGS: "Piernas", FEET: "Pies", WRIST: "Muñequeras",
-    HANDS: "Guantes", FINGER: "Anillo", TRINKET: "Abalorio",
+    HANDS: "Guantes", HAND: "Guantes", FINGER: "Anillo", TRINKET: "Abalorio",
     ONE_HAND: "Una Mano", TWO_HAND: "Dos Manos", MAIN_HAND: "Mano Principal",
     OFF_HAND: "Mano Secundaria", SHIELD: "Escudo", BACK: "Capa", CLOAK: "Capa",
     HELD_IN_OFF_HAND: "Sostener", RANGED: "A Distancia", THROWN: "Arrojadiza",
@@ -27,42 +27,43 @@ export async function GET(req: Request) {
     try {
         const url = new URL(req.url)
         const difficulty = url.searchParams.get("difficulty") || "heroic"
-        const requestedInstanceIdStr = url.searchParams.get("instance_id") || "voidspire"
+        const requestedInstanceIdStr = url.searchParams.get("instance_id") || "all"
+        const isAll = requestedInstanceIdStr === "all"
 
-        // Map "voidspire" to 1267, otherwise try parsing as int
-        const instanceId = INSTANCE_MAP[requestedInstanceIdStr.toLowerCase()] || parseInt(requestedInstanceIdStr, 10)
+        // 1. Get Instance(s) Info
+        const instanceIds = isAll ? Object.values(INSTANCE_MAP) : [INSTANCE_MAP[requestedInstanceIdStr.toLowerCase()] || parseInt(requestedInstanceIdStr, 10)]
 
-        if (isNaN(instanceId)) {
+        if (instanceIds.some(id => isNaN(id))) {
             return NextResponse.json({ error: "ID de banda inválido" }, { status: 400 })
         }
 
-        // 1. Get Instance Name
-        const { data: instanceInfo, error: instErr } = await sb
+        const { data: instancesInfo, error: instErr } = await supabaseAdmin
             .from("bnet_instances")
-            .select("name")
-            .eq("id", instanceId)
-            .single()
+            .select("id, name")
+            .in("id", instanceIds)
 
-        if (instErr || !instanceInfo) {
+        if (instErr || !instancesInfo || instancesInfo.length === 0) {
             return NextResponse.json({
-                error: "Instancia no encontrada en la base de datos. Pide a un oficial que sincronice los datos desde Ajustes > Apps > BiS List."
+                error: instancesInfo?.length === 0 ? "Instancia no encontrada" : "Error de base de datos"
             }, { status: 404 })
         }
 
         // 2. Get Encounters and Loot via Join
-        const { data: encounters, error: encErr } = await sb
+        const { data: encounters, error: encErr } = await supabaseAdmin
             .from("bnet_encounters")
             .select(`
                 id, 
                 name,
+                instance_id,
                 bnet_encounter_loot (
                     bnet_items (
                         id, name, quality, item_level, required_level, 
-                        icon, item_class_id, item_subclass_id, inventory_type
+                        icon, item_class_id, item_subclass_id, inventory_type, stats
                     )
                 )
             `)
-            .eq("instance_id", instanceId)
+            .in("instance_id", instanceIds)
+            .order("instance_id", { ascending: true })
             .order("id", { ascending: true })
 
         if (encErr || !encounters) {
@@ -93,6 +94,8 @@ export async function GET(req: Request) {
                     itemLevel: item.item_level,
                     itemClassId: item.item_class_id,
                     itemSubclassId: item.item_subclass_id,
+                    instanceId: encounter.instance_id,
+                    stats: item.stats,
                     isManaged: true // Indicates it comes from our central DB
                 }))
 
@@ -106,13 +109,13 @@ export async function GET(req: Request) {
         }
 
         return NextResponse.json({
-            instanceId,
-            instanceName: instanceInfo.name,
+            instanceId: requestedInstanceIdStr,
+            instanceName: isAll ? "Toda la Temporada 1" : instancesInfo[0]?.name || "Desconocida",
             difficulty,
             bosses,
             cached: true,
             fetchedAt: new Date().toISOString(),
-            isMidnight: true // Preserved for frontend logic if needed
+            isMidnight: true
         })
 
     } catch (e: any) {

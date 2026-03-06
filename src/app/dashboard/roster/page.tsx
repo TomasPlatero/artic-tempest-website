@@ -2,7 +2,7 @@
 import type React from "react"
 import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 import { getAppPermission } from "@/infrastructure/auth/permissions"
 
 import { AppSidebar } from "@/components/layout/app-sidebar"
@@ -15,22 +15,19 @@ export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
 async function getRoster() {
-    const { data } = await sb
-        .from("guild_members")
+    const { data } = await supabaseAdmin.from("guild_members")
         .select("id, character_name, realm_slug, realm_name, class_id, race_id, level, rank, synced_at, note, role")
         .order("rank", { ascending: true })
         .order("character_name", { ascending: true })
 
     // Fetch rank configurations
-    let { data: rawRanks, error: ranksError } = await sb
-        .from("guild_ranks")
+    let { data: rawRanks, error: ranksError } = await supabaseAdmin.from("guild_ranks")
         .select("rank, name, is_visible, color") as { data: any[] | null, error: any }
 
     // Handle missing color column gracefully
     if (ranksError && (ranksError.code === 'PGRST204' || ranksError.message.toLowerCase().includes("color") || ranksError.message.toLowerCase().includes("schema cache"))) {
         console.warn("[ROSTER PAGE] 'color' column missing, retrying select without it...");
-        const { data: retryRanks } = await sb
-            .from("guild_ranks")
+        const { data: retryRanks } = await supabaseAdmin.from("guild_ranks")
             .select("rank, name, is_visible")
         rawRanks = retryRanks
     }
@@ -56,8 +53,7 @@ async function getRoster() {
     }
 
     // Fetch Game Constants (Classes, Role Mappings)
-    const { data: constants } = await sb
-        .from("game_constants")
+    const { data: constants } = await supabaseAdmin.from("game_constants")
         .select("category, key, value, metadata")
 
     const classNames: Record<number, string> = {}
@@ -100,7 +96,7 @@ export default async function RosterPage() {
     }
 
     const roleLevel = session.user?.roleLevel ?? "member"
-    const { canView } = await getAppPermission(roleLevel, 'roster')
+    const { canView, canEdit } = await getAppPermission(roleLevel, 'roster')
 
     if (!canView) {
         redirect("/dashboard")
@@ -130,6 +126,7 @@ export default async function RosterPage() {
 
                     <RosterClient
                         members={roster}
+                        canEdit={canEdit}
                         roleLevel={roleLevel}
                         rankNames={rankNames}
                         rankColors={rankColors}

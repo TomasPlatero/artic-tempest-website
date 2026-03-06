@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 import { redirect } from "next/navigation"
 import { LandingNavigation } from "@/components/landing/navigation"
 import { ApplicationStatusClient } from "@/components/recruitment/application-status-client"
@@ -12,7 +12,7 @@ export default async function ApplicationStatusPage() {
     }
 
     // 1. Obtener la solicitud del usuario
-    const { data: application, error } = await sb
+    const { data: application, error } = await supabaseAdmin
         .from("recruitment_applications")
         .select(`
             *,

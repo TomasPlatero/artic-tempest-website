@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export const dynamic = "force-dynamic"
 
@@ -11,8 +11,7 @@ export async function GET() {
     }
 
     try {
-        const { count, error } = await sb
-            .from("recruitment_applications")
+        const { count, error } = await supabaseAdmin.from("recruitment_applications")
             .select("id", { count: 'exact', head: true })
             .in("status", ["pending", "reviewing", "interview"])
 

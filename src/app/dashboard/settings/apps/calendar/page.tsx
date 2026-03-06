@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 import { redirect } from "next/navigation"
 import { ScheduleFormClient } from "@/components/calendar/schedule-form-client"
 import { IconArrowLeft } from "@tabler/icons-react"
@@ -22,12 +22,11 @@ export default async function CalendarSettingsPage() {
     }
 
     // Server-side fetch current schedule
-    const { data: guildData } = await sb.from("guilds_managed").select("guild_id").limit(1).single()
+    const { data: guildData } = await supabaseAdmin.from("guilds_managed").select("guild_id").limit(1).single()
 
     let initialSchedule: any[] = []
     if (guildData) {
-        const { data } = await sb
-            .from("guild_raid_schedule")
+        const { data } = await supabaseAdmin.from("guild_raid_schedule")
             .select("*")
             .eq("guild_id", guildData.guild_id)
             .order("day_of_week", { ascending: true })
@@ -35,11 +34,11 @@ export default async function CalendarSettingsPage() {
     }
 
     return (
-        <div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6 pb-20">
+        <div className="flex flex-col gap-6 p-4 md:p-6 lg:px-8 w-full max-w-full pb-20">
             <div className="flex items-center gap-4 mb-4">
                 <Link href="/dashboard/settings/apps">
-                    <Button variant="outline" size="icon" className="h-8 w-8 rounded-full border-border/40">
-                        <IconArrowLeft className="h-4 w-4" />
+                    <Button variant="outline" size="icon" className="size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 transition-all shadow-xl">
+                        <IconArrowLeft className="size-6" />
                     </Button>
                 </Link>
                 <div>

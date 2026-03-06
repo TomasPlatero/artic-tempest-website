@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export async function POST(req: Request) {
     try {
@@ -17,8 +17,7 @@ export async function POST(req: Request) {
         }
 
         // 1. Get the guild member ID for the current user
-        const { data: memberData, error: memberErr } = await sb
-            .from("guild_members")
+        const { data: memberData, error: memberErr } = await supabaseAdmin.from("guild_members")
             .select("id")
             .eq("profile_id", session.user.id)
             .single()
@@ -30,8 +29,7 @@ export async function POST(req: Request) {
         const member_id = memberData.id
 
         // 2. Upsert the signup
-        const { data, error } = await sb
-            .from("event_signups")
+        const { data, error } = await supabaseAdmin.from("event_signups")
             .upsert({
                 event_id,
                 member_id,

@@ -199,6 +199,42 @@ export async function fetchGuildSummary(
     }
 }
 
+
+/** Fetch character equipment from Battle.net */
+export async function fetchCharacterEquipment(
+    realmSlug: string,
+    characterNameSlug: string,
+    region: string = "eu"
+): Promise<any> {
+    const token = await getAccessToken()
+    const url = `https://${region}.api.blizzard.com/profile/wow/character/${realmSlug}/${characterNameSlug}/equipment?namespace=profile-${region}&locale=en_US`
+
+    try {
+        const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" })
+        if (!res.ok) return null
+        return await res.json()
+    } catch {
+        return null
+    }
+}
+
+/** Fetch a single item's data (for filtering purposes) */
+export async function fetchItemData(
+    itemId: number,
+    region: string = "eu"
+): Promise<any> {
+    const token = await getAccessToken()
+    const url = `https://${region}.api.blizzard.com/data/wow/item/${itemId}?namespace=static-${region}&locale=en_US`
+
+    try {
+        const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+        if (!res.ok) return null
+        return await res.json()
+    } catch {
+        return null
+    }
+}
+
 /** Convert guild name to slug (lowercase, hyphens, no special chars) */
 export function toSlug(name: string): string {
     return name

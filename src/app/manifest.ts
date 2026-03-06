@@ -1,8 +1,8 @@
 import { MetadataRoute } from 'next'
-import { sb } from "@/infrastructure/auth/auth-options"
+import { supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export default async function manifest(): Promise<MetadataRoute.Manifest> {
-    const { data: guild } = await sb
+    const { data: guild } = await supabaseAdmin
         .from("guilds_managed")
         .select("name, icon_url")
         .limit(1)

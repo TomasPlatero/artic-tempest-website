@@ -2,7 +2,7 @@
 import type React from "react"
 import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { SiteHeader } from "@/components/layout/site-header"
@@ -14,8 +14,7 @@ export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
 async function getProgressionData() {
-    const { data: guild } = await sb
-        .from("guilds_managed")
+    const { data: guild } = await supabaseAdmin.from("guilds_managed")
         .select("name, realm, region")
         .limit(1)
         .single()
@@ -28,14 +27,12 @@ async function getProgressionData() {
 }
 
 async function getRoster() {
-    const { data: members } = await sb
-        .from("guild_members")
+    const { data: members } = await supabaseAdmin.from("guild_members")
         .select("id, character_name, realm_slug, class_id, role, rank")
         .order("character_name", { ascending: true })
 
     // Try guild_ranks first
-    let { data: rawRanks, error: ranksError } = await sb
-        .from("guild_ranks")
+    let { data: rawRanks, error: ranksError } = await supabaseAdmin.from("guild_ranks")
         .select("rank, is_visible")
 
     // Fallback if table doesn't exist, cache is stale, OR it's empty
@@ -43,8 +40,7 @@ async function getRoster() {
         || (!ranksError && (!rawRanks || rawRanks.length === 0));
 
     if (shouldFallback) {
-        const { data: fallbackRanks } = await sb
-            .from("guild_rank_visibility")
+        const { data: fallbackRanks } = await supabaseAdmin.from("guild_rank_visibility")
             .select("rank_id, is_visible")
 
         if (fallbackRanks && fallbackRanks.length > 0) {
@@ -93,8 +89,7 @@ export default async function EstadisticasPage() {
     const rioData = await getProgressionData()
 
     // Fetch class colors
-    const { data: colorConstants } = await sb
-        .from("game_constants")
+    const { data: colorConstants } = await supabaseAdmin.from("game_constants")
         .select("key, value")
         .eq("category", "wow_class_color")
 

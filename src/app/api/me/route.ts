@@ -1,7 +1,7 @@
 // src/app/api/me/route.ts
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -26,8 +26,7 @@ export async function GET() {
     return NextResponse.json({ error: "Falta el ID de Discord en la sesión" }, { status: 400 })
   }
 
-  const { data, error } = await sb
-    .from("profiles")
+  const { data, error } = await supabaseAdmin.from("profiles")
     .select("discord_username, discord_avatar, role_level")
     .eq("discord_user_id", discordId)
     .single()

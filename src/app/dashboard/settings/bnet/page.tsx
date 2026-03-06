@@ -1,4 +1,4 @@
-import { sb } from "@/infrastructure/auth/auth-options"
+import { supabaseAdmin } from "@/infrastructure/auth/auth-options"
 import { SettingsBnetClient } from "@/components/settings/settings-bnet"
 import { getGuildCredentials } from "@/infrastructure/auth/credentials"
 import { AppSidebar } from "@/components/layout/app-sidebar"
@@ -9,18 +9,18 @@ import React from "react"
 export const runtime = "nodejs"
 
 async function getBnetData() {
-    const { count: memberCount } = await sb
+    const { count: memberCount } = await supabaseAdmin
         .from("guild_members")
         .select("*", { count: "exact", head: true })
 
-    const { data: lastSynced } = await sb
+    const { data: lastSynced } = await supabaseAdmin
         .from("guild_members")
         .select("synced_at")
         .order("synced_at", { ascending: false })
         .limit(1)
         .single()
 
-    const { data: guild } = await sb
+    const { data: guild } = await supabaseAdmin
         .from("guilds_managed")
         .select("guild_id")
         .limit(1)

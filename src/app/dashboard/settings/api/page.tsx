@@ -1,6 +1,6 @@
 // src/app/dashboard/settings/api/page.tsx
 import { SettingsApiClient } from "@/components/settings/settings-api";
-import { sb } from "@/infrastructure/auth/auth-options";
+import { supabaseAdmin } from "@/infrastructure/auth/auth-options";
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { SiteHeader } from "@/components/layout/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/common/sidebar"
@@ -9,7 +9,7 @@ import React from "react";
 export const runtime = "nodejs";
 
 export default async function SettingsApiPage() {
-    const { data: guild } = await sb
+    const { data: guild } = await supabaseAdmin
         .from("guilds_managed")
         .select(`
             wcl_client_id, wcl_client_secret,

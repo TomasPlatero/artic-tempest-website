@@ -12,5 +12,24 @@ export const MIDNIGHT_RAIDS = [
             "WAR CHAPLAIN SENN",
             "CORONA DEL COSMOS"
         ]
+    },
+    {
+        id: "queldanas",
+        name: "Marcha a Quel'Danas",
+        englishName: "March on Quel'Danas",
+        image: "/assets/images/raids/queldanas.webp",
+        bosses: [
+            "BELO'REN",
+            "MIDNIGHT FALLS"
+        ]
+    },
+    {
+        id: "dreamrift",
+        name: "La Falla Onírica",
+        englishName: "The Dreamrift",
+        image: "/assets/images/raids/dreamrift.webp",
+        bosses: [
+            "CHIMAERUS"
+        ]
     }
 ]

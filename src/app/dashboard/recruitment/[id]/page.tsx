@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 import { redirect, notFound } from "next/navigation"
 import { RecruitmentDetailClient } from "@/components/recruitment/recruitment-detail-client"
 import { AppSidebar } from "@/components/layout/app-sidebar"
@@ -16,7 +16,7 @@ export default async function RecruitmentDetailPage({ params }: { params: { id: 
     const { id } = params
 
     // Fetch application details
-    const { data: application } = await sb
+    const { data: application } = await supabaseAdmin
         .from("recruitment_applications")
         .select("*")
         .eq("id", id)
@@ -25,7 +25,7 @@ export default async function RecruitmentDetailPage({ params }: { params: { id: 
     if (!application) notFound()
 
     // Fetch answers and questions
-    const { data: answers } = await sb
+    const { data: answers } = await supabaseAdmin
         .from("application_answers")
         .select(`
             answer_text,
@@ -37,7 +37,7 @@ export default async function RecruitmentDetailPage({ params }: { params: { id: 
         .eq("application_id", id)
 
     // Fetch class constants
-    const { data: classConstants } = await sb
+    const { data: classConstants } = await supabaseAdmin
         .from("game_constants")
         .select("key, value, metadata")
         .eq("category", "wow_class")

@@ -2,12 +2,15 @@
 
 import { useState, useEffect } from "react"
 import { IconBrandTwitch } from "@tabler/icons-react"
+import Image from "next/image"
 
-export function LandingStreamers({ limit }: { limit?: number }) {
-    const [streamers, setStreamers] = useState<any[]>([])
-    const [loading, setLoading] = useState(true)
+export function LandingStreamers({ limit, initialStreamers }: { limit?: number, initialStreamers?: any[] }) {
+    const [streamers, setStreamers] = useState<any[]>(initialStreamers || [])
+    const [loading, setLoading] = useState(!initialStreamers)
 
     useEffect(() => {
+        if (initialStreamers) return; // Skip if provided by server
+
         fetch("/api/streamers")
             .then(res => res.json())
             .then(data => {
@@ -17,7 +20,9 @@ export function LandingStreamers({ limit }: { limit?: number }) {
             })
             .catch(() => { })
             .finally(() => setLoading(false))
-    }, [limit])
+            .catch(() => { })
+            .finally(() => setLoading(false))
+    }, [limit, initialStreamers])
 
     if (loading) return null
     if (streamers.length === 0) return null
@@ -49,8 +54,7 @@ export function LandingStreamers({ limit }: { limit?: number }) {
                                     )}
                                     <div className="relative z-10 flex flex-col items-center gap-3">
                                         {s.avatar_url ? (
-                                            /* eslint-disable-next-line @next/next/no-img-element */
-                                            <img src={s.avatar_url} alt={s.twitch_username} className="size-16 rounded-full border-2 border-white/10 grayscale opacity-70" />
+                                            <Image unoptimized src={s.avatar_url} alt={s.twitch_username} width={64} height={64} className="size-16 rounded-full border-2 border-white/10 grayscale opacity-70" />
                                         ) : (
                                             <IconBrandTwitch className="size-12 text-white/20" />
                                         )}

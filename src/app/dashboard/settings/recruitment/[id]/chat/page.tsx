@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 import { notFound, redirect } from "next/navigation"
 import { ApplicationChat } from "@/components/recruitment/application-chat"
 import { Button } from "@/components/ui/button"
@@ -14,7 +14,7 @@ export default async function ApplicationChatPage({ params }: { params: Promise<
         redirect("/dashboard")
     }
 
-    const { data: application } = await sb
+    const { data: application } = await supabaseAdmin
         .from("recruitment_applications")
         .select("*")
         .eq("id", id)

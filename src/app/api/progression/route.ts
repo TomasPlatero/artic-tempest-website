@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { sb } from "@/infrastructure/auth/auth-options";
+import { supabaseAdmin } from "@/infrastructure/auth/auth-options";
 
 export async function GET() {
     try {
         // Fetch guild info and WCL credentials
-        const { data: guild } = await sb
+        const { data: guild } = await supabaseAdmin
             .from("guilds_managed")
             .select("name, realm, region, wcl_client_id, wcl_client_secret")
             .limit(1)
@@ -30,7 +30,7 @@ export async function GET() {
         const { access_token } = await tokenRes.json();
 
         // 2. Fetch Raid Constants from DB
-        const { data: raids } = await sb
+        const { data: raids } = await supabaseAdmin
             .from("game_constants")
             .select("key, value, metadata")
             .eq("category", "wow_raid");

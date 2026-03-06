@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth"
-import { authOptions, sb } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
 import { getAppPermission } from "@/infrastructure/auth/permissions"
 import { redirect, notFound } from "next/navigation"
 import { RaidEditorClient } from "@/components/calendar/raid-editor-client"
@@ -13,7 +13,7 @@ async function getEditorData(eventId?: string) {
     let signups = []
 
     if (eventId) {
-        const { data: raid } = await sb
+        const { data: raid } = await supabaseAdmin
             .from("guild_events")
             .select("*")
             .eq("id", eventId)
@@ -22,7 +22,7 @@ async function getEditorData(eventId?: string) {
         if (!raid) return null
         initialData = raid
 
-        const { data: s } = await sb
+        const { data: s } = await supabaseAdmin
             .from("event_signups")
             .select(`
                 *,
@@ -33,7 +33,7 @@ async function getEditorData(eventId?: string) {
     }
 
     // 2. Fetch Ranks and Members
-    const { data: rawRanks } = await sb
+    const { data: rawRanks } = await supabaseAdmin
         .from("guild_ranks")
         .select("rank, name, is_visible, color")
 
@@ -43,7 +43,7 @@ async function getEditorData(eventId?: string) {
         visibilityMap[i] = found ? found.is_visible : true
     }
 
-    const { data: members } = await sb
+    const { data: members } = await supabaseAdmin
         .from("guild_members")
         .select("*")
         .order("rank", { ascending: true })
@@ -51,7 +51,7 @@ async function getEditorData(eventId?: string) {
     const filteredMembers = (members ?? []).filter(m => visibilityMap[Number(m.rank)] ?? true)
 
     // 3. Fetch Game Constants
-    const { data: constantRows } = await sb
+    const { data: constantRows } = await supabaseAdmin
         .from("game_constants")
         .select("category, key, value, metadata")
 
@@ -119,7 +119,7 @@ export default async function RaidEditorPage({
         redirect("/dashboard/calendario")
     }
 
-    const { data: currentMember } = await sb
+    const { data: currentMember } = await supabaseAdmin
         .from("guild_members")
         .select("id")
         .eq("profile_id", session.user.id)

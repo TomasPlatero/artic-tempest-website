@@ -269,3 +269,10 @@ html #cc-main,
 .wowhead-tooltip {
   padding: 12px !important;
 }
+
+/* Hide the icon inside the tooltip box to avoid redundancy and misalignment */
+.wowhead-tooltip .whtt-tooltip-icon {
+  left: -32px !important;
+  display: show !important;
+  top: 10px !important;
+}

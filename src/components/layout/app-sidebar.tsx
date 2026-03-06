@@ -95,20 +95,20 @@ const navigationData = {
       title: "Reclutamiento",
       url: "/dashboard/settings/recruitment",
       icon: IconListSearch,
-      roles: ["gm", "officer"],
+      appId: "settings-recruitment",
       badgeKey: "recruitment",
     },
     {
       title: "Gestión BiS",
       url: "/dashboard/bis/admin",
       icon: IconListCheck,
-      roles: ["gm", "officer"],
+      appId: "bis-admin",
     },
     {
       title: "Ajustes",
       url: "/dashboard/settings",
       icon: IconAdjustments,
-      roles: ["gm", "officer"],
+      appId: "settings",
     },
   ],
 }
@@ -253,12 +253,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const hasViewPermission = (appId: string) => {
     if (roleLevel === 'gm') return true
+
+    // Check if we have a specific permission in the database
     const p = permissions.find(p => p.role_level === roleLevel && p.app_id === appId)
-    if (!p) {
-      if (['officer', 'raider', 'member'].includes(roleLevel)) return true
-      return false
-    }
-    return p.can_view
+    if (p) return p.can_view
+
+    // Default Fallbacks (matching permissions.ts)
+    if (roleLevel === 'officer') return true
+    if (['raider', 'member'].includes(roleLevel)) return true
+
+    return false
   }
 
   const filterItems = (items: any[]) => {
