@@ -10,7 +10,7 @@ export default function DesktopAuthBridge() {
 
         if (hash && hash.includes('access_token')) {
             // Re-construct the deep link for the desktop app
-            const desktopUrl = `artic-tempest://login-callback${hash}`;
+            const desktopUrl = `artictempest://login-callback${hash}`;
 
             console.log('Redirecting to desktop app:', desktopUrl);
 
