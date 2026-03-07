@@ -13,6 +13,9 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
   useSidebar,
 } from "@/components/common/sidebar"
 import { Badge } from "@/components/ui/badge"

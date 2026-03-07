@@ -1,6 +1,6 @@
 "use client";
 
-import { IconArrowLeft, IconApi, IconLock, IconWorld, IconUser, IconCalendar, IconSword, IconSettings, IconChevronDown, IconCopy, IconCheck, IconUsers } from "@tabler/icons-react";
+import { IconArrowLeft, IconApi, IconLock, IconWorld, IconUser, IconCalendar, IconSword, IconSettings, IconChevronDown, IconCopy, IconCheck, IconUsers, IconListSearch } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
@@ -149,35 +149,48 @@ const categories: Category[] = [
         ]
     },
     {
+        title: "Reclutamiento",
+        icon: <IconListSearch className="w-4 h-4" />,
+        endpoints: [
+            {
+                path: "/api/recruitment/applications",
+                method: "GET | POST",
+                description: "GET: Lista de solicitudes pendientes. POST: Envío de nueva solicitud.",
+                auth: "Público (POST) / Officer (GET)",
+                response: `[ { "id": "uuid", "character_name": "...", "status": "pending", ... } ]`
+            },
+            {
+                path: "/api/recruitment/applications/[id]",
+                method: "PATCH",
+                description: "Acepta, rechaza o pone en espera una solicitud de ingreso.",
+                auth: "Officer / GM",
+                body: `{ "status": "approved", "officer_note": "Bienvenido!" }`
+            }
+        ]
+    },
+    {
         title: "Integraciones (WCL & Discord)",
         icon: <IconSettings className="w-4 h-4" />,
         endpoints: [
             {
                 path: "/api/wcl",
                 method: "GET",
-                description: "Fetch de reportes o combates específicos desde WarcraftLogs V2.",
+                description: "Fetch de reportes o combates específicos desde la API V2 de WarcraftLogs.",
                 auth: "Sesión",
-                params: "?code=ReportCode (opcional para detalles)",
-                response: `{ "reportData": { "reports": [...] } }`
+                params: "?code=ReportCode (opcional)",
+                response: `{ "reportData": { "reports": { "data": [...] } } }`
             },
             {
                 path: "/api/guild/roles",
                 method: "POST | DELETE",
-                description: "Vincula roles de Discord con 'App Roles' (GM, Officer, Raider).",
+                description: "Mapeo de roles de Discord con niveles de acceso web (GM, Officer, Raider).",
                 auth: "Guild Master",
-                body: "POST: { discord_role_id: '...', role_name: '...', app_role: 'officer' }"
-            },
-            {
-                path: "/api/guild/roles/discord",
-                method: "POST | PUT | DELETE",
-                description: "Mantenimiento de la tabla de roles de Discord conocidos.",
-                auth: "Guild Master",
-                body: "POST: { roleId: '...', name: '...', level: 'officer' }"
+                body: "POST: { discord_role_id: '...', app_role: 'officer' }"
             },
             {
                 path: "/api/guild/permissions",
                 method: "GET | PATCH",
-                description: "Matriz de permisos por sección. Define qué nivel de rol puede editar/ver.",
+                description: "Gestión de la matriz de permisos para cada módulo del panel.",
                 auth: "GM (Escritura) / Sesión (Lectura)",
                 body: "PATCH: { role_level: 'raider', app_id: 'roster', can_view: true }"
             }
