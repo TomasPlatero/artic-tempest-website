@@ -20,8 +20,15 @@ export default function DesktopAuthBridge() {
 
     useEffect(() => {
         if (countdown === 0) {
+            // Modern hack to close windows not opened by script:
+            // Open a new blank window in current tab and close it
+            const win = window.open('', '_self');
+            if (win) win.close();
+
+            // Standard fallback
             window.close();
-            // Fallback for browsers that block window.close
+
+            // UI Fallback for mobile or strict browsers
             setStatus('Ya puedes cerrar esta pestaña.');
         }
         if (countdown === null || countdown === 0) return;
@@ -89,7 +96,11 @@ export default function DesktopAuthBridge() {
                                             La ventana se cerrará en {countdown} segundos...
                                         </p>
                                         <button
-                                            onClick={() => window.close()}
+                                            onClick={() => {
+                                                const win = window.open('', '_self');
+                                                if (win) win.close();
+                                                window.close();
+                                            }}
                                             className="text-[9px] text-white/20 hover:text-white/50 uppercase font-bold tracking-[0.2em] transition-colors"
                                         >
                                             Cerrar ahora
