@@ -19,6 +19,14 @@ import {
   useSidebar,
 } from "@/components/common/sidebar"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { cn } from "@/infrastructure/tailwind/tailwind-utils"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import {
   IconChartBar,
   IconDashboard,
@@ -38,7 +46,8 @@ import {
   IconInnerShadowTop,
   IconBell,
   IconArrowBarLeft,
-  IconArrowBarRight
+  IconArrowBarRight,
+  IconDownload
 } from "@tabler/icons-react"
 import { usePathname, useSearchParams } from "next/navigation"
 
@@ -264,6 +273,27 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return inject(navigation)
   }, [badges, navigation])
 
+  // Extract CTA item from navigation to show it separately in the footer
+  const { navItems, ctaItem } = React.useMemo(() => {
+    let foundCta: any = null;
+    const filterRecursive = (items: any[]): any[] => {
+      const filtered = [];
+      for (const item of items) {
+        if (item.app_id === 'desktop-app-cta') {
+          foundCta = item;
+        } else {
+          const newItem = { ...item };
+          if (newItem.children) {
+            newItem.children = filterRecursive(newItem.children);
+          }
+          filtered.push(newItem);
+        }
+      }
+      return filtered;
+    };
+    return { navItems: filterRecursive(processedNavigation), ctaItem: foundCta };
+  }, [processedNavigation])
+
   // Calculate the best matching URL from the entire navigation tree
   // to avoid double highlighting (e.g. /bis vs /bis/admin)
   const activeUrl = React.useMemo(() => {
@@ -328,7 +358,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {processedNavigation.map((group: any) => (
+        {navItems.map((group: any) => (
           <NavMain
             key={group.id || group.name}
             label={group.url ? undefined : group.name}
@@ -354,6 +384,37 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
+        )}
+        {ctaItem && (
+          <div className={cn("px-2", sidebarState === 'collapsed' ? "flex justify-center mb-4" : "px-4 mb-4")}>
+            {sidebarState !== 'collapsed' ? (
+              <Button
+                asChild
+                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black uppercase text-[10px] tracking-widest h-10 rounded-xl shadow-lg shadow-blue-500/20 border border-white/10"
+              >
+                <a href={ctaItem.url} target="_blank" rel="noopener noreferrer" className="gap-2">
+                  <IconDownload className="size-4" />
+                  {ctaItem.name}
+                </a>
+              </Button>
+            ) : (
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="size-9 rounded-xl bg-blue-600/10 text-blue-400 hover:bg-blue-600 hover:text-white border border-blue-500/10"
+                    onClick={() => window.open(ctaItem.url, '_blank')}
+                  >
+                    <IconDownload className="size-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="bg-zinc-950 border-white/10 text-white font-bold text-xs">
+                  {ctaItem.name}
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
         )}
         <NavUser />
       </SidebarFooter>
