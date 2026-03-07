@@ -12,6 +12,7 @@ export async function POST(request: Request) {
 
         const formData = await request.formData()
         const file = formData.get("file") as File | null
+        const type = formData.get("type") as string | null
 
         if (!file) {
             return NextResponse.json({ error: "No se ha proporcionado ningún archivo" }, { status: 400 })
@@ -28,8 +29,10 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "No hay ninguna hermandad configurada" }, { status: 400 })
         }
 
+        const isMobile = type === "mobile"
         const fileExt = file.name.split('.').pop()
-        const fileName = `icons/guild-logo-${Date.now()}.${fileExt}`
+        const suffix = isMobile ? "mobile" : "logo"
+        const fileName = `icons/guild-${suffix}-${Date.now()}.${fileExt}`
 
         // Upload to Supabase Storage
         const { error: uploadError } = await supabaseAdmin.storage
@@ -47,8 +50,9 @@ export async function POST(request: Request) {
             .getPublicUrl(fileName)
 
         // Update database
+        const updateData = isMobile ? { mobile_icon_url: publicUrl } : { icon_url: publicUrl }
         const { error: updateError } = await supabaseAdmin.from("guilds_managed")
-            .update({ icon_url: publicUrl })
+            .update(updateData)
             .eq("guild_id", guild.guild_id)
 
         if (updateError) {

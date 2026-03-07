@@ -31,6 +31,7 @@ type GuildInfo = {
     realm: string;
     region: string;
     iconUrl?: string | null;
+    mobileIconUrl?: string | null;
     version: string;
 };
 
@@ -60,7 +61,9 @@ export function SettingsGeneralClient({
     credentials: initialCredentials,
 }: SettingsGeneralClientProps) {
     const [uploading, setUploading] = useState(false);
+    const [uploadingMobile, setUploadingMobile] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const mobileFileInputRef = useRef<HTMLInputElement>(null);
 
     // Version state
     const [version, setVersion] = useState(guild?.version || "v1.0.0");
@@ -70,7 +73,7 @@ export function SettingsGeneralClient({
     const [creds, setCreds] = useState<CredentialsData>(initialCredentials);
     const [savingCreds, setSavingCreds] = useState(false);
 
-    const handleIconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleIconUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'main' | 'mobile' = 'main') => {
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -81,9 +84,13 @@ export function SettingsGeneralClient({
             return;
         }
 
-        setUploading(true);
+        const isMobile = type === 'mobile';
+        if (isMobile) setUploadingMobile(true);
+        else setUploading(true);
+
         const formData = new FormData();
         formData.append("file", file);
+        formData.append("type", type);
 
         try {
             const res = await fetch("/api/guild/icon", {
@@ -100,8 +107,9 @@ export function SettingsGeneralClient({
             }
 
             toast.success("Logotipo actualizado", {
-                description:
-                    "El nuevo icono de la hermandad se ha guardado correctamente.",
+                description: isMobile
+                    ? "El icono para dispositivos móviles se ha guardado correctamente."
+                    : "El logotipo principal de la hermandad se ha guardado correctamente.",
             });
             window.location.reload();
         } catch {
@@ -109,8 +117,13 @@ export function SettingsGeneralClient({
                 description: "No se pudo contactar con el servidor.",
             });
         } finally {
-            setUploading(false);
-            if (fileInputRef.current) fileInputRef.current.value = "";
+            if (isMobile) {
+                setUploadingMobile(false);
+                if (mobileFileInputRef.current) mobileFileInputRef.current.value = "";
+            } else {
+                setUploading(false);
+                if (fileInputRef.current) fileInputRef.current.value = "";
+            }
         }
     };
 
@@ -145,7 +158,12 @@ export function SettingsGeneralClient({
                     {guild ? (
                         <div className="grid gap-3 text-sm">
                             <div className="flex items-center justify-between">
-                                <span className="text-muted-foreground">Logotipo de Hermandad</span>
+                                <div className="space-y-0.5">
+                                    <span className="text-muted-foreground block text-xs uppercase font-bold tracking-tight">Logotipo Principal</span>
+                                    <p className="text-[10px] text-muted-foreground/40 leading-tight">
+                                        Se utiliza en la barra lateral y en la web principal.
+                                    </p>
+                                </div>
                                 <div className="flex items-center gap-4">
                                     <Avatar className="size-10 border border-border/50 shadow-sm bg-[#1e1e24]">
                                         <AvatarImage
@@ -163,7 +181,7 @@ export function SettingsGeneralClient({
                                             accept="image/*"
                                             className="hidden"
                                             ref={fileInputRef}
-                                            onChange={handleIconUpload}
+                                            onChange={(e) => handleIconUpload(e, 'main')}
                                             disabled={uploading}
                                         />
                                         <Button
@@ -177,7 +195,51 @@ export function SettingsGeneralClient({
                                             ) : (
                                                 <IconUpload className="size-3 mr-2" />
                                             )}
-                                            {uploading ? "Subiendo..." : "Subir nuevo icono"}
+                                            {uploading ? "Subiendo..." : "Actualizar"}
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                            <Separator />
+                            <div className="flex items-center justify-between">
+                                <div className="space-y-0.5">
+                                    <span className="text-muted-foreground block text-xs uppercase font-bold tracking-tight text-amber-500/80">Logotipo para Móvil</span>
+                                    <p className="text-[10px] text-muted-foreground/40 leading-tight">
+                                        Se muestra exclusivamente en la cabecera cuando accedes desde el móvil.
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <Avatar className="size-10 border border-border/50 shadow-sm bg-[#1e1e24]">
+                                        <AvatarImage
+                                            src={guild.mobileIconUrl ?? ""}
+                                            alt="Móvil"
+                                            className="object-cover"
+                                        />
+                                        <AvatarFallback className="bg-transparent text-[10px] font-black italic text-muted-foreground/20">
+                                            MOB
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex flex-col gap-1 items-end">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            className="hidden"
+                                            ref={mobileFileInputRef}
+                                            onChange={(e) => handleIconUpload(e, 'mobile')}
+                                            disabled={uploadingMobile}
+                                        />
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => mobileFileInputRef.current?.click()}
+                                            disabled={uploadingMobile}
+                                        >
+                                            {uploadingMobile ? (
+                                                <IconRefresh className="size-3 mr-2 animate-spin" />
+                                            ) : (
+                                                <IconUpload className="size-3 mr-2" />
+                                            )}
+                                            {uploadingMobile ? "Subiendo..." : "Subir"}
                                         </Button>
                                     </div>
                                 </div>

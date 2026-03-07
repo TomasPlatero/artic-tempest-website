@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from "react"
 import {
     IconSword, IconShield, IconCheck, IconX, IconRefresh,
     IconListCheck, IconLayoutGrid, IconUser, IconUsers, IconFilter, IconSettings,
-    IconBolt, IconExternalLink
+    IconBolt, IconExternalLink, IconCloudDownload
 } from "@tabler/icons-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -855,7 +855,7 @@ export function BisClient({
     }
 
     return (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-8">
             <Script
                 id="wowhead-tooltips-setup"
                 strategy="afterInteractive"
@@ -870,54 +870,56 @@ export function BisClient({
             />
 
             {/* Header */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold">Lista de Deseos BiS</h1>
-                        <p className="text-sm text-muted-foreground mt-1">
-                            {activeTab === "personal"
-                                ? (selectedRaidId === "default" ? "Loot disponible en toda las raids." : `Loot disponible en ${raidName}`)
-                                : "Visión general de las necesidades de toda la hermandad para la Temporada 1."}
-                        </p>
-                    </div>
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 pb-2 border-b border-border/10">
+                <div className="flex flex-col gap-1">
+                    <h1 className="text-3xl font-black uppercase tracking-tighter italic">Lista de Deseos BiS</h1>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">
+                        {activeTab === "personal"
+                            ? (selectedRaidId === "default" ? "Loot disponible en todas las raids de la Temporada 1." : `Loot disponible en ${raidName}`)
+                            : "Visión general de las necesidades de toda la hermandad para la Temporada 1."}
+                    </p>
+                </div>
 
-                    <div className="flex bg-muted/30 p-1 rounded-lg border border-border/50">
+                <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex bg-muted/30 p-1 rounded-xl border border-border/50 shadow-inner">
                         <button
                             onClick={() => setActiveTab("personal")}
-                            className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-all rounded-md ${activeTab === "personal" ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                            className={`flex items-center gap-2 px-4 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all rounded-lg ${activeTab === "personal" ? "bg-background text-primary shadow-sm ring-1 ring-border/20" : "text-muted-foreground hover:text-foreground"}`}
                         >
                             <IconUser className="size-3.5" />
                             Mi Lista
                         </button>
                         <button
                             onClick={() => setActiveTab("guild")}
-                            className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-all rounded-md ${activeTab === "guild" ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                            className={`flex items-center gap-2 px-4 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all rounded-lg ${activeTab === "guild" ? "bg-background text-primary shadow-sm ring-1 ring-border/20" : "text-muted-foreground hover:text-foreground"}`}
                         >
                             <IconUsers className="size-3.5" />
                             Visión General
                         </button>
                     </div>
 
-                    {
-                        canEdit && (
-                            <Button variant="outline" size="sm" asChild className="h-8 bg-blue-500/5 text-blue-400 border-blue-500/20 hover:bg-blue-500/10 hover:text-blue-300 gap-2">
-                                <Link href="/dashboard/bis/admin">
-                                    <IconSettings className="size-3.5" />
-                                    Gestionar
-                                </Link>
-                            </Button>
-                        )
-                    }
-                </div >
-                <div className="flex items-center gap-3 flex-wrap">
+                    {canEdit && (
+                        <Button variant="outline" size="sm" asChild className="h-9 px-4 rounded-xl bg-blue-500/5 text-blue-400 border-blue-500/20 hover:bg-blue-500/10 hover:text-blue-300 gap-2 font-black text-[10px] uppercase tracking-widest shadow-lg">
+                            <Link href="/dashboard/bis/admin">
+                                <IconSettings className="size-3.5" />
+                                Gestionar
+                            </Link>
+                        </Button>
+                    )}
+                </div>
+            </div>
+
+            {/* Controls Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex flex-wrap items-center gap-3">
                     {/* Character Selector - Only for Personal tab */}
                     {activeTab === "personal" && (
                         <Select value={selectedMemberId} onValueChange={setSelectedMemberId}>
-                            <SelectTrigger className="w-[180px] h-9 text-sm bg-background border-border/40">
+                            <SelectTrigger className="w-[180px] h-10 text-xs bg-background border-border/40 rounded-xl font-bold">
                                 <IconUser className="size-4 mr-2 text-muted-foreground" />
                                 <SelectValue placeholder="Personaje" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="rounded-xl">
                                 {eligibleMembers.map(m => (
                                     <SelectItem key={m.id} value={m.id}>
                                         <div className="flex items-center gap-2">
@@ -937,13 +939,13 @@ export function BisClient({
 
                     {/* Raid Selector */}
                     <Select value={selectedRaidId} onValueChange={setSelectedRaidId}>
-                        <SelectTrigger className="w-[220px] h-9 text-sm bg-background border-border/40">
+                        <SelectTrigger className="w-[220px] h-10 text-xs bg-background border-border/40 rounded-xl font-bold">
                             <IconFilter className="size-4 mr-2 text-muted-foreground" />
                             <SelectValue placeholder="Seleccionar Banda" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="rounded-xl">
                             <SelectItem value="default">Temporada 1 (Todas las Raids)</SelectItem>
-                            <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Raids Específicas</div>
+                            <div className="px-2 py-1.5 text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest mb-1">Raids Específicas</div>
                             {MIDNIGHT_RAIDS.map(raid => (
                                 <SelectItem key={raid.id} value={raid.id}>
                                     {raid.name}
@@ -953,37 +955,39 @@ export function BisClient({
                     </Select>
 
                     {/* Difficulty */}
-                    <div className="flex rounded-md border overflow-hidden">
+                    <div className="flex bg-muted/30 p-1 rounded-xl border border-border/50">
                         <button
-                            className={`px-3 py-1.5 text-xs font-medium transition-colors ${difficulty === "normal" ? "bg-blue-600 text-white" : "bg-background text-muted-foreground hover:text-foreground"}`}
+                            className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all rounded-lg ${difficulty === "normal" ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20" : "text-muted-foreground hover:text-foreground"}`}
                             onClick={() => setDifficulty("normal")}
                         >
                             Normal
                         </button>
                         <button
-                            className={`px-3 py-1.5 text-xs font-medium transition-colors ${difficulty === "heroic" ? "bg-green-600 text-white" : "bg-background text-muted-foreground hover:text-foreground"}`}
+                            className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all rounded-lg ${difficulty === "heroic" ? "bg-green-600 text-white shadow-lg shadow-green-500/20" : "text-muted-foreground hover:text-foreground"}`}
                             onClick={() => setDifficulty("heroic")}
                         >
                             Heroico
                         </button>
                         <button
-                            className={`px-3 py-1.5 text-xs font-medium transition-colors ${difficulty === "mythic" ? "bg-purple-600 text-white" : "bg-background text-muted-foreground hover:text-foreground"}`}
+                            className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all rounded-lg ${difficulty === "mythic" ? "bg-purple-600 text-white shadow-lg shadow-purple-500/20" : "text-muted-foreground hover:text-foreground"}`}
                             onClick={() => setDifficulty("mythic")}
                         >
                             Mítico
                         </button>
                     </div>
+                </div>
 
+                <div className="flex items-center gap-3">
                     {/* View Mode */}
-                    <div className="flex rounded-md border overflow-hidden">
+                    <div className="flex bg-muted/30 p-1 rounded-xl border border-border/50">
                         <button
-                            className={`px-3 py-1.5 text-xs font-medium transition-colors flex items-center gap-1 ${viewMode === "slot" ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:text-foreground"}`}
+                            className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 rounded-lg ${viewMode === "slot" ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" : "text-muted-foreground hover:text-foreground"}`}
                             onClick={() => setViewMode("slot")}
                         >
                             <IconLayoutGrid className="size-3.5" /> Ranura
                         </button>
                         <button
-                            className={`px-3 py-1.5 text-xs font-medium transition-colors flex items-center gap-1 ${viewMode === "boss" ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:text-foreground"}`}
+                            className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 rounded-lg ${viewMode === "boss" ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" : "text-muted-foreground hover:text-foreground"}`}
                             onClick={() => setViewMode("boss")}
                         >
                             <IconSword className="size-3.5" /> Jefe
@@ -994,7 +998,7 @@ export function BisClient({
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-9 w-9 text-muted-foreground hover:text-foreground border"
+                        className="h-10 w-10 text-muted-foreground hover:text-foreground border border-border/50 rounded-xl hover:bg-muted/50 transition-all"
                         onClick={() => fetchLoot(true)}
                         disabled={loading}
                         title="Refrescar loot desde Blizzard"
@@ -1002,7 +1006,7 @@ export function BisClient({
                         <IconRefresh className={`size-4 ${loading ? "animate-spin" : ""}`} />
                     </Button>
                 </div>
-            </div >
+            </div>
 
             {activeTab === "guild" ? (
                 // --- GUILD OVERVIEW TAB ---
@@ -1028,7 +1032,7 @@ export function BisClient({
                             if (bossItems.length === 0) return null
 
                             return (
-                                <Card key={boss.id} className="bg-card/30 border-border/40 overflow-hidden shadow-none backdrop-blur-sm h-fit">
+                                <Card key={boss.id} className="bg-card/30 border-border/40 overflow-hidden shadow-none backdrop-blur-sm h-fit rounded-2xl">
                                     <div className="px-4 py-2 bg-muted/20 border-b border-border/40 flex items-center justify-between">
                                         <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500/80">{boss.name}</h3>
                                         <Badge variant="outline" className="text-[10px] h-4 py-0 border-amber-500/10 text-amber-500/40">{bossItems.length}</Badge>
@@ -1036,11 +1040,7 @@ export function BisClient({
                                     <CardContent className="p-0">
                                         <div className="divide-y divide-border/20">
                                             {bossItems.map(item => {
-                                                // Use RAID_ILVL if we detect a raid difficulty
                                                 const midnightIlvl = MIDNIGHT_S1_ILVL[difficulty.toLowerCase()] || item.itemLevel;
-                                                const diffId = WOWHEAD_DIFF[difficulty] || 15;
-                                                const isBis = selections.some(s => s.item_id === item.id)
-                                                const g = rbItemGains[item.id]
                                                 const selectors = overviewData.filter(s => s.item_id === item.id && s.difficulty === difficulty)
 
                                                 return (
@@ -1102,38 +1102,52 @@ export function BisClient({
             ) : (
                 <div className="flex flex-col gap-6">
                     {/* Raidbots Importer Section */}
-                    <Card className="border-purple-500/20 bg-purple-500/5">
-                        <CardContent className="p-4">
-                            <div className="flex flex-col md:flex-row items-end gap-4">
-                                <div className="flex-1 space-y-2 w-full">
-                                    <label className="text-[10px] font-bold uppercase tracking-widest text-purple-400">Importar BiS desde Raidbots (Top Gear)</label>
+                    <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/10 to-transparent rounded-2xl overflow-hidden">
+                        <CardContent className="p-5">
+                            <div className="flex flex-col md:flex-row items-start md:items-end gap-6">
+                                <div className="flex-1 space-y-3 w-full">
+                                    <div className="flex items-center justify-between px-1">
+                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-purple-400 flex items-center gap-2">
+                                            <IconBolt className="size-3" />
+                                            Importar BiS desde Raidbots (Top Gear)
+                                        </label>
+                                        <a
+                                            href="https://www.curseforge.com/wow/addons/rclootcouncil-artictempest"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-[9px] font-black uppercase tracking-widest text-orange-400 hover:text-orange-300 transition-colors flex items-center gap-2 group/download bg-orange-500/5 px-2 py-1 rounded-lg border border-orange-500/10"
+                                        >
+                                            <IconCloudDownload className="size-3 opacity-60 group-hover/download:opacity-100 transition-opacity" />
+                                            ¿No tienes el addon? Descárgalo aquí
+                                        </a>
+                                    </div>
                                     <div className="relative">
-                                        <IconBolt className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-purple-400/50" />
+                                        <IconBolt className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-purple-400/50" />
                                         <Input
-                                            placeholder="https://www.raidbots.com/simbot/report/..."
+                                            placeholder="Introduce la URL del reporte de Raidbots (ej: https://www.raidbots.com/simbot/report/...)"
                                             value={raidbotsUrl}
                                             onChange={(e) => setRaidbotsUrl(e.target.value)}
-                                            className="pl-9 h-10 border-purple-500/20 bg-background/50 focus-visible:ring-purple-500/40"
+                                            className="pl-11 h-12 border-purple-500/20 bg-background/50 focus-visible:ring-purple-500/40 rounded-xl font-medium text-sm"
                                         />
                                     </div>
                                 </div>
                                 <Button
                                     onClick={handleRaidbotsImport}
                                     disabled={isImporting}
-                                    className="bg-purple-600 hover:bg-purple-500 text-white gap-2 h-10 px-6 shrink-0 w-full md:w-auto"
+                                    className="bg-purple-600 hover:bg-purple-500 text-white font-black text-[10px] uppercase tracking-widest gap-2 h-12 px-8 shrink-0 w-full md:w-auto rounded-xl shadow-lg shadow-purple-900/40"
                                 >
                                     {isImporting ? <IconRefresh className="size-4 animate-spin" /> : <IconBolt className="size-4" />}
                                     {isImporting ? "Sincronizando..." : "Sincronizar BiS"}
                                 </Button>
                             </div>
                             {importStats && (
-                                <div className="mt-3 flex items-center gap-4 animate-in fade-in slide-in-from-top-1">
-                                    <div className="flex items-center gap-1.5 text-xs">
-                                        <span className="text-muted-foreground">Mejora detectada:</span>
+                                <div className="mt-4 flex items-center gap-4 animate-in fade-in slide-in-from-top-1 bg-green-500/5 border border-green-500/10 p-2 rounded-xl w-fit">
+                                    <div className="flex items-center gap-2 text-xs">
+                                        <span className="text-muted-foreground font-medium">Mejora detectada:</span>
                                         <span className="font-bold text-green-400">+{importStats.dps} DPS</span>
-                                        <Badge variant="outline" className="text-[10px] py-0 h-4 border-green-500/20 text-green-400">+{importStats.pct}%</Badge>
+                                        <Badge variant="outline" className="text-[10px] py-0 h-4 border-green-500/20 text-green-400 font-black">+{importStats.pct}%</Badge>
                                     </div>
-                                    <Button variant="link" className="h-auto p-0 text-[10px] text-purple-400 h-4 gap-1" asChild>
+                                    <Button variant="link" className="h-auto p-0 text-[10px] font-black uppercase tracking-widest text-purple-400 h-4 gap-1.5" asChild>
                                         <a href={raidbotsUrl} target="_blank" rel="noreferrer">
                                             Ver reporte completo <IconExternalLink className="size-2.5" />
                                         </a>
@@ -1144,20 +1158,22 @@ export function BisClient({
                     </Card>
 
                     {loading ? (
-                        <div className="flex items-center justify-center py-20 gap-3 text-muted-foreground">
-                            <IconRefresh className="size-5 animate-spin" />
-                            <span>Cargando loot de la raid...</span>
+                        <div className="flex flex-col items-center justify-center py-20 gap-4 text-muted-foreground">
+                            <IconRefresh className="size-8 animate-spin opacity-20" />
+                            <span className="text-xs font-black uppercase tracking-widest opacity-40">Cargando loot de la raid...</span>
                         </div>
                     ) : bosses.length === 0 ? (
-                        <Card>
-                            <CardContent className="py-16 text-center text-muted-foreground">
-                                <IconSword className="size-10 mx-auto mb-4 opacity-20" />
-                                <p>No hay datos de loot disponibles.</p>
-                                <p className="text-sm mt-1">Comprueba que las credenciales de Battle.net están configuradas en Ajustes.</p>
+                        <Card className="rounded-2xl bg-card/30 border-dashed">
+                            <CardContent className="py-20 text-center text-muted-foreground flex flex-col items-center gap-4">
+                                <IconSword className="size-12 opacity-10" />
+                                <div className="space-y-1">
+                                    <p className="font-bold text-lg">No hay datos de loot disponibles</p>
+                                    <p className="text-sm opacity-60 max-w-sm mx-auto">Comprueba que las credenciales de Battle.net están configuradas correctamente en los ajustes de la hermandad.</p>
+                                </div>
                             </CardContent>
                         </Card>
                     ) : (
-                        <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+                        <div className="grid gap-8 lg:grid-cols-[1fr_340px]">
                             {/* Main Loot Grid */}
                             <div className="space-y-6">
                                 <div className="lg:hidden mb-6">
@@ -1177,15 +1193,15 @@ export function BisClient({
                                     // VIEW BY SLOT
                                     <Accordion type="multiple" className="space-y-4">
                                         {[...itemsBySlot.entries()].map(([slotName, entries]) => (
-                                            <AccordionItem key={slotName} value={slotName} className="border border-border/40 rounded-xl px-4 bg-muted/5">
-                                                <AccordionTrigger className="hover:no-underline py-4">
+                                            <AccordionItem key={slotName} value={slotName} className="border border-border/40 rounded-2xl px-5 bg-card/30 shadow-sm overflow-hidden">
+                                                <AccordionTrigger className="hover:no-underline py-5 group">
                                                     <div className="flex items-center gap-3">
-                                                        <span className="text-sm font-black uppercase tracking-widest text-blue-400">{slotName}</span>
-                                                        <Badge variant="outline" className="text-[10px] border-blue-500/20 text-blue-400/60">{entries.length}</Badge>
+                                                        <span className="text-[11px] font-black uppercase tracking-[0.2em] text-blue-400 group-hover:text-blue-300 transition-colors">{slotName}</span>
+                                                        <Badge variant="outline" className="text-[10px] border-blue-500/10 text-blue-400/40 font-black">{entries.length}</Badge>
                                                     </div>
                                                 </AccordionTrigger>
-                                                <AccordionContent className="pb-4">
-                                                    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                                                <AccordionContent className="pb-5">
+                                                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 pt-2">
                                                         {entries.map(({ item, bossName }) => (
                                                             <LootItemCard
                                                                 key={`${item.id}-${bossName}`}
@@ -1207,15 +1223,15 @@ export function BisClient({
                                     // VIEW BY BOSS
                                     <Accordion type="multiple" className="space-y-4">
                                         {filteredBosses.map(boss => (
-                                            <AccordionItem key={boss.id} value={boss.id.toString()} className="border border-border/40 rounded-xl px-4 bg-muted/5">
-                                                <AccordionTrigger className="hover:no-underline py-4">
+                                            <AccordionItem key={boss.id} value={boss.id.toString()} className="border border-border/40 rounded-2xl px-5 bg-card/30 shadow-sm overflow-hidden">
+                                                <AccordionTrigger className="hover:no-underline py-5 group">
                                                     <div className="flex items-center gap-3">
-                                                        <span className="text-sm font-black uppercase tracking-widest text-amber-400">{boss.name}</span>
-                                                        <Badge variant="outline" className="text-[10px] border-amber-500/20 text-amber-400/60">{boss.items.length}</Badge>
+                                                        <span className="text-[11px] font-black uppercase tracking-[0.2em] text-amber-500/80 group-hover:text-amber-400 transition-colors">{boss.name}</span>
+                                                        <Badge variant="outline" className="text-[10px] border-amber-500/10 text-amber-500/40 font-black">{boss.items.length}</Badge>
                                                     </div>
                                                 </AccordionTrigger>
-                                                <AccordionContent className="pb-4">
-                                                    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                                                <AccordionContent className="pb-5">
+                                                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 pt-2">
                                                         {boss.items.map(item => (
                                                             <LootItemCard
                                                                 key={item.id}
@@ -1252,8 +1268,7 @@ export function BisClient({
                         </div>
                     )}
                 </div>
-            )
-            }
-        </div >
+            )}
+        </div>
     )
 }
