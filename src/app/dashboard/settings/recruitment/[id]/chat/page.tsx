@@ -24,15 +24,17 @@ export default async function ApplicationChatPage({ params }: { params: Promise<
 
     return (
         <div className="flex flex-col h-[calc(100vh-4rem)] md:h-[calc(100vh-5rem)] p-4 md:p-6 lg:p-8 w-full">
-            <div className="flex items-center gap-4 mb-6 shrink-0">
-                <Button variant="ghost" size="icon" asChild className="rounded-full hover:bg-white/5">
-                    <Link href={`/dashboard/settings/recruitment/${id}`}>
-                        <IconArrowLeft className="size-5" />
-                    </Link>
-                </Button>
+            <div className="flex items-center gap-6 mb-6 shrink-0">
+                <Link href={`/dashboard/settings/recruitment/${id}`}>
+                    <Button variant="outline" size="icon" className="size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 transition-all shadow-xl">
+                        <IconArrowLeft className="size-6" />
+                    </Button>
+                </Link>
                 <div>
-                    <h1 className="text-xl font-black uppercase tracking-tight text-white">Chat de Reclutamiento</h1>
-                    <p className="text-xs text-zinc-400 font-medium tracking-wide">
+                    <h1 className="text-3xl font-black font-heading italic tracking-tight uppercase flex items-center gap-3">
+                        CHAT DE RECLUTAMIENTO
+                    </h1>
+                    <p className="text-sm font-medium text-white/40 mt-2 uppercase tracking-widest leading-tight">
                         Coordina con <span className="text-blue-400 font-bold">{application.character_name}</span> los detalles de su ingreso.
                     </p>
                 </div>

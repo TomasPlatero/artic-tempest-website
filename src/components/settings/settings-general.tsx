@@ -31,6 +31,7 @@ type GuildInfo = {
     realm: string;
     region: string;
     iconUrl?: string | null;
+    version: string;
 };
 
 type CredentialsData = {
@@ -59,8 +60,11 @@ export function SettingsGeneralClient({
     credentials: initialCredentials,
 }: SettingsGeneralClientProps) {
     const [uploading, setUploading] = useState(false);
-    const [ranks, setRanks] = useState<boolean[]>(initialRankVisibility);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Version state
+    const [version, setVersion] = useState(guild?.version || "v1.0.0");
+    const [savingVersion, setSavingVersion] = useState(false);
 
     // Credentials state
     const [creds, setCreds] = useState<CredentialsData>(initialCredentials);
@@ -114,16 +118,18 @@ export function SettingsGeneralClient({
 
     return (
         <div className="flex flex-col gap-8 p-4 md:p-6 lg:px-8 w-full max-w-full animate-in fade-in duration-500">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-6">
                 <Link href="/dashboard/settings">
                     <Button variant="outline" size="icon" className="size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 transition-all shadow-xl">
                         <IconArrowLeft className="size-6" />
                     </Button>
                 </Link>
                 <div>
-                    <h1 className="text-2xl font-bold">Configuración del Dashboard</h1>
-                    <p className="text-sm text-muted-foreground mt-1">
-                        Información básica de la hermandad y nombres de los rangos.
+                    <h1 className="text-3xl font-black font-heading italic tracking-tight uppercase flex items-center gap-3">
+                        CONFIGURACIÓN GENERAL
+                    </h1>
+                    <p className="text-sm font-medium text-white/40 mt-2 uppercase tracking-widest">
+                        Información básica de la hermandad y credenciales de sistema.
                     </p>
                 </div>
             </div>
@@ -190,6 +196,49 @@ export function SettingsGeneralClient({
                             <div className="flex items-center justify-between">
                                 <span className="text-muted-foreground">Región</span>
                                 <Badge variant="outline">{guild.region.toUpperCase()}</Badge>
+                            </div>
+                            <Separator />
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2">
+                                <div className="space-y-1">
+                                    <span className="text-muted-foreground block">Versión del Dashboard</span>
+                                    <p className="text-[10px] text-muted-foreground/60 leading-tight">
+                                        Se muestra en la barra lateral debajo del nombre de la hermandad.
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Input
+                                        className="h-9 w-[180px] font-mono text-xs bg-white/5 border-white/10"
+                                        value={version}
+                                        onChange={e => setVersion(e.target.value)}
+                                        placeholder="v1.0.0"
+                                    />
+                                    <Button
+                                        size="sm"
+                                        variant="secondary"
+                                        disabled={savingVersion || version === guild.version}
+                                        onClick={async () => {
+                                            setSavingVersion(true);
+                                            try {
+                                                const res = await fetch("/api/guild/settings/version", {
+                                                    method: "PATCH",
+                                                    headers: { "Content-Type": "application/json" },
+                                                    body: JSON.stringify({ version }),
+                                                });
+                                                if (!res.ok) throw new Error();
+                                                toast.success("Versión actualizada", {
+                                                    description: "El cambio se aplicará al recargar o navegar."
+                                                });
+                                            } catch {
+                                                toast.error("Error", { description: "No se pudo actualizar la versión." });
+                                            } finally {
+                                                setSavingVersion(false);
+                                            }
+                                        }}
+                                    >
+                                        {savingVersion ? <IconRefresh className="size-3 animate-spin" /> : <IconDeviceFloppy className="size-3 mr-2" />}
+                                        Actualizar
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     ) : (

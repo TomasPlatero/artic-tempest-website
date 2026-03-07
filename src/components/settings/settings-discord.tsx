@@ -187,10 +187,12 @@ export function SettingsDiscordClient({ initialCredentials, initialCommands }: S
                         </Button>
                     </Link>
                     <div>
-                        <h1 className="text-3xl font-black uppercase tracking-tighter flex items-center gap-3 italic">
-                            Bot de Discord
+                        <h1 className="text-3xl font-black font-heading italic tracking-tight uppercase flex items-center gap-3">
+                            BOT DE DISCORD
                         </h1>
-                        <p className="text-muted-foreground font-medium">Control centralizado de la integración con Discord.</p>
+                        <p className="text-sm font-medium text-white/40 mt-2 uppercase tracking-widest leading-tight">
+                            Control centralizado de la integración con Discord.
+                        </p>
                     </div>
                 </div>
                 <div className="flex gap-2">

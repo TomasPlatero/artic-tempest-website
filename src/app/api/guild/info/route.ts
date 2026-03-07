@@ -10,7 +10,7 @@ export async function GET() {
         }
 
         const { data: guild, error } = await supabaseAdmin.from("guilds_managed")
-            .select("icon_url, name")
+            .select("icon_url, name, version")
             .limit(1)
             .single()
 

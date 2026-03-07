@@ -31,15 +31,17 @@ export default async function AccountsSettingsPage() {
 
     return (
         <div className="flex flex-col gap-6 p-6 lg:px-8 w-full max-w-full">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-6">
                 <Link href="/dashboard/settings">
                     <Button variant="outline" size="icon" className="size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 transition-all shadow-xl">
                         <IconArrowLeft className="size-6" />
                     </Button>
                 </Link>
                 <div>
-                    <h1 className="text-2xl font-bold">Gestión de Cuentas</h1>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <h1 className="text-3xl font-black font-heading italic tracking-tight uppercase flex items-center gap-3">
+                        GESTIÓN DE CUENTAS
+                    </h1>
+                    <p className="text-sm font-medium text-white/40 mt-2 uppercase tracking-widest leading-tight">
                         Control de identidades, vinculación de APIs y salud de tokens OAuth.
                     </p>
                 </div>
