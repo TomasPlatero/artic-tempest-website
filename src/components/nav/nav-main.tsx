@@ -23,16 +23,18 @@ import { getIconByName } from "@/lib/icon-utils"
 
 export function NavMain({
   items,
-  label
+  label,
+  activeUrl
 }: {
   label?: string
   items: any[]
+  activeUrl?: string
 }) {
   const pathname = usePathname()
 
   const renderItem = (item: any) => {
-    const isExact = pathname === item.url
-    const isActive = isExact || (item.url !== '/' && item.url !== '/dashboard' && pathname.startsWith(item.url + '/'))
+    const isExact = activeUrl ? item.url === activeUrl : pathname === item.url
+    const isActive = isExact || (item.children?.some((c: any) => activeUrl ? c.url === activeUrl : pathname === c.url))
     const hasChildren = item.children && item.children.length > 0
     const IconComponent = getIconByName(item.icon_name)
 
@@ -54,7 +56,7 @@ export function NavMain({
                 <SidebarMenuSub>
                   {item.children.map((child: any) => (
                     <SidebarMenuSubItem key={child.id || child.name}>
-                      <SidebarMenuSubButton asChild isActive={pathname === child.url}>
+                      <SidebarMenuSubButton asChild isActive={activeUrl ? child.url === activeUrl : pathname === child.url}>
                         <a href={child.url}>
                           <span>{child.name}</span>
                         </a>
