@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 export default function DesktopAuthBridge() {
     const [status, setStatus] = useState('Verificando autenticación...');
     const [desktopUrl, setDesktopUrl] = useState<string | null>(null);
-    const [copied, setCopied] = useState(false);
+    const [countdown, setCountdown] = useState<number | null>(null);
 
     const handleRedirect = useCallback((url: string) => {
         setStatus('Intentando abrir Artic Tempest...');
@@ -18,13 +18,20 @@ export default function DesktopAuthBridge() {
         }, 500);
     }, []);
 
-    const copyToClipboard = () => {
-        if (desktopUrl) {
-            navigator.clipboard.writeText(desktopUrl);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
+    useEffect(() => {
+        if (countdown === 0) {
+            window.close();
+            // Fallback for browsers that block window.close
+            setStatus('Ya puedes cerrar esta pestaña.');
         }
-    };
+        if (countdown === null || countdown === 0) return;
+
+        const timer = setTimeout(() => {
+            setCountdown(countdown - 1);
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, [countdown]);
 
     useEffect(() => {
         const hash = window.location.hash;
@@ -33,6 +40,7 @@ export default function DesktopAuthBridge() {
             const url = `artictempest://login-callback${hash}`;
             setDesktopUrl(url);
             setStatus('¡Token recibido! Redirigiendo a la aplicación...');
+            setCountdown(5);
 
             // Automatic attempt
             handleRedirect(url);
@@ -74,35 +82,25 @@ export default function DesktopAuthBridge() {
                                 </svg>
                             </button>
 
-                            <div className="relative pt-4">
-                                <div className="absolute inset-x-0 top-1/2 h-px bg-white/10"></div>
-                                <span className="relative bg-[#121214] px-4 text-[10px] text-white/30 font-black uppercase tracking-widest">O MANUALMENTE</span>
-                            </div>
-
-                            <button
-                                onClick={copyToClipboard}
-                                className="w-full py-3 px-6 bg-white/5 border border-white/10 text-white/70 font-bold rounded-xl hover:bg-white/10 hover:text-white transition-all flex items-center justify-center gap-3"
-                            >
-                                {copied ? (
-                                    <>
-                                        <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        <span>¡COPIADO!</span>
-                                    </>
+                            <div className="pt-8">
+                                {countdown !== null ? (
+                                    <div className="space-y-4">
+                                        <p className="text-white/40 text-[10px] uppercase font-black tracking-widest animate-pulse">
+                                            La ventana se cerrará en {countdown} segundos...
+                                        </p>
+                                        <button
+                                            onClick={() => window.close()}
+                                            className="text-[9px] text-white/20 hover:text-white/50 uppercase font-bold tracking-[0.2em] transition-colors"
+                                        >
+                                            Cerrar ahora
+                                        </button>
+                                    </div>
                                 ) : (
-                                    <>
-                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                                        </svg>
-                                        <span>COPIAR ENLACE</span>
-                                    </>
+                                    <p className="text-white/40 text-[10px] leading-relaxed px-4">
+                                        Si la aplicación no se abre, asegúrate de tenerla instalada.
+                                    </p>
                                 )}
-                            </button>
-
-                            <p className="text-[10px] text-white/40 leading-relaxed px-4">
-                                Copia el enlace y pégalo en el recuadro &quot;Manual&quot; de la app si el botón de arriba no funciona.
-                            </p>
+                            </div>
                         </div>
                     )}
 
