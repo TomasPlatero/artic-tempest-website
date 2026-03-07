@@ -40,15 +40,17 @@ export default function BisExportPage() {
 
     return (
         <div className="flex flex-col gap-6 p-4 md:p-6 lg:px-8 w-full max-w-full">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-6">
                 <Link href="/dashboard/settings/apps/bis">
-                    <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl hover:bg-white/5 border-white/10 shadow-xl transition-all font-black">
-                        <IconArrowLeft className="h-6 w-6" />
+                    <Button variant="outline" size="icon" className="size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 transition-all shadow-xl">
+                        <IconArrowLeft className="size-6" />
                     </Button>
                 </Link>
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Exportar para Addon</h1>
-                    <p className="text-muted-foreground mt-1">
+                    <h1 className="text-3xl font-black font-heading italic tracking-tight uppercase flex items-center gap-3">
+                        AJUSTES DE EXPORTACIÓN
+                    </h1>
+                    <p className="text-sm font-medium text-white/40 mt-2 uppercase tracking-widest">
                         Copia los datos de BiS para importarlos en RCLootCouncil_ArticTempest.
                     </p>
                 </div>

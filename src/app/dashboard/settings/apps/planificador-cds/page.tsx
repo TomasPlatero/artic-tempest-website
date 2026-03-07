@@ -13,9 +13,11 @@ export default function PlanificadorCdsSettingsPage() {
                     </Button>
                 </Link>
                 <div>
-                    <h1 className="text-2xl font-bold">Planificador de CD&apos;s</h1>
-                    <p className="text-sm text-muted-foreground mt-1">
-                        Gestiona las habilidades y cooldowns disponibles en el planificador de raid
+                    <h1 className="text-3xl font-black font-heading italic tracking-tight uppercase flex items-center gap-3">
+                        PLANIFICADOR DE CD&apos;S
+                    </h1>
+                    <p className="text-sm font-medium text-white/40 mt-2 uppercase tracking-widest leading-tight">
+                        Gestiona las habilidades y cooldowns disponibles en el planificador de raid.
                     </p>
                 </div>
             </div>

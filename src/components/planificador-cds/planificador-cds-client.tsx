@@ -1704,7 +1704,10 @@ export function PlanificadorCdsClient() {
 
                                                                                                 <div className="flex flex-col leading-tight">
                                                                                                     <span className="text-[10px] font-black" style={{ color: cd.color }}>{cd.name}</span>
-                                                                                                    <span className="text-[9px] text-white/60">{h.character_name} · {formatTime(assign.time_seconds)}</span>
+                                                                                                    <span className="text-[9px] text-white/60">
+                                                                                                        {h.character_name}
+                                                                                                        {" · "}{formatTime(assign.time_seconds)}
+                                                                                                    </span>
                                                                                                 </div>
                                                                                             </div>
                                                                                         </div>

@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { IconArrowLeft, IconUsers, IconCalendar, IconChartBar, IconId, IconStethoscope } from "@tabler/icons-react"
+import { IconArrowLeft, IconUsers, IconCalendar, IconChartBar, IconId, IconStethoscope, IconLayoutCards } from "@tabler/icons-react"
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { SiteHeader } from "@/components/layout/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/common/sidebar"
@@ -67,9 +67,11 @@ export default function AppsSettingsHubPage() {
                     </Button>
                 </Link>
                 <div>
-                    <h1 className="text-2xl font-bold">Configuración de Apps</h1>
-                    <p className="text-sm text-muted-foreground mt-1">
-                        Ajustes específicos para cada módulo del Dashboard
+                    <h1 className="text-3xl font-black font-heading italic tracking-tight uppercase flex items-center gap-3">
+                        CONFIGURACIÓN DE APPS
+                    </h1>
+                    <p className="text-sm font-medium text-white/40 mt-2 uppercase tracking-widest leading-tight">
+                        Ajustes específicos para cada módulo del Dashboard.
                     </p>
                 </div>
             </div>

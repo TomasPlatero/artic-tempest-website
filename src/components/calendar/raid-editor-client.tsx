@@ -23,6 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "sonner"
 import { cn } from "@/infrastructure/tailwind/tailwind-utils"
 import { RankBadge } from "@/components/common/roster-table"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 // DND Kit
 import {
@@ -66,6 +67,19 @@ interface Signup {
     is_absent?: boolean
     is_late?: boolean
 }
+
+const SLOT_TRANSLATIONS: Record<string, string> = {
+    HEAD: "Cabeza", NECK: "Cuello", SHOULDER: "Hombreras", CHEST: "Pecho",
+    WAIST: "Cinturón", LEGS: "Piernas", FEET: "Pies", WRIST: "Muñequeras",
+    HANDS: "Guantes", FINGER: "Anillo", TRINKET: "Abalorio",
+    ONE_HAND: "Una Mano", TWO_HAND: "Dos Manos", MAIN_HAND: "Mano Principal",
+    OFF_HAND: "Mano Secundaria", SHIELD: "Escudo", BACK: "Capa", CLOAK: "Capa",
+    HELD_IN_OFF_HAND: "Sostener", RANGED: "A Distancia", THROWN: "Arrojadiza",
+    SHIRT: "Camisa", HOLDABLE: "Sostener", TWOHWEAPON: "Arma de 2 Manos", WEAPON: "Arma",
+    HAND: "Guantes",
+}
+
+const translateSlot = (s: string) => SLOT_TRANSLATIONS[s?.toUpperCase()] || s || "Slot desconocido"
 
 const formatToDateTimeLocal = (dateInput: string | Date) => {
     const date = new Date(dateInput)
@@ -539,17 +553,53 @@ export function RaidEditorClient({
     const [localRaids, setLocalRaids] = useState(raids)
     const [localBuffs, setLocalBuffs] = useState(buffs)
 
+    const [bisSelections, setBisSelections] = useState<any[]>([])
+
+    // Fetch BiS overview data
+    useEffect(() => {
+        const fetchBis = async () => {
+            try {
+                const res = await fetch("/api/bis/overview")
+                if (res.ok) {
+                    const data = await res.json()
+                    setBisSelections(data)
+                }
+            } catch (error) {
+                console.error("Error fetching BiS overview:", error)
+            }
+        }
+        fetchBis()
+    }, [])
+
+    // Helper to get matching BiS items for a member on the current boss
+    const getMemberBisItems = useCallback((memberId: string) => {
+        if (!currentBossTab || currentBossTab === "All") return []
+
+        const normalizedTab = currentBossTab.toLowerCase().trim()
+
+        return bisSelections.filter(s => {
+            if (s.member_id !== memberId) return false
+
+            const bossName = (s.boss_name || "").toLowerCase().trim()
+
+            // Fuzzy matching for "Imperator" vs "Imperador" and other minor variations
+            return bossName === normalizedTab ||
+                normalizedTab.includes(bossName) ||
+                bossName.includes(normalizedTab) ||
+                (bossName.includes("imperad") && normalizedTab.includes("imperat")) ||
+                (bossName.includes("imperat") && normalizedTab.includes("imperad"))
+        })
+    }, [bisSelections, currentBossTab])
+
+    const checkMemberBis = useCallback((memberId: string) => {
+        return getMemberBisItems(memberId).length > 0
+    }, [getMemberBisItems])
+
     useEffect(() => {
         if (localRaids.length === 0 || localBuffs.length === 0) {
             fetch("/api/guild/constants")
                 .then(res => res.json())
                 .then(data => {
-                    const r: any[] = []
-                    const b: any[] = [
-                        { category: "Buffs / Debuffs", items: [] },
-                        { category: "Utilidad", items: [] }
-                    ]
-
                     if (data.wow_raid) {
                         const uniqueRaids = new Map()
                         Object.entries(data.wow_raid).forEach(([key, val]: [string, any]) => {
@@ -566,7 +616,6 @@ export function RaidEditorClient({
                         })
 
                         const r = Array.from(uniqueRaids.values())
-                        // Sort: Forced "Todas las Raids" at the very top
                         r.sort((a, b) => {
                             const nameA = (a.name || "").toLowerCase();
                             const nameB = (b.name || "").toLowerCase();
@@ -580,6 +629,10 @@ export function RaidEditorClient({
                         setLocalRaids(r)
                     }
                     if (data.wow_buff) {
+                        const b: any[] = [
+                            { category: "Buffs / Debuffs", items: [] },
+                            { category: "Utilidad", items: [] }
+                        ]
                         Object.entries(data.wow_buff).forEach(([key, val]: [string, any]) => {
                             const item = { id: key, name: val.value, classId: val.metadata?.classId }
                             if (val.metadata?.type === 'buff') b[0].items.push(item)
@@ -1058,10 +1111,10 @@ export function RaidEditorClient({
                                                 strategy={verticalListSortingStrategy}
                                                 className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-4 flex flex-col gap-4"
                                             >
-                                                <RosterGroup title="Tanques" color="text-emerald-500" signups={activeByRole.tanks} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
-                                                <RosterGroup title="Sanadores" color="text-emerald-500" signups={activeByRole.heals} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
-                                                <RosterGroup title="Melee DPS" color="text-emerald-500" signups={activeByRole.melee} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
-                                                <RosterGroup title="Ranged DPS" color="text-emerald-500" signups={activeByRole.ranged} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
+                                                <RosterGroup title="Tanques" color="text-emerald-500" signups={activeByRole.tanks} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} checkMemberBis={checkMemberBis} getMemberBisItems={getMemberBisItems} />
+                                                <RosterGroup title="Sanadores" color="text-emerald-500" signups={activeByRole.heals} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} checkMemberBis={checkMemberBis} getMemberBisItems={getMemberBisItems} />
+                                                <RosterGroup title="Melee DPS" color="text-emerald-500" signups={activeByRole.melee} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} checkMemberBis={checkMemberBis} getMemberBisItems={getMemberBisItems} />
+                                                <RosterGroup title="Ranged DPS" color="text-emerald-500" signups={activeByRole.ranged} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} checkMemberBis={checkMemberBis} getMemberBisItems={getMemberBisItems} />
                                             </DroppableContainer>
                                         </div>
                                     </TabsContent>
@@ -1075,10 +1128,10 @@ export function RaidEditorClient({
                                                 strategy={verticalListSortingStrategy}
                                                 className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 flex flex-col gap-4"
                                             >
-                                                <RosterGroup title="Tanques" color="text-amber-500" signups={reserveByRole.tanks} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
-                                                <RosterGroup title="Sanadores" color="text-amber-500" signups={reserveByRole.heals} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
-                                                <RosterGroup title="Melee DPS" color="text-amber-500" signups={reserveByRole.melee} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
-                                                <RosterGroup title="Ranged DPS" color="text-amber-500" signups={reserveByRole.ranged} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
+                                                <RosterGroup title="Tanques" color="text-amber-500" signups={reserveByRole.tanks} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} checkMemberBis={checkMemberBis} getMemberBisItems={getMemberBisItems} />
+                                                <RosterGroup title="Sanadores" color="text-amber-500" signups={reserveByRole.heals} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} checkMemberBis={checkMemberBis} getMemberBisItems={getMemberBisItems} />
+                                                <RosterGroup title="Melee DPS" color="text-amber-500" signups={reserveByRole.melee} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} checkMemberBis={checkMemberBis} getMemberBisItems={getMemberBisItems} />
+                                                <RosterGroup title="Ranged DPS" color="text-amber-500" signups={reserveByRole.ranged} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} checkMemberBis={checkMemberBis} getMemberBisItems={getMemberBisItems} />
                                             </DroppableContainer>
                                         </div>
                                     </TabsContent>
@@ -1103,10 +1156,10 @@ export function RaidEditorClient({
                                         strategy={rectSortingStrategy}
                                         className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-4 min-h-[600px] grid grid-cols-1 xl:grid-cols-2 gap-4"
                                     >
-                                        <RosterGroup title="Tanques" color="text-emerald-500" signups={activeByRole.tanks} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
-                                        <RosterGroup title="Sanadores" color="text-emerald-500" signups={activeByRole.heals} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
-                                        <RosterGroup title="Melee DPS" color="text-emerald-500" signups={activeByRole.melee} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
-                                        <RosterGroup title="Ranged DPS" color="text-emerald-500" signups={activeByRole.ranged} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
+                                        <RosterGroup title="Tanques" color="text-emerald-500" signups={activeByRole.tanks} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} checkMemberBis={checkMemberBis} getMemberBisItems={getMemberBisItems} />
+                                        <RosterGroup title="Sanadores" color="text-emerald-500" signups={activeByRole.heals} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} checkMemberBis={checkMemberBis} getMemberBisItems={getMemberBisItems} />
+                                        <RosterGroup title="Melee DPS" color="text-emerald-500" signups={activeByRole.melee} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} checkMemberBis={checkMemberBis} getMemberBisItems={getMemberBisItems} />
+                                        <RosterGroup title="Ranged DPS" color="text-emerald-500" signups={activeByRole.ranged} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} checkMemberBis={checkMemberBis} getMemberBisItems={getMemberBisItems} />
                                     </DroppableContainer>
                                 </div>
 
@@ -1133,26 +1186,26 @@ export function RaidEditorClient({
                                                 className="h-full"
                                             >
                                                 <TabsContent value="all" className="flex flex-col gap-6 m-0">
-                                                    <RosterGroup title="Tanques" color="text-amber-500" signups={reserveByRole.tanks} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
-                                                    <RosterGroup title="Sanadores" color="text-amber-500" signups={reserveByRole.heals} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
-                                                    <RosterGroup title="Melee DPS" color="text-amber-500" signups={reserveByRole.melee} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
-                                                    <RosterGroup title="Ranged DPS" color="text-amber-500" signups={reserveByRole.ranged} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
+                                                    <RosterGroup title="Tanques" color="text-amber-500" signups={reserveByRole.tanks} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} checkMemberBis={checkMemberBis} getMemberBisItems={getMemberBisItems} />
+                                                    <RosterGroup title="Sanadores" color="text-amber-500" signups={reserveByRole.heals} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} checkMemberBis={checkMemberBis} getMemberBisItems={getMemberBisItems} />
+                                                    <RosterGroup title="Melee DPS" color="text-amber-500" signups={reserveByRole.melee} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} checkMemberBis={checkMemberBis} getMemberBisItems={getMemberBisItems} />
+                                                    <RosterGroup title="Ranged DPS" color="text-amber-500" signups={reserveByRole.ranged} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} checkMemberBis={checkMemberBis} getMemberBisItems={getMemberBisItems} />
                                                 </TabsContent>
 
                                                 <TabsContent value="tanks" className="m-0">
-                                                    <RosterGroup title="Tanques" color="text-amber-500" signups={reserveByRole.tanks} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
+                                                    <RosterGroup title="Tanques" color="text-amber-500" signups={reserveByRole.tanks} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} checkMemberBis={checkMemberBis} getMemberBisItems={getMemberBisItems} />
                                                 </TabsContent>
 
                                                 <TabsContent value="heals" className="m-0">
-                                                    <RosterGroup title="Sanadores" color="text-amber-500" signups={reserveByRole.heals} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
+                                                    <RosterGroup title="Sanadores" color="text-amber-500" signups={reserveByRole.heals} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} checkMemberBis={checkMemberBis} getMemberBisItems={getMemberBisItems} />
                                                 </TabsContent>
 
                                                 <TabsContent value="melee" className="m-0">
-                                                    <RosterGroup title="Melee DPS" color="text-amber-500" signups={reserveByRole.melee} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
+                                                    <RosterGroup title="Melee DPS" color="text-amber-500" signups={reserveByRole.melee} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} checkMemberBis={checkMemberBis} getMemberBisItems={getMemberBisItems} />
                                                 </TabsContent>
 
                                                 <TabsContent value="ranged" className="m-0">
-                                                    <RosterGroup title="Ranged DPS" color="text-amber-500" signups={reserveByRole.ranged} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} />
+                                                    <RosterGroup title="Ranged DPS" color="text-amber-500" signups={reserveByRole.ranged} onToggle={toggleStatus} onToggleAbsent={toggleAbsent} onToggleLate={toggleLate} onResetStatus={resetStatus} isReadOnly={isReadOnly} changeRole={changeRole} rankColors={rankColors} checkMemberBis={checkMemberBis} getMemberBisItems={getMemberBisItems} />
                                                 </TabsContent>
                                             </DroppableContainer>
                                         </div>
@@ -1181,6 +1234,8 @@ export function RaidEditorClient({
                                         onResetStatus={() => { }}
                                         changeRole={changeRole}
                                         rankColors={rankColors}
+                                        hasBis={activeId ? checkMemberBis(activeId) : false}
+                                        bisItems={activeId ? getMemberBisItems(activeId) : []}
                                     />
                                 </div>
                             ) : null}
@@ -1192,7 +1247,7 @@ export function RaidEditorClient({
     )
 }
 
-function MemberItem({ signup, onToggle, onToggleAbsent, onToggleLate, onResetStatus, isReadOnly = false, changeRole, rankColors }: { signup: Signup, onToggle: () => void, onToggleAbsent: () => void, onToggleLate: () => void, onResetStatus: () => void, isReadOnly?: boolean, changeRole: (id: string, role: string) => void, rankColors?: (string | null)[] }) {
+function MemberItem({ signup, onToggle, onToggleAbsent, onToggleLate, onResetStatus, isReadOnly = false, changeRole, rankColors, hasBis, bisItems = [] }: { signup: Signup, onToggle: () => void, onToggleAbsent: () => void, onToggleLate: () => void, onResetStatus: () => void, isReadOnly?: boolean, changeRole: (id: string, role: string) => void, rankColors?: (string | null)[], hasBis?: boolean, bisItems?: any[] }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
         id: signup.member_id,
         disabled: isReadOnly || signup.is_absent || signup.is_late
@@ -1253,7 +1308,36 @@ function MemberItem({ signup, onToggle, onToggleAbsent, onToggleLate, onResetSta
             <div className="flex items-center gap-2 flex-1 overflow-hidden" {...attributes} {...listeners}>
                 <Image src={`/assets/images/classes/${m.class_id}.jpg`} alt="" width={20} height={20} className="rounded-full shrink-0" />
                 <RankBadge rank={m.rank} rankColors={rankColors} className="size-4" />
-                <span className={cn("text-xs font-semibold truncate text-white")}>{m.character_name}</span>
+                <div className="flex items-center gap-1.5 truncate">
+                    <span className={cn("text-xs font-semibold truncate text-white")}>{m.character_name}</span>
+                    {hasBis && (
+                        <TooltipProvider>
+                            <Tooltip delayDuration={0}>
+                                <TooltipTrigger asChild>
+                                    <span className="text-[10px] cursor-help font-black text-purple-400 uppercase tracking-widest shrink-0 animate-in fade-in zoom-in-95 duration-500 hover:text-purple-300 transition-colors">
+                                        bis
+                                    </span>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="bg-[#0a0a0c] border-[#1f1f23] text-white p-3 min-w-[200px] shadow-2xl">
+                                    <div className="flex flex-col gap-2">
+                                        <div className="flex items-center justify-between border-b border-white/10 pb-1.5 mb-1">
+                                            <span className="text-[10px] font-black uppercase tracking-tighter text-purple-400">Objetos BiS</span>
+                                            <span className="text-[9px] font-bold text-white/40 uppercase">{bisItems.length} {bisItems.length === 1 ? 'item' : 'items'}</span>
+                                        </div>
+                                        <div className="flex flex-col gap-1.5">
+                                            {bisItems.map((item, idx) => (
+                                                <div key={idx} className="flex flex-col">
+                                                    <span className="text-[11px] font-bold text-emerald-400 leading-tight">{item.item_name}</span>
+                                                    <span className="text-[9px] font-medium text-white/50 uppercase tracking-wider">{translateSlot(item.slot)}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
+                </div>
             </div>
 
             <div className="flex items-center gap-1.5 shrink-0" onClick={e => e.stopPropagation()}>
@@ -1341,7 +1425,7 @@ const CLASS_COUNTS = (active: Signup[]) => {
     return counts
 }
 
-function RosterGroup({ title, color, signups, onToggle, onToggleAbsent, onToggleLate, onResetStatus, isReadOnly, changeRole, rankColors }: { title: string, color: string, signups: Signup[], onToggle: (id: string) => void, onToggleAbsent: (id: string) => void, onToggleLate: (id: string) => void, onResetStatus: (id: string) => void, isReadOnly: boolean, changeRole: (id: string, role: string) => void, rankColors?: (string | null)[] }) {
+function RosterGroup({ title, color, signups, onToggle, onToggleAbsent, onToggleLate, onResetStatus, isReadOnly, changeRole, rankColors, checkMemberBis, getMemberBisItems }: { title: string, color: string, signups: Signup[], onToggle: (id: string) => void, onToggleAbsent: (id: string) => void, onToggleLate: (id: string) => void, onResetStatus: (id: string) => void, isReadOnly: boolean, changeRole: (id: string, role: string) => void, rankColors?: (string | null)[], checkMemberBis: (id: string) => boolean, getMemberBisItems: (id: string) => any[] }) {
     return (
         <div className="flex flex-col gap-2">
             <h4 className={cn("text-[10px] font-bold uppercase pl-1 flex items-center gap-1", color + "/60")}>
@@ -1358,6 +1442,8 @@ function RosterGroup({ title, color, signups, onToggle, onToggleAbsent, onToggle
                     isReadOnly={isReadOnly}
                     changeRole={changeRole}
                     rankColors={rankColors}
+                    hasBis={checkMemberBis(s.member_id)}
+                    bisItems={getMemberBisItems(s.member_id)}
                 />
             )) : <div className={cn("h-10 border border-dashed rounded-lg flex items-center justify-center text-[10px] font-bold uppercase italic", color + "/10", color + "/30")}>Vacío</div>}
         </div>

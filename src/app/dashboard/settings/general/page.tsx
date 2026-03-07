@@ -13,7 +13,7 @@ const MASK = "••••••••••••••••"
 async function getGeneralData() {
     const { data: guild } = await supabaseAdmin
         .from("guilds_managed")
-        .select("name, realm, region, icon_url, discord_client_id, discord_client_secret, discord_guild_id, bnet_client_id, bnet_client_secret, wcl_client_id, wcl_client_secret")
+        .select("name, realm, region, icon_url, discord_client_id, discord_client_secret, discord_guild_id, bnet_client_id, bnet_client_secret, wcl_client_id, wcl_client_secret, version")
         .limit(1)
         .single()
 
@@ -42,7 +42,13 @@ async function getGeneralData() {
     })
 
     return {
-        guild: guild ? { name: guild.name, realm: guild.realm, region: guild.region, iconUrl: guild.icon_url } : null,
+        guild: guild ? {
+            name: guild.name,
+            realm: guild.realm,
+            region: guild.region,
+            iconUrl: guild.icon_url,
+            version: guild.version || "v1.0.0"
+        } : null,
         rankVisibility,
         rankNames,
         rankRoles,

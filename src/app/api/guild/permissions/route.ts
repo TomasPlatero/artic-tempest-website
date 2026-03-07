@@ -23,7 +23,7 @@ export async function PATCH(request: Request) {
         const roleLevel = session.user.roleLevel
 
         const body = await request.json()
-        const { role_level, app_id, can_view, can_edit } = body
+        const { role_level, app_id, can_view, can_edit, can_manage } = body
 
         if (!role_level || !app_id) {
             return NextResponse.json({ error: "Faltan parámetros" }, { status: 400 })
@@ -34,7 +34,8 @@ export async function PATCH(request: Request) {
                 role_level,
                 app_id,
                 can_view,
-                can_edit
+                can_edit,
+                can_manage
             }, { onConflict: "role_level, app_id" })
 
         if (error) throw error

@@ -50,15 +50,17 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
 
     return (
         <div className="flex flex-col gap-6 p-4 md:p-6 lg:px-8 w-full max-w-full">
-            <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" asChild className="rounded-full">
-                    <Link href="/dashboard/settings/recruitment?tab=inbox">
-                        <IconArrowLeft className="size-5" />
-                    </Link>
-                </Button>
+            <div className="flex items-center gap-6">
+                <Link href="/dashboard/settings/recruitment?tab=inbox">
+                    <Button variant="outline" size="icon" className="size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 transition-all shadow-xl">
+                        <IconArrowLeft className="size-6" />
+                    </Button>
+                </Link>
                 <div>
-                    <h1 className="text-2xl font-bold">Detalle de Solicitud</h1>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <h1 className="text-3xl font-black font-heading italic tracking-tight uppercase flex items-center gap-3">
+                        DETALLE DE SOLICITUD
+                    </h1>
+                    <p className="text-sm font-medium text-white/40 mt-2 uppercase tracking-widest">
                         Revisa la información del aplicante y gestiona su estado.
                     </p>
                 </div>

@@ -308,11 +308,11 @@ export function SettingsApiClient({ }: any) {
                 </div>
 
                 <div className="space-y-4">
-                    <h1 className="text-4xl md:text-5xl font-black tracking-tight text-white uppercase italic">
-                        Developers Guide
+                    <h1 className="text-4xl md:text-5xl font-black font-heading italic tracking-tighter text-white uppercase">
+                        DEVELOPERS GUIDE
                     </h1>
-                    <p className="text-base text-white/40 max-w-3xl leading-relaxed font-medium">
-                        Referencia técnica exhaustiva para desarrolladores. Todos los endpoints están protegidos por <span className="text-primary font-bold">Row Level Security</span> y requieren autenticación válida mediante sesión o tokens.
+                    <p className="text-sm font-medium text-white/40 max-w-3xl leading-relaxed uppercase tracking-widest">
+                        Referencia técnica exhaustiva. Todos los endpoints están protegidos por <span className="text-blue-400 font-bold italic">Row Level Security</span> y requieren sesión válida.
                     </p>
                 </div>
             </div>

@@ -124,7 +124,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const roleLevel = session?.user?.roleLevel ?? "member"
   const [iconUrl, setIconUrl] = React.useState<string | null>(null)
   const [guildName, setGuildName] = React.useState<string>("Artic Tempest")
-  const [permissions, setPermissions] = React.useState<any[]>([])
+  const [appVersion, setAppVersion] = React.useState<string>("v1.0.0 (dynamic)")
+  const [navigation, setNavigation] = React.useState<any[]>([])
   const [mounted, setMounted] = React.useState(false)
   const [badges, setBadges] = React.useState<Record<string, number>>({
     recruitment: 0,
@@ -137,16 +138,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }, [])
 
   React.useEffect(() => {
-    fetch("/api/guild/permissions")
+    // Fetch Dynamic Navigation
+    fetch("/api/navigation")
       .then(res => res.json())
-      .then(data => setPermissions(data))
-      .catch(err => console.error("Failed to fetch permissions:", err))
+      .then(data => setNavigation(data))
+      .catch(err => console.error("Failed to fetch navigation:", err))
 
     fetch("/api/guild/info")
       .then(res => res.json())
       .then(data => {
         if (data?.icon_url) setIconUrl(data.icon_url)
         if (data?.name) setGuildName(data.name)
+        if (data?.version) setAppVersion(data.version)
       })
       .catch(err => console.error("Failed to fetch guild info:", err))
 
@@ -205,8 +208,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
           console.log("Realtime Notifications: Conectado (SUBSCRIBED)")
-        } else if (status === 'CLOSED') {
-          // Normal React unmount, ignore false warning
         } else {
           console.warn(`Realtime Notifications: ${status}`)
         }
@@ -224,8 +225,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
           console.log("Realtime Recruitment: Conectado (SUBSCRIBED)")
-        } else if (status === 'CLOSED') {
-          // Normal React unmount, ignore false warning
         } else {
           console.warn(`Realtime Recruitment: ${status}`)
         }
@@ -251,37 +250,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     }
   }, [badges])
 
-  const hasViewPermission = (appId: string) => {
-    if (roleLevel === 'gm') return true
-
-    // Check if we have a specific permission in the database
-    const p = permissions.find(p => p.role_level === roleLevel && p.app_id === appId)
-    if (p) return p.can_view
-
-    // Default Fallbacks (matching permissions.ts)
-    if (roleLevel === 'officer') return true
-    if (['raider', 'member'].includes(roleLevel)) return true
-
-    return false
-  }
-
-  const filterItems = (items: any[]) => {
-    return items.filter(item => {
-      if (item.roles && !item.roles.includes(roleLevel)) return false
-      if (item.appId && !hasViewPermission(item.appId)) return false
-      return true
-    }).map(item => ({
-      ...item,
-      badge: item.badgeKey ? badges[item.badgeKey] : (item.appId === 'calendar' ? badges.calendar : undefined)
-    }))
-  }
-
-  const filteredGroups = [
-    { title: "", items: filterItems(navigationData.general) },
-    { title: "ZONA RAIDER", items: filterItems(navigationData.raider) },
-    { title: "ADMINISTRACIÓN", items: filterItems(navigationData.admin) },
-  ].filter(group => group.items.length > 0)
-
   if (!mounted) {
     return (
       <Sidebar collapsible="icon" {...props}>
@@ -291,6 +259,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </Sidebar>
     )
   }
+
+  // Helper to inject badges into the dynamic items
+  const injectBadges = (items: any[]): any[] => {
+    return items.map(item => ({
+      ...item,
+      badge: item.badge_key ? badges[item.badge_key] : (item.app_id === 'calendar' ? badges.calendar : undefined),
+      children: item.children ? injectBadges(item.children) : []
+    }))
+  }
+
+  const processedNavigation = injectBadges(navigation)
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -307,7 +286,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <div className="flex flex-col truncate">
                   <span className="text-base font-semibold leading-none">{guildName}</span>
                   <div className="flex items-center gap-1.5 mt-0.5">
-                    <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 bg-blue-500/10 text-blue-400 border-blue-500/20 font-black">v0.9.0 beta</Badge>
+                    <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 bg-blue-500/10 text-blue-400 border-blue-500/20 font-black">{appVersion}</Badge>
                   </div>
                 </div>
               </div>
@@ -316,8 +295,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {filteredGroups.map(group => (
-          <NavMain key={group.title} label={group.title} items={group.items} />
+        {processedNavigation.map((group: any) => (
+          <NavMain
+            key={group.id || group.name}
+            label={group.url ? undefined : group.name}
+            items={group.url ? [group] : group.children}
+          />
         ))}
       </SidebarContent>
       <SidebarFooter>

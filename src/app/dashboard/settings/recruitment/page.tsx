@@ -7,11 +7,22 @@ import { IconLoader2, IconArrowLeft } from "@tabler/icons-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
+import { Forbidden } from "@/components/common/forbidden"
+import { getAppPermission } from "@/infrastructure/auth/permissions"
+
 export default async function RecruitmentSettingsPage() {
     const session = await getServerSession(authOptions)
-    if (!session || (session.user.roleLevel !== 'gm' && session.user.roleLevel !== 'officer')) {
-        redirect("/dashboard")
+    const roleLevel = session?.user?.roleLevel ?? "member"
+    const { canView } = await getAppPermission(roleLevel, "settings-recruitment")
+
+    if (!canView) {
+        return (
+            <div className="flex flex-col gap-6 p-4 md:p-6 lg:px-8">
+                <Forbidden />
+            </div>
+        )
     }
+
 
     // Fetch data for the client component
     const { data: spots } = await supabaseAdmin.from("recruitment_spots").select("*")
@@ -31,8 +42,10 @@ export default async function RecruitmentSettingsPage() {
                     </Button>
                 </Link>
                 <div>
-                    <h1 className="text-2xl font-bold font-black tracking-tight uppercase italic">Ajustes de Reclutamiento</h1>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <h1 className="text-3xl font-black font-heading italic tracking-tight uppercase flex items-center gap-3">
+                        AJUSTES DE RECLUTAMIENTO
+                    </h1>
+                    <p className="text-sm font-medium text-white/40 mt-2 uppercase tracking-widest leading-tight">
                         Gestiona las vacantes de la hermandad, las preguntas y revisa las nuevas solicitudes.
                     </p>
                 </div>

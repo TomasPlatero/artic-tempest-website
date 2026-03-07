@@ -11,7 +11,24 @@ import { SiteHeader } from "@/components/layout/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/common/sidebar"
 import React from "react"
 
-export default function SettingsHubPage() {
+import { Forbidden } from "@/components/common/forbidden"
+import { getAppPermission } from "@/infrastructure/auth/permissions"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/infrastructure/auth/auth-options"
+
+export default async function SettingsHubPage() {
+    const session = await getServerSession(authOptions)
+    const roleLevel = session?.user?.roleLevel ?? "member"
+    const { canView } = await getAppPermission(roleLevel, "settings")
+
+    if (!canView) {
+        return (
+            <div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6 lg:px-8">
+                <Forbidden />
+            </div>
+        )
+    }
+
     const internalSettings = [
         {
             title: "Configuración del Dashboard",
@@ -20,6 +37,22 @@ export default function SettingsHubPage() {
             href: "/dashboard/settings/general",
             color: "text-blue-500",
             bg: "bg-blue-500/10"
+        },
+        {
+            title: "Personalización del Menú",
+            description: "Gestiona los enlaces de la barra lateral, su orden, iconos y permisos de visibilidad por rol.",
+            icon: IconLayoutCards,
+            href: "/dashboard/settings/menu",
+            color: "text-orange-500",
+            bg: "bg-orange-500/10"
+        },
+        {
+            title: "Widgets del Dashboard",
+            description: "Configura el orden, visibilidad y contenido de los widgets (Banner, Raid, Custom, etc.) de la portada.",
+            icon: IconLayoutCards,
+            href: "/dashboard/settings/widgets",
+            color: "text-cyan-500",
+            bg: "bg-cyan-500/10"
         },
         {
             title: "Configuración de Battle.net",

@@ -42,9 +42,11 @@ export default async function CalendarSettingsPage() {
                     </Button>
                 </Link>
                 <div>
-                    <h1 className="text-2xl font-bold">Ajustes de Calendario</h1>
-                    <p className="text-sm text-muted-foreground mt-1">
-                        Configura los días y horas de raids recurrentes.
+                    <h1 className="text-3xl font-black font-heading italic tracking-tight uppercase flex items-center gap-3">
+                        AJUSTES DE CALENDARIO
+                    </h1>
+                    <p className="text-sm font-medium text-white/40 mt-2 uppercase tracking-widest leading-tight">
+                        Configura los días y horas de raids recurrentes de la hermandad.
                     </p>
                 </div>
             </div>
