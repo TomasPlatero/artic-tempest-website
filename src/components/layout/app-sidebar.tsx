@@ -274,6 +274,36 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const processedNavigation = injectBadges(navigation)
 
+  // Calculate the best matching URL from the entire navigation tree
+  // to avoid double highlighting (e.g. /bis vs /bis/admin)
+  const activeUrl = React.useMemo(() => {
+    let bestMatch: { url: string; length: number } | null = null
+
+    const traverse = (items: any[]) => {
+      for (const item of items) {
+        if (item.url && (pathname === item.url || pathname.startsWith(item.url + '/'))) {
+          if (!bestMatch || item.url.length > bestMatch.length) {
+            bestMatch = { url: item.url, length: item.url.length }
+          }
+        }
+        if (item.children?.length > 0) {
+          traverse(item.children)
+        }
+      }
+    }
+
+    // Traverse all groups
+    processedNavigation.forEach(group => {
+      if (group.url) {
+        traverse([group])
+      } else if (group.children) {
+        traverse(group.children)
+      }
+    })
+
+    return bestMatch?.url || null
+  }, [processedNavigation, pathname])
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -303,6 +333,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             key={group.id || group.name}
             label={group.url ? undefined : group.name}
             items={group.url ? [group] : group.children}
+            activeUrl={activeUrl || undefined}
           />
         ))}
       </SidebarContent>
