@@ -1767,7 +1767,7 @@ export function PlanificadorCdsClient() {
                                 <div className="flex items-center gap-2">
                                     <Button
                                         size="sm"
-                                        onClick={handleCopyNote}
+                                        onClick={() => handleCopyNote()}
                                         className={cn(
                                             "h-9 px-4 text-[10px] font-black uppercase tracking-widest transition-all",
                                             copySuccess ? "bg-emerald-600 hover:bg-emerald-500" : "bg-amber-600 hover:bg-amber-500"

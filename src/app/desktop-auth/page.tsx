@@ -101,7 +101,7 @@ export default function DesktopAuthBridge() {
                             </button>
 
                             <p className="text-[10px] text-white/40 leading-relaxed px-4">
-                                Copia el enlace y pégalo en el recuadro "Manual" de la app si el botón de arriba no funciona.
+                                Copia el enlace y pégalo en el recuadro &quot;Manual&quot; de la app si el botón de arriba no funciona.
                             </p>
                         </div>
                     )}

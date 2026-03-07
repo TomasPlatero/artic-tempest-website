@@ -253,31 +253,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     }
   }, [badges])
 
-  if (!mounted) {
-    return (
-      <Sidebar collapsible="icon" {...props}>
-        <SidebarHeader className="h-12" />
-        <SidebarContent />
-        <SidebarFooter className="h-16" />
-      </Sidebar>
-    )
-  }
-
-  // Helper to inject badges into the dynamic items
-  const injectBadges = (items: any[]): any[] => {
-    return items.map(item => ({
-      ...item,
-      badge: item.badge_key ? badges[item.badge_key] : (item.app_id === 'calendar' ? badges.calendar : undefined),
-      children: item.children ? injectBadges(item.children) : []
-    }))
-  }
-
-  const processedNavigation = injectBadges(navigation)
+  const processedNavigation = React.useMemo(() => {
+    const inject = (items: any[]): any[] => {
+      return items.map(item => ({
+        ...item,
+        badge: item.badge_key ? badges[item.badge_key] : (item.app_id === 'calendar' ? badges.calendar : undefined),
+        children: item.children ? inject(item.children) : []
+      }))
+    }
+    return inject(navigation)
+  }, [badges, navigation])
 
   // Calculate the best matching URL from the entire navigation tree
   // to avoid double highlighting (e.g. /bis vs /bis/admin)
   const activeUrl = React.useMemo(() => {
-    let bestMatch: { url: string; length: number } | null = null
+    let bestMatch: { url: string; length: number } | null = null as { url: string; length: number } | null
 
     const traverse = (items: any[]) => {
       for (const item of items) {
@@ -303,6 +293,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
     return bestMatch?.url || null
   }, [processedNavigation, pathname])
+
+  if (!mounted) {
+    return (
+      <Sidebar collapsible="icon" {...props}>
+        <SidebarHeader className="h-12" />
+        <SidebarContent />
+        <SidebarFooter className="h-16" />
+      </Sidebar>
+    )
+  }
 
   return (
     <Sidebar collapsible="icon" {...props}>
