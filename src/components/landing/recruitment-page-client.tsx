@@ -66,8 +66,8 @@ export function RecruitmentPageClient() {
                                     </div>
                                     <div className="flex flex-col">
                                         <h2 className="font-bold text-white text-lg">Horario</h2>
-                                        <p className="text-sm text-white/50">Lunes a Jueves, 22:00 - 00:15 (Hora servidor).</p>
-                                        <p className="text-sm text-white/50">Cada mes de la primera temporada también raideamos los Viernes.</p>
+                                        <p className="text-sm text-white/50">Lunes a Jueves, 17:30 - 19:30 (Hora servidor).</p>
+                                        <p className="text-sm text-white/50">El primer mes de cada temporada también raideamos los Viernes (Sujeto a cambio).</p>
                                     </div>
                                 </div>
                                 <div className="flex gap-4 p-4 rounded-xl bg-white/5 border border-white/10">

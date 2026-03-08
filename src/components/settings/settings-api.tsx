@@ -121,7 +121,7 @@ const categories: Category[] = [
                 method: "GET",
                 description: "Horario semanal recurrente configurado para la hermandad.",
                 auth: "Sesión",
-                response: `[ { "day_of_week": 1, "start_time": "22:00", ... } ]`
+                response: `[ { "day_of_week": 1, "start_time": "17:30", ... } ]`
             }
         ]
     },
