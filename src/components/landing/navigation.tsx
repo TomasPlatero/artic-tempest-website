@@ -24,6 +24,7 @@ import { NotificationBell } from "@/components/notifications/notification-bell"
 import { supabase } from "@/infrastructure/supabase/client"
 
 const NAV_LINKS = [
+    { href: "/", label: "Inicio", title: "Inicio de Artic Tempest" },
     { href: "/#noticias", label: "Noticias", title: "Consulta las últimas novedades de la hermandad" },
     { href: "/#progreso", label: "Progreso", title: "Consulta nuestro progreso en Midnight" },
     { href: "/#reclutamiento", label: "Reclutamiento", title: "Mira las clases que necesitamos en Artic Tempest" },

@@ -275,23 +275,30 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   // Extract CTA item from navigation to show it separately in the footer
   const { navItems, ctaItem } = React.useMemo(() => {
-    let foundCta: any = null;
     const filterRecursive = (items: any[]): any[] => {
-      const filtered = [];
+      return items
+        .filter(item => item.app_id !== 'desktop-app-cta')
+        .map(item => ({
+          ...item,
+          children: item.children ? filterRecursive(item.children) : []
+        }));
+    };
+
+    const findCta = (items: any[]): any | null => {
       for (const item of items) {
-        if (item.app_id === 'desktop-app-cta') {
-          foundCta = item;
-        } else {
-          const newItem = { ...item };
-          if (newItem.children) {
-            newItem.children = filterRecursive(newItem.children);
-          }
-          filtered.push(newItem);
+        if (item.app_id === 'desktop-app-cta') return item;
+        if (item.children) {
+          const found = findCta(item.children);
+          if (found) return found;
         }
       }
-      return filtered;
+      return null;
     };
-    return { navItems: filterRecursive(processedNavigation), ctaItem: foundCta };
+
+    return {
+      navItems: filterRecursive(processedNavigation),
+      ctaItem: findCta(processedNavigation)
+    };
   }, [processedNavigation])
 
   // Calculate the best matching URL from the entire navigation tree
