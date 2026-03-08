@@ -106,6 +106,14 @@ export default async function SettingsHubPage() {
 
     const publicSettings = [
         {
+            title: "Noticias de la Hermandad",
+            description: "Publica y gestiona las noticias que aparecen en la landing page y en la app de escritorio.",
+            icon: IconLayoutCards,
+            href: "/dashboard/settings/news-settings",
+            color: "text-primary",
+            bg: "bg-primary/10"
+        },
+        {
             title: "Bot de Discord",
             description: "Vinculación de la App, gestión de Slash Commands y sincronización de comandos.",
             icon: IconBrandDiscord,

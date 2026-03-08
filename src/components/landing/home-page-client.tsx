@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { LandingNavigation } from "@/components/landing/navigation"
 import { LandingHero } from "@/components/landing/hero"
+import { LandingNoticias } from "@/components/landing/noticias"
 import { WantedClasses } from "@/components/landing/wanted-classes"
 import { Separator } from "@/components/ui/separator"
 import { LandingFooter } from "@/components/landing/footer"
@@ -35,6 +36,7 @@ export function HomePageClient({ initialProgression, initialStreamers }: { initi
         <main className="min-h-screen bg-black selection:bg-blue-500/30 dark">
             <LandingNavigation />
             <LandingHero />
+            <LandingNoticias />
 
             <div id="reclutamiento" className="relative z-10 bg-black">
                 <WantedClasses />
