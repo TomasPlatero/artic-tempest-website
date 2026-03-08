@@ -30,7 +30,6 @@ import { cn } from "@/infrastructure/tailwind/tailwind-utils";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/infrastructure/supabase/client";
 import { DiscordEmbedsTab } from "./discord-embeds-tab";
-import { DiscordWelcomeTab } from "./discord-welcome-tab";
 
 
 interface DiscordCommand {
@@ -232,12 +231,6 @@ export function SettingsDiscordClient({ initialCredentials, initialCommands }: S
                             className="rounded-xl font-black uppercase text-[10px] tracking-[0.2em] gap-2 data-[state=active]:bg-[#5865F2] data-[state=active]:text-white transition-all duration-300"
                         >
                             <IconMessageCircle className="size-3.5" /> Embeds
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="welcome"
-                            className="rounded-xl font-black uppercase text-[10px] tracking-[0.2em] gap-2 data-[state=active]:bg-[#5865F2] data-[state=active]:text-white transition-all duration-300"
-                        >
-                            <IconUserPlus className="size-3.5" /> Bienvenidas
                         </TabsTrigger>
                     </TabsList>
                 </div>
@@ -441,9 +434,6 @@ export function SettingsDiscordClient({ initialCredentials, initialCommands }: S
                     <DiscordEmbedsTab />
                 </TabsContent>
 
-                <TabsContent value="welcome" className="animate-in fade-in slide-in-from-bottom-4 duration-700 outline-none">
-                    <DiscordWelcomeTab />
-                </TabsContent>
 
             </Tabs>
         </div>

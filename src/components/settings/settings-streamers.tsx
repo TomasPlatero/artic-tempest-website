@@ -8,13 +8,6 @@ import { IconBrandTwitch, IconTrash, IconPlus, IconLoader2, IconExternalLink, Ic
 import { toast } from "sonner"
 import Link from "next/link"
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
-import {
     DndContext,
     closestCenter,
     KeyboardSensor,
@@ -97,10 +90,6 @@ export function StreamersSettings() {
     const [loading, setLoading] = useState(true)
     const [newStreamer, setNewStreamer] = useState("")
     const [submitting, setSubmitting] = useState(false)
-    const [channelId, setChannelId] = useState("")
-    const [channels, setChannels] = useState<{ id: string, name: string }[]>([])
-    const [savingConfig, setSavingConfig] = useState(false)
-    const [fetchingChannels, setFetchingChannels] = useState(false)
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -111,41 +100,8 @@ export function StreamersSettings() {
 
     useEffect(() => {
         fetchStreamers()
-        fetchConfig()
-        fetchChannels()
     }, [])
 
-    const fetchChannels = async () => {
-        setFetchingChannels(true)
-        try {
-            const data = await getDiscordChannels()
-            setChannels(data)
-        } catch (e) {
-            console.error(e)
-        } finally {
-            setFetchingChannels(false)
-        }
-    }
-
-    const fetchConfig = async () => {
-        try {
-            const data = await getStreamerConfig()
-            setChannelId(data.discord_streams_channel_id || "")
-        } catch (e) { }
-    }
-
-    const handleSaveConfig = async () => {
-        setSavingConfig(true)
-        try {
-            await updateStreamerConfig(channelId)
-            toast.success("Configuración de notificaciones guardada.")
-            fetchConfig()
-        } catch (error) {
-            toast.error("Error al guardar la configuración.")
-        } finally {
-            setSavingConfig(false)
-        }
-    }
 
     const fetchStreamers = async () => {
         try {
@@ -237,45 +193,6 @@ export function StreamersSettings() {
                 </div>
             </div>
 
-            <Card className="border-border/40 bg-card/40 backdrop-blur-sm">
-                <CardHeader>
-                    <CardTitle>Configuración de Discord</CardTitle>
-                    <CardDescription>Indica el ID del canal donde el bot mandará las notificaciones de directo.</CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col sm:flex-row gap-3">
-                    <div className="flex-1 flex gap-2">
-                        <Select value={channelId || undefined} onValueChange={setChannelId}>
-                            <SelectTrigger className="flex-1 bg-black/20 h-10">
-                                <SelectValue placeholder="Selecciona un canal..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {channels.length === 0 ? (
-                                    <div className="p-2 text-xs text-muted-foreground text-center">
-                                        {fetchingChannels ? "Cargando canales..." : "No se encontraron canales"}
-                                    </div>
-                                ) : (
-                                    channels.map(c => (
-                                        <SelectItem key={c.id} value={c.id}>#{c.name}</SelectItem>
-                                    ))
-                                )}
-                            </SelectContent>
-                        </Select>
-                        <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-10 w-10 shrink-0 bg-white/5 hover:bg-white/10"
-                            onClick={fetchChannels}
-                            disabled={fetchingChannels}
-                        >
-                            <IconRefresh className={cn("size-4", fetchingChannels && "animate-spin")} />
-                        </Button>
-                    </div>
-                    <Button onClick={handleSaveConfig} disabled={savingConfig || !channelId} className="shrink-0 bg-purple-600 hover:bg-purple-700 text-white h-10 px-6">
-                        {savingConfig ? <IconLoader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                        Guardar Canal
-                    </Button>
-                </CardContent>
-            </Card>
 
             <Card className="border-border/40 bg-card/40 backdrop-blur-sm">
                 <CardHeader>
