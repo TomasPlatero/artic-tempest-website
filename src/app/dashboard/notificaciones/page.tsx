@@ -71,10 +71,10 @@ export default function NotificationsPage() {
     }, [])
 
     const filteredNotifications = notifications.filter(n => {
-        if (activeFilter === 'all') return !n.isRead
+        if (activeFilter === 'all') return true
         if (activeFilter === 'unread') return !n.isRead
         if (activeFilter === 'read') return n.isRead
-        return n.type === activeFilter && !n.isRead
+        return n.type === activeFilter
     })
 
     const markAsRead = async (id: string) => {
