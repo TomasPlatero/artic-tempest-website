@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Montserrat, Oswald, Bebas_Neue, Cinzel } from "next/font/google";
 import { ThemeProvider } from "@/components/layout/theme-provider"
 import { ThemedToaster } from "@/components/ui/sonner"
 import { SessionProvider } from "@/components/layout/session-provider"
@@ -20,6 +20,30 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const montserrat = Montserrat({
+  weight: "900",
+  subsets: ["latin"],
+  variable: "--font-montserrat",
+});
+
+const oswald = Oswald({
+  weight: "700",
+  subsets: ["latin"],
+  variable: "--font-oswald",
+});
+
+const bebas = Bebas_Neue({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-bebas",
+});
+
+const cinzel = Cinzel({
+  weight: "700",
+  subsets: ["latin"],
+  variable: "--font-cinzel",
 });
 
 import { supabaseAdmin } from "@/infrastructure/auth/auth-options";
@@ -129,7 +153,7 @@ export default function RootLayout({
         <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID} />
       )}
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable} ${oswald.variable} ${bebas.variable} ${cinzel.variable} antialiased`}
       >
         <ThemeProvider
           attribute="class"

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import {
     Card, CardContent, CardDescription, CardHeader, CardTitle
 } from "@/components/ui/card";
@@ -48,10 +49,10 @@ interface WelcomeConfig {
 
 const FONT_OPTIONS = [
     { label: "Inter (Moderna)", value: "Inter" },
-    { label: "Montserrat (Impacto)", value: "Montserrat" },
-    { label: "Bebas Neue (Titular)", value: "Bebas Neue" },
-    { label: "Oswald (Condensada)", value: "Oswald" },
-    { label: "Cinzel (Épica / WoW)", value: "Cinzel" }
+    { label: "Montserrat (Impacto)", value: "var(--font-montserrat)" },
+    { label: "Bebas Neue (Titular)", value: "var(--font-bebas)" },
+    { label: "Oswald (Condensada)", value: "var(--font-oswald)" },
+    { label: "Cinzel (Épica / WoW)", value: "var(--font-cinzel)" }
 ];
 
 export function DiscordWelcomeTab() {
@@ -153,7 +154,6 @@ export function DiscordWelcomeTab() {
 
     return (
         <div className="space-y-8 w-full max-w-full animate-in fade-in slide-in-from-bottom-4 duration-1000">
-            <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@700&family=Montserrat:wght@900&family=Oswald:wght@700&display=swap" rel="stylesheet" />
 
             {/* Header & Main Toggle */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white/5 border border-white/5 p-8 rounded-[2.5rem] backdrop-blur-xl shadow-2xl">
@@ -402,10 +402,12 @@ export function DiscordWelcomeTab() {
                                     style={{ backgroundColor: config.card_background_color }}
                                 >
                                     {config.card_background_url && (
-                                        <img
+                                        <Image
                                             src={config.card_background_url}
                                             className="absolute inset-0 w-full h-full object-cover grayscale-[30%] opacity-80"
                                             alt="bg"
+                                            fill
+                                            unoptimized
                                         />
                                     )}
                                     <div

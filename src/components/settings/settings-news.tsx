@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import Image from "next/image"
 import { IconArrowLeft, IconPlus, IconEdit, IconTrash, IconCheck, IconX, IconNews, IconLayoutCards, IconEye, IconLayoutList, IconFileText, IconWorld, IconUser, IconUpload, IconLoader2, IconPhoto } from "@tabler/icons-react"
 import { CharacterAvatar } from "@/components/common/character-avatar"
 import { Button } from "@/components/ui/button"
@@ -349,10 +350,12 @@ export function SettingsNewsClient({ initialNews, categories, currentUser }: { i
 
                                         {form.image_url ? (
                                             <div className="aspect-video w-full rounded-xl overflow-hidden relative shadow-2xl border border-white/5">
-                                                <img
+                                                <Image
                                                     src={form.image_url}
                                                     alt="Preview"
-                                                    className="w-full h-full object-cover"
+                                                    fill
+                                                    className="object-cover"
+                                                    unoptimized
                                                 />
                                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img-cont:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                                     <Button
@@ -422,9 +425,9 @@ export function SettingsNewsClient({ initialNews, categories, currentUser }: { i
                                             <TableRow key={item.id} className="border-white/5 hover:bg-white/[0.02] transition-colors group">
                                                 <TableCell>
                                                     <div className="flex items-center gap-3">
-                                                        <div className="size-10 rounded-lg overflow-hidden border border-white/10 flex-shrink-0">
+                                                        <div className="size-10 rounded-lg overflow-hidden border border-white/10 flex-shrink-0 relative">
                                                             {item.image_url ? (
-                                                                <img src={item.image_url} alt="" className="size-full object-cover" />
+                                                                <Image src={item.image_url} alt="" fill className="object-cover" unoptimized />
                                                             ) : (
                                                                 <div className="size-full bg-zinc-900 flex items-center justify-center">
                                                                     <IconNews className="size-4 text-white/10" />
@@ -492,7 +495,7 @@ export function SettingsNewsClient({ initialNews, categories, currentUser }: { i
                                     <Card key={item.id} className={`group border-border/40 bg-card/20 hover:bg-card/40 transition-all hover:translate-y-[-4px] overflow-hidden flex flex-col ${item.status === 'draft' ? 'opacity-70 grayscale-[0.5]' : ''}`}>
                                         <div className="relative aspect-video overflow-hidden bg-muted">
                                             {item.image_url ? (
-                                                <img src={item.image_url} alt="" className="size-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                                <Image src={item.image_url} alt="" fill className="object-cover group-hover:scale-110 transition-transform duration-700" unoptimized />
                                             ) : (
                                                 <div className="size-full flex items-center justify-center bg-zinc-900">
                                                     <IconNews className="size-8 text-white/5" />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { UNICODE_EMOJIS } from "@/lib/discord/emojis";
 import {
     IconUsers,
@@ -131,10 +132,13 @@ function DiscordEmojiPicker({
                                     onMouseEnter={() => setHovered({ ...emoji, source: 'Artic Tempest' })}
                                     className="size-10 flex items-center justify-center hover:bg-white/10 rounded-lg transition-all hover:scale-115 active:scale-90"
                                 >
-                                    <img
+                                    <Image
                                         src={`https://cdn.discordapp.com/emojis/${emoji.id}.${emoji.animated ? 'gif' : 'webp'}?size=48&quality=lossless`}
                                         className="size-7 object-contain"
                                         alt={emoji.name}
+                                        width={28}
+                                        height={28}
+                                        unoptimized
                                     />
                                 </button>
                             ))}
@@ -167,10 +171,13 @@ function DiscordEmojiPicker({
                     <>
                         <div className="size-8 flex items-center justify-center">
                             {hovered.id ? (
-                                <img
+                                <Image
                                     src={`https://cdn.discordapp.com/emojis/${hovered.id}.${hovered.animated ? 'gif' : 'webp'}?size=48&quality=lossless`}
                                     className="size-7 object-contain"
                                     alt={hovered.name}
+                                    width={28}
+                                    height={28}
+                                    unoptimized
                                     onError={(e) => (e.currentTarget.src = "/placeholder-emoji.png")}
                                 />
                             ) : (
@@ -699,10 +706,13 @@ export function DiscordEmbedsTab() {
                                                                 {suggestionState.trigger === "#" && <IconHash className="size-3.5 text-zinc-500" />}
                                                                 {suggestionState.trigger === ":" && (
                                                                     item.id ? (
-                                                                        <img
+                                                                        <Image
                                                                             src={`https://cdn.discordapp.com/emojis/${item.id}.${item.animated ? 'gif' : 'webp'}?size=48&quality=lossless`}
                                                                             className="size-5 object-contain"
                                                                             alt={item.name}
+                                                                            width={20}
+                                                                            height={20}
+                                                                            unoptimized
                                                                         />
                                                                     ) : (
                                                                         <span className="size-5 flex items-center justify-center text-lg leading-none">{item.emoji}</span>
@@ -813,10 +823,13 @@ export function DiscordEmbedsTab() {
                                                                     {suggestionState.trigger === "#" && <IconHash className="size-3.5 text-zinc-500" />}
                                                                     {suggestionState.trigger === ":" && (
                                                                         item.id ? (
-                                                                            <img
+                                                                            <Image
                                                                                 src={`https://cdn.discordapp.com/emojis/${item.id}.${item.animated ? 'gif' : 'webp'}?size=48&quality=lossless`}
                                                                                 className="size-5 object-contain"
                                                                                 alt={item.name}
+                                                                                width={20}
+                                                                                height={20}
+                                                                                unoptimized
                                                                             />
                                                                         ) : (
                                                                             <span className="size-5 flex items-center justify-center text-lg leading-none">{item.emoji}</span>
@@ -935,9 +948,9 @@ export function DiscordEmbedsTab() {
                                                         {item.title && <h3 className="font-bold text-[16px] text-white hover:text-[#00aff4] cursor-pointer break-words">{item.title}</h3>}
                                                         {item.description && <p className="text-[14px] text-[#dcddde] whitespace-pre-wrap break-words">{item.description}</p>}
                                                     </div>
-                                                    {item.thumbnail_url && <img src={item.thumbnail_url} className="size-20 rounded object-cover shrink-0" alt="thumb" />}
+                                                    {item.thumbnail_url && <Image src={item.thumbnail_url} width={80} height={80} className="size-20 rounded object-cover shrink-0" alt="thumb" unoptimized />}
                                                 </div>
-                                                {item.image_url && <img src={item.image_url} className="mt-3 rounded w-full max-h-[300px] object-cover" alt="banner" />}
+                                                {item.image_url && <Image src={item.image_url} width={450} height={300} className="mt-3 rounded w-full max-h-[300px] object-cover" alt="banner" unoptimized />}
                                                 {item.footer_text && <div className="mt-3 text-[11px] text-[#b9bbbe] font-medium">{item.footer_text}</div>}
 
                                                 {activeEmbedIndex === idx && (

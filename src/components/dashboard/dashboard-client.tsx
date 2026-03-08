@@ -309,7 +309,7 @@ export function DashboardClient({ data, blocks, roleLevel }: { data: any, blocks
                                 {data.myBisSelections.map((bis: any, i: number) => (
                                     <div key={i} className="flex items-center gap-3 p-2 bg-muted/30 rounded-lg border border-border/50 text-xs">
                                         {bis.item_icon ? (
-                                            <img src={bis.item_icon} className="size-8 rounded shadow-sm border border-white/10" alt="" />
+                                            <Image src={bis.item_icon} width={32} height={32} className="size-8 rounded shadow-sm border border-white/10" alt="" />
                                         ) : (
                                             <div className="size-8 rounded bg-white/5 border border-white/10" />
                                         )}
