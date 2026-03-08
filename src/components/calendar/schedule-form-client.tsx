@@ -10,7 +10,8 @@ import {
     IconMapPin,
     IconSwords,
     IconCircleCheck,
-    IconCircleX
+    IconCircleX,
+    IconCalendar
 } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -26,6 +27,9 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
+import { Input } from "@/components/ui/input"
+import { format } from "date-fns"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 const DAYS = [
     { id: 1, label: "Lunes", key: "Monday" },
@@ -37,22 +41,19 @@ const DAYS = [
     { id: 7, label: "Domingo", key: "Sunday" }
 ]
 
-const MIDNIGHT_RAIDS = [
-    { id: "voidspire", name: "La Aguja del Vacío" },
-    { id: "dreamwell", name: "La Falla del Sueño" },
-    { id: "marchonqueldanas", name: "Marcha sobre Quel'Danas" }
-]
+// Removed hardcoded MIDNIGHT_RAIDS to use dynamic prop
 
 const DIFFICULTIES = [
-    { id: "Normal", name: "Normal (30)" },
-    { id: "Heroic", name: "Heroic (30)" },
-    { id: "Mythic", name: "Mythic (20)" }
+    { id: "Normal (30)", name: "Normal (30)" },
+    { id: "Heroico (30)", name: "Heroico (30)" },
+    { id: "Mítico (20)", name: "Mítico (20)" }
 ]
 
-export function ScheduleFormClient({ initialSchedule }: { initialSchedule: any[] }) {
+export function ScheduleFormClient({ initialSchedule, raids = [] }: { initialSchedule: any[], raids: any[] }) {
     const router = useRouter()
     const [isSaving, setIsSaving] = useState(false)
     const [isSyncing, setIsSyncing] = useState(false)
+    const [startDate, setStartDate] = useState(() => format(new Date(), 'yyyy-MM-dd'))
 
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -78,7 +79,7 @@ export function ScheduleFormClient({ initialSchedule }: { initialSchedule: any[]
                 is_active: false,
                 start_time: "17:30",
                 end_time: "19:30",
-                destination: MIDNIGHT_RAIDS[0].name,
+                destination: raids[0]?.name || "La Aguja del Vacío",
                 difficulty: "Heroic",
             }
         })
@@ -112,10 +113,10 @@ export function ScheduleFormClient({ initialSchedule }: { initialSchedule: any[]
             if (!res.ok) throw new Error("Error guardando ajustes")
 
             setIsSyncing(true)
-            await fetch("/api/guild/schedule/sync", {
+            await fetch("/api/guild/schedule", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ force: true })
+                body: JSON.stringify({ force: true, startDate })
             })
 
             router.refresh()
@@ -132,10 +133,10 @@ export function ScheduleFormClient({ initialSchedule }: { initialSchedule: any[]
     const handleManualSync = async () => {
         setIsSyncing(true)
         try {
-            const res = await fetch("/api/guild/schedule/sync", {
+            const res = await fetch("/api/guild/schedule", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ force: true })
+                body: JSON.stringify({ force: true, startDate })
             })
             if (!res.ok) throw new Error("Error sincronizando")
 
@@ -158,17 +159,17 @@ export function ScheduleFormClient({ initialSchedule }: { initialSchedule: any[]
                     const isActive = dayConfig.is_active
 
                     return (
-                        <div key={dayConfig.day_of_week}
-                            className={`group relative flex flex-col p-6 rounded-[2rem] border transition-all duration-300 overflow-hidden shadow-xl ring-1 ring-white/5 h-48 justify-between ${isActive ? 'bg-blue-500/5 border-blue-500/20' : 'bg-zinc-950/40 border-white/5 opacity-60'}`}
+                        <Card key={dayConfig.day_of_week}
+                            className={`group relative flex flex-col p-0 rounded-[2rem] transition-all duration-300 overflow-hidden shadow-xl ring-1 ring-white/5 h-48 justify-between border-white/5 ${isActive ? 'bg-blue-500/5 border-blue-500/20' : 'bg-zinc-950/40 opacity-60'}`}
                         >
-                            <div className="flex items-center justify-between z-10">
+                            <CardHeader className="p-6 pb-0 flex-row items-center justify-between z-10 space-y-0">
                                 <div className="flex items-center gap-3">
                                     <div className={`size-10 rounded-2xl flex items-center justify-center border transition-all ${isActive ? 'bg-blue-500/20 border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.3)]' : 'bg-white/5 border-white/10'}`}>
                                         <IconCalendarEvent className={`size-5 ${isActive ? 'text-blue-400' : 'text-zinc-500'}`} />
                                     </div>
-                                    <span className={`text-sm font-black uppercase tracking-widest ${isActive ? 'text-white' : 'text-zinc-500'}`}>
+                                    <CardTitle className={`text-sm font-black uppercase tracking-widest leading-none ${isActive ? 'text-white' : 'text-zinc-500'}`}>
                                         {dayInfo?.label}
-                                    </span>
+                                    </CardTitle>
                                 </div>
 
                                 {isActive ? (
@@ -176,9 +177,9 @@ export function ScheduleFormClient({ initialSchedule }: { initialSchedule: any[]
                                 ) : (
                                     <IconCircleX className="size-5 text-zinc-700" />
                                 )}
-                            </div>
+                            </CardHeader>
 
-                            <div className="mt-4 z-10">
+                            <CardContent className="p-6 pt-4 z-10 flex-1">
                                 {isActive ? (
                                     <div className="space-y-1">
                                         <div className="flex items-center gap-2">
@@ -193,7 +194,7 @@ export function ScheduleFormClient({ initialSchedule }: { initialSchedule: any[]
                                 ) : (
                                     <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-600">Día de Descanso</span>
                                 )}
-                            </div>
+                            </CardContent>
 
                             <Button
                                 variant="ghost"
@@ -206,23 +207,38 @@ export function ScheduleFormClient({ initialSchedule }: { initialSchedule: any[]
 
                             {/* Decorative element */}
                             <div className={`absolute -right-4 -bottom-4 size-24 blur-3xl rounded-full transition-all duration-1000 ${isActive ? 'bg-blue-500/10' : 'bg-zinc-800/5'}`} />
-                        </div>
+                        </Card>
                     )
                 })}
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 p-6 bg-zinc-950/40 backdrop-blur-3xl border border-white/5 rounded-[2.5rem] shadow-2xl overflow-hidden ring-1 ring-white/5 mt-8 sticky bottom-4 z-30 mx-2 sm:mx-0">
+            <div className="flex flex-col lg:flex-row justify-between items-end gap-6 p-6 bg-zinc-950/40 backdrop-blur-3xl border border-white/5 rounded-[2.5rem] shadow-2xl overflow-hidden ring-1 ring-white/5 mt-8 sticky bottom-4 z-30 mx-2 sm:mx-0">
+                <div className="flex flex-col sm:flex-row items-end gap-4 w-full lg:w-auto">
+                    <div className="flex flex-col gap-2 w-full sm:w-auto">
+                        <Label className="text-[9px] uppercase font-black text-white/30 ml-2 tracking-[0.25em]">Sincronizar desde</Label>
+                        <div className="relative group/date">
+                            <Input
+                                type="date"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                                className="w-full sm:w-48 bg-white/5 border-white/10 hover:border-white/20 h-14 rounded-2xl pl-12 pr-4 text-[11px] font-black uppercase tracking-widest text-white transition-all ring-0 focus-visible:ring-1 focus-visible:ring-primary/20 appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                            />
+                            <IconCalendar className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-primary pointer-events-none transition-colors group-hover/date:text-primary/80" />
+                        </div>
+                    </div>
+
+                    <Button
+                        variant="outline"
+                        className="w-full sm:w-auto h-14 rounded-2xl bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 text-white/60 hover:text-white font-bold uppercase tracking-widest text-[10px] px-8 transition-all active:scale-95"
+                        onClick={handleManualSync}
+                        disabled={isSyncing || isSaving}
+                    >
+                        <IconRefreshAlert className={`size-4 mr-3 ${isSyncing ? 'animate-spin' : ''}`} />
+                        {isSyncing ? 'Sincronizando...' : 'Refrescar Calendario'}
+                    </Button>
+                </div>
                 <Button
-                    variant="outline"
-                    className="w-full sm:w-auto h-14 rounded-2xl bg-white/5 border-white/10 hover:bg-white/10 text-zinc-400 font-bold uppercase tracking-widest text-[10px] px-8 transition-all active:scale-95"
-                    onClick={handleManualSync}
-                    disabled={isSyncing || isSaving}
-                >
-                    <IconRefreshAlert className={`size-4 mr-3 ${isSyncing ? 'animate-spin' : ''}`} />
-                    {isSyncing ? 'Sincronizando...' : 'Refrescar Calendario'}
-                </Button>
-                <Button
-                    className="w-full sm:flex-1 max-w-sm h-14 rounded-2xl bg-primary hover:bg-primary/90 text-zinc-950 font-black uppercase tracking-widest text-[10px] shadow-[0_10px_30px_rgba(var(--primary),0.2)] transition-all active:scale-95"
+                    className="w-full sm:flex-1 lg:max-w-[320px] h-14 rounded-2xl bg-primary hover:bg-primary/90 text-zinc-950 font-black uppercase tracking-widest text-[10px] shadow-[0_10px_30px_rgba(var(--primary),0.2)] transition-all active:scale-95"
                     onClick={handleSave}
                     disabled={isSaving || isSyncing}
                 >
@@ -304,7 +320,7 @@ export function ScheduleFormClient({ initialSchedule }: { initialSchedule: any[]
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent className="bg-zinc-950 border-white/10">
-                                                {MIDNIGHT_RAIDS.map(raid => (
+                                                {raids.map(raid => (
                                                     <SelectItem key={raid.id} value={raid.name} className="text-[11px] font-bold uppercase tracking-widest py-3">
                                                         {raid.name}
                                                     </SelectItem>
@@ -345,7 +361,7 @@ export function ScheduleFormClient({ initialSchedule }: { initialSchedule: any[]
                                     Descartar
                                 </Button>
                                 <Button
-                                    className="w-full sm:flex-1 bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-[10px] h-14 rounded-2xl shadow-[0_10px_30px_rgba(var(--primary),0.2)] transition-all active:scale-95"
+                                    className="w-full sm:flex-1 bg-primary hover:bg-primary/90 text-zinc-950 font-black uppercase tracking-widest text-[10px] h-14 rounded-2xl shadow-[0_10px_30px_rgba(var(--primary),0.2)] transition-all active:scale-95"
                                     onClick={handleApplyTempConfig}
                                 >
                                     Aplicar Configuración

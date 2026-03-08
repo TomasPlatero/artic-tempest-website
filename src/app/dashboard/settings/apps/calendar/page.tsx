@@ -21,8 +21,20 @@ export default async function CalendarSettingsPage() {
         redirect("/dashboard/calendario")
     }
 
-    // Server-side fetch current schedule
+    // Fetch current schedule and raids from constants
     const { data: guildData } = await supabaseAdmin.from("guilds_managed").select("guild_id").limit(1).single()
+
+    const { data: constantRows } = await supabaseAdmin
+        .from("game_constants")
+        .select("key, value, metadata")
+        .eq("category", "wow_raid")
+
+    const raids = constantRows?.map(c => ({
+        id: c.key,
+        name: c.value,
+        background: c.metadata?.background,
+        bosses: c.metadata?.bosses || []
+    })) || []
 
     let initialSchedule: any[] = []
     if (guildData) {
@@ -52,7 +64,7 @@ export default async function CalendarSettingsPage() {
             </div>
 
             <div className="w-full max-w-full">
-                <ScheduleFormClient initialSchedule={initialSchedule} />
+                <ScheduleFormClient initialSchedule={initialSchedule} raids={raids} />
             </div>
         </div>
     )
