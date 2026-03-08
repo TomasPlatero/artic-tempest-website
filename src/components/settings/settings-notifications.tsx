@@ -23,7 +23,8 @@ export function SettingsNotificationsClient() {
     const [form, setForm] = useState({
         title: "",
         content: "",
-        type: "info" as "info" | "update" | "warning" | "important"
+        type: "info" as "info" | "update" | "warning" | "important",
+        target_roles: [] as string[]
     });
     const [editingId, setEditingId] = useState<string | null>(null);
     const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
@@ -40,7 +41,7 @@ export function SettingsNotificationsClient() {
 
     const fetchNotifications = useCallback(async () => {
         try {
-            const res = await fetch("/api/notifications");
+            const res = await fetch("/api/notifications?all=true");
             const data = await res.json();
             if (Array.isArray(data)) {
                 setNotifications(data);
@@ -98,7 +99,7 @@ export function SettingsNotificationsClient() {
                         ? "Los cambios se han aplicado correctamente."
                         : "Todos los usuarios recibirán el aviso en su bandeja de entrada."
                 });
-                setForm({ title: "", content: "", type: "info" });
+                setForm({ title: "", content: "", type: "info", target_roles: [] });
                 setEditingId(null);
                 if (editingId) setActiveTab("history");
             } else {
@@ -116,7 +117,8 @@ export function SettingsNotificationsClient() {
         setForm({
             title: notification.title,
             content: notification.content,
-            type: notification.type
+            type: notification.type,
+            target_roles: notification.target_roles || []
         });
         setEditingId(notification.id);
         setActiveTab("send");
@@ -124,7 +126,7 @@ export function SettingsNotificationsClient() {
     };
 
     const cancelEdit = () => {
-        setForm({ title: "", content: "", type: "info" });
+        setForm({ title: "", content: "", type: "info", target_roles: [] });
         setEditingId(null);
     };
 
@@ -158,6 +160,25 @@ export function SettingsNotificationsClient() {
         { id: 'warning', label: 'Aviso', icon: IconAlertCircle, color: 'text-amber-400', bg: 'bg-amber-500/10' },
         { id: 'important', label: 'Importante', icon: IconBell, color: 'text-rose-400', bg: 'bg-rose-500/10' },
     ];
+
+    const roleLevels = [
+        { id: 'gm', label: 'GM', color: 'text-rose-500', bg: 'bg-rose-500/10' },
+        { id: 'officer', label: 'Oficial', color: 'text-amber-500', bg: 'bg-amber-500/10' },
+        { id: 'raider', label: 'Raider', color: 'text-purple-500', bg: 'bg-purple-500/10' },
+        { id: 'member', label: 'Miembro', color: 'text-blue-500', bg: 'bg-blue-500/10' },
+        { id: 'invitado', label: 'Invitado', color: 'text-zinc-500', bg: 'bg-zinc-500/10' },
+    ];
+
+    const toggleRole = (role: string) => {
+        setForm(prev => {
+            const current = [...prev.target_roles];
+            if (current.includes(role)) {
+                return { ...prev, target_roles: current.filter(r => r !== role) };
+            } else {
+                return { ...prev, target_roles: [...current, role] };
+            }
+        });
+    };
 
     const getTypeStyles = (type: string) => {
         const t = types.find(x => x.id === type) || types[0];
@@ -262,6 +283,42 @@ export function SettingsNotificationsClient() {
                                                 <span className="text-[8px] uppercase font-black tracking-widest leading-none">{t.label}</span>
                                             </Button>
                                         ))}
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4 pt-2">
+                                    <div className="flex items-center justify-between px-1">
+                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Roles Destinatarios</label>
+                                        <span className="text-[9px] font-bold text-blue-400/60 uppercase italic">Si no marcas ninguno, será global</span>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {roleLevels.map(role => (
+                                            <Button
+                                                key={role.id}
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => toggleRole(role.id)}
+                                                className={cn(
+                                                    "rounded-xl h-10 px-4 border border-border/20 transition-all gap-2",
+                                                    form.target_roles.includes(role.id)
+                                                        ? cn("bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20")
+                                                        : "opacity-40 hover:opacity-100 hover:bg-white/5"
+                                                )}
+                                            >
+                                                <div className={cn("size-2 rounded-full", form.target_roles.includes(role.id) ? "bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.5)]" : "bg-zinc-600")} />
+                                                <span className="text-[9px] font-black uppercase tracking-widest">{role.label}</span>
+                                            </Button>
+                                        ))}
+                                        {form.target_roles.length > 0 && (
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => setForm({ ...form, target_roles: [] })}
+                                                className="rounded-xl h-10 px-3 text-[9px] font-black uppercase tracking-widest text-muted-foreground hover:text-white"
+                                            >
+                                                Limpiar
+                                            </Button>
+                                        )}
                                     </div>
                                 </div>
 
@@ -430,6 +487,22 @@ export function SettingsNotificationsClient() {
                                                                 <span className={cn("text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-lg border border-current/20 shadow-sm", styles.color, styles.bg)}>
                                                                     {styles.label}
                                                                 </span>
+                                                                {n.target_roles && n.target_roles.length > 0 ? (
+                                                                    <div className="flex flex-wrap gap-1.5">
+                                                                        {n.target_roles.map((r: string) => {
+                                                                            const roleInfo = roleLevels.find(rl => rl.id === r);
+                                                                            return (
+                                                                                <Badge key={r} variant="outline" className="text-[7px] font-black uppercase tracking-tighter bg-white/5 border-white/10 px-1.5 h-5">
+                                                                                    {roleInfo?.label || r}
+                                                                                </Badge>
+                                                                            );
+                                                                        })}
+                                                                    </div>
+                                                                ) : (
+                                                                    <Badge variant="outline" className="text-[7px] font-black uppercase tracking-tighter bg-blue-500/10 border-blue-500/20 text-blue-400 px-1.5 h-5">
+                                                                        GLOBAL
+                                                                    </Badge>
+                                                                )}
                                                                 <div className="flex items-center gap-1.5 text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest ml-auto">
                                                                     <IconClock className="size-4" />
                                                                     {new Date(n.created_at).toLocaleDateString("es-ES", { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}

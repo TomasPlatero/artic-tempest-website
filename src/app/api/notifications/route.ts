@@ -4,21 +4,32 @@ import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: Request) {
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
         return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
+    const { searchParams } = new URL(request.url);
+    const getAll = searchParams.get("all") === "true";
+    const userRole = (session.user as any).roleLevel;
     const userId = (session.user as any).id;
 
-    // Fetch all notifications and join with read status for the current user
-    const { data: notifications, error } = await supabaseAdmin.from("system_notifications")
+    let query = supabaseAdmin.from("system_notifications")
         .select(`
             *,
             user_notifications_read(user_id, read_at)
         `)
         .order("created_at", { ascending: false });
+
+    // If not requesting all (for management) or not an admin, filter by roles
+    if (!getAll || (userRole !== "gm" && userRole !== "officer")) {
+        // Show notifications where target_roles is empty OR contains user's role
+        // In Supabase, the @> operator is used for "contains"
+        query = query.or(`target_roles.is.null,target_roles.cs.{${userRole}}`);
+    }
+
+    const { data: notifications, error } = await query;
 
     if (error) {
         return NextResponse.json({ error: error.message }, { status: 500 });
@@ -28,8 +39,6 @@ export async function GET() {
     const processed = notifications.map(n => ({
         ...n,
         isRead: n.user_notifications_read?.some((r: any) => r.user_id === userId) || false,
-        // Remove the raw array to keep it clean if needed, or keep it.
-        // Let's keep it but simplified.
     }));
 
     return NextResponse.json(processed);
@@ -48,7 +57,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Solo el GM u Oficiales pueden enviar notificaciones de sistema" }, { status: 403 });
     }
 
-    const { title, content, type } = await request.json();
+    const { title, content, type, target_roles } = await request.json();
 
     if (!title || !content) {
         return NextResponse.json({ error: "Título y contenido son requeridos" }, { status: 400 });
@@ -59,6 +68,7 @@ export async function POST(request: Request) {
             title,
             content,
             type: type || 'info',
+            target_roles: target_roles && target_roles.length > 0 ? target_roles : null,
             created_by: userId
         })
         .select()
@@ -110,7 +120,7 @@ export async function PATCH(request: Request) {
         return NextResponse.json({ error: "Solo el GM u Oficiales pueden editar notificaciones" }, { status: 403 });
     }
 
-    const { id, title, content, type } = await request.json();
+    const { id, title, content, type, target_roles } = await request.json();
 
     if (!id || !title || !content) {
         return NextResponse.json({ error: "ID, título y contenido son requeridos" }, { status: 400 });
@@ -120,7 +130,8 @@ export async function PATCH(request: Request) {
         .update({
             title,
             content,
-            type: type || 'info'
+            type: type || 'info',
+            target_roles: target_roles && target_roles.length > 0 ? target_roles : null,
         })
         .eq("id", id)
         .select()
