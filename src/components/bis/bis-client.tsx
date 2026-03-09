@@ -304,7 +304,6 @@ function LootItemCard({
     bossName,
     selected,
     onToggle,
-    rbGain,
     difficulty,
     instanceId,
 }: {
@@ -312,7 +311,6 @@ function LootItemCard({
     bossName: string
     selected: boolean
     onToggle: () => void
-    rbGain?: { dps: number; pct: string }
     difficulty: "normal" | "heroic" | "mythic" | string
     instanceId: string
 }) {
@@ -367,11 +365,7 @@ function LootItemCard({
                 <p className="text-xs text-muted-foreground truncate">
                     {computedItemLevel ? `${computedItemLevel} · ` : ""}{bossName}
                 </p>
-                {rbGain && (
-                    <p className="text-[10px] font-bold text-green-400 mt-0.5 animate-in fade-in slide-in-from-left-1">
-                        +{rbGain.dps} DPS · +{rbGain.pct}%
-                    </p>
-                )}
+
             </div>
             {selected && (
                 <div className="shrink-0">
@@ -413,28 +407,7 @@ function WishlistCard({
                 </CardTitle>
                 <CardDescription className="flex flex-col gap-1">
                     <span>{selectedMember ? `${selectedMember.character_name} — ${difficulty === "heroic" ? "Heroico" : "Mítico"}` : "Selecciona un personaje"}</span>
-                    {(selections.some(s => s.dps_gain) || (selectedMember?.bis_dps_gain && selectedMember.bis_dps_gain > 0)) && (
-                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-green-400 uppercase tracking-widest mt-1">
-                            <span>Mejora Total:</span>
-                            {(() => {
-                                // Prefer the sum of current selections if they have dps_gain, 
-                                // otherwise fall back to the stored member gain.
-                                const currentSum = selections.reduce((acc, s) => acc + (s.dps_gain || 0), 0);
-                                const totalDps = currentSum > 0 ? currentSum : (selectedMember?.bis_dps_gain || 0);
-                                const currentPctSum = selections.reduce((acc, s) => acc + parseFloat(s.percent_gain || "0"), 0);
-                                const totalPct = currentPctSum > 0 ? currentPctSum : parseFloat(selectedMember?.bis_pct_gain || "0");
 
-                                return (
-                                    <>
-                                        <span>+{Math.round(totalDps)} DPS</span>
-                                        <Badge variant="outline" className="text-[9px] py-0 h-3.5 border-green-500/20 text-green-400">
-                                            +{totalPct.toFixed(2)}%
-                                        </Badge>
-                                    </>
-                                );
-                            })()}
-                        </div>
-                    )}
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -502,9 +475,7 @@ function WishlistCard({
                                         <p className="text-sm font-medium text-purple-400 truncate">{sel.item_name}</p>
                                         <div className="flex items-center gap-2 text-xs text-muted-foreground truncate">
                                             <span>{sel.boss_name} · {translateSlot(sel.slot)}</span>
-                                            {sel.dps_gain && (
-                                                <span className="text-green-400 font-bold">+{Math.round(sel.dps_gain)}</span>
-                                            )}
+
                                         </div>
                                     </div>
                                     <button
@@ -771,6 +742,7 @@ export function BisClient({
 
             fetchSelections() // Refresh local list
 
+            /* 
             if (importedCount > 0) {
                 toast.success("Sincronización Completa", {
                     description: `Se han añadido ${importedCount} ítems del reporte (+${Math.round(data.dpsGain)} DPS).`
@@ -780,6 +752,8 @@ export function BisClient({
                     description: `Reporte leído (+${Math.round(data.dpsGain)} DPS). Los ítems ya estaban en tu lista o no son de esta banda.`
                 })
             }
+            */
+            toast.info("Importación", { description: "Sincronización de Raidbots deshabilitada temporalmente." })
         } catch (e: any) {
             toast.error("Error de Importación", { description: e.message || "No se pudo leer el reporte." })
         } finally {
@@ -804,19 +778,7 @@ export function BisClient({
         }).filter(boss => boss.items.length > 0)
     }, [bosses, selectedMember])
 
-    // Map of item ID -> gains for the UI, derived from saved selections
-    const rbItemGains = useMemo(() => {
-        const gains: Record<number, { dps: number; pct: string }> = {}
-        selections.forEach(sel => {
-            if (sel.dps_gain) {
-                gains[sel.item_id] = {
-                    dps: Math.round(sel.dps_gain),
-                    pct: sel.percent_gain || "0"
-                }
-            }
-        })
-        return gains
-    }, [selections])
+
 
     // Group items by slot for slot view
     const itemsBySlot = useMemo(() => {
@@ -1077,15 +1039,11 @@ export function BisClient({
                                                                 >
                                                                     <span
                                                                         className="text-[10px] font-bold"
-                                                                        style={{ color: CLASS_COLORS[sel.guild_members?.class_id || 1] || "inherit" }}
+                                                                        style={{ color: CLASS_COLORS[(Array.isArray(sel.guild_members) ? sel.guild_members[0]?.class_id : sel.guild_members?.class_id) || 1] || "inherit" }}
                                                                     >
-                                                                        {sel.guild_members?.character_name || "Desconocido"}
+                                                                        {(Array.isArray(sel.guild_members) ? sel.guild_members[0]?.character_name : sel.guild_members?.character_name) || "Desconocido"}
                                                                     </span>
-                                                                    {sel.dps_gain && (
-                                                                        <span className="text-[9px] font-black text-green-400/80">
-                                                                            +{Math.round(sel.dps_gain)}
-                                                                        </span>
-                                                                    )}
+
                                                                 </div>
                                                             ))}
                                                         </div>
@@ -1101,61 +1059,12 @@ export function BisClient({
                 )
             ) : (
                 <div className="flex flex-col gap-6">
-                    {/* Raidbots Importer Section */}
+                    {/* Raidbots Importer Section (Commented out)
                     <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/10 to-transparent rounded-2xl overflow-hidden">
-                        <CardContent className="p-5">
-                            <div className="flex flex-col md:flex-row items-start md:items-end gap-6">
-                                <div className="flex-1 space-y-3 w-full">
-                                    <div className="flex items-center justify-between px-1">
-                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-purple-400 flex items-center gap-2">
-                                            <IconBolt className="size-3" />
-                                            Importar BiS desde Raidbots (Top Gear)
-                                        </label>
-                                        <a
-                                            href="https://www.curseforge.com/wow/addons/rclootcouncil-artictempest"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-[9px] font-black uppercase tracking-widest text-orange-400 hover:text-orange-300 transition-colors flex items-center gap-2 group/download bg-orange-500/5 px-2 py-1 rounded-lg border border-orange-500/10"
-                                        >
-                                            <IconCloudDownload className="size-3 opacity-60 group-hover/download:opacity-100 transition-opacity" />
-                                            ¿No tienes el addon? Descárgalo aquí
-                                        </a>
-                                    </div>
-                                    <div className="relative">
-                                        <IconBolt className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-purple-400/50" />
-                                        <Input
-                                            placeholder="Introduce la URL del reporte de Raidbots (ej: https://www.raidbots.com/simbot/report/...)"
-                                            value={raidbotsUrl}
-                                            onChange={(e) => setRaidbotsUrl(e.target.value)}
-                                            className="pl-11 h-12 border-purple-500/20 bg-background/50 focus-visible:ring-purple-500/40 rounded-xl font-medium text-sm"
-                                        />
-                                    </div>
-                                </div>
-                                <Button
-                                    onClick={handleRaidbotsImport}
-                                    disabled={isImporting}
-                                    className="bg-purple-600 hover:bg-purple-500 text-white font-black text-[10px] uppercase tracking-widest gap-2 h-12 px-8 shrink-0 w-full md:w-auto rounded-xl shadow-lg shadow-purple-900/40"
-                                >
-                                    {isImporting ? <IconRefresh className="size-4 animate-spin" /> : <IconBolt className="size-4" />}
-                                    {isImporting ? "Sincronizando..." : "Sincronizar BiS"}
-                                </Button>
-                            </div>
-                            {importStats && (
-                                <div className="mt-4 flex items-center gap-4 animate-in fade-in slide-in-from-top-1 bg-green-500/5 border border-green-500/10 p-2 rounded-xl w-fit">
-                                    <div className="flex items-center gap-2 text-xs">
-                                        <span className="text-muted-foreground font-medium">Mejora detectada:</span>
-                                        <span className="font-bold text-green-400">+{importStats.dps} DPS</span>
-                                        <Badge variant="outline" className="text-[10px] py-0 h-4 border-green-500/20 text-green-400 font-black">+{importStats.pct}%</Badge>
-                                    </div>
-                                    <Button variant="link" className="h-auto p-0 text-[10px] font-black uppercase tracking-widest text-purple-400 h-4 gap-1.5" asChild>
-                                        <a href={raidbotsUrl} target="_blank" rel="noreferrer">
-                                            Ver reporte completo <IconExternalLink className="size-2.5" />
-                                        </a>
-                                    </Button>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
+                        ... (Raidbots Import UI code) ...
+                    </Card> 
+                    */}
+
 
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-20 gap-4 text-muted-foreground">
@@ -1209,7 +1118,6 @@ export function BisClient({
                                                                 bossName={bossName}
                                                                 selected={isSelected(item.id)}
                                                                 onToggle={() => toggleItem(item, bossName)}
-                                                                rbGain={rbItemGains[item.id]}
                                                                 difficulty={difficulty}
                                                                 instanceId={resolvedInstanceId}
                                                             />
@@ -1239,7 +1147,6 @@ export function BisClient({
                                                                 bossName={boss.name}
                                                                 selected={isSelected(item.id)}
                                                                 onToggle={() => toggleItem(item, boss.name)}
-                                                                rbGain={rbItemGains[item.id]}
                                                                 difficulty={difficulty}
                                                                 instanceId={resolvedInstanceId}
                                                             />
