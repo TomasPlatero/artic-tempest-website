@@ -118,3 +118,4 @@ scripts/replace.js
 scripts/list-raids.js
 scripts/add-raid.js
 eslint.json
+.opencode

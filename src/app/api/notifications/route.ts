@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions, supabaseAdmin } from '@/shared/auth/auth-options';
-import {
-  ensureAppPermission,
-  getAppPermission,
-} from '@/shared/auth/permissions';
+import { getAppPermission } from '@/shared/auth/permissions';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,7 +27,10 @@ export async function GET(request: Request) {
     .order('created_at', { ascending: false });
 
   // If not requesting all (for management) or not an admin, filter by roles
-  const settingsPermission = await getAppPermission(userRole, 'settings');
+  const settingsPermission = await getAppPermission(
+    userRole,
+    'settings-notifications',
+  );
 
   if (!getAll || !settingsPermission.canEdit) {
     // Show notifications where target_roles is empty OR contains user's role
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
 
   const postPermissions = await getAppPermission(
     session.user.roleLevel,
-    'settings',
+    'settings-notifications',
   );
   if (!postPermissions.canEdit) {
     return NextResponse.json(
@@ -111,7 +111,7 @@ export async function DELETE(request: Request) {
 
   const deletePermissions = await getAppPermission(
     session.user.roleLevel,
-    'settings',
+    'settings-notifications',
   );
   if (!deletePermissions.canEdit) {
     return NextResponse.json(
@@ -149,7 +149,7 @@ export async function PATCH(request: Request) {
 
   const patchPermissions = await getAppPermission(
     session.user.roleLevel,
-    'settings',
+    'settings-notifications',
   );
   if (!patchPermissions.canEdit) {
     return NextResponse.json(

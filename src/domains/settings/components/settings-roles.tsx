@@ -62,6 +62,51 @@ type AppPermission = {
   can_manage: boolean;
 };
 
+const PERMISSION_GROUPS = [
+  {
+    id: "core",
+    label: "Core",
+    apps: [
+      { id: "settings", name: "Ajustes" },
+      { id: "settings-menu", name: "Navegacion / Menu" },
+      { id: "settings-recruitment", name: "Config. Reclutamiento" },
+    ],
+  },
+  {
+    id: "integrations",
+    label: "Integraciones",
+    apps: [
+      { id: "settings-discord", name: "Discord" },
+      { id: "settings-bnet", name: "Battle.net" },
+      { id: "settings-accounts", name: "Cuentas" },
+      { id: "settings-api", name: "API / Integraciones" },
+      { id: "settings-streamers", name: "Streamers" },
+      { id: "settings-notifications", name: "Notificaciones" },
+    ],
+  },
+  {
+    id: "content",
+    label: "Contenido",
+    apps: [
+      { id: "settings-news", name: "Noticias" },
+      { id: "settings-widgets", name: "Widgets" },
+    ],
+  },
+  {
+    id: "apps",
+    label: "Apps",
+    apps: [
+      { id: "roster", name: "Roster" },
+      { id: "stats", name: "Estadisticas" },
+      { id: "calendar", name: "Calendario" },
+      { id: "planificador-cds", name: "Planificador CD's" },
+      { id: "bis", name: "BiS / Wishlist" },
+      { id: "bis-admin", name: "Gestion BiS" },
+      { id: "recruitment", name: "Bandeja Reclutamiento" },
+    ],
+  },
+] as const;
+
 const ROLES: { level: RoleLevel; label: string; color: string }[] = [
   { level: "gm", label: "Guild Master", color: "text-amber-500/80" },
   { level: "officer", label: "Oficial", color: "text-blue-500/80" },
@@ -377,88 +422,86 @@ export function SettingsRolesClient({
                 </Tabs>
 
                 <div className="space-y-2.5">
-                  {[
-                    { id: "roster", name: "Roster" },
-                    { id: "stats", name: "Estadísticas" },
-                    { id: "calendar", name: "Calendario" },
-                    { id: "planificador-cds", name: "Planificador CD's" },
-                    { id: "bis", name: "BiS / Wishlist" },
-                    { id: "bis-admin", name: "Gestión BiS" },
-                    { id: "settings-recruitment", name: "Reclutamiento" },
-                    { id: "settings-menu", name: "Navegación / Menú" },
-                  ].map((app) => (
-                    <div
-                      key={app.id}
-                      className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-5 flex flex-col gap-4 group active:bg-white/[0.04] transition-all"
-                    >
-                      <span className="text-sm font-bold text-white/90">
-                        {app.name}
-                      </span>
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex flex-col items-center gap-1.5">
-                          <Switch
-                            checked={hasPermission(
-                              mobileActiveRole,
-                              app.id,
-                              "view",
-                            )}
-                            onCheckedChange={() =>
-                              handlePermissionToggle(
-                                mobileActiveRole,
-                                app.id,
-                                "view",
-                              )
-                            }
-                            disabled={mobileActiveRole === "gm"}
-                            className="data-[state=checked]:bg-blue-500"
-                          />
-                          <span className="text-[9px] font-black uppercase tracking-widest text-white/40">
-                            Ver
-                          </span>
-                        </div>
-                        <div className="flex flex-col items-center gap-1.5">
-                          <Switch
-                            checked={hasPermission(
-                              mobileActiveRole,
-                              app.id,
-                              "edit",
-                            )}
-                            onCheckedChange={() =>
-                              handlePermissionToggle(
-                                mobileActiveRole,
-                                app.id,
-                                "edit",
-                              )
-                            }
-                            disabled={mobileActiveRole === "gm"}
-                            className="data-[state=checked]:bg-emerald-500"
-                          />
-                          <span className="text-[9px] font-black uppercase tracking-widest text-white/40">
-                            Edit
-                          </span>
-                        </div>
-                        <div className="flex flex-col items-center gap-1.5">
-                          <Switch
-                            checked={hasPermission(
-                              mobileActiveRole,
-                              app.id,
-                              "manage",
-                            )}
-                            onCheckedChange={() =>
-                              handlePermissionToggle(
-                                mobileActiveRole,
-                                app.id,
-                                "manage",
-                              )
-                            }
-                            disabled={mobileActiveRole === "gm"}
-                            className="data-[state=checked]:bg-purple-500"
-                          />
-                          <span className="text-[9px] font-black uppercase tracking-widest text-white/40">
-                            Admin
-                          </span>
-                        </div>
+                  {PERMISSION_GROUPS.map((group) => (
+                    <div key={group.id} className="space-y-2.5">
+                      <div className="px-1 text-[10px] font-black uppercase tracking-[0.25em] text-white/30">
+                        {group.label}
                       </div>
+                      {group.apps.map((app) => (
+                        <div
+                          key={app.id}
+                          className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-5 flex flex-col gap-4 group active:bg-white/[0.04] transition-all"
+                        >
+                          <span className="text-sm font-bold text-white/90">
+                            {app.name}
+                          </span>
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex flex-col items-center gap-1.5">
+                              <Switch
+                                checked={hasPermission(
+                                  mobileActiveRole,
+                                  app.id,
+                                  "view",
+                                )}
+                                onCheckedChange={() =>
+                                  handlePermissionToggle(
+                                    mobileActiveRole,
+                                    app.id,
+                                    "view",
+                                  )
+                                }
+                                disabled={mobileActiveRole === "gm"}
+                                className="data-[state=checked]:bg-blue-500"
+                              />
+                              <span className="text-[9px] font-black uppercase tracking-widest text-white/40">
+                                Ver
+                              </span>
+                            </div>
+                            <div className="flex flex-col items-center gap-1.5">
+                              <Switch
+                                checked={hasPermission(
+                                  mobileActiveRole,
+                                  app.id,
+                                  "edit",
+                                )}
+                                onCheckedChange={() =>
+                                  handlePermissionToggle(
+                                    mobileActiveRole,
+                                    app.id,
+                                    "edit",
+                                  )
+                                }
+                                disabled={mobileActiveRole === "gm"}
+                                className="data-[state=checked]:bg-emerald-500"
+                              />
+                              <span className="text-[9px] font-black uppercase tracking-widest text-white/40">
+                                Edit
+                              </span>
+                            </div>
+                            <div className="flex flex-col items-center gap-1.5">
+                              <Switch
+                                checked={hasPermission(
+                                  mobileActiveRole,
+                                  app.id,
+                                  "manage",
+                                )}
+                                onCheckedChange={() =>
+                                  handlePermissionToggle(
+                                    mobileActiveRole,
+                                    app.id,
+                                    "manage",
+                                  )
+                                }
+                                disabled={mobileActiveRole === "gm"}
+                                className="data-[state=checked]:bg-purple-500"
+                              />
+                              <span className="text-[9px] font-black uppercase tracking-widest text-white/40">
+                                Admin
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   ))}
                 </div>
@@ -479,94 +522,94 @@ export function SettingsRolesClient({
                     ))}
                   </div>
 
-                  {[
-                    { id: "roster", name: "Roster" },
-                    { id: "stats", name: "Estadísticas" },
-                    { id: "calendar", name: "Calendario" },
-                    { id: "planificador-cds", name: "Planificador CD's" },
-                    { id: "bis", name: "BiS / Wishlist" },
-                    { id: "bis-admin", name: "Gestión BiS" },
-                    { id: "settings-recruitment", name: "Reclutamiento" },
-                    { id: "settings-menu", name: "Navegación / Menú" },
-                  ].map((app) => (
-                    <div
-                      key={app.id}
-                      className="grid grid-cols-[1fr_repeat(5,minmax(0,1fr))] items-center p-5 border-b border-white/[0.03] last:border-0 hover:bg-white/[0.02] transition-colors group"
-                    >
-                      <div className="col-span-1 font-black text-white text-base group-hover:text-primary transition-colors">
-                        {app.name}
+                  {PERMISSION_GROUPS.map((group) => (
+                    <div key={group.id}>
+                      <div className="grid grid-cols-[1fr_repeat(5,minmax(0,1fr))] items-center px-5 py-3 border-b border-white/[0.03] bg-white/[0.02]">
+                        <div className="col-span-6 text-[10px] font-black uppercase tracking-[0.3em] text-white/35">
+                          {group.label}
+                        </div>
                       </div>
-                      {ROLES.map((role) => (
+                      {group.apps.map((app) => (
                         <div
-                          key={role.level}
-                          className="col-span-1 flex justify-center gap-3"
+                          key={app.id}
+                          className="grid grid-cols-[1fr_repeat(5,minmax(0,1fr))] items-center p-5 border-b border-white/[0.03] last:border-0 hover:bg-white/[0.02] transition-colors group"
                         >
-                          <div className="flex flex-col items-center gap-2 group/switch">
-                            <Switch
-                              size="sm"
-                              checked={hasPermission(
-                                role.level,
-                                app.id,
-                                "view",
-                              )}
-                              onCheckedChange={() =>
-                                handlePermissionToggle(
-                                  role.level,
-                                  app.id,
-                                  "view",
-                                )
-                              }
-                              disabled={role.level === "gm"}
-                              className="data-[state=checked]:bg-blue-500/80"
-                            />
-                            <span className="text-[9px] text-zinc-600 group-hover/switch:text-zinc-400 mt-1 uppercase font-black tracking-widest transition-colors">
-                              Ver
-                            </span>
+                          <div className="col-span-1 font-black text-white text-base group-hover:text-primary transition-colors">
+                            {app.name}
                           </div>
-                          <div className="flex flex-col items-center gap-2 group/switch">
-                            <Switch
-                              size="sm"
-                              checked={hasPermission(
-                                role.level,
-                                app.id,
-                                "edit",
-                              )}
-                              onCheckedChange={() =>
-                                handlePermissionToggle(
-                                  role.level,
-                                  app.id,
-                                  "edit",
-                                )
-                              }
-                              disabled={role.level === "gm"}
-                              className="data-[state=checked]:bg-emerald-500/80"
-                            />
-                            <span className="text-[9px] text-zinc-600 group-hover/switch:text-zinc-400 mt-1 uppercase font-black tracking-widest transition-colors">
-                              Edit
-                            </span>
-                          </div>
-                          <div className="flex flex-col items-center gap-2 group/switch">
-                            <Switch
-                              size="sm"
-                              checked={hasPermission(
-                                role.level,
-                                app.id,
-                                "manage",
-                              )}
-                              onCheckedChange={() =>
-                                handlePermissionToggle(
-                                  role.level,
-                                  app.id,
-                                  "manage",
-                                )
-                              }
-                              disabled={role.level === "gm"}
-                              className="data-[state=checked]:bg-purple-500/80"
-                            />
-                            <span className="text-[9px] text-zinc-600 group-hover/switch:text-zinc-400 mt-1 uppercase font-black tracking-widest transition-colors">
-                              Admin
-                            </span>
-                          </div>
+                          {ROLES.map((role) => (
+                            <div
+                              key={role.level}
+                              className="col-span-1 flex justify-center gap-3"
+                            >
+                              <div className="flex flex-col items-center gap-2 group/switch">
+                                <Switch
+                                  size="sm"
+                                  checked={hasPermission(
+                                    role.level,
+                                    app.id,
+                                    "view",
+                                  )}
+                                  onCheckedChange={() =>
+                                    handlePermissionToggle(
+                                      role.level,
+                                      app.id,
+                                      "view",
+                                    )
+                                  }
+                                  disabled={role.level === "gm"}
+                                  className="data-[state=checked]:bg-blue-500/80"
+                                />
+                                <span className="text-[9px] text-zinc-600 group-hover/switch:text-zinc-400 mt-1 uppercase font-black tracking-widest transition-colors">
+                                  Ver
+                                </span>
+                              </div>
+                              <div className="flex flex-col items-center gap-2 group/switch">
+                                <Switch
+                                  size="sm"
+                                  checked={hasPermission(
+                                    role.level,
+                                    app.id,
+                                    "edit",
+                                  )}
+                                  onCheckedChange={() =>
+                                    handlePermissionToggle(
+                                      role.level,
+                                      app.id,
+                                      "edit",
+                                    )
+                                  }
+                                  disabled={role.level === "gm"}
+                                  className="data-[state=checked]:bg-emerald-500/80"
+                                />
+                                <span className="text-[9px] text-zinc-600 group-hover/switch:text-zinc-400 mt-1 uppercase font-black tracking-widest transition-colors">
+                                  Edit
+                                </span>
+                              </div>
+                              <div className="flex flex-col items-center gap-2 group/switch">
+                                <Switch
+                                  size="sm"
+                                  checked={hasPermission(
+                                    role.level,
+                                    app.id,
+                                    "manage",
+                                  )}
+                                  onCheckedChange={() =>
+                                    handlePermissionToggle(
+                                      role.level,
+                                      app.id,
+                                      "manage",
+                                    )
+                                  }
+                                  disabled={role.level === "gm"}
+                                  className="data-[state=checked]:bg-purple-500/80"
+                                />
+                                <span className="text-[9px] text-zinc-600 group-hover/switch:text-zinc-400 mt-1 uppercase font-black tracking-widest transition-colors">
+                                  Admin
+                                </span>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       ))}
                     </div>

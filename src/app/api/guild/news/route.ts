@@ -10,7 +10,10 @@ export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     const permissions = session
-      ? await getAppPermission(session.user.roleLevel ?? 'invitado', 'settings')
+      ? await getAppPermission(
+          session.user.roleLevel ?? 'invitado',
+          'settings-news',
+        )
       : { canView: false, canEdit: false, canManage: false };
     const isStaff = permissions.canEdit;
     const { searchParams } = new URL(req.url);
@@ -47,7 +50,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const session = await ensureAppPermission('settings', 'edit');
+    const session = await ensureAppPermission('settings-news', 'edit');
 
     const body = await req.json();
     const {
@@ -101,7 +104,7 @@ export async function POST(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
-    await ensureAppPermission('settings', 'edit');
+    await ensureAppPermission('settings-news', 'edit');
 
     const body = await req.json();
     const { id, ...updates } = body;
@@ -142,7 +145,7 @@ export async function PATCH(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
-    await ensureAppPermission('settings', 'edit');
+    await ensureAppPermission('settings-news', 'edit');
 
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');

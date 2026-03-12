@@ -4,7 +4,7 @@ import { ensureAppPermission } from '@/shared/auth/permissions';
 
 export async function POST() {
   try {
-    await ensureAppPermission('settings', 'manage');
+    await ensureAppPermission('settings-discord', 'edit');
 
     const creds = await getGuildCredentials();
     const {

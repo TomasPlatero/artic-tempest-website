@@ -4,7 +4,7 @@ import { ensureAppPermission } from '@/shared/auth/permissions';
 
 export async function POST(req: Request) {
   try {
-    await ensureAppPermission('settings', 'edit');
+    await ensureAppPermission('settings-widgets', 'edit');
 
     const body = await req.json();
     const { type, title, content } = body;
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
-    await ensureAppPermission('settings', 'edit');
+    await ensureAppPermission('settings-widgets', 'edit');
 
     const body = await req.json();
     const { id, ...updates } = body;
@@ -64,7 +64,7 @@ export async function PATCH(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
-    await ensureAppPermission('settings', 'edit');
+    await ensureAppPermission('settings-widgets', 'edit');
 
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');

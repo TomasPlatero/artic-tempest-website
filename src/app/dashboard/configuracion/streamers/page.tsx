@@ -18,7 +18,7 @@ export default async function StreamersPage() {
 
   const { canEdit } = await getAppPermission(
     session.user.roleLevel ?? "invitado",
-    "settings",
+    "settings-streamers",
   );
 
   if (!canEdit) {

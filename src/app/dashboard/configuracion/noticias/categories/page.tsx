@@ -8,7 +8,7 @@ import { createAdminClient } from "@/shared/supabase/server";
 export default async function CategoriesSettingsPage() {
   const session = await getServerSession(authOptions);
   const roleLevel = session?.user?.roleLevel ?? "invitado";
-  const { canEdit } = await getAppPermission(roleLevel, "settings");
+  const { canEdit } = await getAppPermission(roleLevel, "settings-news");
 
   if (!canEdit) {
     return <Forbidden />;

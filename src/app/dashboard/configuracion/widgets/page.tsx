@@ -10,7 +10,7 @@ export default async function DashboardSettingsPage() {
   if (!session) redirect("/");
 
   const roleLevel = session.user?.roleLevel?.toLowerCase() ?? "invitado";
-  const { canEdit } = await getAppPermission(roleLevel, "settings");
+  const { canEdit } = await getAppPermission(roleLevel, "settings-widgets");
 
   if (!canEdit) {
     return <Forbidden />;

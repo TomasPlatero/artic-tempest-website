@@ -5,7 +5,7 @@ import { ensureAppPermission } from '@/shared/auth/permissions';
 
 export async function POST(req: Request) {
   try {
-    await ensureAppPermission('settings', 'edit');
+    await ensureAppPermission('settings-news', 'edit');
 
     const formData = await req.formData();
     const file = formData.get('file') as File;

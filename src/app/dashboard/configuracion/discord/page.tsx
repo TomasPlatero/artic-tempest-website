@@ -9,7 +9,7 @@ import { Forbidden } from "@/shared/components/forbidden";
 export default async function DiscordSettingsPage() {
   const session = await getServerSession(authOptions);
   const roleLevel = session?.user?.roleLevel ?? "invitado";
-  const { canEdit } = await getAppPermission(roleLevel, "settings");
+  const { canEdit } = await getAppPermission(roleLevel, "settings-discord");
 
   if (!session) {
     redirect("/");

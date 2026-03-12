@@ -27,6 +27,14 @@ export default async function AppsSettingsHubPage() {
     return <Forbidden />;
   }
 
+  const rosterPermission = await getAppPermission(roleLevel, "roster");
+  const calendarPermission = await getAppPermission(roleLevel, "calendar");
+  const bisPermission = await getAppPermission(roleLevel, "bis-admin");
+  const plannerPermission = await getAppPermission(
+    roleLevel,
+    "planificador-cds",
+  );
+
   const apps = [
     {
       title: "Gestión de Roster",
@@ -36,6 +44,7 @@ export default async function AppsSettingsHubPage() {
       href: "/dashboard/aplicaciones/roster",
       color: "text-blue-500",
       bg: "bg-blue-500/10",
+      visible: rosterPermission.canEdit,
     },
     {
       title: "Calendario de Eventos",
@@ -45,6 +54,7 @@ export default async function AppsSettingsHubPage() {
       href: "/dashboard/aplicaciones/calendario",
       color: "text-emerald-500",
       bg: "bg-emerald-500/10",
+      visible: calendarPermission.canEdit,
     },
     {
       title: "Estadísticas y Logs",
@@ -55,6 +65,7 @@ export default async function AppsSettingsHubPage() {
       color: "text-orange-500",
       bg: "bg-orange-500/10",
       disabled: true,
+      visible: false,
     },
     {
       title: "BiS List (Best in Slot)",
@@ -64,6 +75,7 @@ export default async function AppsSettingsHubPage() {
       href: "/dashboard/aplicaciones/bis",
       color: "text-purple-500",
       bg: "bg-purple-500/10",
+      visible: bisPermission.canView,
     },
     {
       title: "Planificador de CD's",
@@ -73,6 +85,7 @@ export default async function AppsSettingsHubPage() {
       href: "/dashboard/aplicaciones/planificador-cds",
       color: "text-blue-400",
       bg: "bg-blue-400/10",
+      visible: plannerPermission.canEdit,
     },
   ];
 
@@ -99,59 +112,61 @@ export default async function AppsSettingsHubPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-4 w-full">
-        {apps.map((app) => {
-          const Icon = app.icon;
-          return app.disabled ? (
-            <Card
-              key={app.href}
-              className="h-full overflow-hidden border-border/40 bg-card/20 backdrop-blur-sm opacity-50 cursor-not-allowed border-dashed"
-            >
-              <CardHeader className="flex flex-row items-center gap-4 py-4 px-5 grayscale">
-                <div
-                  className={`p-2.5 rounded-xl ${app.bg} ${app.color} shrink-0 shadow-sm border border-white/5`}
-                >
-                  <Icon className="w-6 h-6" />
-                </div>
-                <div className="flex flex-col text-left">
-                  <div className="flex items-center gap-2">
-                    <CardTitle className="text-lg">{app.title}</CardTitle>
-                    <Badge
-                      variant="outline"
-                      className="text-[9px] uppercase tracking-widest px-1.5 py-0 h-4"
-                    >
-                      Beta
-                    </Badge>
-                  </div>
-                  <CardDescription className="mt-1.5 leading-snug">
-                    {app.description}
-                  </CardDescription>
-                </div>
-              </CardHeader>
-            </Card>
-          ) : (
-            <Link
-              href={app.href}
-              key={app.href}
-              className="transition-all hover:scale-[1.02]"
-            >
-              <Card className="h-full hover:border-primary/50 cursor-pointer overflow-hidden border-border/40 bg-card/40 backdrop-blur-sm">
-                <CardHeader className="flex flex-row items-center gap-4 py-4 px-5">
+        {apps
+          .filter((app) => app.visible)
+          .map((app) => {
+            const Icon = app.icon;
+            return app.disabled ? (
+              <Card
+                key={app.href}
+                className="h-full overflow-hidden border-border/40 bg-card/20 backdrop-blur-sm opacity-50 cursor-not-allowed border-dashed"
+              >
+                <CardHeader className="flex flex-row items-center gap-4 py-4 px-5 grayscale">
                   <div
                     className={`p-2.5 rounded-xl ${app.bg} ${app.color} shrink-0 shadow-sm border border-white/5`}
                   >
                     <Icon className="w-6 h-6" />
                   </div>
                   <div className="flex flex-col text-left">
-                    <CardTitle className="text-lg">{app.title}</CardTitle>
+                    <div className="flex items-center gap-2">
+                      <CardTitle className="text-lg">{app.title}</CardTitle>
+                      <Badge
+                        variant="outline"
+                        className="text-[9px] uppercase tracking-widest px-1.5 py-0 h-4"
+                      >
+                        Beta
+                      </Badge>
+                    </div>
                     <CardDescription className="mt-1.5 leading-snug">
                       {app.description}
                     </CardDescription>
                   </div>
                 </CardHeader>
               </Card>
-            </Link>
-          );
-        })}
+            ) : (
+              <Link
+                href={app.href}
+                key={app.href}
+                className="transition-all hover:scale-[1.02]"
+              >
+                <Card className="h-full hover:border-primary/50 cursor-pointer overflow-hidden border-border/40 bg-card/40 backdrop-blur-sm">
+                  <CardHeader className="flex flex-row items-center gap-4 py-4 px-5">
+                    <div
+                      className={`p-2.5 rounded-xl ${app.bg} ${app.color} shrink-0 shadow-sm border border-white/5`}
+                    >
+                      <Icon className="w-6 h-6" />
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <CardTitle className="text-lg">{app.title}</CardTitle>
+                      <CardDescription className="mt-1.5 leading-snug">
+                        {app.description}
+                      </CardDescription>
+                    </div>
+                  </CardHeader>
+                </Card>
+              </Link>
+            );
+          })}
       </div>
     </div>
   );

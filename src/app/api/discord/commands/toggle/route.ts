@@ -4,7 +4,7 @@ import { ensureAppPermission } from '@/shared/auth/permissions';
 
 export async function POST(req: Request) {
   try {
-    await ensureAppPermission('settings', 'manage');
+    await ensureAppPermission('settings-discord', 'edit');
 
     const body = await req.json();
     const { name, is_enabled } = body;
