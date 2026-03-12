@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next'
-import { supabaseAdmin } from "@/infrastructure/auth/auth-options"
+import { supabaseAdmin } from "@/shared/auth/auth-options"
 
 export default async function manifest(): Promise<MetadataRoute.Manifest> {
     const { data: guild } = await supabaseAdmin

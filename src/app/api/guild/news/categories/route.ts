@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/infrastructure/auth/auth-options"
-import { createAdminClient } from "@/infrastructure/supabase/server"
+import { authOptions } from "@/shared/auth/auth-options"
+import { createAdminClient } from "@/shared/supabase/server"
 
 export async function POST(req: Request) {
     const session = await getServerSession(authOptions)

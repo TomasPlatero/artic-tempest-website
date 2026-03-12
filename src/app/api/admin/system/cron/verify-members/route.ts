@@ -1,6 +1,6 @@
 // src/app/api/admin/system/cron/verify-members/route.ts
 import { NextResponse } from "next/server"
-import { processVerificationBatch } from "@/infrastructure/verification/sync-engine"
+import { processVerificationBatch } from "@/domains/membership/lib/sync-engine"
 
 export const dynamic = 'force-dynamic'
 

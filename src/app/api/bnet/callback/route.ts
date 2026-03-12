@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options"
 import { cookies } from "next/headers"
-import { getGuildCredentials } from "@/infrastructure/auth/credentials"
-import { fetchCharacterSpec } from "@/infrastructure/bnet/bnet-client"
+import { getGuildCredentials } from "@/shared/auth/credentials"
+import { fetchCharacterSpec } from "@/shared/integrations/bnet/bnet-client"
 
 export const runtime = "nodejs"
 
@@ -121,18 +121,36 @@ export async function GET(request: Request) {
         if (characters.length > 0) {
             await supabaseAdmin.from("bnet_characters").delete().eq("user_id", userId)
 
+            // Fetch specs and classes metadata to populate bnet_characters correctly
+            const { data: specsMetadata } = await supabaseAdmin
+                .from("wow_specializations")
+                .select("id, name, class_id, role, main_stat")
+
+            const { data: classesMetadata } = await supabaseAdmin
+                .from("wow_classes")
+                .select("id, armor_type")
+
             const charRows = await Promise.all(characters.map(async c => {
-                const spec = await fetchCharacterSpec(c.realm.slug, c.name.toLowerCase(), "eu", accessToken)
+                const specName = await fetchCharacterSpec(c.realm.slug, c.name.toLowerCase(), "eu", accessToken)
+
+                // Find metadata
+                const specMeta = specsMetadata?.find(s => s.name === specName && s.class_id === c.playable_class.id)
+                const classMeta = classesMetadata?.find(cl => cl.id === c.playable_class.id)
+
                 return {
                     user_id: userId,
                     name: c.name,
                     realm: c.realm.name,
-                    realm_slug: c.realm.slug,
+                    realm_slug: c.realm_slug || c.realm.slug,
                     class_id: c.playable_class.id,
                     race_id: c.playable_race.id,
                     level: c.level,
                     faction: c.faction?.type?.toLowerCase() || 'neutral',
-                    spec: spec || "Unknown"
+                    spec: specName || "Unknown",
+                    spec_id: specMeta?.id || null,
+                    role: specMeta?.role || null,
+                    main_stat: specMeta?.main_stat || null,
+                    armor_type: classMeta?.armor_type || null
                 }
             }))
 
@@ -140,7 +158,7 @@ export async function GET(request: Request) {
             if (insertErr) {
                 console.error("[BNET CALLBACK] DB Insert Error:", insertErr)
             } else {
-                console.log(`[BNET CALLBACK] Inserted ${charRows.length} characters successfully`)
+                console.log(`[BNET CALLBACK] Inserted ${charRows.length} characters with full metadata successfully`)
             }
 
             // Finalmente: "Reclamar" los que ya estén en la hermandad (guild_members)

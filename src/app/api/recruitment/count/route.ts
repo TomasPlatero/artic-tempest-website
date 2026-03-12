@@ -1,25 +1,26 @@
-import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
+import { NextResponse } from 'next/server';
+import { supabaseAdmin } from '@/shared/auth/auth-options';
+import { ensureAppPermission } from '@/shared/auth/permissions';
 
-export const dynamic = "force-dynamic"
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
-    const session = await getServerSession(authOptions)
-    if (!session || (session.user.roleLevel !== 'gm' && session.user.roleLevel !== 'officer')) {
-        return NextResponse.json({ count: 0 })
-    }
+  try {
+    await ensureAppPermission('settings-recruitment', 'view');
 
-    try {
-        const { count, error } = await supabaseAdmin.from("recruitment_applications")
-            .select("id", { count: 'exact', head: true })
-            .in("status", ["pending", "reviewing", "interview"])
+    const { count, error } = await supabaseAdmin
+      .from('recruitment_applications')
+      .select('id', { count: 'exact', head: true })
+      .in('status', ['pending', 'reviewing', 'interview']);
 
-        if (error) throw error
+    if (error) throw error;
 
-        return NextResponse.json({ count: count || 0 })
-    } catch (error: any) {
-        console.error("Fetch recruitment count error:", error)
-        return NextResponse.json({ count: 0, error: error.message }, { status: 500 })
-    }
+    return NextResponse.json({ count: count || 0 });
+  } catch (error: any) {
+    console.error('Fetch recruitment count error:', error);
+    return NextResponse.json(
+      { count: 0, error: error.message },
+      { status: 403 },
+    );
+  }
 }

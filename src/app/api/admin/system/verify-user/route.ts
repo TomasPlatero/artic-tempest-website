@@ -1,8 +1,8 @@
 // src/app/api/admin/system/verify-user/route.ts
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/infrastructure/auth/auth-options"
-import { verifyUser } from "@/infrastructure/verification/sync-engine"
+import { authOptions } from "@/shared/auth/auth-options"
+import { verifyUser } from "@/domains/membership/lib/sync-engine"
 
 export async function POST(req: Request) {
     const session = await getServerSession(authOptions)

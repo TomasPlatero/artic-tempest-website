@@ -1,10 +1,10 @@
 "use client"
 
 import * as React from "react"
-import { RichEditor } from "@/components/editor/rich-editor"
+import { RichEditor } from "@/shared/editor/rich-editor"
 import { SerializedEditorState } from "lexical"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/shared/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs"
 
 export default function EditorDemoPage() {
     const [editorState, setEditorState] = React.useState<SerializedEditorState | null>(null)

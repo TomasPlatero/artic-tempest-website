@@ -1,7 +1,7 @@
 // src/app/api/me/route.ts
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/infrastructure/auth/auth-options';
+import { supabaseAdmin } from '@/shared/auth/auth-options';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/infrastructure/auth/auth-options';
+import { authOptions } from '@/shared/auth/auth-options';
 
 export type AbilityCategory =
   | 'major_dps'

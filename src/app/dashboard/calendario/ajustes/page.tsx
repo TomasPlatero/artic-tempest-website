@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation"
 
 export default function OldSettingsRedirect() {
-    redirect("/dashboard/settings/apps/calendar")
+    redirect("/dashboard/aplicaciones/calendario")
 }

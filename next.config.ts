@@ -1,4 +1,4 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 /** @type {import('next').NextConfig} */
 const nextConfig: NextConfig = {
@@ -7,14 +7,20 @@ const nextConfig: NextConfig = {
   experimental: {
     serverSourceMaps: false,
   },
-  allowedDevOrigins: ['cataractous-overharshly-keshia.ngrok-free.dev', 'localhost:3000'],
+  allowedDevOrigins: [
+    'cataractous-overharshly-keshia.ngrok-free.dev',
+    'localhost:3000',
+  ],
 
   // --- PERFORMANCE & SECURITY: ANTIGRAVITY STACK (Native) ---
 
   // 1. Minificación Extrema (Uses SWC by default in Next.js 13+)
   // 2. Control de Logs: Limpieza total de consola en producción
   compiler: {
-    removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error", "warn"] } : false,
+    removeConsole:
+      process.env.NODE_ENV === 'production'
+        ? { exclude: ['error', 'warn'] }
+        : false,
   },
 
   // 3. Source Maps Fantasma: No se exponen en el navegador
@@ -25,14 +31,14 @@ const nextConfig: NextConfig = {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     remotePatterns: [
-      { protocol: "https", hostname: "www.google.com" },
-      { protocol: "https", hostname: "vrniyndhfaawwqzcrqng.supabase.co" },
-      { protocol: "https", hostname: "render.worldofwarcraft.com" },
-      { protocol: "https", hostname: "cdn.discordapp.com" },
-      { protocol: "https", hostname: "wow.zamimg.com" },
-      { protocol: "https", hostname: "community.restedxp.com" },
-      { protocol: "https", hostname: "shop.restedxp.com" },
-      { protocol: "https", hostname: "artictempest.es" },
+      { protocol: 'https', hostname: 'www.google.com' },
+      { protocol: 'https', hostname: 'vrniyndhfaawwqzcrqng.supabase.co' },
+      { protocol: 'https', hostname: 'render.worldofwarcraft.com' },
+      { protocol: 'https', hostname: 'cdn.discordapp.com' },
+      { protocol: 'https', hostname: 'wow.zamimg.com' },
+      { protocol: 'https', hostname: 'community.restedxp.com' },
+      { protocol: 'https', hostname: 'shop.restedxp.com' },
+      { protocol: 'https', hostname: 'artictempest.es' },
     ],
     qualities: [50, 75, 90], // NextJS 15+ Image qualities allowed
   },
@@ -41,13 +47,53 @@ const nextConfig: NextConfig = {
   compress: true,
 
   // 6. Seguridad: Content Security Policy (CSP) robusta
+  async redirects() {
+    return [
+      {
+        source: '/dashboard/settings/apps/:path*',
+        destination: '/dashboard/aplicaciones/:path*',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/settings/news-settings/:path*',
+        destination: '/dashboard/configuracion/noticias/:path*',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/settings/recruitment/:path*',
+        destination: '/dashboard/configuracion/reclutamiento/:path*',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/settings/accounts',
+        destination: '/dashboard/configuracion/cuentas',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/settings/notifications',
+        destination: '/dashboard/configuracion/notificaciones',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/settings/:path*',
+        destination: '/dashboard/configuracion/:path*',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/recruitment/:path*',
+        destination: '/dashboard/reclutamiento/:path*',
+        permanent: true,
+      },
+    ];
+  },
+
   async headers() {
     return [
       {
-        source: "/(.*)",
+        source: '/(.*)',
         headers: [
           {
-            key: "Content-Security-Policy",
+            key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
               "script-src 'self' 'unsafe-eval' 'unsafe-inline' va.vercel-scripts.com wow.zamimg.com *.wowhead.com *.googletagmanager.com *.google-analytics.com",
@@ -57,24 +103,24 @@ const nextConfig: NextConfig = {
               "connect-src 'self' *.supabase.co wss://*.supabase.co discord.com *.discordapp.com vitals.vercel-insights.com raider.io *.raider.io warcraftlogs.com *.warcraftlogs.com *.supabase.in wss://*.supabase.in wow.zamimg.com *.wowhead.com *.google-analytics.com *.analytics.google.com *.googletagmanager.com",
               "frame-src 'self' player.twitch.tv",
               "frame-ancestors 'none'",
-              "upgrade-insecure-requests",
-            ].join("; "),
+              'upgrade-insecure-requests',
+            ].join('; '),
           },
           {
-            key: "X-Frame-Options",
-            value: "DENY",
+            key: 'X-Frame-Options',
+            value: 'DENY',
           },
           {
-            key: "X-Content-Type-Options",
-            value: "nosniff",
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
           },
           {
-            key: "Referrer-Policy",
-            value: "origin-when-cross-origin",
+            key: 'Referrer-Policy',
+            value: 'origin-when-cross-origin',
           },
           {
-            key: "Strict-Transport-Security",
-            value: "max-age=31536000; includeSubDomains; preload",
+            key: 'Strict-Transport-Security',
+            value: 'max-age=31536000; includeSubDomains; preload',
           },
         ],
       },

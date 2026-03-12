@@ -1,9 +1,9 @@
 import { getServerSession } from "next-auth"
-import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options"
 import { notFound, redirect } from "next/navigation"
-import { LandingNavigation } from "@/components/landing/navigation"
-import { ApplicationChat } from "@/components/recruitment/application-chat"
-import { Button } from "@/components/ui/button"
+import { LandingNavigation } from "@/domains/landing/components/navigation"
+import { ApplicationChat } from "@/domains/recruitment/components/application-chat"
+import { Button } from "@/shared/ui/button"
 import { IconArrowLeft } from "@tabler/icons-react"
 import Link from "next/link"
 

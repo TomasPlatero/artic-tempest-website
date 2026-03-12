@@ -1,11 +1,11 @@
-import { createAdminClient } from "@/infrastructure/supabase/server"
+import { createAdminClient } from "@/shared/supabase/server"
 import { IconCalendar, IconUserEdit, IconArrowRight } from "@tabler/icons-react"
 import Link from "next/link"
 import React from "react"
 import Image from "next/image"
-import { LandingNavigation } from "@/components/landing/navigation"
-import { LandingFooter } from "@/components/landing/footer"
-import { CharacterAvatar } from "@/components/common/character-avatar"
+import { LandingNavigation } from "@/domains/landing/components/navigation"
+import { LandingFooter } from "@/domains/landing/components/footer"
+import { CharacterAvatar } from "@/shared/components/character-avatar"
 
 import { Metadata } from "next"
 

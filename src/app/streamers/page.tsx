@@ -1,9 +1,9 @@
 import { Metadata } from "next"
-import { LandingNavigation } from "@/components/landing/navigation"
-import { LandingStreamers } from "@/components/landing/streamers"
-import { LandingFooter } from "@/components/landing/footer"
-import { BreadcrumbJsonLd } from "@/components/seo/json-ld"
-import { getEnrichedStreamers } from "@/infrastructure/streamers/server-actions"
+import { LandingNavigation } from "@/domains/landing/components/navigation"
+import { LandingStreamers } from "@/domains/landing/components/streamers"
+import { LandingFooter } from "@/domains/landing/components/footer"
+import { BreadcrumbJsonLd } from "@/shared/seo/json-ld"
+import { getEnrichedStreamers } from "@/domains/streamers/lib/server-actions"
 
 const baseUrl = process.env.NEXTAUTH_URL || 'https://artictempest.com'
 

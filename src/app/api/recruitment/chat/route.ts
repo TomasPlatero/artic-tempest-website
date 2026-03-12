@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
-import { getGuildCredentials } from "@/infrastructure/auth/credentials"
+import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options"
+import { getGuildCredentials } from "@/shared/auth/credentials"
 
 export async function GET(req: Request) {
     const session = await getServerSession(authOptions)
@@ -212,7 +212,7 @@ async function mirrorToAllOfficials(botToken: string, message: string, applicant
                                         type: 2,
                                         style: 5,
                                         label: `Ver solicitud de ${applicantName}`,
-                                        url: `${process.env.NEXTAUTH_URL}/dashboard/settings/recruitment/${applicationId}/chat`
+                                        url: `${process.env.NEXTAUTH_URL}/dashboard/configuracion/reclutamiento/${applicationId}/chat`
                                     }
                                 ]
                             }

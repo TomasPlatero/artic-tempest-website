@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next'
-import { createAdminClient } from '@/infrastructure/supabase/server'
+import { createAdminClient } from '@/shared/supabase/server'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL || 'https://artictempest.es'

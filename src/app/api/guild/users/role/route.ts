@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
-import { ensureAppPermission } from "@/infrastructure/auth/permissions"
+import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options"
+import { ensureAppPermission } from "@/shared/auth/permissions"
 
 export async function PATCH(request: Request) {
     try {

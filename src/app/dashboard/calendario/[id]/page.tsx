@@ -2,13 +2,13 @@
 import type React from "react"
 import { redirect, notFound } from "next/navigation"
 import { getServerSession } from "next-auth"
-import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
-import { getAppPermission } from "@/infrastructure/auth/permissions"
+import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options"
+import { getAppPermission } from "@/shared/auth/permissions"
 
-import { AppSidebar } from "@/components/layout/app-sidebar"
-import { SiteHeader } from "@/components/layout/site-header"
-import { SidebarInset, SidebarProvider } from "@/components/common/sidebar"
-import { RaidEditorClient } from "@/components/calendar/raid-editor-client"
+import { AppSidebar } from "@/shared/layout/app-sidebar"
+import { SiteHeader } from "@/shared/layout/site-header"
+import { SidebarInset, SidebarProvider } from "@/shared/components/sidebar"
+import { RaidEditorClient } from "@/domains/calendar/components/raid-editor-client"
 
 export const runtime = "nodejs"
 

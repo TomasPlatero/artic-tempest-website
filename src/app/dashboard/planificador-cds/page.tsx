@@ -1,11 +1,11 @@
 import { Suspense } from "react"
-import { AppSidebar } from "@/components/layout/app-sidebar"
-import { SiteHeader } from "@/components/layout/site-header"
-import { SidebarInset, SidebarProvider } from "@/components/common/sidebar"
-import { PlanificadorCdsClient } from "@/components/planificador-cds/planificador-cds-client"
+import { AppSidebar } from "@/shared/layout/app-sidebar"
+import { SiteHeader } from "@/shared/layout/site-header"
+import { SidebarInset, SidebarProvider } from "@/shared/components/sidebar"
+import { PlanificadorCdsClient } from "@/domains/cd-planner/components/planificador-cds-client"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/infrastructure/auth/auth-options"
-import { getAppPermission } from "@/infrastructure/auth/permissions"
+import { authOptions } from "@/shared/auth/auth-options"
+import { getAppPermission } from "@/shared/auth/permissions"
 import { redirect } from "next/navigation"
 
 export default async function PlanificadorCdsPage({ searchParams }: { searchParams: Promise<{ event_id?: string }> }) {

@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     const signature = req.headers.get("X-Signature-Ed25519");
     const timestamp = req.headers.get("X-Signature-Timestamp");
 
-    const { getGuildCredentials } = await import("@/infrastructure/auth/credentials");
+    const { getGuildCredentials } = await import("@/shared/auth/credentials");
     const creds = await getGuildCredentials();
     const publicKey = creds.discord_public_key || process.env.DISCORD_PUBLIC_KEY;
 
@@ -132,9 +132,9 @@ export async function POST(req: Request) {
         }
 
         if (name === "progreso") {
-            const { fetchGuildProgression } = await import("@/infrastructure/auth/credentials").then(async () => {
+            const { fetchGuildProgression } = await import("@/shared/auth/credentials").then(async () => {
                 // In interactions route, we might need a more direct way since it's an API route
-                return await import("@/infrastructure/raiderio/raiderio-client");
+                return await import("@/shared/integrations/raiderio/raiderio-client");
             });
 
             const profile = await fetchGuildProgression("dun-modr", "Artic Tempest", "eu");

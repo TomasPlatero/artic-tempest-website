@@ -1,4 +1,4 @@
-import { GuideLayout } from "@/components/support/guide-layout"
+import { GuideLayout } from "@/domains/support/components/guide-layout"
 import { IconCalendar, IconBell, IconCheck } from "@tabler/icons-react"
 
 export const metadata = {

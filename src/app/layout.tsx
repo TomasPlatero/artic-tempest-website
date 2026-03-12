@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Montserrat, Oswald, Bebas_Neue, Cinzel } from "next/font/google";
-import { ThemeProvider } from "@/components/layout/theme-provider"
-import { ThemedToaster } from "@/components/ui/sonner"
-import { SessionProvider } from "@/components/layout/session-provider"
-import { CookieConsentLoader } from "@/components/common/cookie-consent"
-import { NotificationToastListener } from "@/components/notifications/notification-toast-listener"
-import { NotificationPermissionModal } from "@/components/notifications/notification-permission-modal"
+import { ThemeProvider } from "@/shared/layout/theme-provider"
+import { ThemedToaster } from "@/shared/ui/sonner"
+import { SessionProvider } from "@/shared/layout/session-provider"
+import { CookieConsentLoader } from "@/shared/components/cookie-consent"
+import { NotificationToastListener } from "@/domains/notifications/components/notification-toast-listener"
+import { NotificationPermissionModal } from "@/domains/notifications/components/notification-permission-modal"
 import { Analytics } from "@vercel/analytics/next"
 import { GoogleAnalytics, GoogleTagManager } from '@next/third-parties/google'
-import { ScrollToTop } from "@/components/ui/scroll-to-top"
-import { PwaPrompt } from "@/components/pwa-prompt"
+import { ScrollToTop } from "@/shared/ui/scroll-to-top"
+import { PwaPrompt } from "@/shared/components/pwa-prompt"
 import "./globals.css";
 
 const geistSans = Geist({
@@ -46,7 +46,7 @@ const cinzel = Cinzel({
   variable: "--font-cinzel",
 });
 
-import { supabaseAdmin } from "@/infrastructure/auth/auth-options";
+import { supabaseAdmin } from "@/shared/auth/auth-options";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { data: guild } = await supabaseAdmin

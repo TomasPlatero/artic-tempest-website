@@ -1,5 +1,5 @@
 import { Metadata } from "next"
-import { BreadcrumbJsonLd } from "@/components/seo/json-ld"
+import { BreadcrumbJsonLd } from "@/shared/seo/json-ld"
 
 const baseUrl = process.env.NEXTAUTH_URL || 'https://artictempest.com'
 

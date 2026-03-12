@@ -1,8 +1,8 @@
 import { Metadata } from "next"
-import { HomePageClient } from "@/components/landing/home-page-client"
-import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/seo/json-ld"
-import { supabaseAdmin } from "@/infrastructure/auth/auth-options"
-import { getEnrichedStreamers } from "@/infrastructure/streamers/server-actions"
+import { HomePageClient } from "@/domains/landing/components/home-page-client"
+import { OrganizationJsonLd, WebSiteJsonLd } from "@/shared/seo/json-ld"
+import { supabaseAdmin } from "@/shared/auth/auth-options"
+import { getEnrichedStreamers } from "@/domains/streamers/lib/server-actions"
 
 interface RaidProgression {
   name: string

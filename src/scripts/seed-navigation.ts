@@ -12,9 +12,9 @@ const navigationData = {
         { title: "Estadísticas y Logs", url: "/dashboard/estadisticas", icon_name: "IconChartBar", app_id: "stats", order_index: 14 },
     ],
     admin: [
-        { title: "Reclutamiento", url: "/dashboard/settings/recruitment", icon_name: "IconListSearch", app_id: "settings-recruitment", badge_key: "recruitment", order_index: 20 },
+        { title: "Reclutamiento", url: "/dashboard/configuracion/reclutamiento", icon_name: "IconListSearch", app_id: "settings-recruitment", badge_key: "recruitment", order_index: 20 },
         { title: "Gestión BiS", url: "/dashboard/bis/admin", icon_name: "IconListCheck", app_id: "bis-admin", order_index: 21 },
-        { title: "Ajustes", url: "/dashboard/settings", icon_name: "IconAdjustments", app_id: "settings", order_index: 22 },
+        { title: "Ajustes", url: "/dashboard/configuracion", icon_name: "IconAdjustments", app_id: "settings", order_index: 22 },
     ],
 }
 

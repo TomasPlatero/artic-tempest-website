@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
-import { getAppPermission } from "@/infrastructure/auth/permissions"
+import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options"
+import { getAppPermission } from "@/shared/auth/permissions"
 
 export const dynamic = "force-dynamic"
 

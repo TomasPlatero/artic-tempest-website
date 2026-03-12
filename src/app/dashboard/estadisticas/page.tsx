@@ -2,13 +2,13 @@
 import type React from "react"
 import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
-import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options"
 
-import { AppSidebar } from "@/components/layout/app-sidebar"
-import { SiteHeader } from "@/components/layout/site-header"
-import { SidebarInset, SidebarProvider } from "@/components/common/sidebar"
-import { StatsClient } from "@/components/stats/stats-client"
-import { fetchGuildProgression } from "@/infrastructure/raiderio/raiderio-client"
+import { AppSidebar } from "@/shared/layout/app-sidebar"
+import { SiteHeader } from "@/shared/layout/site-header"
+import { SidebarInset, SidebarProvider } from "@/shared/components/sidebar"
+import { StatsClient } from "@/domains/stats/components/stats-client"
+import { fetchGuildProgression } from "@/shared/integrations/raiderio/raiderio-client"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -70,7 +70,7 @@ async function getRoster() {
     }))
 }
 
-import { getAppPermission } from "@/infrastructure/auth/permissions"
+import { getAppPermission } from "@/shared/auth/permissions"
 
 export default async function EstadisticasPage() {
     const session = await getServerSession(authOptions)

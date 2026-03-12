@@ -1,5 +1,5 @@
 import { Metadata } from "next"
-import { LoginPageClient } from "@/components/auth/login-page-client"
+import { LoginPageClient } from "@/domains/auth/components/login-page-client"
 
 export const metadata: Metadata = {
     title: "Iniciar Sesión | Artic Tempest",

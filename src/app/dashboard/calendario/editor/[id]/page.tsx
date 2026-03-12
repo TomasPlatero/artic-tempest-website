@@ -1,8 +1,8 @@
 import { getServerSession } from "next-auth"
-import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
-import { getAppPermission } from "@/infrastructure/auth/permissions"
+import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options"
+import { getAppPermission } from "@/shared/auth/permissions"
 import { redirect, notFound } from "next/navigation"
-import { RaidEditorClient } from "@/components/calendar/raid-editor-client"
+import { RaidEditorClient } from "@/domains/calendar/components/raid-editor-client"
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"

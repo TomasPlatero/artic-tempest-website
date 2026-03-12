@@ -1,9 +1,9 @@
 import { Metadata } from "next"
 import { getServerSession } from "next-auth"
-import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options"
 import { redirect } from "next/navigation"
-import { LandingNavigation } from "@/components/landing/navigation"
-import { AccountClient } from "@/components/account/account-client"
+import { LandingNavigation } from "@/domains/landing/components/navigation"
+import { AccountClient } from "@/domains/account/components/account-client"
 
 export async function generateMetadata(): Promise<Metadata> {
     return {

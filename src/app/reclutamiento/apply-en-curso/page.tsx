@@ -1,8 +1,8 @@
 import { getServerSession } from "next-auth"
-import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options"
 import { redirect } from "next/navigation"
-import { LandingNavigation } from "@/components/landing/navigation"
-import { ApplicationStatusClient } from "@/components/recruitment/application-status-client"
+import { LandingNavigation } from "@/domains/landing/components/navigation"
+import { ApplicationStatusClient } from "@/domains/recruitment/components/application-status-client"
 
 export default async function ApplicationStatusPage() {
     const session = await getServerSession(authOptions)

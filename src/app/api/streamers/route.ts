@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { getEnrichedStreamers } from "@/infrastructure/streamers/server-actions"
+import { getEnrichedStreamers } from "@/domains/streamers/lib/server-actions"
 
 export async function GET() {
     try {

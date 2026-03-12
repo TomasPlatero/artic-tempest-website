@@ -3,8 +3,8 @@
 
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
-import { ensureAppPermission } from "@/infrastructure/auth/permissions"
+import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options"
+import { ensureAppPermission } from "@/shared/auth/permissions"
 
 export async function GET(req: Request) {
     try {
@@ -14,7 +14,9 @@ export async function GET(req: Request) {
         const url = new URL(req.url)
         const memberId = url.searchParams.get("member_id")
         const instanceId = url.searchParams.get("instance_id")
-        const difficulty = url.searchParams.get("difficulty")
+        const diffId = url.searchParams.get("diff");
+        const difficulty = diffId || url.searchParams.get("difficulty");
+        const specId = url.searchParams.get("spec_id");
 
         // Authentication and Permission Check
         const permissions = await ensureAppPermission('bis', 'view')
@@ -57,6 +59,13 @@ export async function GET(req: Request) {
                 query = query.eq("instance_id", numericInstanceId)
             }
         }
+        if (specId) {
+            if (specId === "null") {
+                query = query.is("spec_id", null)
+            } else {
+                query = query.eq("spec_id", parseInt(specId, 10))
+            }
+        }
 
         const { data } = await query.order("slot")
 
@@ -76,7 +85,7 @@ export async function POST(req: Request) {
         const {
             member_id, item_id, item_name, item_icon, slot, boss_name,
             priority, difficulty, instance_id, ilvl, dps_gain, percent_gain,
-            bonus_ids, gems, enchant, upgrade_track
+            bonus_ids, gems, enchant, upgrade_track, spec_id
         } = body
 
         if (!member_id || !item_id || !item_name || !slot) {
@@ -131,7 +140,8 @@ export async function POST(req: Request) {
                 gems: gems || [],
                 enchant: enchant || null,
                 upgrade_track: upgrade_track || null,
-            }, { onConflict: "member_id,item_id,difficulty" })
+                spec_id: spec_id || null,
+            }, { onConflict: "member_id,item_id,difficulty,spec_id" })
             .select()
             .single()
 

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
-import { getGuildCredentials } from "@/infrastructure/auth/credentials"
+import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options"
+import { getGuildCredentials } from "@/shared/auth/credentials"
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
-import { ensureAdmin } from "@/infrastructure/auth/permissions"
+import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options"
+import { ensureAdmin } from "@/shared/auth/permissions"
 
 // GET: All navigation items for management (hierarchical or flat)
 export async function GET() {

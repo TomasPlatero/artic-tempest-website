@@ -1,5 +1,5 @@
 import { Metadata } from "next"
-import { SupportContent } from "@/components/support/support-content"
+import { SupportContent } from "@/domains/support/components/support-content"
 
 export const metadata: Metadata = {
     title: "Centro de Ayuda | Artic Tempest – Soporte y Guías",

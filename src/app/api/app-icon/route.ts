@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from "@/infrastructure/auth/auth-options";
+import { supabaseAdmin } from "@/shared/auth/auth-options";
 import sharp from 'sharp';
 
 export const runtime = 'nodejs'; // Sharp requires Node.js runtime

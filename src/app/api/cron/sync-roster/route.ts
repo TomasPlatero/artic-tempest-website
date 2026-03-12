@@ -1,7 +1,7 @@
 // src/app/api/cron/sync-roster/route.ts
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/infrastructure/auth/auth-options';
-import { fetchGuildRoster, toSlug } from '@/infrastructure/bnet/bnet-client';
+import { supabaseAdmin } from '@/shared/auth/auth-options';
+import { fetchGuildRoster, toSlug } from '@/shared/integrations/bnet/bnet-client';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

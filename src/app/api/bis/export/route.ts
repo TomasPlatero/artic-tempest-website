@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { supabaseAdmin } from "@/infrastructure/auth/auth-options"
+import { supabaseAdmin } from "@/shared/auth/auth-options"
 
 // We make this route fully public and dynamic because it's called from a raw script
 export const dynamic = "force-dynamic"

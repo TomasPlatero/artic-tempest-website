@@ -1,6 +1,6 @@
 // src/app/aviso-legal/page.tsx
-import { LandingNavigation } from "@/components/landing/navigation"
-import { LandingFooter } from "@/components/landing/footer"
+import { LandingNavigation } from "@/domains/landing/components/navigation"
+import { LandingFooter } from "@/domains/landing/components/footer"
 import Image from "next/image"
 import { IconScale, IconUsers, IconCopyright, IconAlertTriangle, IconBriefcase } from "@tabler/icons-react"
 

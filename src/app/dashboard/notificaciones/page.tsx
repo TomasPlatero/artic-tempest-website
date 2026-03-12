@@ -2,18 +2,18 @@
 
 import React, { Suspense } from "react"
 import { useSession } from "next-auth/react"
-import { AppSidebar } from "@/components/layout/app-sidebar"
-import { SiteHeader } from "@/components/layout/site-header"
-import { SidebarInset, SidebarProvider } from "@/components/common/sidebar"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { AppSidebar } from "@/shared/layout/app-sidebar"
+import { SiteHeader } from "@/shared/layout/site-header"
+import { SidebarInset, SidebarProvider } from "@/shared/components/sidebar"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/shared/ui/card"
+import { Badge } from "@/shared/ui/badge"
+import { Button } from "@/shared/ui/button"
 import { IconBell, IconCheck, IconInfoCircle, IconAlertCircle, IconClock } from "@tabler/icons-react"
 import { toast } from "sonner"
 import DOMPurify from "isomorphic-dompurify"
 
-import { supabase } from "@/infrastructure/supabase/client"
-import { cn } from "@/infrastructure/tailwind/tailwind-utils"
+import { supabase } from "@/shared/supabase/client"
+import { cn } from "@/shared/tailwind/tailwind-utils"
 
 export default function NotificationsPage() {
     const { data: session } = useSession()

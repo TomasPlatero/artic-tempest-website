@@ -1,9 +1,9 @@
 // src/app/cookies/page.tsx
-import { LandingNavigation } from "@/components/landing/navigation"
-import { LandingFooter } from "@/components/landing/footer"
+import { LandingNavigation } from "@/domains/landing/components/navigation"
+import { LandingFooter } from "@/domains/landing/components/footer"
 import Image from "next/image"
 import { IconCookie, IconCheck, IconSettings, IconInfoCircle, IconChartBar } from "@tabler/icons-react"
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/shared/ui/accordion"
 import { Metadata } from "next"
 
 export const metadata: Metadata = {

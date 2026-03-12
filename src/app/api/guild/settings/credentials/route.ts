@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/infrastructure/auth/auth-options";
+import { supabaseAdmin } from "@/shared/auth/auth-options";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/infrastructure/auth/auth-options";
-import { invalidateCredentialsCache } from "@/infrastructure/auth/credentials";
+import { authOptions } from "@/shared/auth/auth-options";
+import { invalidateCredentialsCache } from "@/shared/auth/credentials";
 
 export async function PATCH(req: Request) {
     try {

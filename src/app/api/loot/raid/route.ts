@@ -1,125 +1,172 @@
-// src/app/api/loot/raid/route.ts
-// GET — Returns cached raid loot entirely from our bnet_* Supabase tables
 
 import { NextResponse } from "next/server"
-import { supabaseAdmin } from "@/infrastructure/auth/auth-options"
-
-// Maps arbitrary frontend IDs to official Bnet Instance IDs
-const INSTANCE_MAP: Record<string, number> = {
-    "voidspire": 1307,
-    "queldanas": 1308,
-    "dreamrift": 1314,
-}
-
-// Maps Blizzard's inventory types to Spanish names
-const SLOT_DISPLAY: Record<string, string> = {
-    HEAD: "Cabeza", NECK: "Cuello", SHOULDER: "Hombreras", CHEST: "Pecho",
-    WAIST: "Cinturón", LEGS: "Piernas", FEET: "Pies", WRIST: "Muñequeras",
-    HANDS: "Guantes", HAND: "Guantes", FINGER: "Anillo", TRINKET: "Abalorio",
-    ONE_HAND: "Una Mano", TWO_HAND: "Dos Manos", MAIN_HAND: "Mano Principal",
-    OFF_HAND: "Mano Secundaria", SHIELD: "Escudo", BACK: "Capa", CLOAK: "Capa",
-    HELD_IN_OFF_HAND: "Sostener", RANGED: "A Distancia", THROWN: "Arrojadiza",
-    SHIRT: "Camisa", HOLDABLE: "Sostener", TWOHWEAPON: "Arma de 2 Manos", WEAPON: "Arma",
-    ROBE: "Toga", NON_EQUIP: "No Equipable", BAG: "Bolsa", TABARD: "Tabardo",
-}
+import { supabaseAdmin } from "@/shared/auth/auth-options"
 
 export async function GET(req: Request) {
     try {
         const url = new URL(req.url)
         const difficulty = url.searchParams.get("difficulty") || "heroic"
-        const requestedInstanceIdStr = url.searchParams.get("instance_id") || "all"
-        const isAll = requestedInstanceIdStr === "all"
+        const specId = url.searchParams.get("spec_id")
+        const instanceIdStr = url.searchParams.get("instance_id") || "all"
 
-        // 1. Get Instance(s) Info
-        const instanceIds = isAll ? Object.values(INSTANCE_MAP) : [INSTANCE_MAP[requestedInstanceIdStr.toLowerCase()] || parseInt(requestedInstanceIdStr, 10)]
-
-        if (instanceIds.some(id => isNaN(id))) {
-            return NextResponse.json({ error: "ID de banda inválido" }, { status: 400 })
+        if (!specId || isNaN(parseInt(specId, 10))) {
+            return NextResponse.json({ error: "spec_id es requerido" }, { status: 400 })
         }
 
-        const { data: instancesInfo, error: instErr } = await supabaseAdmin
-            .from("bnet_instances")
-            .select("id, name")
-            .in("id", instanceIds)
-
-        if (instErr || !instancesInfo || instancesInfo.length === 0) {
-            return NextResponse.json({
-                error: instancesInfo?.length === 0 ? "Instancia no encontrada" : "Error de base de datos"
-            }, { status: 404 })
-        }
-
-        // 2. Get Encounters and Loot via Join
-        const { data: encounters, error: encErr } = await supabaseAdmin
-            .from("bnet_encounters")
+        // 1. Get Spec & Class Rules
+        const { data: spec, error: specErr } = await supabaseAdmin
+            .from("spec_rules")
             .select(`
-                id, 
-                name,
-                instance_id,
-                bnet_encounter_loot (
-                    bnet_items (
-                        id, name, quality, item_level, required_level, 
-                        icon, item_class_id, item_subclass_id, inventory_type, stats
+                *,
+                class_rules (*)
+            `)
+            .eq("spec_key", specId)
+            .single();
+
+        if (specErr || !spec) {
+            return NextResponse.json({ error: "Especialización no encontrada en V2 rules" }, { status: 404 })
+        }
+
+        const classRules = spec.class_rules;
+
+        // 2. Fetch Loot with V2 Relational Logic
+        // We use a join with boss_drops and bosses
+        let query = supabaseAdmin
+            .from("items")
+            .select(`
+                *,
+                item_stats (*),
+                item_effects (*),
+                boss_drops (
+                    bosses (
+                        id,
+                        bnet_encounter_id,
+                        name,
+                        order_index,
+                        raids (
+                            id,
+                            bnet_instance_id,
+                            name,
+                            expansion
+                        )
                     )
                 )
             `)
-            .in("instance_id", instanceIds)
-            .order("instance_id", { ascending: true })
-            .order("id", { ascending: true })
+            .eq("difficulty", difficulty.toLowerCase());
 
-        if (encErr || !encounters) {
-            return NextResponse.json({ error: "Error fetching data from database: " + encErr?.message }, { status: 500 })
+        // 3. Apply Professional V2 Filtering (SQL-level where possible)
+        // a) Armor Proficiency (Plate/Mail/etc) + Jewelry/Cloak fallback
+        const armorFilter = `armor_type.eq.${classRules.armor_proficiency},slot.in.(neck,back,finger,trinket,weapon,offhand)`;
+        query = query.or(armorFilter);
+
+        // b) Primary Stats (Strength/Agility/Intellect) - Relaxed for Weapons/Offhands
+        if (spec.primary_stats && spec.primary_stats.length > 0) {
+            const primaryQuery = spec.primary_stats.map((s: string) => `primary_stats.cs.{${s}}`).join(',');
+            // Allow items with matching primary stats OR weapons/offhands (which we'll refine manually)
+            query = query.or(`primary_stats.eq.{},${primaryQuery},slot.eq.weapon,slot.eq.offhand`);
         }
 
-        const bosses = []
+        const { data: items, error: itemsErr } = await query;
 
-        for (const encounter of encounters) {
-            // bnet_encounter_loot is an array of relations
-            const rawLoot = Array.isArray(encounter.bnet_encounter_loot)
-                ? encounter.bnet_encounter_loot
-                : []
+        if (itemsErr) throw itemsErr;
 
-            const items = rawLoot
-                .map((rel: any) => rel.bnet_items)
-                .filter(Boolean)
-                // Filter: we usually only care about equippable gear (Weapon=2, Armor=4).
-                // Rings/Trinkets/Necks are Armor.
-                .filter((item: any) => item.item_class_id === 2 || item.item_class_id === 4)
-                .map((item: any) => ({
-                    id: item.id,
-                    name: item.name,
-                    icon: item.icon,
-                    slot: item.inventory_type,
-                    slotDisplay: SLOT_DISPLAY[item.inventory_type] || item.inventory_type,
-                    quality: item.quality,
-                    itemLevel: item.item_level,
-                    itemClassId: item.item_class_id,
-                    itemSubclassId: item.item_subclass_id,
-                    instanceId: encounter.instance_id,
-                    stats: item.stats,
-                    isManaged: true // Indicates it comes from our central DB
-                }))
-
-            if (items.length > 0) {
-                bosses.push({
-                    id: encounter.id,
-                    name: encounter.name,
-                    items
-                })
+        // 4. Manual Refinement for specific edge cases (Weapon Types, Hand Types, Tier)
+        const filteredItems = (items || []).filter(item => {
+            // Tier Check
+            if (item.is_tier_piece && item.tier_class && item.tier_class !== spec.class_key) {
+                return false;
             }
+
+            // Weapon Check
+            if (item.slot === 'weapon') {
+                if (!spec.allowed_weapon_types.includes(item.weapon_type)) return false;
+                if (!spec.allowed_hand_types.includes(item.hand_type)) return false;
+            }
+
+            // Offhand/Shield Check
+            if (item.slot === 'offhand') {
+                if (item.weapon_type === 'shield' && !spec.allows_shield) return false;
+            }
+
+            // Primary Stat Check for Weapons/Offhands (surgical)
+            if (item.slot === 'weapon' || item.slot === 'offhand') {
+                const itemPrimaries = item.primary_stats || [];
+                if (itemPrimaries.length > 0 && spec.primary_stats?.length > 0) {
+                    const hasMatch = itemPrimaries.some((p: string) => spec.primary_stats.includes(p.toLowerCase()));
+                    if (!hasMatch) return false;
+                }
+            }
+
+            // Instance filtering
+            const sources = (item.boss_drops as any[]) || [];
+            if (sources.length === 0) return false;
+
+            if (instanceIdStr !== 'all') {
+                const hasMatch = sources.some(s => {
+                    const raidBnetId = s.bosses?.raids?.bnet_instance_id?.toString();
+                    return raidBnetId === instanceIdStr;
+                });
+                if (!hasMatch) return false;
+            }
+
+            return true;
+        });
+
+        // 5. Group by Boss
+        const bossesMap = new Map();
+        for (const item of filteredItems) {
+            const dropSources = (item.boss_drops as any[]);
+            if (dropSources.length === 0) continue;
+
+            const boss = dropSources[0].bosses;
+            if (!bossesMap.has(boss.id)) {
+                bossesMap.set(boss.id, {
+                    id: boss.id,
+                    name: boss.name,
+                    order: boss.order_index,
+                    items: []
+                });
+            }
+
+            // Pick the first effect for short-circuiting display
+            const effect = (item.item_effects as any[])?.[0];
+
+            bossesMap.get(boss.id).items.push({
+                id: item.bnet_item_id,
+                db_id: item.id,
+                name: item.name,
+                icon: item.icon_url,
+                slot: item.slot,
+                quality: item.quality_type || "EPIC",
+                itemLevel: item.item_level,
+                stats: item.item_stats,
+                isTier: item.is_tier_piece,
+                trinketType: item.trinket_type,
+                effect_type: effect?.effect_type,
+                effect_description: effect?.description,
+                // Include raw data and metadata for frontend filtering Fallback
+                itemClassId: (item.raw as any)?.itemClass,
+                itemSubclassId: (item.raw as any)?.itemSubClass,
+                inventory_type: (item.raw as any)?.inventoryType,
+                primary_stats: item.primary_stats,
+                raw: item.raw
+            });
         }
+
+        const sortedBosses = Array.from(bossesMap.values())
+            .sort((a, b) => a.order - b.order);
 
         return NextResponse.json({
-            instanceId: requestedInstanceIdStr,
-            instanceName: isAll ? "Toda la Temporada 1" : instancesInfo[0]?.name || "Desconocida",
+            spec: spec.spec_name,
+            class: spec.class_key,
             difficulty,
-            bosses,
-            cached: true,
-            fetchedAt: new Date().toISOString(),
-            isMidnight: true
-        })
+            bosses: sortedBosses,
+            v2: true,
+            fetchedAt: new Date().toISOString()
+        });
 
     } catch (e: any) {
-        console.error("Loot raid error:", e.message)
-        return NextResponse.json({ error: e.message }, { status: 500 })
+        console.error("Loot V2 Error:", e.message);
+        return NextResponse.json({ error: e.message }, { status: 500 });
     }
 }

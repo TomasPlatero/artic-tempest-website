@@ -1,14 +1,14 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import { LandingNavigation } from "@/components/landing/navigation"
-import { LandingFooter } from "@/components/landing/footer"
+import { LandingNavigation } from "@/domains/landing/components/navigation"
+import { LandingFooter } from "@/domains/landing/components/footer"
 import { IconBell, IconInfoCircle, IconAlertCircle, IconTimeline, IconCheck, IconTrash } from "@tabler/icons-react"
 import { formatDistanceToNow } from "date-fns"
 import { es } from "date-fns/locale"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/infrastructure/tailwind/tailwind-utils"
+import { Badge } from "@/shared/ui/badge"
+import { Button } from "@/shared/ui/button"
+import { cn } from "@/shared/tailwind/tailwind-utils"
 import { useSession } from "next-auth/react"
 import { redirect } from "next/navigation"
 import Image from "next/image"
@@ -245,7 +245,7 @@ export default function PublicNotificationsPage() {
                                                         __html: DOMPurify.sanitize(n.content)
                                                     }}
                                                 />
-                                                {n.content?.length > 300 && (
+                                                {n.content?.length > 150 && (
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"

@@ -1,10 +1,10 @@
 import { getServerSession } from "next-auth"
-import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options"
 import { redirect } from "next/navigation"
-import { LandingNavigation } from "@/components/landing/navigation"
-import { ApplyClient } from "@/components/recruitment/apply-client"
+import { LandingNavigation } from "@/domains/landing/components/navigation"
+import { ApplyClient } from "@/domains/recruitment/components/apply-client"
 import { IconShieldCheck } from "@tabler/icons-react"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/shared/ui/button"
 import Link from "next/link"
 
 export default async function ApplyPage({ searchParams }: { searchParams: Promise<{ simulate?: string }> }) {

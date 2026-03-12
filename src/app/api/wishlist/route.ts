@@ -1,8 +1,8 @@
 // src/app/api/wishlist/route.ts
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/infrastructure/auth/auth-options";
-import { WishlistService } from "@/infrastructure/wishlist/wishlist-service";
+import { authOptions } from "@/shared/auth/auth-options";
+import { WishlistService } from "@/domains/bis/lib/wishlist-service";
 
 export async function GET(req: Request) {
     try {

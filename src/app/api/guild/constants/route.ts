@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { supabaseAdmin } from "@/infrastructure/auth/auth-options"
+import { supabaseAdmin } from "@/shared/auth/auth-options"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"

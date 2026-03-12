@@ -1,6 +1,6 @@
 // src/app/api/auth/[...nextauth]/route.ts
 import NextAuth from "next-auth"
-import { authOptions } from "@/infrastructure/auth/auth-options" // según tu estructura
+import { authOptions } from "@/shared/auth/auth-options" // según tu estructura
 
 export const runtime = "nodejs"
 

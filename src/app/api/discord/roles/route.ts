@@ -1,8 +1,8 @@
 
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/infrastructure/auth/auth-options";
-import { getGuildCredentials } from "@/infrastructure/auth/credentials";
+import { authOptions } from "@/shared/auth/auth-options";
+import { getGuildCredentials } from "@/shared/auth/credentials";
 
 export async function GET() {
     try {

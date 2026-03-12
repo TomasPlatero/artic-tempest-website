@@ -2,9 +2,9 @@
 // POST — Sync guild roster from Battle.net API
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions, supabaseAdmin } from '@/infrastructure/auth/auth-options';
-import { fetchGuildRoster, fetchGuildSummary, toSlug } from '@/infrastructure/bnet/bnet-client';
-import { ensureAppPermission } from '@/infrastructure/auth/permissions';
+import { authOptions, supabaseAdmin } from '@/shared/auth/auth-options';
+import { fetchGuildRoster, fetchGuildSummary, toSlug } from '@/shared/integrations/bnet/bnet-client';
+import { ensureAppPermission } from '@/shared/auth/permissions';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

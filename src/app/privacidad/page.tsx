@@ -1,6 +1,6 @@
 // src/app/privacidad/page.tsx
-import { LandingNavigation } from "@/components/landing/navigation"
-import { LandingFooter } from "@/components/landing/footer"
+import { LandingNavigation } from "@/domains/landing/components/navigation"
+import { LandingFooter } from "@/domains/landing/components/footer"
 import Link from "next/link"
 import Image from "next/image"
 import { IconShieldCheck, IconLock, IconEye, IconTrash, IconFileText } from "@tabler/icons-react"

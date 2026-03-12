@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/infrastructure/auth/auth-options"
+import { authOptions } from "@/shared/auth/auth-options"
 import { cookies } from "next/headers"
 import crypto from "crypto"
-import { getGuildCredentials } from "@/infrastructure/auth/credentials"
+import { getGuildCredentials } from "@/shared/auth/credentials"
 
 export async function GET(request: Request) {
     const session = await getServerSession(authOptions)

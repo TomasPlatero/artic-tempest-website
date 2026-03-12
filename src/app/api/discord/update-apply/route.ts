@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
-import { fetchCharacterRIO } from "@/infrastructure/raiderio/raiderio-client"
-import { fetchCharacterItemLevel } from "@/infrastructure/bnet/bnet-client"
+import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options"
+import { fetchCharacterRIO } from "@/shared/integrations/raiderio/raiderio-client"
+import { fetchCharacterItemLevel } from "@/shared/integrations/bnet/bnet-client"
 
 // Mismos colores base para mantener consistencia
 const classInfo: Record<number, { name: string, color: number }> = {
@@ -161,7 +161,7 @@ export async function POST(req: Request) {
                     },
                     author: {
                         name: `${application.character_name} - ${application.character_realm} (EU) ${charClass.name}`,
-                        url: `${process.env.NEXTAUTH_URL}/dashboard/settings/recruitment/${application.id}`,
+                        url: `${process.env.NEXTAUTH_URL}/dashboard/configuracion/reclutamiento/${application.id}`,
                         icon_url: application.profiles?.discord_avatar || null
                     },
                     fields: [
@@ -184,7 +184,7 @@ export async function POST(req: Request) {
                             type: 2,
                             style: 5,
                             label: "Ver Aplicación/Responder",
-                            url: `${process.env.NEXTAUTH_URL}/dashboard/settings/recruitment/${application.id}`
+                            url: `${process.env.NEXTAUTH_URL}/dashboard/configuracion/reclutamiento/${application.id}`
                         }
                     ]
                 }

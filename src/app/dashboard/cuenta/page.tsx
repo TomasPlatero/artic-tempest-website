@@ -1,10 +1,10 @@
 import { getServerSession } from "next-auth"
-import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options"
 import { redirect } from "next/navigation"
-import { AppSidebar } from "@/components/layout/app-sidebar"
-import { SiteHeader } from "@/components/layout/site-header"
-import { SidebarInset, SidebarProvider } from "@/components/common/sidebar"
-import { AccountClient } from "@/components/account/account-client"
+import { AppSidebar } from "@/shared/layout/app-sidebar"
+import { SiteHeader } from "@/shared/layout/site-header"
+import { SidebarInset, SidebarProvider } from "@/shared/components/sidebar"
+import { AccountClient } from "@/domains/account/components/account-client"
 
 export const runtime = "nodejs"
 

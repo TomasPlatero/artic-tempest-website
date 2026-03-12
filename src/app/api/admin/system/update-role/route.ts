@@ -1,7 +1,7 @@
 // src/app/api/admin/system/update-role/route.ts
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions, supabaseAdmin } from "@/infrastructure/auth/auth-options"
+import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options"
 
 export async function POST(req: Request) {
     const session = await getServerSession(authOptions)
