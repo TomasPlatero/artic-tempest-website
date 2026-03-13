@@ -5,9 +5,6 @@ import { getServerSession } from "next-auth";
 import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options";
 import { getAppPermission } from "@/shared/auth/permissions";
 
-import { AppSidebar } from "@/shared/layout/app-sidebar";
-import { SiteHeader } from "@/shared/layout/site-header";
-import { SidebarInset, SidebarProvider } from "@/shared/components/sidebar";
 import { BisClient } from "@/domains/bis/components/bis-client";
 
 export const runtime = "nodejs";
@@ -27,7 +24,7 @@ type EligibleMember = {
 };
 
 async function getBisData(userId: string, forceFullRoster = false) {
-  // 1. Fetch visible ranks with fallback
+  // ... (keeping implementation identical)
   let { data: rawRanks, error: ranksError } = await supabaseAdmin
     .from("guild_ranks")
     .select("rank, is_visible");
@@ -51,7 +48,6 @@ async function getBisData(userId: string, forceFullRoster = false) {
     visibilityMap[Number(r.rank)] = r.is_visible;
   });
 
-  // 2. Get this user's linked characters to identify "eligibleMembers"
   const { data: bnetChars } = await supabaseAdmin
     .from("bnet_characters")
     .select("id, name, realm_slug")
@@ -62,7 +58,6 @@ async function getBisData(userId: string, forceFullRoster = false) {
   );
   const linkedBnetIds = new Set((bnetChars || []).map((c: any) => c.id));
 
-  // 3. Fetch members
   const { data: members, error: membersError } = await supabaseAdmin
     .from("guild_members")
     .select(
@@ -77,7 +72,6 @@ async function getBisData(userId: string, forceFullRoster = false) {
     (m) => visibilityMap[Number(m.rank)] !== false
   );
 
-  // Identify which members belong to the current user
   const eligibleMembers = allVisibleMembers.filter((m: any) => {
     if (m.profile_id === userId) return true;
     if (m.bnet_character_id && linkedBnetIds.has(m.bnet_character_id)) return true;
@@ -113,24 +107,13 @@ export default async function BisPage() {
 
   const { eligibleMembers, allMembers } = await getBisData(userId, canEdit);
 
-  const style = {
-    "--sidebar-width": "calc(var(--spacing) * 72)",
-    "--header-height": "calc(var(--spacing) * 12)",
-  } as React.CSSProperties;
-
   return (
-    <SidebarProvider style={style}>
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader />
-        <div className="flex flex-1 flex-col p-4 md:p-6 gap-6">
-          <BisClient
-            eligibleMembers={eligibleMembers}
-            allMembers={allMembers}
-            canEdit={canEdit}
-          />
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+    <div className="flex flex-1 flex-col p-4 md:p-6 gap-6">
+      <BisClient
+        eligibleMembers={eligibleMembers}
+        allMembers={allMembers}
+        canEdit={canEdit}
+      />
+    </div>
   );
 }
