@@ -4,29 +4,41 @@ import React, { useState } from "react";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
 import { Label } from "@/shared/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/ui/select";
 import { Loader2, UploadCloud, ImageIcon } from "lucide-react";
 
 export function getWowColorClass(classId: number): string {
-    const classColors: Record<number, string> = {
-        1: "text-[#C79C6E]", // Warrior
-        2: "text-[#F58CBA]", // Paladin
-        3: "text-[#ABD473]", // Hunter
-        4: "text-[#FFF569]", // Rogue
-        5: "text-[#FFFFFF]", // Priest
-        6: "text-[#C41E3A]", // Death Knight
-        7: "text-[#0070DE]", // Shaman
-        8: "text-[#69CCF0]", // Mage
-        9: "text-[#9482C9]", // Warlock
-        10: "text-[#00FF96]", // Monk
-        11: "text-[#FF7D0A]", // Druid
-        12: "text-[#A330C9]", // Demon Hunter
-        13: "text-[#33937F]", // Evoker
-    };
-    return classColors[classId] || "text-foreground";
+  const classColors: Record<number, string> = {
+    1: "text-[#C79C6E]", // Warrior
+    2: "text-[#F58CBA]", // Paladin
+    3: "text-[#ABD473]", // Hunter
+    4: "text-[#FFF569]", // Rogue
+    5: "text-[#FFFFFF]", // Priest
+    6: "text-[#C41E3A]", // Death Knight
+    7: "text-[#0070DE]", // Shaman
+    8: "text-[#69CCF0]", // Mage
+    9: "text-[#9482C9]", // Warlock
+    10: "text-[#00FF96]", // Monk
+    11: "text-[#FF7D0A]", // Druid
+    12: "text-[#A330C9]", // Demon Hunter
+    13: "text-[#33937F]", // Evoker
+  };
+  return classColors[classId] || "text-foreground";
 }
 
 type Character = {
@@ -41,6 +53,7 @@ type Upload = {
   created_at: string;
   week_start: string;
   image_url: string;
+  notes: string | null;
   bnet_characters: { name: string; class_id: number };
 };
 
@@ -51,7 +64,12 @@ interface Props {
   activeCharacterId?: string;
 }
 
-export function WeeklyVaultUploader({ characters = [], guildId, uploads: initialUploads = [], activeCharacterId }: Props) {
+export function WeeklyVaultUploader({
+  characters = [],
+  guildId,
+  uploads: initialUploads = [],
+  activeCharacterId,
+}: Props) {
   const sortedCharacters = React.useMemo(() => {
     if (!activeCharacterId || !characters) return characters;
     return [...characters].sort((a, b) => {
@@ -61,11 +79,14 @@ export function WeeklyVaultUploader({ characters = [], guildId, uploads: initial
     });
   }, [characters, activeCharacterId]);
 
-  const [selectedCharacter, setSelectedCharacter] = useState<string>(sortedCharacters[0]?.id || "");
+  const [selectedCharacter, setSelectedCharacter] = useState<string>(
+    sortedCharacters[0]?.id || "",
+  );
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploads, setUploads] = useState<Upload[]>(initialUploads as Upload[]);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [notes, setNotes] = useState<string>("");
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -98,6 +119,7 @@ export function WeeklyVaultUploader({ characters = [], guildId, uploads: initial
       formData.append("file", file);
       formData.append("guild_id", guildId);
       formData.append("character_id", selectedCharacter);
+      formData.append("notes", notes);
 
       const res = await fetch("/api/weekly-vault", {
         method: "POST",
@@ -115,7 +137,6 @@ export function WeeklyVaultUploader({ characters = [], guildId, uploads: initial
       toast.success("¡Captura subida con éxito!");
       setFile(null);
       setPreviewUrl(null);
-
     } catch (error: any) {
       toast.error(error.message || "Hubo un error al subir la captura.");
     } finally {
@@ -129,14 +150,18 @@ export function WeeklyVaultUploader({ characters = [], guildId, uploads: initial
         <CardHeader>
           <CardTitle>Subir Captura</CardTitle>
           <CardDescription>
-            Sube la imagen completa de lo que te ha salido en la Gran Cámara para el personaje seleccionado.
+            Sube la imagen completa de lo que te ha salido en la Gran Cámara
+            para el personaje seleccionado.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="character">Personaje</Label>
-              <Select value={selectedCharacter} onValueChange={setSelectedCharacter}>
+              <Select
+                value={selectedCharacter}
+                onValueChange={setSelectedCharacter}
+              >
                 <SelectTrigger id="character">
                   <SelectValue placeholder="Selecciona un personaje" />
                 </SelectTrigger>
@@ -155,19 +180,43 @@ export function WeeklyVaultUploader({ characters = [], guildId, uploads: initial
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="notes">Notas (opcional)</Label>
+              <textarea
+                id="notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Ej: 'Llevo 3 semanas seguidas con este loot...'"
+                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              />
+            </div>
+
+            <div className="space-y-2">
               <Label>Imagen de la Gran Cámara</Label>
               <div
                 className="flex justify-center rounded-lg border border-dashed border-gray-300 px-6 py-10"
-                style={{ backgroundImage: previewUrl ? `url(${previewUrl})` : 'none', backgroundSize: 'cover', backgroundPosition: 'center' }}
+                style={{
+                  backgroundImage: previewUrl ? `url(${previewUrl})` : "none",
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }}
               >
-                <div className={`text-center ${previewUrl ? 'bg-black/60 p-4 rounded-md' : ''}`}>
-                  {!previewUrl && <ImageIcon className="mx-auto h-12 w-12 text-gray-300" aria-hidden="true" />}
+                <div
+                  className={`text-center ${previewUrl ? "bg-black/60 p-4 rounded-md" : ""}`}
+                >
+                  {!previewUrl && (
+                    <ImageIcon
+                      className="mx-auto h-12 w-12 text-gray-300"
+                      aria-hidden="true"
+                    />
+                  )}
                   <div className="mt-4 flex text-sm leading-6 text-gray-600 justify-center">
                     <label
                       htmlFor="file-upload"
                       className="relative cursor-pointer rounded-md font-semibold text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 hover:text-primary/80"
                     >
-                      <span>{previewUrl ? 'Cambiar imagen' : 'Sube un archivo'}</span>
+                      <span>
+                        {previewUrl ? "Cambiar imagen" : "Sube un archivo"}
+                      </span>
                       <input
                         id="file-upload"
                         name="file-upload"
@@ -178,12 +227,20 @@ export function WeeklyVaultUploader({ characters = [], guildId, uploads: initial
                       />
                     </label>
                   </div>
-                  {!previewUrl && <p className="text-xs leading-5 text-gray-600">PNG, JPG, GIF hasta 5MB</p>}
+                  {!previewUrl && (
+                    <p className="text-xs leading-5 text-gray-600">
+                      PNG, JPG, GIF hasta 5MB
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
 
-            <Button type="submit" disabled={isUploading || !file} className="w-full">
+            <Button
+              type="submit"
+              disabled={isUploading || !file}
+              className="w-full"
+            >
               {isUploading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Subiendo...
@@ -201,7 +258,9 @@ export function WeeklyVaultUploader({ characters = [], guildId, uploads: initial
       <div className="space-y-4">
         <h3 className="text-lg font-medium">Tus subidas recientes</h3>
         {uploads.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No has subido ninguna captura todavía.</p>
+          <p className="text-sm text-muted-foreground">
+            No has subido ninguna captura todavía.
+          </p>
         ) : (
           <div className="flex flex-col gap-4">
             {uploads.map((upload) => (
@@ -216,13 +275,24 @@ export function WeeklyVaultUploader({ characters = [], guildId, uploads: initial
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">
-                      Semana del {format(parseISO(upload.week_start), "d 'de' MMMM", { locale: es })}
+                      Semana del{" "}
+                      {format(parseISO(upload.week_start), "d 'de' MMMM", {
+                        locale: es,
+                      })}
                     </p>
-                    <p className={`text-sm ${getWowColorClass(upload.bnet_characters.class_id)} truncate font-medium`}>
+                    <p
+                      className={`text-sm ${getWowColorClass(upload.bnet_characters.class_id)} truncate font-medium`}
+                    >
                       {upload.bnet_characters.name}
                     </p>
+                    {upload.notes && (
+                      <p className="text-xs text-muted-foreground mt-1 truncate">
+                        {upload.notes}
+                      </p>
+                    )}
                     <p className="text-xs text-muted-foreground mt-1">
-                      Subido el {format(new Date(upload.created_at), "dd/MM/yyyy HH:mm")}
+                      Subido el{" "}
+                      {format(new Date(upload.created_at), "dd/MM/yyyy HH:mm")}
                     </p>
                   </div>
                   <Button variant="outline" size="sm" asChild>

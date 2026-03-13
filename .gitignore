@@ -109,10 +109,11 @@ dist/
 supabase/.temp
 supabase_types.d.ts
 debug-db.ts
-.jpg
-.jpeg
-.png
-.svg
+*.jpg
+*.jpeg
+*.png
+*.svg
+*.png
 scripts/test-db.js
 scripts/replace.js
 scripts/list-raids.js

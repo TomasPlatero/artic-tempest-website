@@ -92,6 +92,17 @@ const RANK_NAMES: Record<number, string> = {
   9: "Miembro/familia",
 };
 
+const RANK_IMAGES: Record<number, string> = {
+  0: "/assets/images/ranks/GM.webp",
+  1: "/assets/images/ranks/OFICIAL.webp",
+  2: "/assets/images/ranks/OFICIAL.webp",
+  3: "/assets/images/ranks/RAID_LEADER.webp",
+  4: "/assets/images/ranks/ARTIC_RAIDER.webp",
+  5: "/assets/images/ranks/RAIDER.webp",
+  6: "/assets/images/ranks/TRIAL.webp",
+  7: "/assets/images/ranks/ALTER_RAIDER.webp",
+}
+
 export const RANK_STYLES: Record<number, { icon: any, color: string }> = {
   0: { icon: IconCircleLetterG, color: "text-white bg-holo rounded-full p-[0.5px]" }, // Guild Master
   1: { icon: IconCircleLetterO, color: "text-[#33937F]" }, // Officer (Evoker Green)
@@ -105,10 +116,30 @@ export const RANK_STYLES: Record<number, { icon: any, color: string }> = {
   9: { icon: IconCircleLetterM, color: "text-zinc-500" },   // Member (Zinc)
 }
 
-export function RankBadge({ rank, rankColors, className: extraClassName }: { rank: number, rankColors?: (string | null)[], className?: string }) {
+export function RankBadge({ rank, name, rankColors, className: extraClassName }: { rank: number, name?: string, rankColors?: (string | null)[], className?: string }) {
+  const rankImageUrl = RANK_IMAGES[rank];
+  const dbColor = rankColors?.[rank];
+  const displayName = name || RANK_NAMES[rank] || `Rank ${rank}`;
+
+  if (rankImageUrl) {
+    return (
+      <div 
+        className={cn("shrink-0 leading-none flex items-center justify-center rounded-lg overflow-hidden border border-border/20 shadow-sm bg-muted/5", extraClassName)}
+        title={displayName}
+      >
+        <Image
+          src={rankImageUrl}
+          alt={displayName}
+          width={32}
+          height={32}
+          className="size-8 object-cover"
+        />
+      </div>
+    );
+  }
+
   const style = RANK_STYLES[rank] || { icon: IconUser, color: "text-zinc-500" };
   const Icon = style.icon;
-  const dbColor = rankColors?.[rank];
 
   // Separate color classes from other utility classes (like bg-holo, rounded, etc)
   const classes = style.color.split(" ");
@@ -117,8 +148,12 @@ export function RankBadge({ rank, rankColors, className: extraClassName }: { ran
   const className = dbColor ? classes.filter(c => !c.startsWith("text-")).join(" ") : style.color;
 
   return (
-    <div className={cn("shrink-0 leading-none flex items-center justify-center", className, extraClassName)} style={iconStyle}>
-      <Icon className="size-4" stroke={2.5} />
+    <div 
+      className={cn("shrink-0 leading-none flex items-center justify-center", className, extraClassName)} 
+      style={iconStyle}
+      title={displayName}
+    >
+      <Icon className="size-8" stroke={2.5} alt={displayName} />
     </div>
   );
 }
@@ -238,7 +273,8 @@ export function RosterTable({
                           alt={classNameStr}
                           width={24}
                           height={24}
-                          className="size-6 rounded-full shadow-inner border border-border/30 object-cover"
+                          className="size-6 rounded-full shadow-inner border object-cover"
+                          style={{ borderColor: dbClassColor || 'rgba(255,255,255,0.1)' }}
                         />
                       ) : (
                         <div className="size-6 rounded-full bg-[#1e1e24] flex items-center justify-center text-[10px] border border-border/30 shadow-inner overflow-hidden">
@@ -249,7 +285,7 @@ export function RosterTable({
                       )}
 
                       <div className="flex items-center gap-1.5 min-w-0">
-                        <RankBadge rank={m.rank} rankColors={rankColors} />
+                        <RankBadge rank={m.rank} name={rankNames?.[m.rank]} rankColors={rankColors} />
                         <span
                           className={cn(classColorClass, "font-semibold drop-shadow-sm truncate")}
                           style={classIconStyle}
@@ -325,10 +361,11 @@ export function RosterTable({
                                         alt={classNameStr}
                                         width={48}
                                         height={48}
-                                        className="size-12 rounded-xl shadow-2xl border-2 border-blue-500/20 object-cover"
+                                        className="size-12 rounded-xl shadow-2xl border-2 object-cover"
+                                        style={{ borderColor: dbClassColor ? `${dbClassColor}4D` : 'rgba(59,130,246,0.2)' }}
                                       />
                                       <div className="absolute -bottom-1 -right-1 bg-background rounded-full p-0.5 border border-border/50">
-                                        <RankBadge rank={m.rank} rankColors={rankColors} className="size-3.5" />
+                                        <RankBadge rank={m.rank} name={rankNames?.[m.rank]} rankColors={rankColors} className="size-6" />
                                       </div>
                                     </div>
                                   ) : (
