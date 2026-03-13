@@ -19,36 +19,66 @@ const LEGACY_TRACK_BONUS_MAP: Record<
   number,
   { track: string; current: number; max: number; ilvl?: number }
 > = {
-  12797: { track: 'Hero', current: 1, max: 6, ilvl: 263 },
-  12798: { track: 'Hero', current: 2, max: 6, ilvl: 265 },
-  12799: { track: 'Hero', current: 3, max: 6, ilvl: 267 },
-  12800: { track: 'Hero', current: 4, max: 6, ilvl: 270 },
-  12801: { track: 'Hero', current: 5, max: 6, ilvl: 273 },
-  12802: { track: 'Hero', current: 6, max: 6, ilvl: 276 },
-  12897: { track: 'Myth', current: 1, max: 6, ilvl: 276 },
-  12898: { track: 'Myth', current: 2, max: 6, ilvl: 279 },
-  12899: { track: 'Myth', current: 3, max: 6, ilvl: 281 },
-  12900: { track: 'Myth', current: 4, max: 6, ilvl: 283 },
-  12901: { track: 'Myth', current: 5, max: 6, ilvl: 286 },
-  12902: { track: 'Myth', current: 6, max: 6, ilvl: 289 },
+  12785: { track: 'Campeon', current: 1, max: 6, ilvl: 246 },
+  12786: { track: 'Campeon', current: 2, max: 6, ilvl: 249 },
+  12787: { track: 'Campeon', current: 3, max: 6, ilvl: 252 },
+  12788: { track: 'Campeon', current: 4, max: 6, ilvl: 256 },
+  12789: { track: 'Campeon', current: 5, max: 6, ilvl: 259 },
+  12790: { track: 'Campeon', current: 6, max: 6, ilvl: 262 },
+  12793: { track: 'Heroico', current: 1, max: 6, ilvl: 259 },
+  12794: { track: 'Heroico', current: 2, max: 6, ilvl: 262 },
+  12795: { track: 'Heroico', current: 3, max: 6, ilvl: 265 },
+  12796: { track: 'Heroico', current: 4, max: 6, ilvl: 269 },
+  12797: { track: 'Heroico', current: 5, max: 6, ilvl: 272 },
+  12798: { track: 'Heroico', current: 6, max: 6, ilvl: 275 },
+  12801: { track: 'Mitico', current: 1, max: 6, ilvl: 272 },
+  12802: { track: 'Mitico', current: 2, max: 6, ilvl: 275 },
+  12803: { track: 'Mitico', current: 3, max: 6, ilvl: 278 },
+  12804: { track: 'Mitico', current: 4, max: 6, ilvl: 282 },
+  12805: { track: 'Mitico', current: 5, max: 6, ilvl: 285 },
+  12806: { track: 'Mitico', current: 6, max: 6, ilvl: 288 },
 };
 
-const KNOWN_DIFFICULTY_BONUS_IDS: Record<string, number[]> = {
-  heroic: [12250, 12112],
-};
-
-const KNOWN_DIFFICULTY_ILVL: Record<string, number> = {
-  lfr: 233,
-  normal: 246,
-  heroic: 259,
-  mythic: 272,
-};
-
-const KNOWN_DIFFICULTY_TRACK_FALLBACKS: Record<
+const DIFFICULTY_TRACK_STEPS: Record<
   string,
-  { track: string; current: number; max: number; bonusId: number }
+  {
+    track: string;
+    steps: Array<{ current: number; ilvl: number; bonusId: number }>;
+  }
 > = {
-  heroic: { track: 'Adventurer', current: 6, max: 6, bonusId: 12140 },
+  normal: {
+    track: 'Campeon',
+    steps: [
+      { current: 1, ilvl: 246, bonusId: 12785 },
+      { current: 2, ilvl: 249, bonusId: 12786 },
+      { current: 3, ilvl: 252, bonusId: 12787 },
+      { current: 4, ilvl: 256, bonusId: 12788 },
+      { current: 5, ilvl: 259, bonusId: 12789 },
+      { current: 6, ilvl: 262, bonusId: 12790 },
+    ],
+  },
+  heroic: {
+    track: 'Heroico',
+    steps: [
+      { current: 1, ilvl: 259, bonusId: 12793 },
+      { current: 2, ilvl: 262, bonusId: 12794 },
+      { current: 3, ilvl: 265, bonusId: 12795 },
+      { current: 4, ilvl: 269, bonusId: 12796 },
+      { current: 5, ilvl: 272, bonusId: 12797 },
+      { current: 6, ilvl: 275, bonusId: 12798 },
+    ],
+  },
+  mythic: {
+    track: 'Mitico',
+    steps: [
+      { current: 1, ilvl: 272, bonusId: 12801 },
+      { current: 2, ilvl: 275, bonusId: 12802 },
+      { current: 3, ilvl: 278, bonusId: 12803 },
+      { current: 4, ilvl: 282, bonusId: 12804 },
+      { current: 5, ilvl: 285, bonusId: 12805 },
+      { current: 6, ilvl: 288, bonusId: 12806 },
+    ],
+  },
 };
 
 export function normalizeBonusIds(input: unknown): number[] {
@@ -108,15 +138,6 @@ function inferFromBonusIds(bonusIds: number[]): {
     }
   }
 
-  if (bonusIds.includes(12140)) {
-    return {
-      ilvl: 259,
-      upgradeTrack: 'Adventurer',
-      upgradeCurrent: 6,
-      upgradeMax: 6,
-    };
-  }
-
   return {
     ilvl: null,
     upgradeTrack: null,
@@ -130,21 +151,27 @@ function inferFromDifficulty(
   ilvl: number,
 ): ExportItemMetadata | null {
   const normalizedDifficulty = (difficulty || '').toLowerCase();
-  const fallback = KNOWN_DIFFICULTY_TRACK_FALLBACKS[normalizedDifficulty];
-  const difficultyBonusIds = KNOWN_DIFFICULTY_BONUS_IDS[normalizedDifficulty];
-  const fallbackIlvl = KNOWN_DIFFICULTY_ILVL[normalizedDifficulty] || 0;
-  const resolvedIlvl = ilvl || fallbackIlvl;
+  const trackData = DIFFICULTY_TRACK_STEPS[normalizedDifficulty];
 
-  if (!fallback || !difficultyBonusIds || resolvedIlvl <= 0) {
+  if (!trackData) {
     return null;
   }
 
+  const resolvedIlvl = ilvl || trackData.steps[0]?.ilvl || 0;
+  if (resolvedIlvl <= 0) {
+    return null;
+  }
+
+  const matchedStep =
+    trackData.steps.find((step) => step.ilvl === resolvedIlvl) ||
+    trackData.steps[0];
+
   return {
     ilvl: resolvedIlvl,
-    bonusIds: [...difficultyBonusIds, fallback.bonusId],
-    upgradeTrack: fallback.track,
-    upgradeCurrent: fallback.current,
-    upgradeMax: fallback.max,
+    bonusIds: [matchedStep.bonusId],
+    upgradeTrack: trackData.track,
+    upgradeCurrent: matchedStep.current,
+    upgradeMax: 6,
   };
 }
 

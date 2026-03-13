@@ -965,6 +965,7 @@ export async function GET(req: Request) {
       bossesMap.get(boss.id).items.push({
         id: item.bnet_item_id,
         db_id: item.id,
+        boss_name: boss.name,
         name: item.name,
         icon: item.icon_url,
         slot: item.slot,

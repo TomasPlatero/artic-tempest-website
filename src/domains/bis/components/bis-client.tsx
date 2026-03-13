@@ -336,6 +336,100 @@ const constructWowheadParams = (
   difficulty: string,
   customIlvl?: number,
 ) => {
+  const normalizeBossKey = (value: string | null | undefined) =>
+    String(value || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .toLowerCase();
+
+  const inferBonusIds = () => {
+    const currentIlvl = customIlvl || item.itemLevel || item.ilvl || 0;
+    const bossStepMap: Record<string, number> = {
+      "imperator averzian": 1,
+      vorasius: 2,
+      "fallen-king salhadaar": 2,
+      "rey caido salhadaar": 2,
+      "rey caído salhadaar": 2,
+      "chimaerus the undreamt god": 2,
+      "chimaerus, el dios no sonado": 2,
+      "chimaerus, el dios no soñado": 2,
+      "vaelgor & ezzorak": 3,
+      "vaelgor y ezzorak": 3,
+      "lightblinded vanguard": 3,
+      "vanguardia cegada por la luz": 3,
+      "belo'ren, child of al'ar": 3,
+      "belo'ren, vastago de al'ar": 3,
+      "belo'ren, vástago de al'ar": 3,
+      "crown of the cosmos": 4,
+      "corona del cosmos": 4,
+      "l'ura": 4,
+      "caida de medianoche (l'ura)": 4,
+      "caída de medianoche (l'ura)": 4,
+    };
+    const bonusByDifficulty: Record<
+      string,
+      Array<{ ilvl: number; bonusId: number }>
+    > = {
+      normal: [
+        { ilvl: 246, bonusId: 12785 },
+        { ilvl: 249, bonusId: 12786 },
+        { ilvl: 252, bonusId: 12787 },
+        { ilvl: 256, bonusId: 12788 },
+        { ilvl: 259, bonusId: 12789 },
+        { ilvl: 262, bonusId: 12790 },
+      ],
+      heroic: [
+        { ilvl: 259, bonusId: 12793 },
+        { ilvl: 262, bonusId: 12794 },
+        { ilvl: 265, bonusId: 12795 },
+        { ilvl: 269, bonusId: 12796 },
+        { ilvl: 272, bonusId: 12797 },
+        { ilvl: 275, bonusId: 12798 },
+      ],
+      mythic: [
+        { ilvl: 272, bonusId: 12801 },
+        { ilvl: 275, bonusId: 12802 },
+        { ilvl: 278, bonusId: 12803 },
+        { ilvl: 282, bonusId: 12804 },
+        { ilvl: 285, bonusId: 12805 },
+        { ilvl: 288, bonusId: 12806 },
+      ],
+    };
+
+    const bossName = normalizeBossKey(item.boss_name || item.bossName);
+    const mappedStep = bossStepMap[bossName];
+    const stepMatch = bonusByDifficulty[difficulty.toLowerCase()]?.find(
+      (entry) => entry.ilvl === currentIlvl,
+    );
+
+    if (stepMatch) {
+      return [stepMatch.bonusId];
+    }
+
+    if (!mappedStep) return [];
+
+    const baseIlvl =
+      difficulty.toLowerCase() === "normal"
+        ? 246
+        : difficulty.toLowerCase() === "heroic"
+          ? 259
+          : difficulty.toLowerCase() === "mythic"
+            ? 272
+            : 0;
+    if (!baseIlvl) return [];
+    const inferredIlvl = baseIlvl + (mappedStep - 1) * 3;
+    return bonusByDifficulty[difficulty.toLowerCase()]?.find(
+      (entry) => entry.ilvl === inferredIlvl,
+    )
+      ? [
+          bonusByDifficulty[difficulty.toLowerCase()].find(
+            (entry) => entry.ilvl === inferredIlvl,
+          )!.bonusId,
+        ]
+      : [];
+  };
+
   const diffId = WOWHEAD_DIFF[difficulty] || 15;
 
   // Get ilvl from the item record (which we already fixed in DB)
@@ -362,10 +456,13 @@ const constructWowheadParams = (
     params += `&qu=${WOWHEAD_QUALITY[quality]}`;
 
   // Advanced metadata
-  if (item.bonus_ids && item.bonus_ids.length > 0)
-    params += `&bonus=${item.bonus_ids.join(":")}`;
-  else if (item.bonusIds && item.bonusIds.length > 0)
-    params += `&bonus=${item.bonusIds.join(":")}`;
+  const resolvedBonusIds =
+    (item.bonus_ids && item.bonus_ids.length > 0 && item.bonus_ids) ||
+    (item.bonusIds && item.bonusIds.length > 0 && item.bonusIds) ||
+    inferBonusIds();
+
+  if (resolvedBonusIds && resolvedBonusIds.length > 0)
+    params += `&bonus=${resolvedBonusIds.join(":")}`;
 
   return params;
 };
