@@ -55,6 +55,7 @@ export default async function WeeklyVaultAdminPage() {
 
     const enrichedUploads = uploads?.map(u => ({
         ...u,
+        guild_rank_level: memberRankMap[u.character_id] !== undefined ? memberRankMap[u.character_id] : 99,
         guild_rank_name: memberRankMap[u.character_id] !== undefined ? rankMap[memberRankMap[u.character_id]] : "Alter/Desconocido"
     })) || []
 

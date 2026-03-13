@@ -6,7 +6,7 @@ import { es } from "date-fns/locale"
 import { Card, CardContent } from "@/shared/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select"
 import { Button } from "@/shared/ui/button"
-import { IconExternalLink, IconTrash, IconChevronLeft, IconChevronRight } from "@tabler/icons-react"
+import { IconExternalLink, IconTrash, IconChevronLeft, IconChevronRight, IconArrowsSort, IconSortAscending, IconSortDescending } from "@tabler/icons-react"
 import { toast } from "sonner"
 
 export function getWowColorClass(classId: number): string {
@@ -34,6 +34,7 @@ type Upload = {
     week_start: string
     image_url: string
     guild_rank_name?: string
+    guild_rank_level?: number
     profiles: { discord_username: string; discord_avatar: string } | null
     bnet_characters: { name: string; class_id: number; realm_slug: string } | null
 }
@@ -47,6 +48,10 @@ export function WeeklyVaultAdminClient({ initialUploads }: Props) {
     const [selectedWeek, setSelectedWeek] = useState<string>("all")
     const [isDeleting, setIsDeleting] = useState<string | null>(null)
     const [currentPage, setCurrentPage] = useState(1)
+    const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' | null }>({
+        key: 'created_at',
+        direction: 'desc'
+    })
 
     const ITEMS_PER_PAGE = 10
 
@@ -59,9 +64,65 @@ export function WeeklyVaultAdminClient({ initialUploads }: Props) {
 
     // Filter uploads
     const filteredUploads = useMemo(() => {
-        if (selectedWeek === "all") return uploads
-        return uploads.filter((u) => u.week_start === selectedWeek)
-    }, [uploads, selectedWeek])
+        let result = [...uploads]
+        
+        if (selectedWeek !== "all") {
+            result = result.filter((u) => u.week_start === selectedWeek)
+        }
+
+        // Apply sorting
+        if (sortConfig.key && sortConfig.direction) {
+            result.sort((a, b) => {
+                let valA: string = ""
+                let valB: string = ""
+
+                switch (sortConfig.key) {
+                    case 'character':
+                        valA = a.bnet_characters?.name || ""
+                        valB = b.bnet_characters?.name || ""
+                        break
+                    case 'player':
+                        valA = a.profiles?.discord_username || ""
+                        valB = b.profiles?.discord_username || ""
+                        break
+                    case 'rank':
+                        // Use the numeric rank level directly. Lower number (GM=0) = Higher importance
+                        // We convert to string for the common comparison logic below, 
+                        // but we need to pad it to ensure numeric sorting works correctly via string comparison
+                        valA = (a.guild_rank_level !== undefined ? a.guild_rank_level : 99).toString().padStart(3, '0')
+                        valB = (b.guild_rank_level !== undefined ? b.guild_rank_level : 99).toString().padStart(3, '0')
+                        break
+                    case 'created_at':
+                        valA = a.created_at
+                        valB = b.created_at
+                        break
+                }
+
+                if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1
+                if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1
+                return 0
+            })
+        }
+
+        return result
+    }, [uploads, selectedWeek, sortConfig])
+
+    const handleSort = (key: string) => {
+        setSortConfig(current => {
+            if (current.key === key) {
+                if (current.direction === 'asc') return { key, direction: 'desc' }
+                if (current.direction === 'desc') return { key: 'created_at', direction: 'desc' }
+            }
+            return { key, direction: 'asc' }
+        })
+    }
+
+    const getSortIcon = (key: string) => {
+        if (sortConfig.key !== key) return <IconArrowsSort className="size-3.5 opacity-30" />
+        return sortConfig.direction === 'asc' 
+            ? <IconSortAscending className="size-3.5 text-blue-400" /> 
+            : <IconSortDescending className="size-3.5 text-blue-400" />
+    }
 
     // Reset page when filter changes
     React.useEffect(() => {
@@ -130,8 +191,33 @@ export function WeeklyVaultAdminClient({ initialUploads }: Props) {
                             <thead className="bg-white/5 text-muted-foreground text-xs uppercase tracking-wider">
                                 <tr>
                                     <th className="px-4 py-3 font-medium">Captura</th>
-                                    <th className="px-4 py-3 font-medium">Personaje</th>
-                                    <th className="px-4 py-3 font-medium">Jugador</th>
+                                    <th 
+                                        className="px-4 py-3 font-medium cursor-pointer hover:bg-white/5 transition-colors group/sort"
+                                        onClick={() => handleSort('character')}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            Personaje
+                                            {getSortIcon('character')}
+                                        </div>
+                                    </th>
+                                    <th 
+                                        className="px-4 py-3 font-medium cursor-pointer hover:bg-white/5 transition-colors group/sort"
+                                        onClick={() => handleSort('player')}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            Jugador
+                                            {getSortIcon('player')}
+                                        </div>
+                                    </th>
+                                    <th 
+                                        className="px-4 py-3 font-medium cursor-pointer hover:bg-white/5 transition-colors group/sort"
+                                        onClick={() => handleSort('rank')}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            Rango
+                                            {getSortIcon('rank')}
+                                        </div>
+                                    </th>
                                     <th className="px-4 py-3 font-medium">Subida el</th>
                                     <th className="px-4 py-3 font-medium text-right">Acciones</th>
                                 </tr>
@@ -157,24 +243,9 @@ export function WeeklyVaultAdminClient({ initialUploads }: Props) {
                                             </a>
                                         </td>
                                         <td className="px-4 py-3 whitespace-nowrap">
-                                            <div className="flex flex-col">
-                                                <span className={`font-bold text-base ${upload.bnet_characters ? getWowColorClass(upload.bnet_characters.class_id) : "text-foreground"}`}>
-                                                    {upload.bnet_characters?.name || "Borrado"}
-                                                </span>
-                                                <div className="flex items-center gap-1.5 min-w-0">
-                                                    <span className="text-xs text-muted-foreground truncate">
-                                                        {upload.bnet_characters?.realm_slug || ""}
-                                                    </span>
-                                                    {upload.guild_rank_name && upload.guild_rank_name !== "Alter/Desconocido" && (
-                                                        <>
-                                                            <span className="text-muted-foreground/30 text-[10px]">•</span>
-                                                            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70 bg-white/5 px-1.5 py-0.5 rounded border border-white/5">
-                                                                {upload.guild_rank_name}
-                                                            </span>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </div>
+                                            <span className={`font-bold text-base ${upload.bnet_characters ? getWowColorClass(upload.bnet_characters.class_id) : "text-foreground"}`}>
+                                                {upload.bnet_characters?.name || "Borrado"}
+                                            </span>
                                         </td>
                                         <td className="px-4 py-3 whitespace-nowrap">
                                             <div className="flex items-center gap-2">
@@ -191,6 +262,15 @@ export function WeeklyVaultAdminClient({ initialUploads }: Props) {
                                                     {upload.profiles?.discord_username || "Desconocido"}
                                                 </span>
                                             </div>
+                                        </td>
+                                        <td className="px-4 py-3 whitespace-nowrap text-muted-foreground font-medium">
+                                            {upload.guild_rank_name && upload.guild_rank_name !== "Alter/Desconocido" ? (
+                                                <span className="text-[10px] font-bold uppercase tracking-wider bg-white/5 px-2 py-1 rounded border border-white/5 text-muted-foreground/90">
+                                                    {upload.guild_rank_name}
+                                                </span>
+                                            ) : (
+                                                <span className="text-xs opacity-30 italic">Sin rango</span>
+                                            )}
                                         </td>
                                         <td className="px-4 py-3 whitespace-nowrap text-muted-foreground">
                                             {format(new Date(upload.created_at), "dd/MM/yyyy HH:mm")}
@@ -261,20 +341,14 @@ export function WeeklyVaultAdminClient({ initialUploads }: Props) {
                                         </div>
                                         
                                         <div className="flex flex-col">
-                                            <span className={`font-bold text-lg leading-tight ${upload.bnet_characters ? getWowColorClass(upload.bnet_characters.class_id) : "text-foreground"} truncate`}>
-                                                {upload.bnet_characters?.name || "Borrado"}
-                                            </span>
-                                            <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
-                                                <span className="text-xs text-muted-foreground">
-                                                    {upload.bnet_characters?.realm_slug || ""}
+                                            <div className="flex items-center gap-2">
+                                                <span className={`font-bold text-lg leading-tight ${upload.bnet_characters ? getWowColorClass(upload.bnet_characters.class_id) : "text-foreground"} truncate`}>
+                                                    {upload.bnet_characters?.name || "Borrado"}
                                                 </span>
                                                 {upload.guild_rank_name && upload.guild_rank_name !== "Alter/Desconocido" && (
-                                                    <>
-                                                        <span className="text-muted-foreground/30 text-[10px]">•</span>
-                                                        <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground bg-white/5 px-1.5 py-0.5 rounded border border-white/5">
-                                                            {upload.guild_rank_name}
-                                                        </span>
-                                                    </>
+                                                    <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/70 bg-white/5 px-1.5 py-0.5 rounded border border-white/5">
+                                                        {upload.guild_rank_name}
+                                                    </span>
                                                 )}
                                             </div>
                                         </div>
