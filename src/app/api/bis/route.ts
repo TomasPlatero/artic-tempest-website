@@ -5,7 +5,51 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions, supabaseAdmin } from '@/shared/auth/auth-options';
 import { ensureAppPermission } from '@/shared/auth/permissions';
-import { userCanAccessBisMember } from '@/shared/auth/bis-access';
+import { resolveExportItemMetadata } from '@/domains/bis/lib/export-item-metadata';
+import { bnet } from '@/shared/integrations/bnet/client';
+
+async function ensureBnetItemCached(itemId: number) {
+  const { data: existingItem } = await supabaseAdmin
+    .from('bnet_items')
+    .select('id')
+    .eq('id', itemId)
+    .maybeSingle();
+
+  if (existingItem) return;
+
+  try {
+    const itemData = await bnet.getItem(itemId);
+    let iconUrl = null;
+
+    try {
+      const mediaData = await bnet.getItemMedia(itemId);
+      if (mediaData.assets && mediaData.assets.length > 0) {
+        iconUrl = mediaData.assets[0].value;
+      }
+    } catch {
+      // Ignore media failures, item data is enough for cache
+    }
+
+    const itemName =
+      typeof itemData.name === 'string'
+        ? itemData.name
+        : itemData.name?.es_ES || itemData.name?.en_US;
+
+    await supabaseAdmin.from('bnet_items').upsert({
+      id: itemData.id,
+      name: itemName,
+      quality: itemData.quality?.type || null,
+      item_level: itemData.level || null,
+      required_level: itemData.required_level || null,
+      icon: iconUrl,
+      item_class_id: itemData.item_class?.id || null,
+      item_subclass_id: itemData.item_subclass?.id || null,
+      inventory_type: itemData.inventory_type?.type || null,
+    });
+  } catch (error) {
+    console.error(`BiS Battle.net cache error for item ${itemId}:`, error);
+  }
+}
 
 export async function GET(req: Request) {
   try {
@@ -20,27 +64,39 @@ export async function GET(req: Request) {
     const difficulty = diffId || url.searchParams.get('difficulty');
     const specId = url.searchParams.get('spec_id');
 
-    if (!memberId) {
-      return NextResponse.json(
-        { error: 'Falta el member_id' },
-        { status: 400 },
-      );
-    }
-
     // Authentication and Permission Check
-    await ensureAppPermission('bis', 'view');
+    const permissions = await ensureAppPermission('bis', 'view');
     const userRole = session.user.roleLevel;
 
-    const canAccessMember = await userCanAccessBisMember(
-      session.user.id,
-      userRole,
-      memberId,
-    );
-    if (!canAccessMember) {
-      return NextResponse.json(
-        { error: 'No autorizado para este personaje' },
-        { status: 403 },
-      );
+    // If not GM/Officer, verify character ownership
+    if (userRole !== 'gm' && userRole !== 'officer') {
+      const { data: member } = await supabaseAdmin
+        .from('guild_members')
+        .select('id, character_name')
+        .eq('id', memberId)
+        .single();
+
+      if (!member) {
+        return NextResponse.json(
+          { error: 'Personaje no encontrado' },
+          { status: 404 },
+        );
+      }
+
+      const { data: bnetChar } = await supabaseAdmin
+        .from('bnet_characters')
+        .select('id')
+        .eq('user_id', session.user.id)
+        .eq('name', member.character_name)
+        .limit(1)
+        .single();
+
+      if (!bnetChar) {
+        return NextResponse.json(
+          { error: 'No autorizado para este personaje' },
+          { status: 403 },
+        );
+      }
     }
 
     let query = supabaseAdmin
@@ -109,18 +165,53 @@ export async function POST(req: Request) {
       );
     }
 
+    const resolvedMetadata = resolveExportItemMetadata({
+      difficulty,
+      ilvl,
+      bonusIds: bonus_ids,
+      upgradeTrack: upgrade_track,
+    });
+
+    const formattedUpgradeTrack = resolvedMetadata.upgradeTrack
+      ? resolvedMetadata.upgradeCurrent !== null &&
+        resolvedMetadata.upgradeMax !== null
+        ? `${resolvedMetadata.upgradeTrack} ${resolvedMetadata.upgradeCurrent}/${resolvedMetadata.upgradeMax}`
+        : resolvedMetadata.upgradeTrack
+      : null;
+
     // Check permissions
     await ensureAppPermission('bis', 'edit');
     const userRole = session.user.roleLevel;
 
-    const canAccessMember = await userCanAccessBisMember(
-      session.user.id,
-      userRole,
-      member_id,
-    );
-    if (!canAccessMember) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
+    // If not GM/Officer, verify character ownership
+    if (userRole !== 'gm' && userRole !== 'officer') {
+      const { data: member } = await supabaseAdmin
+        .from('guild_members')
+        .select('id, character_name')
+        .eq('id', member_id)
+        .single();
+
+      if (!member) {
+        return NextResponse.json(
+          { error: 'Personaje no encontrado' },
+          { status: 404 },
+        );
+      }
+
+      const { data: bnetChar } = await supabaseAdmin
+        .from('bnet_characters')
+        .select('id')
+        .eq('user_id', session.user.id)
+        .eq('name', member.character_name)
+        .limit(1)
+        .single();
+
+      if (!bnetChar) {
+        return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
+      }
     }
+
+    await ensureBnetItemCached(Number(item_id));
 
     const { data, error } = await supabaseAdmin
       .from('bis_selections')
@@ -140,11 +231,11 @@ export async function POST(req: Request) {
           })(),
           dps_gain: dps_gain || null,
           percent_gain: percent_gain || null,
-          ilvl: ilvl || 0,
-          bonus_ids: bonus_ids || [],
+          ilvl: resolvedMetadata.ilvl,
+          bonus_ids: resolvedMetadata.bonusIds,
           gems: gems || [],
           enchant: enchant || null,
-          upgrade_track: upgrade_track || null,
+          upgrade_track: formattedUpgradeTrack,
           spec_id: spec_id || null,
         },
         { onConflict: 'member_id,item_id,difficulty,spec_id' },
@@ -192,13 +283,29 @@ export async function DELETE(req: Request) {
     await ensureAppPermission('bis', 'edit');
     const userRole = session.user.roleLevel;
 
-    const canAccessMember = await userCanAccessBisMember(
-      session.user.id,
-      userRole,
-      selection.member_id,
-    );
-    if (!canAccessMember) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
+    // If not GM/Officer, verify character ownership
+    if (userRole !== 'gm' && userRole !== 'officer') {
+      const { data: member } = await supabaseAdmin
+        .from('guild_members')
+        .select('character_name')
+        .eq('id', selection.member_id)
+        .single();
+
+      if (!member) {
+        return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
+      }
+
+      const { data: bnetChar } = await supabaseAdmin
+        .from('bnet_characters')
+        .select('id')
+        .eq('user_id', session.user.id)
+        .eq('name', member.character_name)
+        .limit(1)
+        .single();
+
+      if (!bnetChar) {
+        return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
+      }
     }
 
     await supabaseAdmin.from('bis_selections').delete().eq('id', selectionId);
@@ -227,12 +334,26 @@ export async function PATCH(req: Request) {
       );
     }
 
-    const canAccessMember = await userCanAccessBisMember(
-      session.user.id,
-      session.user.roleLevel,
-      member_id,
-    );
-    if (!canAccessMember) {
+    // Verify ownership
+    const { data: member } = await supabaseAdmin
+      .from('guild_members')
+      .select('character_name')
+      .eq('id', member_id)
+      .single();
+
+    if (!member) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
+    }
+
+    const { data: bnetChar } = await supabaseAdmin
+      .from('bnet_characters')
+      .select('id')
+      .eq('user_id', session.user.id)
+      .eq('name', member.character_name)
+      .limit(1)
+      .single();
+
+    if (!bnetChar) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
     }
 

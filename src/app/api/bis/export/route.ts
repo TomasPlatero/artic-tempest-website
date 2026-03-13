@@ -1,64 +1,35 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/shared/auth/auth-options';
+import {
+  parseUpgradeTrack,
+  resolveExportItemMetadata,
+} from '@/domains/bis/lib/export-item-metadata';
 
 // We make this route fully public and dynamic because it's called from a raw script
 export const dynamic = 'force-dynamic';
 
-function getDifficultySuffix(difficulty: string | null | undefined) {
-  switch (String(difficulty || '').toLowerCase()) {
-    case 'mythic':
-      return 'M';
-    case 'heroic':
-      return 'H';
-    case 'normal':
-      return 'N';
-    case 'lfr':
-      return 'L';
-    default:
-      return '';
-  }
-}
-
-function normalizeBonusIds(value: unknown) {
-  if (!Array.isArray(value)) {
-    return undefined;
-  }
-
-  const ids = value
-    .map((entry) => Number(entry))
-    .filter((entry) => Number.isFinite(entry) && entry > 0);
-
-  if (ids.length === 0) {
-    return undefined;
-  }
-
-  return ids.join(':');
-}
+type ExportedWishlistItem = {
+  isBis: boolean;
+  ilvl: number;
+  priority: number;
+  quality: string | null;
+  bonusIds: number[];
+  upgradeTrack: string | null;
+  upgradeCurrent: number | null;
+  upgradeMax: number | null;
+};
 
 export async function GET() {
   try {
-    // Build a set of all valid item IDs currently stored in the active loot table.
-    // The old bnet_* cache may not exist anymore in this project state.
-    const { data: trackedItems, error: itemsErr } = await supabaseAdmin
-      .from('items')
-      .select('bnet_item_id,difficulty,item_level');
+    // Build a set of all valid Item IDs currently stored in our Battle.net cache
+    const { data: encounterLoot, error: lootErr } = await supabaseAdmin
+      .from('bnet_encounter_loot')
+      .select('item_id');
 
-    if (itemsErr) throw itemsErr;
+    if (lootErr) throw lootErr;
 
     const validItemIds = new Set<number>();
-    const itemLevelMap = new Map<string, number>();
-    trackedItems?.forEach((item) => {
-      const id = Number(item.bnet_item_id);
-      if (!Number.isNaN(id) && id > 0) {
-        validItemIds.add(id);
-        const difficulty = String(item.difficulty || '').toLowerCase();
-        const itemLevel = Number(item.item_level || 0);
-        if (difficulty && itemLevel > 0) {
-          itemLevelMap.set(`${id}:${difficulty}`, itemLevel);
-        }
-      }
-    });
-    const hasTrackedLoot = validItemIds.size > 0;
+    encounterLoot?.forEach((l) => validItemIds.add(l.item_id));
 
     // Fetch all members with valid realms
     const { data: members, error: membersError } = await supabaseAdmin
@@ -70,7 +41,9 @@ export async function GET() {
     // Fetch all BiS selections
     const { data: selections, error: selectionsError } = await supabaseAdmin
       .from('bis_selections')
-      .select('member_id, item_id, difficulty, ilvl, bonus_ids, priority');
+      .select(
+        'id, member_id, item_id, difficulty, ilvl, priority, bonus_ids, upgrade_track',
+      );
 
     if (selectionsError) throw selectionsError;
 
@@ -86,21 +59,39 @@ export async function GET() {
       }
     });
 
+    const itemIds = Array.from(
+      new Set((selections || []).map((selection) => Number(selection.item_id))),
+    ).filter((itemId) => Number.isFinite(itemId));
+
+    const { data: cachedItems, error: cachedItemsError } = await supabaseAdmin
+      .from('bnet_items')
+      .select('id, quality')
+      .in('id', itemIds);
+
+    if (cachedItemsError) throw cachedItemsError;
+
+    const itemMetadataMap = new Map<number, { quality: string | null }>();
+    cachedItems?.forEach((item) => {
+      itemMetadataMap.set(Number(item.id), {
+        quality: item.quality || null,
+      });
+    });
+
     // Build the output JSON format
     const timestamp = Math.floor(Date.now() / 1000);
-    const exportData: Record<
-      string,
-      Record<
-        string,
-        { isBis: boolean; ilvl?: number; bonusIds?: string; priority?: number }
-      >
-    > = {};
+    const exportData: Record<string, Record<string, ExportedWishlistItem>> = {};
+    const rowsToBackfill: Array<{
+      id: string;
+      ilvl: number;
+      bonus_ids: number[];
+      upgrade_track: string | null;
+    }> = [];
 
     selections?.forEach((selection) => {
       const itemId = parseInt(selection.item_id, 10);
 
-      // If legacy loot cache is empty, don't silently drop every current selection.
-      if (hasTrackedLoot && !validItemIds.has(itemId)) return;
+      // Only export items that we track (which means they are from valid raids we synced)
+      if (!validItemIds.has(itemId)) return;
 
       const memberKey = memberMap.get(selection.member_id);
       if (!memberKey) return;
@@ -109,39 +100,91 @@ export async function GET() {
         exportData[memberKey] = {};
       }
 
-      const suffix = getDifficultySuffix(selection.difficulty);
+      // Append difficulty suffix: N (Normal), H (Heroic), M (Mythic)
+      let suffix = '';
+      if (selection.difficulty === 'mythic') {
+        suffix = 'M';
+      } else if (selection.difficulty === 'heroic') {
+        suffix = 'H';
+      } else if (selection.difficulty === 'normal') {
+        suffix = 'N';
+      }
+
+      const metadata = resolveExportItemMetadata({
+        difficulty: selection.difficulty,
+        ilvl: selection.ilvl,
+        bonusIds: selection.bonus_ids,
+        upgradeTrack: selection.upgrade_track,
+      });
+
+      const formattedTrack =
+        metadata.upgradeTrack &&
+        metadata.upgradeCurrent !== null &&
+        metadata.upgradeMax !== null
+          ? `${metadata.upgradeTrack} ${metadata.upgradeCurrent}/${metadata.upgradeMax}`
+          : metadata.upgradeTrack;
+
+      const parsedTrack = parseUpgradeTrack(formattedTrack);
+      const fallbackBonusIds =
+        metadata.bonusIds.length > 0
+          ? metadata.bonusIds
+          : selection.difficulty === 'heroic' && metadata.ilvl === 259
+            ? [12250, 12112, 12140]
+            : [];
+      const fallbackUpgradeTrack =
+        parsedTrack.upgradeTrack ||
+        (selection.difficulty === 'heroic' && metadata.ilvl === 259
+          ? 'Adventurer'
+          : null);
+      const fallbackUpgradeCurrent =
+        parsedTrack.upgradeCurrent ??
+        (selection.difficulty === 'heroic' && metadata.ilvl === 259 ? 6 : null);
+      const fallbackUpgradeMax =
+        parsedTrack.upgradeMax ??
+        (selection.difficulty === 'heroic' && metadata.ilvl === 259 ? 6 : null);
+
+      if (
+        selection.id &&
+        ((selection.ilvl || 0) !== metadata.ilvl ||
+          JSON.stringify(selection.bonus_ids || []) !==
+            JSON.stringify(metadata.bonusIds) ||
+          selection.upgrade_track !== formattedTrack)
+      ) {
+        rowsToBackfill.push({
+          id: selection.id,
+          ilvl: metadata.ilvl,
+          bonus_ids: metadata.bonusIds,
+          upgrade_track: formattedTrack || null,
+        });
+      }
 
       const keyWithSuffix = `${selection.item_id}${suffix}`;
-      const fallbackIlvl =
-        itemLevelMap.get(
-          `${itemId}:${String(selection.difficulty || '').toLowerCase()}`,
-        ) || 0;
-      const exportEntry: {
-        isBis: boolean;
-        ilvl?: number;
-        bonusIds?: string;
-        priority?: number;
-      } = {
+      exportData[memberKey][keyWithSuffix] = {
         isBis: true,
+        ilvl: metadata.ilvl,
+        priority: selection.priority ?? 2,
+        quality: itemMetadataMap.get(itemId)?.quality || 'EPIC',
+        bonusIds: fallbackBonusIds,
+        upgradeTrack: fallbackUpgradeTrack,
+        upgradeCurrent: fallbackUpgradeCurrent,
+        upgradeMax: fallbackUpgradeMax,
       };
-
-      const resolvedIlvl = Number(selection.ilvl || 0) || fallbackIlvl;
-      if (resolvedIlvl > 0) {
-        exportEntry.ilvl = resolvedIlvl;
-      }
-
-      const bonusIds = normalizeBonusIds(selection.bonus_ids);
-      if (bonusIds) {
-        exportEntry.bonusIds = bonusIds;
-      }
-
-      const priority = Number(selection.priority || 0);
-      if (priority > 0) {
-        exportEntry.priority = priority;
-      }
-
-      exportData[memberKey][keyWithSuffix] = exportEntry;
     });
+
+    if (rowsToBackfill.length > 0) {
+      await Promise.all(
+        rowsToBackfill.map((row) =>
+          supabaseAdmin
+            .from('bis_selections')
+            .update({
+              ilvl: row.ilvl,
+              bonus_ids: row.bonus_ids,
+              upgrade_track: row.upgrade_track,
+            })
+            .eq('id', row.id),
+        ),
+      );
+    }
 
     const finalOutput = {
       schemaVersion: 1,

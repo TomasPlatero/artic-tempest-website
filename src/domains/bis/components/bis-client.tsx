@@ -911,6 +911,12 @@ export function BisClient({
     priorityLevel: number,
   ) {
     const existing = selections.find((s) => s.item_id === item.id);
+    const ilvlTable = MIDNIGHT_S1_ILVL[difficulty.toLowerCase()] || {
+      base: 246,
+      mid: 250,
+      final: 253,
+    };
+    const computedItemLevel = item.itemLevel || ilvlTable.base;
 
     if (existing && existing.priority === priorityLevel) {
       // Remove selection if same priority clicked
@@ -940,6 +946,7 @@ export function BisClient({
             difficulty,
             instance_id: resolvedInstanceId,
             spec_id: activeSpecId,
+            ilvl: computedItemLevel,
           }),
         });
         if (!res.ok) throw new Error("API error");
@@ -1008,6 +1015,10 @@ export function BisClient({
                   dps_gain: rbItem.dpsGain,
                   percent_gain: rbItem.percentGain,
                   ilvl: rbItem.ilvl, // Store the item level from Raidbots
+                  bonus_ids: rbItem.bonusIds || [],
+                  gems: rbItem.gems || [],
+                  enchant: rbItem.enchant,
+                  upgrade_track: rbItem.upgradeTrack,
                 }),
               });
               importedCount++;
