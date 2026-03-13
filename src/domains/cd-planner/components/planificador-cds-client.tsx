@@ -2341,7 +2341,29 @@ export function PlanificadorCdsClient() {
                                       {h.character_name}
                                     </span>
                                   </div>
-                                  {!isCollapsed &&
+                                  {/* Cooldown rows - collapsed shows compact icons */}
+                                  {isCollapsed ? (
+                                    <div className="h-[28px] flex items-center gap-0.5 px-1 border-b border-border/5 bg-white/[0.02] overflow-hidden">
+                                      {hCooldowns.map(
+                                        (cd: CooldownDefinition) => (
+                                          <div
+                                            key={cd.id}
+                                            className="shrink-0"
+                                            title={cd.name}
+                                          >
+                                            <Image
+                                              unoptimized
+                                              src={cd.icon}
+                                              alt={cd.name}
+                                              width={18}
+                                              height={18}
+                                              className="rounded-sm"
+                                            />
+                                          </div>
+                                        ),
+                                      )}
+                                    </div>
+                                  ) : (
                                     hCooldowns.map((cd: CooldownDefinition) => (
                                       <div
                                         key={cd.id}
@@ -2360,7 +2382,8 @@ export function PlanificadorCdsClient() {
                                           className="rounded-sm shadow-sm opacity-90 shrink-0"
                                         />
                                       </div>
-                                    ))}
+                                    ))
+                                  )}
                                 </div>
                               </div>
 
@@ -2388,8 +2411,54 @@ export function PlanificadorCdsClient() {
                                 {/* Name header spacer */}
                                 <div className="h-[24px] border-b border-border/10" />
 
-                                {/* One track per cooldown */}
-                                {!isCollapsed &&
+                                {/* One track per cooldown - collapsed shows compact all-in-one row */}
+                                {isCollapsed ? (
+                                  <div className="h-[28px] relative cursor-crosshair border-b border-border/5 hover:bg-white/[0.03]">
+                                    {hCooldowns.map((cd: any) => {
+                                      const rowAssignments = assignments.filter(
+                                        (a: any) =>
+                                          a.member_id === h.id &&
+                                          a.cooldown_id === cd.id,
+                                      );
+
+                                      return rowAssignments.map(
+                                        (assign: any) => {
+                                          const startPct =
+                                            (assign.time_seconds /
+                                              TOTAL_FIGHT_SECONDS) *
+                                            100;
+
+                                          return (
+                                            <div
+                                              key={assign.id}
+                                              className="absolute top-0.5 bottom-0.5 flex items-center shadow-sm overflow-visible transition-all z-20 group/assign rounded -translate-x-1/2"
+                                              style={{
+                                                left: `${startPct}%`,
+                                                width: "58px",
+                                                borderLeftColor: cd.color,
+                                                backgroundColor: `${cd.color}60`,
+                                                borderWidth: "1px",
+                                                borderLeftWidth: "3px",
+                                              }}
+                                              onClick={(e) =>
+                                                e.stopPropagation()
+                                              }
+                                            >
+                                              <Image
+                                                unoptimized
+                                                src={cd.icon}
+                                                alt=""
+                                                width={16}
+                                                height={16}
+                                                className="mx-auto rounded-sm shrink-0"
+                                              />
+                                            </div>
+                                          );
+                                        },
+                                      );
+                                    })}
+                                  </div>
+                                ) : (
                                   hCooldowns.map((cd: any) => {
                                     const rowAssignments = assignments.filter(
                                       (a: any) =>
@@ -2689,7 +2758,8 @@ export function PlanificadorCdsClient() {
                                         })}
                                       </div>
                                     );
-                                  })}
+                                  })
+                                )}
                               </div>
                             </div>
                           </div>
