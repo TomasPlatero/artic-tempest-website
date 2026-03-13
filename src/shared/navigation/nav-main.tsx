@@ -105,7 +105,7 @@ export function NavMain({
           {label}
         </SidebarGroupLabel>
       )}
-      <SidebarGroupContent className="pt-1">
+      <SidebarGroupContent>
         <SidebarMenu>
           {items.map(renderItem)}
         </SidebarMenu>

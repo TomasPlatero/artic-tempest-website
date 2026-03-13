@@ -397,7 +397,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <div className="flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm h-12">
+            <div className="flex w-full items-center gap-2 overflow-hidden rounded-md py-1 px-2 text-left text-sm h-12">
               <div className="flex items-center gap-2 text-sidebar-foreground">
                 {iconUrl ? (
                   <Image
