@@ -32,12 +32,7 @@ async function getBisData(userId: string, forceFullRoster = false) {
     .from("guild_ranks")
     .select("rank, is_visible");
 
-  // Fallback if table doesn't exist or cache is stale
-  if (
-    ranksError &&
-    (ranksError.code === "PGRST204" ||
-      ranksError.message.includes("schema cache"))
-  ) {
+  if (ranksError && (ranksError.code === "PGRST204" || ranksError.message.includes("schema cache"))) {
     const { data: fallbackRanks } = await supabaseAdmin
       .from("guild_rank_visibility")
       .select("rank_id, is_visible");
@@ -50,69 +45,54 @@ async function getBisData(userId: string, forceFullRoster = false) {
     }
   }
 
-  // Simplified visibility logic matching Roster app behavior:
-  // Default to true for all ranks unless explicitly set to false in the database.
   const visibilityMap: Record<number, boolean> = {};
   for (let i = 0; i <= 9; i++) visibilityMap[i] = true;
   rawRanks?.forEach((r) => {
     visibilityMap[Number(r.rank)] = r.is_visible;
   });
 
-  if (forceFullRoster) {
-    const { data: members } = await supabaseAdmin
-      .from("guild_members")
-      .select(
-        "id, character_name, realm_slug, class_id, rank, role, bis_dps_gain, bis_pct_gain, spec_name, spec_id",
-      )
-      .order("rank", { ascending: true })
-      .order("character_name", { ascending: true });
-
-    const filteredMembers = (members || []).filter(
-      (m) => visibilityMap[Number(m.rank)] !== false,
-    );
-    return {
-      eligibleMembers: [] as EligibleMember[], // We'll find user's own chars in the frontend or just send everything
-      allMembers: filteredMembers as EligibleMember[],
-    };
-  }
-
-  // Step 1: Get this user's linked characters
+  // 2. Get this user's linked characters to identify "eligibleMembers"
   const { data: bnetChars } = await supabaseAdmin
     .from("bnet_characters")
     .select("id, name, realm_slug")
     .eq("user_id", userId);
 
-  const linkedCharacters = new Set(
-    (bnetChars || []).map((c: any) => `${c.name}::${c.realm_slug}`),
+  const linkedCharacterKeys = new Set(
+    (bnetChars || []).map((c: any) => `${c.name}::${c.realm_slug}`)
+  );
+  const linkedBnetIds = new Set((bnetChars || []).map((c: any) => c.id));
+
+  // 3. Fetch members
+  const { data: members, error: membersError } = await supabaseAdmin
+    .from("guild_members")
+    .select(
+      "id, character_name, realm_slug, class_id, rank, role, bis_dps_gain, bis_pct_gain, spec_name, spec_id, profile_id, bnet_character_id"
+    )
+    .order("rank", { ascending: true })
+    .order("character_name", { ascending: true });
+
+  if (membersError) throw membersError;
+
+  const allVisibleMembers = (members || []).filter(
+    (m) => visibilityMap[Number(m.rank)] !== false
   );
 
-  if (linkedCharacters.size === 0) {
+  // Identify which members belong to the current user
+  const eligibleMembers = allVisibleMembers.filter((m: any) => {
+    if (m.profile_id === userId) return true;
+    if (m.bnet_character_id && linkedBnetIds.has(m.bnet_character_id)) return true;
+    return linkedCharacterKeys.has(`${m.character_name}::${m.realm_slug}`);
+  });
+
+  if (forceFullRoster) {
     return {
-      eligibleMembers: [] as EligibleMember[],
-      allMembers: [] as EligibleMember[],
+      eligibleMembers: eligibleMembers as EligibleMember[],
+      allMembers: allVisibleMembers as EligibleMember[],
     };
   }
 
-  const { data: members } = await supabaseAdmin
-    .from("guild_members")
-    .select(
-      "id, character_name, realm_slug, class_id, rank, role, bis_dps_gain, bis_pct_gain, spec_name, spec_id, profile_id, bnet_character_id",
-    )
-    .order("rank", { ascending: true });
-
-  const filteredMembers = (members || []).filter((m: any) => {
-    if (visibilityMap[Number(m.rank)] === false) return false;
-    if (m.profile_id === userId) return true;
-    if (
-      m.bnet_character_id &&
-      (bnetChars || []).some((c: any) => c.id === m.bnet_character_id)
-    )
-      return true;
-    return linkedCharacters.has(`${m.character_name}::${m.realm_slug}`);
-  });
-
   return {
-    eligibleMembers: filteredMembers as EligibleMember[],
+    eligibleMembers: eligibleMembers as EligibleMember[],
     allMembers: [] as EligibleMember[],
   };
 }
