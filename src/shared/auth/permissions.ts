@@ -20,6 +20,8 @@ export type AppId =
   | 'settings-recruitment'
   | 'settings-menu'
   | 'bis-admin'
+  | 'weekly-vault'
+  | 'weekly-vault-admin'
   | 'desktop-app-cta';
 export type RoleLevel = 'gm' | 'officer' | 'raider' | 'member' | 'invitado';
 

@@ -305,8 +305,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return inject(navigation);
   }, [badges, navigation]);
 
-  // Extract CTA item from navigation to show it separately in the footer
-  const { navItems, ctaItem } = React.useMemo(() => {
+  // Extract CTA item and separate top-level links from groups
+  const { topLevelLinks, groupedLinks, ctaItem } = React.useMemo(() => {
     const filterRecursive = (items: any[]): any[] => {
       return items
         .filter((item) => item.app_id !== "desktop-app-cta")
@@ -327,8 +327,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       return null;
     };
 
+    const filteredItems = filterRecursive(processedNavigation);
+    const topLevel: any[] = [];
+    const groups: any[] = [];
+
+    filteredItems.forEach((item) => {
+      if (item.url) {
+        topLevel.push(item);
+      } else {
+        groups.push(item);
+      }
+    });
+
     return {
-      navItems: filterRecursive(processedNavigation),
+      topLevelLinks: topLevel,
+      groupedLinks: groups,
       ctaItem: findCta(processedNavigation),
     };
   }, [processedNavigation]);
@@ -416,11 +429,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {navItems.map((group: any) => (
+        {topLevelLinks.length > 0 && (
+          <NavMain
+             items={topLevelLinks}
+             activeUrl={activeUrl || undefined}
+          />
+        )}
+        {groupedLinks.map((group: any) => (
           <NavMain
             key={group.id || group.name}
-            label={group.url ? undefined : group.name}
-            items={group.url ? [group] : group.children}
+            label={group.name}
+            items={group.children}
             activeUrl={activeUrl || undefined}
           />
         ))}

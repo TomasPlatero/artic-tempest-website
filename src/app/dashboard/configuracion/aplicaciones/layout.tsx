@@ -1,0 +1,25 @@
+import type React from "react";
+import { redirect } from "next/navigation";
+
+import { ensureAuthenticatedSession } from "@/shared/auth/permissions";
+import { SessionProvider } from "@/shared/layout/session-provider";
+
+export const runtime = "nodejs";
+
+export default async function ApplicationsLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const session = await ensureAuthenticatedSession().catch(() => null);
+
+  if (!session) {
+    redirect("/");
+  }
+
+  return (
+    <SessionProvider session={session}>
+      <div className="flex flex-1 flex-col">{children}</div>
+    </SessionProvider>
+  );
+}

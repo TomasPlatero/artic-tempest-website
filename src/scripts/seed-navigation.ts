@@ -63,6 +63,13 @@ const navigationData = {
       app_id: 'stats',
       order_index: 14,
     },
+    {
+      title: 'Cámara Semanal',
+      url: '/dashboard/camara-semanal',
+      icon_name: 'IconCamera',
+      app_id: 'weekly-vault',
+      order_index: 15,
+    },
   ],
   admin: [
     {
@@ -81,16 +88,27 @@ const navigationData = {
       order_index: 21,
     },
     {
+      title: 'Gestión Cámara',
+      url: '/dashboard/configuracion/aplicaciones/camara-semanal',
+      icon_name: 'IconCameraStar',
+      app_id: 'weekly-vault-admin',
+      order_index: 22,
+    },
+    {
       title: 'Ajustes',
       url: '/dashboard/configuracion',
       icon_name: 'IconAdjustments',
       app_id: 'settings',
-      order_index: 22,
+      order_index: 23,
     },
   ],
 };
 
 import { createClient } from '@supabase/supabase-js';
+import * as dotenv from 'dotenv';
+import path from 'path';
+
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,

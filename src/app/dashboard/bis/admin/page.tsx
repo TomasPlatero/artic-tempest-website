@@ -3,9 +3,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/shared/auth/auth-options";
 import { getAppPermission } from "@/shared/auth/permissions";
 
-import { AppSidebar } from "@/shared/layout/app-sidebar";
-import { SiteHeader } from "@/shared/layout/site-header";
-import { SidebarInset, SidebarProvider } from "@/shared/components/sidebar";
 import { AdminPageHeader } from "@/shared/components/admin-page-header";
 import { BisAdminClient } from "@/domains/bis/components/bis-admin-client";
 import { Button } from "@/shared/ui/button";
@@ -24,37 +21,26 @@ export default async function BisAdminPage() {
 
   if (!canView) redirect("/dashboard/bis");
 
-  const style = {
-    "--sidebar-width": "calc(var(--spacing) * 72)",
-    "--header-height": "calc(var(--spacing) * 12)",
-  } as React.CSSProperties;
-
   return (
-    <SidebarProvider style={style}>
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader />
-        <div className="flex flex-1 flex-col p-4 md:p-6 gap-4">
-          <AdminPageHeader
-            title="LISTA DE DESEOS"
-            description="Panel de oficiales para revisar y exportar las listas de deseo de la hermandad."
-            action={
-              <Button
-                asChild
-                variant="outline"
-                size="sm"
-                className="h-9 gap-2 uppercase font-bold tracking-widest text-[10px] border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 hover:text-emerald-500 transition-all active:scale-95"
-              >
-                <Link href="/dashboard/aplicaciones/bis/exportar">
-                  <Download className="w-3.5 h-3.5" />
-                  Exportar para Addon
-                </Link>
-              </Button>
-            }
-          />
-          <BisAdminClient />
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+    <div className="flex flex-1 flex-col p-4 md:p-6 gap-4">
+      <AdminPageHeader
+        title="LISTA DE DESEOS"
+        description="Panel de oficiales para revisar y exportar las listas de deseo de la hermandad."
+        action={
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="h-9 gap-2 uppercase font-bold tracking-widest text-[10px] border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 hover:text-emerald-500 transition-all active:scale-95"
+          >
+            <Link href="/dashboard/configuracion/aplicaciones/bis/exportar">
+              <Download className="w-3.5 h-3.5" />
+              Exportar para Addon
+            </Link>
+          </Button>
+        }
+      />
+      <BisAdminClient />
+    </div>
   );
 }

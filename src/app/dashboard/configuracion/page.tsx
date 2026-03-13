@@ -135,7 +135,7 @@ export default async function SettingsHubPage() {
       description:
         "Ajustes específicos para cada módulo del dashboard (Roster, Calendario, etc.).",
       icon: IconLayoutCards,
-      href: "/dashboard/aplicaciones",
+      href: "/dashboard/configuracion/aplicaciones",
       color: "text-emerald-500",
       bg: "bg-emerald-500/10",
       visible: apiPermission.canView,
@@ -206,27 +206,25 @@ export default async function SettingsHubPage() {
   ];
 
   const renderCards = (items: typeof internalSettings) => (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 w-full">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 md:gap-6 lg:gap-8 [&_a]:hover:scale-[1.02] w-full">
       {items
         .filter((category) => category.visible)
         .map((category) => {
           const Icon = category.icon;
           return (
-            <Link
-              href={category.href}
-              key={category.href}
-              className="transition-all hover:scale-[1.02]"
-            >
-              <Card className="h-full hover:border-primary/50 cursor-pointer overflow-hidden border-border/40 bg-card/40 backdrop-blur-sm">
-                <CardHeader className="flex flex-row items-center gap-4 py-4 px-5">
+            <Link href={category.href} key={category.href} className="block">
+              <Card className="h-full border-border/40 bg-card/40 backdrop-blur-sm transition-all duration-200 hover:border-primary/50 hover:bg-card/50">
+                <CardHeader className="flex flex-row items-center gap-4 p-5">
                   <div
-                    className={`p-2.5 rounded-xl ${category.bg} ${category.color} shrink-0 shadow-sm border border-white/5`}
+                    className={`p-3 rounded-xl ${category.bg} ${category.color} shrink-0 shadow-sm border border-white/5 flex-shrink-0`}
                   >
                     <Icon className="w-6 h-6" />
                   </div>
                   <div className="flex flex-col text-left">
-                    <CardTitle className="text-lg">{category.title}</CardTitle>
-                    <CardDescription className="mt-1.5 leading-snug">
+                    <CardTitle className="text-base font-semibold leading-none mb-2">
+                      {category.title}
+                    </CardTitle>
+                    <CardDescription className="text-sm leading-relaxed text-muted-foreground">
                       {category.description}
                     </CardDescription>
                   </div>
