@@ -17,7 +17,7 @@ async function runSQL() {
 
     try {
         await client.connect();
-        const sqlPath = path.join(__dirname, '../../supabase/migrations/20260313180554_create_weekly_vault.sql');
+        const sqlPath = path.join(__dirname, '../supabase/migrations/20260313180554_create_weekly_vault.sql');
         const sqlScript = fs.readFileSync(sqlPath, 'utf8');
         
         console.log("Executing migration SQL...");
