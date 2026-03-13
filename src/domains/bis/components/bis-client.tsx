@@ -44,12 +44,6 @@ import {
 import { MIDNIGHT_RAIDS } from "@/shared/constants/raids";
 import Image from "next/image";
 import Script from "next/script";
-import {
-  CLASS_ARMOR,
-  CLASS_WEAPONS,
-  CLASS_SPEC_STAT,
-  ItemFilterService,
-} from "@/domains/bis/lib/item-filter-service";
 import { toast } from "sonner";
 import { cn } from "@/shared/lib/utils";
 
@@ -78,6 +72,8 @@ export type LootItem = {
   itemSubclass: string | null;
   itemClassId: number | null; // 2=Weapon, 4=Armor
   itemSubclassId: number | null; // Armor: 0=Misc,1=Cloth,2=Leather,3=Mail,4=Plate,6=Shield | Weapon: 0=1hAxe,1=2hAxe,...
+  weapon_type?: string | null;
+  hand_type?: string | null;
   effect_type?: string | null;
   effect_stats?: string[] | null;
   effect_description?: string | null;
@@ -130,6 +126,9 @@ const WOWHEAD_QUALITY: Record<string, number> = {
   LEGENDARY: 5,
   UNCOMMON: 2,
 };
+
+const normalizeQuality = (quality?: string | null) =>
+  (quality || "EPIC").toString().trim().toUpperCase();
 
 // Map frontend difficulty states to Wowhead diff IDs
 const WOWHEAD_DIFF: Record<string, number> = {
@@ -205,7 +204,7 @@ const CLASS_SPECS: Record<
     { id: 255, name: "Survival", icon: "ability_hunter_camouflage" },
   ],
   4: [
-    { id: 259, name: "Assassination", icon: "ability_rogue_deadlyprecision" },
+    { id: 259, name: "Assassination", icon: "ability_rogue_deadlybrew" },
     { id: 260, name: "Outlaw", icon: "ability_rogue_waylay" },
     { id: 261, name: "Subtlety", icon: "ability_stealth" },
   ],
@@ -235,19 +234,18 @@ const CLASS_SPECS: Record<
     { id: 267, name: "Destruction", icon: "spell_shadow_rainoffire" },
   ],
   10: [
-    { id: 268, name: "Brewmaster", icon: "ability_monk_brewmastertankspec" },
-    { id: 269, name: "Windwalker", icon: "ability_monk_windwalker_spec" },
-    { id: 270, name: "Mistweaver", icon: "spell_monk_mistweaver_spec" },
+    { id: 268, name: "Brewmaster", icon: "ability_monk_fortifyingale_new" },
+    { id: 269, name: "Windwalker", icon: "ability_monk_dragonkick" },
+    { id: 270, name: "Mistweaver", icon: "ability_monk_chicocoon" },
   ],
   11: [
     { id: 102, name: "Balance", icon: "spell_nature_starfall" },
     { id: 103, name: "Feral", icon: "ability_druid_catform" },
-    { id: 104, name: "Guardian", icon: "ability_druid_beartanc" },
+    { id: 104, name: "Guardian", icon: "ability_racial_bearform" },
     { id: 105, name: "Restoration", icon: "spell_nature_healingtouch" },
   ],
   12: [
     { id: 120, name: "Devourer", icon: "ability_demonhunter_specdps" },
-    { id: 121, name: "Manic", icon: "ability_demonhunter_spectank" },
     { id: 577, name: "Havoc", icon: "ability_demonhunter_specdps" },
     { id: 581, name: "Vengeance", icon: "ability_demonhunter_spectank" },
   ],
@@ -290,6 +288,49 @@ const SLOT_TRANSLATIONS: Record<string, string> = {
 
 const translateSlot = (s: string) => SLOT_TRANSLATIONS[s.toUpperCase()] || s;
 
+const SLOT_GROUP_ORDER: Record<string, number> = {
+  Cabeza: 10,
+  Cuello: 20,
+  Hombreras: 30,
+  Hombros: 30,
+  Espalda: 40,
+  Capa: 40,
+  Pecho: 50,
+  Munecas: 60,
+  Muñecas: 60,
+  Guantes: 70,
+  Manos: 70,
+  Cinturon: 80,
+  Cinturón: 80,
+  Cintura: 80,
+  Piernas: 90,
+  Pies: 100,
+  Anillo: 110,
+  Abalorio: 120,
+  "Mano derecha": 130,
+  "Mano Principal": 130,
+  "Arma de 1 mano": 130,
+  "Arma de 2 manos": 130,
+  Arma: 130,
+  "Mano izquierda": 140,
+  "Mano Secundaria": 140,
+  Escudo: 140,
+  Sostener: 140,
+  "Token de tier": 150,
+  Otros: 999,
+};
+
+const normalizeSlotGroupKey = (slot: string) =>
+  slot.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+const getSlotGroupOrder = (slot: string) => {
+  return (
+    SLOT_GROUP_ORDER[slot] ??
+    SLOT_GROUP_ORDER[normalizeSlotGroupKey(slot)] ??
+    SLOT_GROUP_ORDER.Otros
+  );
+};
+
 const constructWowheadParams = (
   item: any,
   difficulty: string,
@@ -316,7 +357,7 @@ const constructWowheadParams = (
   if (ilvl) params += `&ilvl=${ilvl}`;
 
   // Quality
-  const quality = item.quality || "";
+  const quality = normalizeQuality(item.quality);
   if (quality && WOWHEAD_QUALITY[quality])
     params += `&qu=${WOWHEAD_QUALITY[quality]}`;
 
@@ -375,7 +416,8 @@ function LootItemCard({
   difficulty: "normal" | "heroic" | "mythic" | string;
   instanceId: string;
 }) {
-  const qualityColor = QUALITY_COLORS[item.quality] || "text-foreground";
+  const qualityColor =
+    QUALITY_COLORS[normalizeQuality(item.quality)] || "text-foreground";
 
   // Use fixed ilvl from raid tier table for the selected difficulty
   const ilvlTable = MIDNIGHT_S1_ILVL[difficulty.toLowerCase()] || {
@@ -1012,22 +1054,13 @@ export function BisClient({
     }
   }
 
-  // Filter items by selected character's class and deduplicate
+  // The API is the authoritative source for spec filtering.
+  // Keep only client-side deduplication here.
   const filteredBosses = useMemo(() => {
-    if (!selectedMember) return bosses;
     return bosses
       .map((boss) => {
         const seenIds = new Set<number>();
         const uniqueItems = boss.items.filter((item) => {
-          const specForFilter = activeSpecName || selectedMember.spec_name;
-          if (
-            !ItemFilterService.canSpecUseItem(
-              selectedMember.class_id,
-              specForFilter,
-              item,
-            )
-          )
-            return false;
           if (seenIds.has(item.id)) return false;
           seenIds.add(item.id);
           return true;
@@ -1035,7 +1068,7 @@ export function BisClient({
         return { ...boss, items: uniqueItems };
       })
       .filter((boss) => boss.items.length > 0);
-  }, [bosses, selectedMember, activeSpecName]);
+  }, [bosses]);
 
   // Group items by slot for slot view
   const itemsBySlot = useMemo(() => {
@@ -1047,8 +1080,14 @@ export function BisClient({
         map.get(slot)!.push({ item, bossName: boss.name });
       }
     }
-    // Sort slots alphabetically
-    return new Map([...map.entries()].sort((a, b) => a[0].localeCompare(b[0])));
+
+    return new Map(
+      [...map.entries()].sort((a, b) => {
+        const orderDiff = getSlotGroupOrder(a[0]) - getSlotGroupOrder(b[0]);
+        if (orderDiff !== 0) return orderDiff;
+        return a[0].localeCompare(b[0]);
+      }),
+    );
   }, [filteredBosses]);
 
   if (!mounted) {
@@ -1462,7 +1501,7 @@ export function BisClient({
                                   href={`https://www.wowhead.com/item=${item.id}`}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className={`text-xs font-bold leading-none truncate block hover:underline ${QUALITY_COLORS[item.quality] || "text-foreground"}`}
+                                  className={`text-xs font-bold leading-none truncate block hover:underline ${QUALITY_COLORS[normalizeQuality(item.quality)] || "text-foreground"}`}
                                   data-wowhead={constructWowheadParams(
                                     item,
                                     difficulty,

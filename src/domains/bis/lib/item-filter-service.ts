@@ -248,6 +248,14 @@ export class ItemFilterService {
   }
 
   static canClassUseItem(classId: number, item: any): boolean {
+    const slotStr = (
+      item.inventory_type?.type ||
+      item.slot ||
+      item.inventory_type ||
+      ''
+    )
+      .toString()
+      .toUpperCase();
     const itemClassId = item.item_class?.id
       ? Number(item.item_class.id)
       : item.itemClassId
@@ -262,6 +270,35 @@ export class ItemFilterService {
 
     if (itemClassId === null) return true;
 
+    if (
+      [
+        'NECK',
+        'FINGER',
+        'TRINKET',
+        'CLOAK',
+        'BACK',
+        'SHIRT',
+        'TABARD',
+      ].includes(slotStr)
+    ) {
+      return true;
+    }
+
+    const isShield =
+      slotStr === 'SHIELD' || (itemClassId === 4 && itemSubclassId === 6);
+
+    if (isShield) {
+      return SHIELD_CLASSES.has(Number(classId));
+    }
+
+    if (
+      slotStr === 'HOLDABLE' ||
+      slotStr === 'OFF_HAND' ||
+      slotStr === 'WEAPONOFFHAND'
+    ) {
+      return true;
+    }
+
     if (itemClassId === 4) {
       if (itemSubclassId === 0) return true; // Miscellaneous
       const playerArmor = CLASS_ARMOR[Number(classId)];
@@ -273,6 +310,6 @@ export class ItemFilterService {
       return allowedWeapons.includes(itemSubclassId as number);
     }
 
-    return false;
+    return true;
   }
 }

@@ -14,6 +14,7 @@ import {
 import { AppSidebar } from "@/shared/layout/app-sidebar";
 import { SiteHeader } from "@/shared/layout/site-header";
 import { SidebarInset, SidebarProvider } from "@/shared/components/sidebar";
+import { AdminPageHeader } from "@/shared/components/admin-page-header";
 import React from "react";
 
 import { Forbidden } from "@/shared/components/forbidden";
@@ -239,13 +240,10 @@ export default async function SettingsHubPage() {
 
   return (
     <div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6 lg:px-8">
-      <div>
-        <h1 className="text-2xl font-bold">Ajustes</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Panel de control centralizado — accesible para el Guild Master y
-          Oficiales
-        </p>
-      </div>
+      <AdminPageHeader
+        title="AJUSTES"
+        description="Panel de control centralizado para guild master y oficiales."
+      />
 
       <div className="flex flex-col gap-8 mt-4">
         <section>

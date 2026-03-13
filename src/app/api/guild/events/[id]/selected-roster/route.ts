@@ -1,33 +1,34 @@
-import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options"
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions, supabaseAdmin } from '@/shared/auth/auth-options';
 
-export const dynamic = "force-dynamic"
+export const dynamic = 'force-dynamic';
 
 export async function GET(
-    request: Request,
-    { params }: { params: Promise<{ id: string }> }
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
 ) {
-    try {
-        const session = await getServerSession(authOptions)
-        if (!session) {
-            return new NextResponse("No autorizado", { status: 401 })
-        }
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return new NextResponse('No autorizado', { status: 401 });
+    }
 
-        const { id } = await params
+    const { id } = await params;
 
-        // 1. Fetch visible ranks first since the direct join might fail without explicit FK
-        const { data: visibleRanks } = await supabaseAdmin
-            .from("guild_ranks")
-            .select("rank")
-            .eq("is_visible", true)
+    // 1. Fetch visible ranks first since the direct join might fail without explicit FK
+    const { data: visibleRanks } = await supabaseAdmin
+      .from('guild_ranks')
+      .select('rank')
+      .eq('is_visible', true);
 
-        const visibleRankIds = visibleRanks?.map(r => r.rank) || []
+    const visibleRankIds = visibleRanks?.map((r) => r.rank) || [];
 
-        // 2. Fetch signups for members in visible ranks
-        const { data: roster, error } = await supabaseAdmin
-            .from("event_signups")
-            .select(`
+    // 2. Fetch signups for members in visible ranks
+    const { data: roster, error } = await supabaseAdmin
+      .from('event_signups')
+      .select(
+        `
                 member_id, 
                 event_role, 
                 selection_status, 
@@ -35,18 +36,20 @@ export async function GET(
                 guild_members!inner(
                     character_name, 
                     class_id,
+                    spec_id,
                     rank
                 )
-            `)
-            .eq("event_id", id)
-            .eq("selection_status", "selected")
-            .in("guild_members.rank", visibleRankIds)
+            `,
+      )
+      .eq('event_id', id)
+      .eq('selection_status', 'selected')
+      .in('guild_members.rank', visibleRankIds);
 
-        if (error) throw error
+    if (error) throw error;
 
-        return NextResponse.json(roster)
-    } catch (e: any) {
-        console.error("GET /api/guild/events/[id]/selected-roster error:", e)
-        return NextResponse.json({ error: e.message }, { status: 500 })
-    }
+    return NextResponse.json(roster);
+  } catch (e: any) {
+    console.error('GET /api/guild/events/[id]/selected-roster error:', e);
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
 }

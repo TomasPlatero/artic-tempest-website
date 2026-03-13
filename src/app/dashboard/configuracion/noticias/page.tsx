@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { IconNews, IconTags, IconArrowLeft } from "@tabler/icons-react";
 import { Button } from "@/shared/ui/button";
+import { AdminPageHeader } from "@/shared/components/admin-page-header";
 import React from "react";
 import { Forbidden } from "@/shared/components/forbidden";
 import { getAppPermission } from "@/shared/auth/permissions";
@@ -40,25 +41,11 @@ export default async function NewsPortalPage() {
 
   return (
     <div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6 lg:px-8">
-      <div className="flex items-start sm:items-center gap-4">
-        <Link href="/dashboard/configuracion">
-          <Button
-            variant="outline"
-            size="icon"
-            className="size-10 sm:size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 transition-all shadow-xl flex-shrink-0"
-          >
-            <IconArrowLeft className="size-5 sm:size-6" />
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold leading-tight uppercase italic font-black tracking-tighter">
-            Portal de Noticias
-          </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            Elige qué sección de comunicación deseas gestionar
-          </p>
-        </div>
-      </div>
+      <AdminPageHeader
+        title="AJUSTES DE NOTICIAS"
+        description="Elige qué sección de comunicación deseas gestionar."
+        backHref="/dashboard/configuracion"
+      />
 
       <div className="grid gap-4 md:grid-cols-2 mt-8 max-w-5xl">
         {options.map((option) => {
