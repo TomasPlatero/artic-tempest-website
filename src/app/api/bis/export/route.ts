@@ -73,27 +73,27 @@ function getDifficultyBonusIds(
   const steps: Record<string, Array<{ ilvl: number; bonusId: number }>> = {
     normal: [
       { ilvl: 246, bonusId: 12785 },
-      { ilvl: 249, bonusId: 12786 },
-      { ilvl: 252, bonusId: 12787 },
+      { ilvl: 250, bonusId: 12786 },
+      { ilvl: 253, bonusId: 12787 },
       { ilvl: 256, bonusId: 12788 },
       { ilvl: 259, bonusId: 12789 },
-      { ilvl: 262, bonusId: 12790 },
+      { ilvl: 263, bonusId: 12790 },
     ],
     heroic: [
       { ilvl: 259, bonusId: 12793 },
-      { ilvl: 262, bonusId: 12794 },
-      { ilvl: 265, bonusId: 12795 },
+      { ilvl: 263, bonusId: 12794 },
+      { ilvl: 266, bonusId: 12795 },
       { ilvl: 269, bonusId: 12796 },
       { ilvl: 272, bonusId: 12797 },
-      { ilvl: 275, bonusId: 12798 },
+      { ilvl: 276, bonusId: 12798 },
     ],
     mythic: [
       { ilvl: 272, bonusId: 12801 },
-      { ilvl: 275, bonusId: 12802 },
-      { ilvl: 278, bonusId: 12803 },
+      { ilvl: 276, bonusId: 12802 },
+      { ilvl: 279, bonusId: 12803 },
       { ilvl: 282, bonusId: 12804 },
       { ilvl: 285, bonusId: 12805 },
-      { ilvl: 288, bonusId: 12806 },
+      { ilvl: 289, bonusId: 12806 },
     ],
   };
 
@@ -112,27 +112,27 @@ function getDifficultyUpgradeStep(
   > = {
     normal: [
       { ilvl: 246, current: 1, max: 6 },
-      { ilvl: 249, current: 2, max: 6 },
-      { ilvl: 252, current: 3, max: 6 },
+      { ilvl: 250, current: 2, max: 6 },
+      { ilvl: 253, current: 3, max: 6 },
       { ilvl: 256, current: 4, max: 6 },
       { ilvl: 259, current: 5, max: 6 },
-      { ilvl: 262, current: 6, max: 6 },
+      { ilvl: 263, current: 6, max: 6 },
     ],
     heroic: [
       { ilvl: 259, current: 1, max: 6 },
-      { ilvl: 262, current: 2, max: 6 },
-      { ilvl: 265, current: 3, max: 6 },
+      { ilvl: 263, current: 2, max: 6 },
+      { ilvl: 266, current: 3, max: 6 },
       { ilvl: 269, current: 4, max: 6 },
       { ilvl: 272, current: 5, max: 6 },
-      { ilvl: 275, current: 6, max: 6 },
+      { ilvl: 276, current: 6, max: 6 },
     ],
     mythic: [
       { ilvl: 272, current: 1, max: 6 },
-      { ilvl: 275, current: 2, max: 6 },
-      { ilvl: 278, current: 3, max: 6 },
+      { ilvl: 276, current: 2, max: 6 },
+      { ilvl: 279, current: 3, max: 6 },
       { ilvl: 282, current: 4, max: 6 },
       { ilvl: 285, current: 5, max: 6 },
-      { ilvl: 288, current: 6, max: 6 },
+      { ilvl: 289, current: 6, max: 6 },
     ],
   };
 
@@ -166,7 +166,14 @@ function getBossBasedUpgrade(
     return null;
   }
 
-  const ilvl = baseIlvl + (step - 1) * 3;
+  let adjustment = 0;
+  if (step >= 2) adjustment += 4;
+  if (step >= 3) adjustment += 3;
+  if (step >= 4) adjustment += 3;
+  if (step >= 5) adjustment += 3;
+  if (step >= 6) adjustment += 4;
+
+  const ilvl = baseIlvl + adjustment;
   return {
     ilvl,
     bonusIds: getDifficultyBonusIds(difficulty, ilvl) || [],
@@ -290,8 +297,8 @@ export async function GET() {
 
       const formattedTrack =
         metadata.upgradeTrack &&
-        metadata.upgradeCurrent !== null &&
-        metadata.upgradeMax !== null
+          metadata.upgradeCurrent !== null &&
+          metadata.upgradeMax !== null
           ? `${metadata.upgradeTrack} ${metadata.upgradeCurrent}/${metadata.upgradeMax}`
           : metadata.upgradeTrack;
 
@@ -328,7 +335,7 @@ export async function GET() {
         selection.id &&
         ((selection.ilvl || 0) !== metadata.ilvl ||
           JSON.stringify(selection.bonus_ids || []) !==
-            JSON.stringify(metadata.bonusIds) ||
+          JSON.stringify(metadata.bonusIds) ||
           selection.upgrade_track !== formattedTrack)
       ) {
         rowsToBackfill.push({

@@ -835,13 +835,7 @@ export function BisClient({
   const [raidName, setRaidName] = useState("");
   const [resolvedInstanceId, setResolvedInstanceId] = useState<string>("");
   const [mounted, setMounted] = useState(false);
-  const [raidbotsUrl, setRaidbotsUrl] = useState("");
-  const [isImporting, setIsImporting] = useState(false);
-  const [importStats, setImportStats] = useState<{
-    dps: number;
-    pct: string;
-  } | null>(null);
-  const [activeTab, setActiveTab] = useState<"personal" | "guild">("personal");
+  const [activeTab, setActiveTab] = useState<"personal" | "guild" | "stats">("personal");
   const [overviewData, setOverviewData] = useState<OverviewSelection[]>([]);
   const [loadingOverview, setLoadingOverview] = useState(false);
   const [activeSpecId, setActiveSpecId] = useState<number | null>(null);
@@ -1056,105 +1050,6 @@ export function BisClient({
           description: "No se pudo guardar la selección.",
         });
       }
-    }
-  }
-
-  async function handleRaidbotsImport() {
-    if (!raidbotsUrl) {
-      toast.error("Error", {
-        description: "Introduce una URL de Raidbots válida.",
-      });
-      return;
-    }
-    if (!selectedMemberId) {
-      toast.error("Error", { description: "Selecciona un personaje primero." });
-      return;
-    }
-
-    setIsImporting(true);
-    try {
-      const t = Date.now();
-      const res = await fetch(
-        `/api/raidbots?url=${encodeURIComponent(raidbotsUrl)}&_t=${t}`,
-      );
-      if (!res.ok) throw new Error(await res.text());
-      const data = await res.json();
-
-      let importedCount = 0;
-      const rbItems = data.items || [];
-
-      // Find matching items in the current raid loot
-      for (const rbItem of rbItems) {
-        // Search in all bosses
-        for (const boss of filteredBosses) {
-          const match = boss.items.find((it) => it.id === rbItem.id);
-          if (match) {
-            // Check if already selected
-            if (!isSelected(match.id)) {
-              // Select it
-              await fetch("/api/bis", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  member_id: selectedMemberId,
-                  item_id: match.id,
-                  item_name: match.name,
-                  item_icon: match.icon,
-                  slot: match.slotDisplay || match.slot,
-                  boss_name: boss.name,
-                  priority: 2,
-                  difficulty,
-                  instance_id: resolvedInstanceId,
-                  dps_gain: rbItem.dpsGain,
-                  percent_gain: rbItem.percentGain,
-                  ilvl: rbItem.ilvl, // Store the item level from Raidbots
-                  bonus_ids: rbItem.bonusIds || [],
-                  gems: rbItem.gems || [],
-                  enchant: rbItem.enchant,
-                  upgrade_track: rbItem.upgradeTrack,
-                }),
-              });
-              importedCount++;
-            }
-          }
-        }
-      }
-
-      // Persistence of overall gains
-      await fetch("/api/bis", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          member_id: selectedMemberId,
-          dps_gain: Math.round(data.dpsGain),
-          pct_gain: data.percentGain,
-        }),
-      });
-
-      setImportStats({ dps: Math.round(data.dpsGain), pct: data.percentGain });
-
-      fetchSelections(); // Refresh local list
-
-      /* 
-            if (importedCount > 0) {
-                toast.success("Sincronización Completa", {
-                    description: `Se han añadido ${importedCount} ítems del reporte (+${Math.round(data.dpsGain)} DPS).`
-                })
-            } else {
-                toast.info("Importado", {
-                    description: `Reporte leído (+${Math.round(data.dpsGain)} DPS). Los ítems ya estaban en tu lista o no son de esta banda.`
-                })
-            }
-            */
-      toast.info("Importación", {
-        description: "Sincronización de Raidbots deshabilitada temporalmente.",
-      });
-    } catch (e: any) {
-      toast.error("Error de Importación", {
-        description: e.message || "No se pudo leer el reporte.",
-      });
-    } finally {
-      setIsImporting(false);
     }
   }
 
@@ -1672,12 +1567,6 @@ export function BisClient({
         )
       ) : (
         <div className="flex flex-col gap-6">
-          {/* Raidbots Importer Section (Commented out)
-                    <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/10 to-transparent rounded-2xl overflow-hidden">
-                        ... (Raidbots Import UI code) ...
-                    </Card> 
-                    */}
-
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-4 text-muted-foreground">
               <IconRefresh className="size-8 animate-spin opacity-20" />
