@@ -443,10 +443,6 @@ const constructWowheadParams = (
 
   let params = `item=${item.id || item.item_id}`;
 
-  // Force Spanish domain and beta for Midnight items
-  params += `&domain=es`;
-  if ((item.id || item.item_id) > 200000) params += `&domain=beta`;
-
   if (diffId) params += `&diff=${diffId}`;
   if (ilvl) params += `&ilvl=${ilvl}`;
 
@@ -539,7 +535,7 @@ function LootItemCard({
             `}
     >
       <a
-        href={`https://www.wowhead.com/item=${item.id}`}
+        href={`https://www.wowhead.com/es/item=${item.id}`}
         target="_blank"
         rel="nofollow noreferrer"
         data-wowhead={constructWowheadParams(item, difficulty)}
@@ -598,7 +594,7 @@ function LootItemCard({
                     `}
           title="Prioridad Pequeña"
         >
-          SMALL
+          BAJA (CATALIZAR)
         </button>
         <button
           onClick={() => onToggle(2)}
@@ -612,7 +608,7 @@ function LootItemCard({
                     `}
           title="Prioridad Grande"
         >
-          BIG
+          MEDIA (MEJORA)
         </button>
         <button
           onClick={() => onToggle(3)}
@@ -626,7 +622,7 @@ function LootItemCard({
                     `}
           title="Prioridad Urgente"
         >
-          HUGE
+          ALTA (BIS)
         </button>
       </div>
     </div>
@@ -706,7 +702,7 @@ function WishlistCard({
               return (
                 <a
                   key={sel.id}
-                  href={`https://www.wowhead.com/item=${sel.item_id}`}
+                  href={`https://www.wowhead.com/es/item=${sel.item_id}`}
                   target="_blank"
                   rel="nofollow"
                   className="flex items-center gap-2.5 p-2 rounded-lg border border-border/50 bg-muted/20 hover:bg-muted/40 transition-colors group no-underline"
@@ -1229,7 +1225,7 @@ export function BisClient({
         id="wowhead-tooltips-setup"
         strategy="afterInteractive"
         dangerouslySetInnerHTML={{
-          __html: `window.whTooltips = { colorLinks: true, iconizeLinks: false, renameLinks: false};`,
+          __html: `window.whTooltips = { colorLinks: true, iconizeLinks: false, renameLinks: false, language: 'es' };`,
         }}
       />
 
@@ -1606,7 +1602,7 @@ export function BisClient({
                               )}
                               <div className="min-w-0 flex-1">
                                 <a
-                                  href={`https://www.wowhead.com/item=${item.id}`}
+                                  href={`https://www.wowhead.com/es/item=${item.id}`}
                                   target="_blank"
                                   rel="noreferrer"
                                   className={`text-xs font-bold leading-none truncate block hover:underline ${QUALITY_COLORS[normalizeQuality(item.quality)] || "text-foreground"}`}
