@@ -2341,27 +2341,38 @@ export function PlanificadorCdsClient() {
                                       {h.character_name}
                                     </span>
                                   </div>
-                                  {/* Cooldown rows - collapsed shows compact icons */}
+                                  {/* Cooldown rows - collapsed shows only assigned cooldown icons */}
                                   {isCollapsed ? (
                                     <div className="h-[28px] flex items-center gap-0.5 px-1 border-b border-border/5 bg-white/[0.02] overflow-hidden">
-                                      {hCooldowns.map(
-                                        (cd: CooldownDefinition) => (
-                                          <div
-                                            key={cd.id}
-                                            className="shrink-0"
-                                            title={cd.name}
-                                          >
-                                            <Image
-                                              unoptimized
-                                              src={cd.icon}
-                                              alt={cd.name}
-                                              width={18}
-                                              height={18}
-                                              className="rounded-sm"
-                                            />
-                                          </div>
-                                        ),
-                                      )}
+                                      {(() => {
+                                        const assignedCdIds = new Set(
+                                          assignments
+                                            .filter(
+                                              (a: any) => a.member_id === h.id,
+                                            )
+                                            .map((a: any) => a.cooldown_id),
+                                        );
+                                        return hCooldowns
+                                          .filter((cd) =>
+                                            assignedCdIds.has(cd.id),
+                                          )
+                                          .map((cd) => (
+                                            <div
+                                              key={cd.id}
+                                              className="shrink-0"
+                                              title={cd.name}
+                                            >
+                                              <Image
+                                                unoptimized
+                                                src={cd.icon}
+                                                alt={cd.name}
+                                                width={18}
+                                                height={18}
+                                                className="rounded-sm"
+                                              />
+                                            </div>
+                                          ));
+                                      })()}
                                     </div>
                                   ) : (
                                     hCooldowns.map((cd: CooldownDefinition) => (

@@ -83,8 +83,8 @@ export function SpotsManager({ initialSpots, constants }: any) {
                     const classSpecs = CLASS_SPECS_MAP[cls.key] || []
 
                     return (
-                        <Card key={cls.key} className="bg-card/40 border-border/40 overflow-hidden shadow-xl hover:shadow-primary/5 transition-all duration-500 group">
-                            <CardHeader className="py-4 border-b border-border/40 flex flex-row items-center gap-3 bg-muted/20">
+                        <Card key={cls.key} className="bg-card/40 border-border/40 overflow-hidden shadow-xl hover:shadow-primary/5 transition-all duration-500 group pt-0">
+                            <CardHeader className="p-6 border-b border-border/40 flex flex-row items-center gap-3 bg-muted/20">
                                 <div className="relative size-10 rounded shadow-inner overflow-hidden border border-white/10 group-hover:scale-110 transition-transform">
                                     <Image src={`/assets/images/classes/${cls.key}.jpg`} alt={cls.value} fill className="object-cover" />
                                 </div>

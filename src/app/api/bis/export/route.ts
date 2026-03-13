@@ -234,7 +234,7 @@ export async function GET() {
         const realm = m.realm_slug
           .split('-')
           .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join('');
+          .join(' ');
         memberMap.set(m.id, `${m.character_name}-${realm}`);
       }
     });

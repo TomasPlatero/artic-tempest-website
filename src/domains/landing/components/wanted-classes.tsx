@@ -129,8 +129,8 @@ export function WantedClasses() {
                             transition={{ delay: idx * 0.05 }}
                             viewport={{ once: true }}
                         >
-                            <Card className="bg-zinc-950/40 border-white/5 hover:border-blue-500/30 transition-all duration-500 overflow-hidden backdrop-blur-md group h-full">
-                                <CardHeader className="py-4 border-b border-white/5 flex flex-row items-center gap-3 bg-white/5">
+                            <Card className="bg-zinc-950/40 border-white/5 hover:border-blue-500/30 transition-all duration-500 overflow-hidden backdrop-blur-md group h-full pt-0">
+                                <CardHeader className="pt-6 pb-4 border-b border-white/5 flex flex-row items-center gap-3 bg-white/5">
                                     <div className="relative size-10 rounded shadow-inner overflow-hidden border border-white/10 group-hover:scale-110 transition-transform flex-shrink-0">
                                         <Image
                                             src={`/assets/images/classes/${cls.id}.webp`}

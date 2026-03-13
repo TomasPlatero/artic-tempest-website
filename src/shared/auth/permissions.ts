@@ -19,7 +19,8 @@ export type AppId =
   | 'settings-notifications'
   | 'settings-recruitment'
   | 'settings-menu'
-  | 'bis-admin';
+  | 'bis-admin'
+  | 'desktop-app-cta';
 export type RoleLevel = 'gm' | 'officer' | 'raider' | 'member' | 'invitado';
 
 export type AppPermission = {

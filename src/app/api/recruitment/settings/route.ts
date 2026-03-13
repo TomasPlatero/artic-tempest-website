@@ -18,7 +18,7 @@ export async function POST(req: Request) {
             class_id,
             spec_name,
             urgency,
-            guild_id: '00000000-0000-0000-0000-000000000000',
+            guild_id: 'a0000000-0000-4000-8000-000000000001',
           },
           { onConflict: 'class_id, spec_name' },
         ) // Error: recruitment_spots might not have this unique constraint yet
