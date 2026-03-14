@@ -2,9 +2,6 @@
 
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
-import { SiteHeader } from "@/shared/layout/site-header";
-import { AppSidebar } from "@/shared/layout/app-sidebar";
-import { SidebarInset, SidebarProvider } from "@/shared/components/sidebar";
 import {
   Card,
   CardContent,
@@ -124,7 +121,7 @@ export default function BisSettingsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 p-4 md:p-6 lg:px-8 w-full max-w-full">
+    <div className="flex flex-col gap-6 py-6 px-4 lg:px-6 w-full animate-in fade-in duration-500">
       <AdminPageHeader
         title="AJUSTES DE BIS"
         description="Importa y sincroniza datos de botín directamente desde la API oficial de Battle.net."

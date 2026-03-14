@@ -21,7 +21,7 @@ export default async function WeeklyVaultAdminPage() {
 
     if (!canView) {
         return (
-            <div className="flex flex-col gap-6 p-4 md:p-6 lg:px-8">
+            <div className="flex flex-col gap-6 py-6 px-4 lg:px-6 w-full">
                 <Forbidden />
             </div>
         )
@@ -60,7 +60,7 @@ export default async function WeeklyVaultAdminPage() {
     })) || []
 
     return (
-        <div className="flex flex-col gap-6 p-4 md:p-6 lg:px-8">
+        <div className="flex flex-col gap-6 py-6 px-4 lg:px-6 w-full animate-in fade-in duration-500">
             <div className="flex items-start md:items-center gap-3 md:gap-4">
                 <Link href="/dashboard/configuracion/aplicaciones">
                     <Button variant="outline" size="icon" className="size-10 md:size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 transition-all shadow-xl shrink-0">

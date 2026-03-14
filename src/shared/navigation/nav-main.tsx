@@ -33,8 +33,15 @@ export function NavMain({
   const pathname = usePathname()
 
   const renderItem = (item: any) => {
-    const isExact = activeUrl ? item.url === activeUrl : pathname === item.url
-    const isActive = isExact || (item.children?.some((c: any) => activeUrl ? c.url === activeUrl : pathname === c.url))
+    const checkActive = (navItem: any): boolean => {
+      const urlToMatch = activeUrl || pathname
+      if (navItem.url) {
+        if (navItem.url === "/dashboard") return urlToMatch === "/dashboard"
+        if (urlToMatch === navItem.url || urlToMatch?.startsWith(navItem.url + '/')) return true
+      }
+      return navItem.children?.some((child: any) => checkActive(child)) || false
+    }
+    const isActive = checkActive(item)
     const hasChildren = item.children && item.children.length > 0
     const IconComponent = getIconByName(item.icon_name)
 
@@ -44,21 +51,48 @@ export function NavMain({
           <Collapsible asChild defaultOpen={isActive} className="group/collapsible">
             <div className="flex flex-col">
               <CollapsibleTrigger asChild>
-                <SidebarMenuButton tooltip={item.name} className={cn(
-                  isActive ? "text-blue-400 font-bold" : "text-muted-foreground hover:text-white"
-                )}>
-                  <IconComponent className="size-4" />
-                  <span>{item.name}</span>
-                  <IconChevronRight className="ml-auto size-3 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                <SidebarMenuButton 
+                  id={item.element_id}
+                  tooltip={item.name} 
+                  className={cn(
+                    "transition-all duration-300 h-10 rounded-xl",
+                    isActive 
+                      ? "bg-blue-500/[0.08] text-white font-semibold border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.05)]" 
+                      : "text-muted-foreground hover:text-white hover:bg-white/[0.03] hover:border hover:border-white/[0.05] active:bg-white/10",
+                    item.css_class
+                  )}>
+                  <IconComponent className={cn(
+                    "size-4.5 transition-transform duration-300 group-hover/collapsible:scale-110",
+                    isActive && "text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.5)]"
+                  )} />
+                  <span className="ml-3 tracking-wide text-[13.5px]">{item.name}</span>
+                  <IconChevronRight className="ml-auto size-3.5 opacity-40 transition-transform duration-300 group-data-[state=open]/collapsible:rotate-90" />
+                  {isActive && (
+                    <>
+                      <div className="absolute left-0 top-2.5 bottom-2.5 w-[2px] bg-blue-500 rounded-r-full shadow-[0_0_8px_rgba(59,130,246,1)]" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/[0.05] to-transparent pointer-events-none" />
+                    </>
+                  )}
                 </SidebarMenuButton>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <SidebarMenuSub>
+                <SidebarMenuSub className="border-l border-white/5 ml-4.5 pl-4 gap-1.5 py-1">
                   {item.children.map((child: any) => (
                     <SidebarMenuSubItem key={child.id || child.name}>
-                      <SidebarMenuSubButton asChild isActive={activeUrl ? child.url === activeUrl : pathname === child.url}>
+                      <SidebarMenuSubButton 
+                        id={child.element_id}
+                        asChild 
+                        className={cn(
+                          "transition-all duration-200 rounded-lg h-8.5",
+                          (activeUrl ? child.url === activeUrl : pathname === child.url) 
+                            ? "text-blue-400 font-semibold bg-blue-500/[0.05]" 
+                            : "text-muted-foreground/70 hover:text-white hover:bg-white/[0.03]",
+                          child.css_class
+                        )}
+                        isActive={activeUrl ? child.url === activeUrl : pathname === child.url}
+                      >
                         <a href={child.url}>
-                          <span>{child.name}</span>
+                          <span className="text-[13px] tracking-wide">{child.name}</span>
                         </a>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
@@ -74,23 +108,33 @@ export function NavMain({
     return (
       <SidebarMenuItem key={item.id || item.name}>
         <SidebarMenuButton
+          id={item.element_id}
           tooltip={item.name}
           asChild
           className={cn(
-            "relative transition-all duration-200",
-            isActive ? "bg-blue-500/10 text-blue-400 font-bold" : "text-muted-foreground hover:text-white"
+            "relative transition-all duration-300 group/nav-item overflow-hidden rounded-xl h-10",
+            isActive 
+              ? "bg-blue-500/[0.08] text-white font-semibold border border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.1)] active:scale-[0.98]" 
+              : "text-muted-foreground hover:text-white hover:bg-white/[0.03] hover:border hover:border-white/[0.05] active:bg-white/10 active:scale-[0.98]",
+            item.css_class
           )}
         >
-          <a href={item.url}>
-            <IconComponent className={cn("size-4", isActive && "text-blue-400")} />
-            <span>{item.name}</span>
+          <a href={item.url} className="flex items-center w-full px-3">
+            <IconComponent className={cn(
+              "size-4.5 transition-all duration-300",
+              isActive ? "text-blue-400 drop-shadow-[0_0_10px_rgba(96,165,250,0.6)]" : "group-hover/nav-item:scale-110 group-hover/nav-item:text-white"
+            )} />
+            <span className="ml-3 tracking-wide text-[13.5px]">{item.name}</span>
             {item.badge !== undefined && item.badge !== null && item.badge !== 0 && (
-              <span className="ml-auto flex min-w-5 h-5 px-1.5 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white border border-blue-400/20 shadow-[0_0_12px_rgba(37,99,235,0.4)] animate-in fade-in zoom-in duration-300">
+              <span className="ml-auto flex min-w-4.5 h-4.5 px-1.5 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[9px] font-black text-white border border-blue-400/20 shadow-[0_0_10px_rgba(37,99,235,0.3)] animate-in fade-in zoom-in duration-500">
                 {item.badge}
               </span>
             )}
             {isActive && (
-              <div className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-blue-500 rounded-r-full shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
+              <>
+                <div className="absolute left-0 top-2.5 bottom-2.5 w-[2px] bg-blue-500 rounded-r-full shadow-[0_0_10px_rgba(59,130,246,1)]" />
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/[0.05] to-transparent pointer-events-none" />
+              </>
             )}
           </a>
         </SidebarMenuButton>
@@ -101,7 +145,7 @@ export function NavMain({
   return (
     <SidebarGroup>
       {label && (
-        <SidebarGroupLabel className="text-[10px] font-black tracking-[0.2em] text-muted-foreground/50 uppercase py-2">
+        <SidebarGroupLabel className="text-[10px] font-black tracking-[0.25em] text-muted-foreground/30 uppercase pt-6 pb-2 px-4 select-none">
           {label}
         </SidebarGroupLabel>
       )}

@@ -105,7 +105,7 @@ export default async function AppsSettingsHubPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6 lg:px-8">
+    <div className="flex flex-col gap-4 py-6 px-4 lg:px-6 w-full animate-in fade-in duration-500">
       <div className="flex items-center gap-4">
         <Link href="/dashboard/configuracion">
           <Button

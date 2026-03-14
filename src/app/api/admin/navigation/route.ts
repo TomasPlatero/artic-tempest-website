@@ -27,12 +27,12 @@ export async function GET() {
 export async function POST(req: Request) {
     try {
         await ensureAdmin()
-        const { roles, ...body } = await req.json()
-
+        const { roles, css_class, element_id, visibility, ...body } = await req.json()
+        
         // 1. Create item
         const { data: item, error } = await supabaseAdmin
             .from("navigation_items")
-            .insert(body)
+            .insert({ ...body, css_class, element_id, visibility })
             .select()
             .single()
 
@@ -61,14 +61,14 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
     try {
         await ensureAdmin()
-        const { id, roles, ...body } = await req.json()
+        const { id, roles, css_class, element_id, visibility, ...body } = await req.json()
 
         if (!id) throw new Error("Item ID is required")
 
         // 1. Update core fields
         const { error } = await supabaseAdmin
             .from("navigation_items")
-            .update(body)
+            .update({ ...body, css_class, element_id, visibility })
             .eq("id", id)
 
         if (error) throw error

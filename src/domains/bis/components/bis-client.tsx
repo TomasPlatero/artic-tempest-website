@@ -622,7 +622,7 @@ function LootItemCard({
                     `}
           title="Prioridad Urgente"
         >
-          ALTA (BIS)
+          ALTA (BiS)
         </button>
       </div>
     </div>
@@ -638,6 +638,7 @@ function WishlistCard({
   setSelections,
   bosses,
   instanceId,
+  activeSpecName,
 }: {
   selectedMember: EligibleMember | undefined;
   difficulty: string;
@@ -647,6 +648,7 @@ function WishlistCard({
   setSelections: React.Dispatch<React.SetStateAction<BisSelection[]>>;
   bosses: Boss[];
   instanceId: string;
+  activeSpecName?: string;
 }) {
   return (
     <Card className="h-fit sticky top-20">
@@ -661,10 +663,16 @@ function WishlistCard({
           )}
         </CardTitle>
         <CardDescription className="flex flex-col gap-1">
-          <span>
-            {selectedMember
-              ? `${selectedMember.character_name} — ${difficulty === "heroic" ? "Heroico" : "Mítico"}`
-              : "Selecciona un personaje"}
+          <span className="font-bold text-foreground">
+            {selectedMember?.character_name || "Selecciona un personaje"}
+          </span>
+          <span className="text-[10px] uppercase tracking-wider">
+            {activeSpecName || selectedMember?.spec_name} ·{" "}
+            {difficulty === "normal"
+              ? "Normal"
+              : difficulty === "heroic"
+                ? "Heroico"
+                : "Mítico"}
           </span>
         </CardDescription>
       </CardHeader>
@@ -684,20 +692,15 @@ function WishlistCard({
         ) : (
           <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
             {selections.map((sel) => {
-              const raidIlvl =
-                MIDNIGHT_S1_ILVL[difficulty.toLowerCase()] || null;
-              let matchQuality = null;
-              const diffId = WOWHEAD_DIFF[difficulty] || 15;
+              const priorityColor =
+                sel.priority === 1
+                  ? "bg-green-500/10 text-green-500"
+                  : sel.priority === 2
+                    ? "bg-orange-500/10 text-orange-500"
+                    : "bg-red-500/10 text-red-500";
 
-              for (const b of bosses) {
-                const i = b.items.find((it: LootItem) => it.id === sel.item_id);
-                if (i) {
-                  matchQuality = i.quality;
-                  break;
-                }
-              }
-
-              const computedItemLevel = raidIlvl || null;
+              const priorityLabel =
+                sel.priority === 1 ? "CAT" : sel.priority === 2 ? "MEJ" : "BiS";
 
               return (
                 <a
@@ -710,7 +713,6 @@ function WishlistCard({
                   data-wowhead-icon="false"
                   data-wowhead-rename="false"
                   onClick={(e) => {
-                    // Prevent navigation ONLY if clicking on the delete button
                     const isDeleteBtn = (e.target as HTMLElement).closest(
                       "button",
                     );
@@ -736,27 +738,22 @@ function WishlistCard({
                     );
                   })()}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-purple-400 truncate">
+                    <p className="text-sm font-bold text-purple-400 truncate leading-none mb-1">
                       {sel.item_name}
                     </p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground truncate">
+                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground truncate font-medium">
+                      <span className="shrink-0 text-foreground/40 font-bold tracking-tight">
+                        {sel.ilvl ? `${sel.ilvl} · ` : ""}
+                      </span>
                       <span
                         className={cn(
-                          "px-1 rounded text-[9px] font-black",
-                          sel.priority === 1
-                            ? "bg-green-500/10 text-green-500"
-                            : sel.priority === 2
-                              ? "bg-orange-500/10 text-orange-500"
-                              : "bg-red-500/10 text-red-500",
+                          "px-1 py-0.5 rounded-[3px] text-[8px] font-black",
+                          priorityColor,
                         )}
                       >
-                        {sel.priority === 1
-                          ? "S"
-                          : sel.priority === 2
-                            ? "B"
-                            : "H"}
+                        {priorityLabel}
                       </span>
-                      <span>
+                      <span className="truncate">
                         {sel.boss_name} · {translateSlot(sel.slot)}
                       </span>
                     </div>
@@ -1674,23 +1671,25 @@ export function BisClient({
                           </div>
                         </AccordionTrigger>
                         <AccordionContent className="pb-5">
-                          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 pt-2">
-                            {boss.items.map((item) => (
-                              <LootItemCard
-                                key={`${item.id}-${boss.name}`}
-                                item={item}
-                                bossName={boss.name}
-                                priority={
-                                  selections.find((s) => s.item_id === item.id)
-                                    ?.priority || null
-                                }
-                                onToggle={(p) =>
-                                  updatePriority(item, boss.name, p)
-                                }
-                                difficulty={difficulty}
-                                instanceId={resolvedInstanceId}
-                              />
-                            ))}
+                          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                            {boss.items.map((item) => {
+                              const sel = selections.find(
+                                (s) => s.item_id === item.id,
+                              );
+                              return (
+                                <LootItemCard
+                                  key={item.id}
+                                  item={item}
+                                  bossName={boss.name}
+                                  difficulty={difficulty}
+                                  priority={sel ? sel.priority : null}
+                                  instanceId={resolvedInstanceId}
+                                  onToggle={(p) =>
+                                    updatePriority(item, boss.name, p)
+                                  }
+                                />
+                              );
+                            })}
                           </div>
                         </AccordionContent>
                       </AccordionItem>
@@ -1699,7 +1698,7 @@ export function BisClient({
                 )}
               </div>
 
-              {/* Sidebar: My Wishlist */}
+              {/* Sidebar Wishlist */}
               <div className="hidden lg:block">
                 <WishlistCard
                   selectedMember={selectedMember}
@@ -1710,6 +1709,7 @@ export function BisClient({
                   setSelections={setSelections}
                   bosses={bosses}
                   instanceId={resolvedInstanceId}
+                  activeSpecName={activeSpecName}
                 />
               </div>
             </div>

@@ -209,7 +209,7 @@ export function StreamersSettings() {
   };
 
   return (
-    <div className="flex flex-col gap-6 p-4 md:p-6 lg:px-8 w-full max-w-full">
+    <div className="flex flex-col gap-6 py-6 px-4 lg:px-6 w-full animate-in fade-in duration-500">
       <AdminPageHeader
         title="AJUSTES DE STREAMERS"
         description="Gestiona la lista de creadores de contenido de tu hermandad y su orden en la web."

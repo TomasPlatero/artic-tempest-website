@@ -67,12 +67,12 @@ export function LandingNavigation() {
     }, [session])
 
     if (!mounted) {
-        return <nav className="fixed top-0 left-0 right-0 z-50 h-20 bg-black/50 backdrop-blur-md border-b border-white/10" />
+        return <nav className="fixed top-0 left-0 right-0 z-50 h-16 bg-black/50 backdrop-blur-md border-b border-white/10" />
     }
 
     return (
         <nav className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-md border-b border-white/10 dark">
-            <div className="max-w-7xl mx-auto px-6 md:px-10 h-20 flex items-center justify-between gap-4">
+            <div className="mx-auto max-w-[1600px] h-16 px-4 md:px-6 flex items-center justify-between gap-4 relative">
                 <div className="flex items-center gap-2">
                     {/* Botón de Menú Mobile */}
                     <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -116,6 +116,19 @@ export function LandingNavigation() {
                                         <IconChevronRight className="size-4 text-white/30 group-hover:text-white/70 transition-colors" />
                                     </Link>
                                 ))}
+                                {session && session.user.roleLevel?.toLowerCase() !== 'invitado' && (
+                                    <Link
+                                        href="/dashboard"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="group flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-blue-600/20 to-indigo-600/20 hover:from-blue-600/30 hover:to-indigo-600/30 border border-blue-500/20 transition-all active:scale-[0.98]"
+                                    >
+                                        <div className="flex flex-col gap-1 text-left">
+                                            <span className="text-[10px] font-black uppercase text-blue-400 tracking-widest leading-none">Acceso Raider</span>
+                                            <span className="font-bold tracking-tight text-white">Zona Raider</span>
+                                        </div>
+                                        <IconShieldCheck className="size-5 text-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.3)]" />
+                                    </Link>
+                                )}
                                 {session && hasApplied && (
                                     <Link
                                         href="/reclutamiento/apply-en-curso"
@@ -181,6 +194,18 @@ export function LandingNavigation() {
                             )}
                         </Link>
                     ))}
+                    {session && session.user.roleLevel?.toLowerCase() !== 'invitado' && (
+                        <Link
+                            href="/dashboard"
+                            className="flex items-center gap-3 group px-5 py-2 rounded-xl relative overflow-hidden h-9 bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 text-white border border-blue-400/20 transition-all hover:scale-[1.02] active:scale-95 shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)]"
+                            title="Ir al panel privado de raiders"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                            <div className="flex flex-col items-center justify-center relative z-10 w-full">
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Zona Raider</span>
+                            </div>
+                        </Link>
+                    )}
                     {session && hasApplied && (
                         <Link
                             href="/reclutamiento/apply-en-curso"
@@ -226,14 +251,6 @@ export function LandingNavigation() {
                                         <span>Mis Personajes</span>
                                     </Link>
                                 </DropdownMenuItem>
-                                {session.user.roleLevel?.toLowerCase() !== 'invitado' && (
-                                    <DropdownMenuItem asChild className="focus:bg-white/5 cursor-pointer rounded-lg h-10 mb-0.5">
-                                        <Link href="/dashboard" className="flex items-center gap-2">
-                                            <IconDashboard className="size-4" />
-                                            <span>Panel de Miembro</span>
-                                        </Link>
-                                    </DropdownMenuItem>
-                                )}
                                 <DropdownMenuItem onClick={() => signOut()} className="focus:bg-rose-500/10 text-rose-400 cursor-pointer rounded-lg h-10">
                                     <IconLogout className="size-4" />
                                     <span>Cerrar Sesión</span>

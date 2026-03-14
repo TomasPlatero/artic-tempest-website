@@ -10,10 +10,8 @@ import {
   IconSearch,
   IconBrandDiscord,
   IconBrandTwitch,
+  IconDatabase,
 } from "@tabler/icons-react";
-import { AppSidebar } from "@/shared/layout/app-sidebar";
-import { SiteHeader } from "@/shared/layout/site-header";
-import { SidebarInset, SidebarProvider } from "@/shared/components/sidebar";
 import { AdminPageHeader } from "@/shared/components/admin-page-header";
 import React from "react";
 
@@ -160,6 +158,16 @@ export default async function SettingsHubPage() {
       bg: "bg-purple-500/10",
       visible: settingsPermission.canEdit,
     },
+    {
+      title: "Copias de Seguridad",
+      description:
+        "Crea y gestiona copias de seguridad completas de la base de datos desde el panel de administración.",
+      icon: IconDatabase,
+      href: "/admin/backup",
+      color: "text-blue-500",
+      bg: "bg-blue-500/10",
+      visible: apiPermission.canView,
+    },
   ];
 
   const publicSettings = [
@@ -237,7 +245,7 @@ export default async function SettingsHubPage() {
   );
 
   return (
-    <div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6 lg:px-8">
+    <div className="flex flex-col gap-4 py-6 px-4 lg:px-6 w-full">
       <AdminPageHeader
         title="AJUSTES"
         description="Panel de control centralizado para guild master y oficiales."

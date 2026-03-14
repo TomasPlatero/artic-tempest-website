@@ -108,7 +108,7 @@ export default async function BisPage() {
   const { eligibleMembers, allMembers } = await getBisData(userId, canEdit);
 
   return (
-    <div className="flex flex-1 flex-col p-4 md:p-6 gap-6">
+    <div className="flex flex-1 flex-col py-6 px-4 lg:px-6 w-full animate-in fade-in duration-500">
       <BisClient
         eligibleMembers={eligibleMembers}
         allMembers={allMembers}

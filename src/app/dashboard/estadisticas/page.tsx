@@ -4,9 +4,6 @@ import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
 import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options"
 
-import { AppSidebar } from "@/shared/layout/app-sidebar"
-import { SiteHeader } from "@/shared/layout/site-header"
-import { SidebarInset, SidebarProvider } from "@/shared/components/sidebar"
 import { StatsClient } from "@/domains/stats/components/stats-client"
 import { fetchGuildProgression } from "@/shared/integrations/raiderio/raiderio-client"
 
@@ -98,20 +95,10 @@ export default async function EstadisticasPage() {
         classColors[Number(c.key)] = c.value
     })
 
-    const style = {
-        "--sidebar-width": "calc(var(--spacing) * 72)",
-        "--header-height": "calc(var(--spacing) * 12)",
-    } as React.CSSProperties
 
     return (
-        <SidebarProvider style={style}>
-            <AppSidebar variant="inset" />
-            <SidebarInset>
-                <SiteHeader />
-                <div className="flex flex-1 flex-col py-6 gap-6">
-                    <StatsClient members={roster} rioData={rioData} classColors={classColors} />
-                </div>
-            </SidebarInset>
-        </SidebarProvider>
+        <div className="flex flex-1 flex-col py-6 px-4 lg:px-6 w-full animate-in fade-in duration-500 gap-6">
+            <StatsClient members={roster} rioData={rioData} classColors={classColors} />
+        </div>
     )
 }

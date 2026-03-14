@@ -46,18 +46,12 @@ export function DashboardClient({ data, blocks, roleLevel }: { data: any, blocks
         switch (block.type) {
             case 'banner':
                 return (
-                    <div key={block.id} className="relative w-full h-48 sm:h-64 rounded-xl overflow-hidden shadow-2xl border border-border/50 group shrink-0">
-                        <div className={`absolute inset-0 bg-gradient-to-r ${config.gradient || "from-black/80 via-black/40 to-transparent"} z-10`} />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 z-10" />
-                        <div
-                            className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                            style={{ backgroundImage: `url('${config.bg_image || "/assets/images/midnight-battle.webp"}')` }}
-                        />
-                        <div className="relative z-20 flex flex-col items-start justify-center h-full p-6 sm:p-10">
-                            <h1 className="text-2xl sm:text-4xl font-bold text-white mb-2 drop-shadow-md leading-tight">
+                    <div key={block.id} className="relative w-full py-12 rounded-xl overflow-hidden group shrink-0 flex flex-col items-center justify-center text-center">
+                        <div className="relative z-20 flex flex-col items-center justify-center h-full">
+                            <h1 className="text-3xl sm:text-5xl font-extrabold text-white mb-3 drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] leading-tight tracking-tight">
                                 {config.title ? config.title.replace('{guildName}', data.guildName) : `¡Bienvenido a ${data.guildName}!`}
                             </h1>
-                            <p className="text-blue-50/90 max-w-full sm:max-w-lg text-sm sm:text-base drop-shadow-sm">
+                            <p className="text-blue-100/80 max-w-full sm:max-w-2xl text-base sm:text-lg drop-shadow-md font-medium leading-relaxed">
                                 {config.description || "Comprueba tus personajes, mantente al día de las próximas raids en el calendario y revisa el estado de reclutamiento de la hermandad."}
                             </p>
                         </div>
@@ -257,21 +251,20 @@ export function DashboardClient({ data, blocks, roleLevel }: { data: any, blocks
                             Estado del Roster
                         </div>
                         <p className="text-sm text-muted-foreground mt-1">Miembros rastreados: <span className="text-foreground font-semibold">{data.rosterCount}</span></p>
-                        <div className="text-xl font-semibold my-1 text-foreground">
+                        <div className="flex flex-col items-center justify-center my-1 bg-white/5 rounded-lg py-3 px-4 border border-white/5">
+                            <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium mb-1">Última sincronización</span>
                             {data.lastBnetSync ? (
-                                <div className="flex flex-col items-center">
-                                    <span className="text-emerald-500">Actualizada</span>
-                                    <span className="text-[10px] text-muted-foreground font-normal">
-                                        {new Date(data.lastBnetSync).toLocaleDateString("es-ES", {
-                                            day: "numeric",
-                                            month: "short",
-                                            hour: "2-digit",
-                                            minute: "2-digit"
-                                        })}
-                                    </span>
-                                </div>
+                                <span className="text-lg font-bold text-foreground">
+                                    {new Date(data.lastBnetSync).toLocaleString("es-ES", {
+                                        day: "numeric",
+                                        month: "short",
+                                        year: "numeric",
+                                        hour: "2-digit",
+                                        minute: "2-digit"
+                                    })}
+                                </span>
                             ) : (
-                                "No sincronizada"
+                                <span className="text-sm font-medium text-orange-400">Sin sincronizaciones aún</span>
                             )}
                         </div>
                         <div className="flex items-center gap-2 w-full mt-2">

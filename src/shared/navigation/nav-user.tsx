@@ -19,6 +19,7 @@ import {
 import { useTheme } from "next-themes"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar"
+import { cn } from "@/shared/tailwind/tailwind-utils"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,10 +28,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu"
+import { Button } from "@/shared/ui/button"
 import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
   useSidebar,
 } from "@/shared/components/sidebar"
 
@@ -42,13 +41,13 @@ type MePayload = {
 
 import { supabase } from "@/shared/supabase/client"
 
-export function NavUser() {
+export function NavUser({ hideNameOnMobile = false }: { hideNameOnMobile?: boolean }) {
   const { isMobile } = useSidebar()
   const { theme, setTheme } = useTheme()
   const [user, setUser] = React.useState<MePayload | null>(null)
   const [unreadCount, setUnreadCount] = React.useState(0)
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = React.useCallback(async () => {
     try {
       const res = await fetch("/api/notifications")
       if (res.ok) {
@@ -59,7 +58,7 @@ export function NavUser() {
     } catch (error) {
       console.error("Failed to fetch notifications:", error)
     }
-  }
+  }, [])
 
   React.useEffect(() => {
     let active = true
@@ -98,7 +97,7 @@ export function NavUser() {
       supabase.removeChannel(channel)
       window.removeEventListener('notifications-updated', handleLocalUpdate)
     }
-  }, [])
+  }, [fetchNotifications])
 
   const handleLogout = async () => {
     toast.info("Sesión cerrada", {
@@ -112,38 +111,40 @@ export function NavUser() {
   const displayRole = user?.role ?? ""
 
   return (
-    <SidebarMenu>
-      <SidebarMenuItem>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-            >
-              <div className="relative">
-                {unreadCount > 0 && (
-                  <div className="absolute -inset-[2px] rounded-lg ring-2 ring-blue-500 ring-offset-2 ring-offset-background animate-pulse z-20 pointer-events-none" />
+    <div className="flex items-center">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="lg"
+            className="h-10 px-2 sm:px-3 rounded-xl hover:bg-white/[0.05] transition-all duration-300 gap-3 group/navuser border border-transparent hover:border-white/5 shadow-none"
+          >
+            <div className="relative">
+              {unreadCount > 0 && (
+                <div className="absolute -inset-[2px] rounded-lg ring-2 ring-blue-500 ring-offset-2 ring-offset-[#0d0d12] animate-pulse z-20 pointer-events-none" />
+              )}
+              <Avatar className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg relative z-10 transition-all duration-300 group-hover/navuser:scale-105 group-hover/navuser:rotate-2 shadow-xl border border-white/10">
+                <AvatarImage src={displayAvatar} alt={displayName} />
+                <AvatarFallback className="rounded-lg bg-blue-500/10 text-blue-400 font-bold">
+                  {displayName?.[0]?.toUpperCase() ?? "?"}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+            <div className={cn(
+              "flex flex-col text-left text-sm leading-tight",
+              hideNameOnMobile && "hidden sm:flex"
+            )}>
+              <div className="flex items-center gap-2 overflow-hidden">
+                <span className="truncate font-semibold text-zinc-100 group-hover/navuser:text-white transition-colors">{displayName}</span>
+                {user?.role && (
+                  <span className="text-[9px] font-black text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20 uppercase tracking-widest shrink-0">
+                    {user.role}
+                  </span>
                 )}
-                <Avatar className="h-8 w-8 rounded-lg relative z-10 transition-all duration-300">
-                  <AvatarImage src={displayAvatar} alt={displayName} />
-                  <AvatarFallback className="rounded-lg">
-                    {displayName?.[0]?.toUpperCase() ?? "?"}
-                  </AvatarFallback>
-                </Avatar>
               </div>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <div className="flex items-center gap-2 overflow-hidden">
-                  <span className="truncate font-semibold">{displayName}</span>
-                  {user?.role && (
-                    <span className="text-[9px] font-black text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20 uppercase tracking-widest shrink-0">
-                      {user.role}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <IconDotsVertical className="ml-auto size-4" />
-            </SidebarMenuButton>
-          </DropdownMenuTrigger>
+            </div>
+          </Button>
+        </DropdownMenuTrigger>
 
           <DropdownMenuContent
             className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
@@ -194,9 +195,8 @@ export function NavUser() {
               <IconLogout />
               Desconectarse
             </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </SidebarMenuItem>
-    </SidebarMenu>
-  )
+      </DropdownMenuContent>
+    </DropdownMenu>
+  </div>
+)
 }

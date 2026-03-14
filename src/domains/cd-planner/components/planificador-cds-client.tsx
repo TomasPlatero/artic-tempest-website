@@ -82,6 +82,7 @@ function TimelineZoomOverlay({
   selectedBoss,
   assignments,
   healers,
+  bossAbilitiesMeta,
 }: {
   cooldownId: string;
   cooldownDefinitions: CooldownDefinition[];
@@ -91,6 +92,7 @@ function TimelineZoomOverlay({
   selectedBoss: string;
   assignments: any[];
   healers: any[];
+  bossAbilitiesMeta: Record<string, any>;
 }) {
   const WINDOW_SECONDS = 30; // 15s before, 15s after
   const HALF_WINDOW = WINDOW_SECONDS / 2;
@@ -164,7 +166,7 @@ function TimelineZoomOverlay({
             </span>
           </div>
           {bossAbilities.map((b, i) => {
-            const meta = BOSS_ABILITY_META[b.name];
+            const meta = bossAbilitiesMeta[b.name] || BOSS_ABILITY_META[b.name];
             return (
               <div
                 key={`boss-${i}`}
@@ -280,6 +282,7 @@ export function PlanificadorCdsClient() {
   const [recentEvents, setRecentEvents] = useState<any[]>([]);
   const [currentEvent, setCurrentEvent] = useState<any>(null);
   const [bossSummaries, setBossSummaries] = useState<any[]>([]);
+  const [bossAbilitiesMeta, setBossAbilitiesMeta] = useState<Record<string, any>>({});
 
   // Viserio Timeline State
   const [assignments, setAssignments] = useState<
@@ -679,6 +682,28 @@ export function PlanificadorCdsClient() {
     [],
   );
 
+  const fetchBossAbilities = useCallback(async (bossName: string) => {
+    try {
+      const res = await fetch(`/api/cd-planner/boss-abilities?boss_name=${encodeURIComponent(bossName)}`);
+      if (!res.ok) throw new Error("Failed to fetch boss abilities");
+      const data = await res.json();
+      
+      const meta: Record<string, any> = {};
+      data.forEach((ability: any) => {
+        // Map by name_en to match BOSS_TIMELINES
+        meta[ability.name_en] = {
+          icon: ability.icon_url || `https://wow.zamimg.com/images/wow/icons/large/${ability.name_en.toLowerCase().replace(/ /g, '_')}.jpg`, 
+          color: BOSS_ABILITY_META[ability.name_en]?.color || "#a855f7", // Keep original theme colors if available
+          nameEs: ability.name_es,
+          bnet_spell_id: ability.bnet_spell_id
+        };
+      });
+      setBossAbilitiesMeta(meta);
+    } catch (error) {
+      console.error("fetchBossAbilities error:", error);
+    }
+  }, []);
+
   // Initialize
   useEffect(() => {
     setMounted(true);
@@ -719,10 +744,13 @@ export function PlanificadorCdsClient() {
 
   // Load assignments when boss changes
   useEffect(() => {
-    if (eventIdParam && selectedBoss) {
-      fetchAssignments(eventIdParam, selectedBoss);
+    if (selectedBoss) {
+      fetchBossAbilities(selectedBoss);
+      if (eventIdParam) {
+        fetchAssignments(eventIdParam, selectedBoss);
+      }
     }
-  }, [eventIdParam, selectedBoss, fetchAssignments]);
+  }, [eventIdParam, selectedBoss, fetchAssignments, fetchBossAbilities]);
 
   // Update healers when boss or event changes
   useEffect(() => {
@@ -1274,6 +1302,7 @@ export function PlanificadorCdsClient() {
             selectedBoss={selectedBoss}
             assignments={assignments}
             healers={healers}
+            bossAbilitiesMeta={bossAbilitiesMeta}
           />
         )}
 
@@ -1828,7 +1857,7 @@ export function PlanificadorCdsClient() {
                                 </span>
                               </div>
                               {abilityGroups.map((group) => {
-                                const meta = BOSS_ABILITY_META[group.name];
+                                const meta = bossAbilitiesMeta[group.name] || BOSS_ABILITY_META[group.name];
                                 const displayName = meta?.nameEs || group.name;
                                 return (
                                   <div
@@ -1882,7 +1911,7 @@ export function PlanificadorCdsClient() {
                             <div className="h-[24px] border-b border-border/10" />
                             {/* One track per ability */}
                             {abilityGroups.map((group) => {
-                              const meta = BOSS_ABILITY_META[group.name];
+                              const meta = bossAbilitiesMeta[group.name] || BOSS_ABILITY_META[group.name];
                               const abilityColor = meta?.color || "#ef4444";
                               return (
                                 <div

@@ -10,6 +10,8 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: [
     'cataractous-overharshly-keshia.ngrok-free.dev',
     'localhost:3000',
+    '192.168.1.108',
+    '192.168.1.108:3000',
   ],
 
   // --- PERFORMANCE & SECURITY: ANTIGRAVITY STACK (Native) ---
@@ -88,6 +90,10 @@ const nextConfig: NextConfig = {
   },
 
   async headers() {
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Skipping security headers in development mode');
+      return [];
+    }
     return [
       {
         source: '/(.*)',
@@ -103,7 +109,7 @@ const nextConfig: NextConfig = {
               "connect-src 'self' *.supabase.co wss://*.supabase.co discord.com *.discordapp.com vitals.vercel-insights.com raider.io *.raider.io warcraftlogs.com *.warcraftlogs.com *.supabase.in wss://*.supabase.in wow.zamimg.com *.wowhead.com *.google-analytics.com *.analytics.google.com *.googletagmanager.com",
               "frame-src 'self' player.twitch.tv",
               "frame-ancestors 'none'",
-              'upgrade-insecure-requests',
+              ...(process.env.NODE_ENV === 'production' ? ['upgrade-insecure-requests'] : []),
             ].join('; '),
           },
           {

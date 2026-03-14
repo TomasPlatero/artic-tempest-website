@@ -1,9 +1,6 @@
 // src/app/dashboard/configuracion/api/page.tsx
 import { SettingsApiClient } from "@/domains/settings/components/settings-api";
 import { supabaseAdmin } from "@/shared/auth/auth-options";
-import { AppSidebar } from "@/shared/layout/app-sidebar";
-import { SiteHeader } from "@/shared/layout/site-header";
-import { SidebarInset, SidebarProvider } from "@/shared/components/sidebar";
 import React from "react";
 import { getServerSession } from "next-auth";
 

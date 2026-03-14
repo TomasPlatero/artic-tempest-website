@@ -55,7 +55,7 @@ export default async function CalendarSettingsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-4 md:p-6 lg:px-8 w-full max-w-full pb-20">
+    <div className="flex flex-col gap-6 py-6 px-4 lg:px-6 w-full animate-in fade-in duration-500 pb-20">
       <div className="flex items-center gap-4 mb-4">
         <Link href="/dashboard/aplicaciones">
           <Button

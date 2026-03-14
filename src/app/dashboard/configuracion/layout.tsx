@@ -21,20 +21,9 @@ export default async function SettingsLayout({
     redirect("/");
   }
 
-  const style = {
-    "--sidebar-width": "calc(var(--spacing) * 64)",
-    "--header-height": "calc(var(--spacing) * 12)",
-  } as React.CSSProperties;
-
   return (
-    <SessionProvider session={session}>
-      <SidebarProvider style={style}>
-        <AppSidebar variant="inset" />
-        <SidebarInset>
-          <SiteHeader />
-          <div className="flex flex-1 flex-col">{children}</div>
-        </SidebarInset>
-      </SidebarProvider>
-    </SessionProvider>
+    <div className="flex flex-1 flex-col">
+      {children}
+    </div>
   );
 }

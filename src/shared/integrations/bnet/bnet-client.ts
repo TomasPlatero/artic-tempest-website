@@ -255,6 +255,60 @@ export async function fetchItemData(
   }
 }
 
+/** Fetch a single character's active spec and deduce their role */
+export async function fetchEncounterAbilities(
+  encounterId: number,
+  region: string = 'eu',
+  locale: string = 'en_US',
+): Promise<any> {
+  const token = await getAccessToken();
+  const url = `https://${region}.api.blizzard.com/data/wow/journal-encounter/${encounterId}?namespace=static-${region}&locale=${locale}`;
+
+  try {
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchSpellMedia(
+  spellId: number,
+  region: string = 'eu',
+): Promise<string | null> {
+  const token = await getAccessToken();
+  const url = `https://${region}.api.blizzard.com/data/wow/media/spell/${spellId}?namespace=static-${region}`;
+
+  try {
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      // Slightly different error handling as some spells might not have media
+      if (res.status === 404) return null;
+      throw new Error(`Blizzard API error: ${res.statusText}`);
+    }
+
+    const data = await res.json();
+    const iconAsset = data.assets?.find((a: any) => a.key === "icon");
+    return iconAsset?.value || null;
+  } catch (error: any) {
+    // Catching potential errors from fetch or json parsing
+    if (error.message.includes('Blizzard API error')) {
+      console.error(`Error fetching spell media for spellId ${spellId}: ${error.message}`);
+    } else {
+      console.error(`An unexpected error occurred while fetching spell media for spellId ${spellId}:`, error);
+    }
+    return null;
+  }
+}
+
 /** Convert guild name to slug (lowercase, hyphens, no special chars) */
 export function toSlug(name: string): string {
   return name

@@ -18,8 +18,6 @@ export default async function ApplicationsLayout({
   }
 
   return (
-    <SessionProvider session={session}>
-      <div className="flex flex-1 flex-col">{children}</div>
-    </SessionProvider>
+    <div className="flex flex-1 flex-col">{children}</div>
   );
 }

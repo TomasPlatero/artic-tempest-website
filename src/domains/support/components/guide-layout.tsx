@@ -1,5 +1,3 @@
-import { LandingNavigation } from "@/domains/landing/components/navigation"
-import { LandingFooter } from "@/domains/landing/components/footer"
 import { IconChevronLeft } from "@tabler/icons-react"
 import Link from "next/link"
 import { cn } from "@/shared/tailwind/tailwind-utils"
@@ -15,11 +13,9 @@ interface GuideLayoutProps {
 
 export function GuideLayout({ children, title, description, category, icon, color }: GuideLayoutProps) {
     return (
-        <main className="min-h-screen bg-black flex flex-col dark overflow-x-hidden">
-            <LandingNavigation />
-
+        <div className="flex flex-col w-full animate-in fade-in duration-500">
             {/* Hero Section */}
-            <div className="pt-40 pb-20 px-6 relative">
+            <div className="pt-12 pb-20 px-6 relative overflow-hidden rounded-[3rem] bg-zinc-900/40 border border-white/5 mb-12">
                 <div className="absolute inset-0 z-0 bg-gradient-to-b from-blue-600/10 via-transparent to-transparent opacity-50" />
 
                 <div className="max-w-5xl mx-auto relative z-10 space-y-8">
@@ -36,7 +32,7 @@ export function GuideLayout({ children, title, description, category, icon, colo
                             {icon}
                             {category}
                         </div>
-                        <h1 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tighter leading-tight animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <h1 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tighter leading-tight">
                             {title}
                         </h1>
                         <p className="text-xl text-white/40 font-medium max-w-2xl leading-relaxed">
@@ -49,13 +45,11 @@ export function GuideLayout({ children, title, description, category, icon, colo
             {/* Content Section */}
             <div className="flex-1 pb-32 px-6">
                 <div className="max-w-4xl mx-auto">
-                    <div className="prose prose-invert prose-zinc max-w-none">
+                    <div className="prose prose-invert prose-zinc max-w-none prose-headings:font-black prose-headings:uppercase prose-headings:tracking-tighter prose-p:text-white/60 prose-strong:text-white prose-li:text-white/50">
                         {children}
                     </div>
                 </div>
             </div>
-
-            <LandingFooter />
-        </main>
+        </div>
     )
 }

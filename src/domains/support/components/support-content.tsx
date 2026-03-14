@@ -10,15 +10,11 @@ import {
     IconUser,
     IconCalendar,
     IconSword,
-    IconUsers,
-    IconApi,
     IconLock
 } from "@tabler/icons-react"
 import { Card, CardHeader, CardTitle, CardDescription } from "@/shared/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs"
 import { cn } from "@/shared/tailwind/tailwind-utils"
-import { LandingNavigation } from "@/domains/landing/components/navigation"
-import { LandingFooter } from "@/domains/landing/components/footer"
 import Link from "next/link"
 
 export function SupportContent() {
@@ -26,13 +22,9 @@ export function SupportContent() {
     const isMember = !!session?.user
 
     return (
-        <main className="min-h-screen bg-black flex flex-col dark overflow-x-hidden">
-            <LandingNavigation />
-
+        <div className="flex-1 flex flex-col pt-12 pb-20 w-full">
             {/* Hero Section */}
-            <div className="pt-40 pb-20 px-6 relative">
-                <div className="absolute inset-0 z-0 bg-gradient-to-b from-blue-600/10 via-transparent to-transparent opacity-50" />
-
+            <div className="pt-8 pb-20 relative">
                 <div className="max-w-5xl mx-auto text-center relative z-10 space-y-6">
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest animate-in fade-in zoom-in duration-500">
                         <IconLifebuoy className="size-4" />
@@ -49,7 +41,7 @@ export function SupportContent() {
             </div>
 
             {/* Content Section */}
-            <div className="flex-1 pb-32 px-6">
+            <div className="flex-1 pb-32">
                 <div className="max-w-6xl mx-auto">
                     <Tabs defaultValue="feedback" className="w-full">
                         <div className="flex justify-center mb-16">
@@ -140,8 +132,6 @@ export function SupportContent() {
                     </Tabs>
                 </div>
             </div>
-
-            <LandingFooter />
-        </main>
+        </div>
     )
 }

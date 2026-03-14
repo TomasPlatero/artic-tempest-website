@@ -292,15 +292,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const processedNavigation = React.useMemo(() => {
     const inject = (items: any[]): any[] => {
-      return items.map((item) => ({
-        ...item,
-        badge: item.badge_key
-          ? badges[item.badge_key]
-          : item.app_id === "calendar"
-            ? badges.calendar
-            : undefined,
-        children: item.children ? inject(item.children) : [],
-      }));
+      return items
+        .filter(item => !item.visibility || item.visibility === 'all' || item.visibility === 'mobile-only')
+        .map((item) => ({
+          ...item,
+          badge: item.badge_key
+            ? badges[item.badge_key]
+            : item.app_id === "calendar"
+              ? badges.calendar
+              : undefined,
+          children: item.children ? inject(item.children) : [],
+        }));
     };
     return inject(navigation);
   }, [badges, navigation]);
@@ -472,22 +474,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               "px-2",
               sidebarState === "collapsed"
                 ? "flex justify-center mb-4"
-                : "px-4 mb-4",
+                : "px-2 mb-4",
             )}
           >
             {sidebarState !== "collapsed" ? (
               <Button
                 asChild
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black uppercase text-[10px] tracking-widest h-10 rounded-xl shadow-lg shadow-blue-500/20 border border-white/10"
+                className="w-full bg-[#0d0d12]/50 hover:bg-[#12121a]/80 text-white font-bold uppercase text-[9px] tracking-[0.15em] h-10 rounded-xl shadow-2xl border border-white/5 hover:border-blue-500/30 transition-all duration-300 group/cta relative overflow-hidden"
               >
                 <a
                   href={ctaItem.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="gap-2"
+                  className="flex items-center justify-center gap-2.5 z-10"
                 >
-                  <IconDownload className="size-4" />
-                  {ctaItem.name}
+                  <IconDownload className="size-3.5 text-blue-500 group-hover/cta:scale-110 transition-transform duration-300" />
+                  <span className="opacity-80 group-hover/cta:opacity-100 transition-opacity">{ctaItem.name}</span>
+                  
+                  {/* Subtle Glow Effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600/0 via-blue-600/5 to-blue-600/0 translate-x-[-100%] group-hover/cta:translate-x-[100%] transition-transform duration-1000 ease-in-out" />
                 </a>
               </Button>
             ) : (

@@ -5,9 +5,6 @@ import { getServerSession } from "next-auth";
 import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options";
 import { getAppPermission } from "@/shared/auth/permissions";
 
-import { AppSidebar } from "@/shared/layout/app-sidebar";
-import { SiteHeader } from "@/shared/layout/site-header";
-import { SidebarInset, SidebarProvider } from "@/shared/components/sidebar";
 import { AdminPageHeader } from "@/shared/components/admin-page-header";
 import { RosterClient } from "@/domains/roster/components/roster-client";
 import { SyncRosterButton } from "@/shared/components/sync-roster-button";
@@ -142,36 +139,24 @@ export default async function RosterPage() {
     classRoleMapping,
   } = await getRoster();
 
-  const style = {
-    "--sidebar-width": "calc(var(--spacing) * 64)",
-    "--header-height": "calc(var(--spacing) * 12)",
-  } as React.CSSProperties;
 
   return (
-    <SidebarProvider style={style} suppressHydrationWarning>
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader />
-        <div className="flex flex-1 flex-col py-6 gap-6">
-          <div className="px-4 lg:px-6">
-            <AdminPageHeader
-              title="GESTION DE ROSTER"
-              description={`Explora y filtra los miembros actuales de la hermandad (${roster.length} personajes).`}
-            />
-          </div>
+    <div className="flex flex-1 flex-col w-full animate-in fade-in duration-500 gap-6">
+      <AdminPageHeader
+        title="GESTION DE ROSTER"
+        description={`Explora y filtra los miembros actuales de la hermandad (${roster.length} personajes).`}
+      />
 
-          <RosterClient
-            members={roster}
-            canEdit={canEdit}
-            roleLevel={roleLevel}
-            rankNames={rankNames}
-            rankColors={rankColors}
-            classNames={classNames}
-            classColors={classColors}
-            classRoleMapping={classRoleMapping}
-          />
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+      <RosterClient
+        members={roster}
+        canEdit={canEdit}
+        roleLevel={roleLevel}
+        rankNames={rankNames}
+        rankColors={rankColors}
+        classNames={classNames}
+        classColors={classColors}
+        classRoleMapping={classRoleMapping}
+      />
+    </div>
   );
 }

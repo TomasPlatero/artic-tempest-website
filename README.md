@@ -84,3 +84,11 @@ Scripts útiles:
 - `npm run type-check`
 - `npm run build`
 - `npm run discord:init`
+
+## Administración de Backups
+
+- Nueva funcionalidad: copia de seguridad completa de la BD desde el panel de administración.
+- Endpoint disponible:
+  - POST /api/admin/backup/start para iniciar la copia
+  - GET /api/admin/backup/status?jobId=... para consultar estado
+  - GET /api/admin/backup/download para descargar la última copia

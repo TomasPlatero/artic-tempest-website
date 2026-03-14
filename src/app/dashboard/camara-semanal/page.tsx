@@ -1,9 +1,6 @@
 import { ensureAppPermission } from '@/shared/auth/permissions';
 import { supabaseAdmin } from '@/shared/auth/auth-options';
 import { WeeklyVaultUploader } from './components/weekly-vault-uploader';
-import { AppSidebar } from "@/shared/layout/app-sidebar";
-import { SiteHeader } from "@/shared/layout/site-header";
-import { SidebarInset, SidebarProvider } from "@/shared/components/sidebar";
 import React from 'react';
 
 export default async function WeeklyVaultPage() {
@@ -49,33 +46,23 @@ export default async function WeeklyVaultPage() {
 
   const activeCharacterId = guildMember?.bnet_character_id;
 
-  const style = {
-    "--sidebar-width": "calc(var(--spacing) * 72)",
-    "--header-height": "calc(var(--spacing) * 12)",
-  } as React.CSSProperties;
 
   return (
-    <SidebarProvider style={style}>
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader />
-        <div className="flex flex-1 flex-col p-4 md:p-6 gap-6">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Cámara Semanal</h1>
-            <p className="text-muted-foreground mt-2">
-              Sube una captura de tu Gran Cámara (Vault) para ayudar a los ofis a repartir el loot.
-            </p>
-          </div>
-          <div className="max-w-4xl">
-            <WeeklyVaultUploader 
-              characters={characters || []} 
-              guildId={guildId} 
-              uploads={uploads || []}
-              activeCharacterId={activeCharacterId}
-            />
-          </div>
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+    <div className="flex flex-1 flex-col p-4 md:p-6 gap-6 w-full">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Cámara Semanal</h1>
+        <p className="text-muted-foreground mt-2">
+          Sube una captura de tu Gran Cámara (Vault) para ayudar a los ofis a repartir el loot.
+        </p>
+      </div>
+      <div className="max-w-4xl">
+        <WeeklyVaultUploader 
+          characters={characters || []} 
+          guildId={guildId} 
+          uploads={uploads || []}
+          activeCharacterId={activeCharacterId}
+        />
+      </div>
+    </div>
   );
 }

@@ -177,7 +177,7 @@ export function SettingsDiscordClient({ initialCredentials, initialCommands }: S
     };
 
     return (
-        <div className="flex flex-col gap-8 p-4 md:p-6 lg:px-8 w-full max-w-full animate-in fade-in duration-500">
+        <div className="flex flex-col gap-8 py-6 px-4 lg:px-6 w-full animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-6">
                     <Link href="/dashboard/configuracion">

@@ -4,9 +4,6 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options";
 
-import { AppSidebar } from "@/shared/layout/app-sidebar";
-import { SiteHeader } from "@/shared/layout/site-header";
-import { SidebarInset, SidebarProvider } from "@/shared/components/sidebar";
 import { DashboardClient } from "@/domains/dashboard/components/dashboard-client";
 import { getAppPermission } from "@/shared/auth/permissions";
 
@@ -194,13 +191,21 @@ async function getDashboardData(userId: string | undefined, roleLevel: string) {
     }
   }
 
+  // Fetch true last sync from members table
+  const { data: lastSyncedRecord } = await supabaseAdmin
+    .from("guild_members")
+    .select("synced_at")
+    .order("synced_at", { ascending: false })
+    .limit(1)
+    .single();
+
   return {
     guildName: guild?.name ?? "Artic Tempest",
     realm: guild?.realm ?? "—",
     region: guild?.region ?? "eu",
     faction: guild?.faction ?? "horde",
     rosterCount: rosterCount ?? 0,
-    lastBnetSync: guild?.last_bnet_sync ?? null,
+    lastBnetSync: lastSyncedRecord?.synced_at ?? guild?.last_bnet_sync ?? null,
     nextRaid,
     upcomingEvents: upcomingEvents || [],
     myCharacters,
@@ -241,6 +246,8 @@ async function getDashboardBlocks(roleLevel: string) {
   return filtered;
 }
 
+import { DashboardTopNav } from "@/shared/layout/dashboard-top-nav";
+
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -254,27 +261,16 @@ export default async function DashboardPage() {
     redirect("/mis-personajes");
   }
 
-  const dashboardData = await getDashboardData(session.user?.id, roleLevel);
-  const blocks = await getDashboardBlocks(roleLevel);
-
-  const style = {
-    "--sidebar-width": "calc(var(--spacing) * 64)",
-    "--header-height": "calc(var(--spacing) * 12)",
-  } as React.CSSProperties;
+  const dashboardData = await getDashboardData(session.user?.id, roleLevel)
+  const blocks = await getDashboardBlocks(roleLevel)
 
   return (
-    <SidebarProvider style={style}>
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader />
-        <div className="flex flex-1 flex-col py-6 max-w-7xl mx-auto w-full px-4 gap-6">
-          <DashboardClient
-            data={dashboardData}
-            blocks={blocks}
-            roleLevel={roleLevel}
-          />
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
-  );
+    <div className="flex flex-1 flex-col w-full animate-in fade-in duration-500">
+      <DashboardClient
+        data={dashboardData}
+        blocks={blocks}
+        roleLevel={roleLevel}
+      />
+    </div>
+  )
 }

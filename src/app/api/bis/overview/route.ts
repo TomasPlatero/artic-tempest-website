@@ -24,6 +24,8 @@ export async function GET(req: Request) {
     const instanceId = url.searchParams.get('instance_id');
     const difficulty = url.searchParams.get('difficulty');
 
+    const specId = url.searchParams.get('spec_id');
+
     // 1. Fetch visible ranks
     let { data: rawRanks, error: ranksError } = await supabaseAdmin
       .from('guild_ranks')
@@ -88,6 +90,13 @@ export async function GET(req: Request) {
       const numericInstanceId = parseInt(String(normalizedId), 10);
       if (!isNaN(numericInstanceId) && numericInstanceId !== 0) {
         query = query.eq('instance_id', numericInstanceId);
+      }
+    }
+
+    if (specId) {
+      const numericSpecId = parseInt(specId, 10);
+      if (!isNaN(numericSpecId)) {
+        query = query.eq('spec_id', numericSpecId);
       }
     }
 

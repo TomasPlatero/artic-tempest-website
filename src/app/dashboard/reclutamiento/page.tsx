@@ -2,9 +2,6 @@ import { getServerSession } from "next-auth";
 import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options";
 import { redirect } from "next/navigation";
 import { getAppPermission } from "@/shared/auth/permissions";
-import { AppSidebar } from "@/shared/layout/app-sidebar";
-import { SiteHeader } from "@/shared/layout/site-header";
-import { SidebarInset, SidebarProvider } from "@/shared/components/sidebar";
 import { AdminPageHeader } from "@/shared/components/admin-page-header";
 import { RecruitmentListClient } from "@/domains/recruitment/components/recruitment-list-client";
 import React from "react";
@@ -32,28 +29,18 @@ export default async function RecruitmentListPage() {
     .select("key, value, metadata")
     .eq("category", "wow_class");
 
-  const style = {
-    "--sidebar-width": "calc(var(--spacing) * 64)",
-    "--header-height": "calc(var(--spacing) * 12)",
-  } as React.CSSProperties;
 
   return (
-    <SidebarProvider style={style}>
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader />
-        <div className="flex flex-1 flex-col py-6 gap-6 px-4 lg:px-6">
-          <AdminPageHeader
-            title="GESTION DE RECLUTAMIENTO"
-            description="Revisa y gestiona las solicitudes de ingreso a la hermandad."
-          />
+    <div className="flex flex-1 flex-col py-6 gap-6 px-4 lg:px-6 w-full">
+      <AdminPageHeader
+        title="GESTION DE RECLUTAMIENTO"
+        description="Revisa y gestiona las solicitudes de ingreso a la hermandad."
+      />
 
-          <RecruitmentListClient
-            initialApplications={applications || []}
-            classConstants={classConstants || []}
-          />
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+      <RecruitmentListClient
+        initialApplications={applications || []}
+        classConstants={classConstants || []}
+      />
+    </div>
   );
 }

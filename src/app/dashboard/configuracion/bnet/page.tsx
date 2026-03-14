@@ -1,9 +1,6 @@
 import { supabaseAdmin } from "@/shared/auth/auth-options";
 import { SettingsBnetClient } from "@/domains/settings/components/settings-bnet";
 import { getGuildCredentials } from "@/shared/auth/credentials";
-import { AppSidebar } from "@/shared/layout/app-sidebar";
-import { SiteHeader } from "@/shared/layout/site-header";
-import { SidebarInset, SidebarProvider } from "@/shared/components/sidebar";
 import React from "react";
 import { getServerSession } from "next-auth";
 

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
-import { IconChevronLeft, IconChevronRight, IconCalendarEvent, IconLayoutGrid, IconList, IconRefresh, IconArrowLeft, IconCalendar, IconClock, IconTrash, IconDeviceFloppy, IconTimeline, IconClipboardText } from "@tabler/icons-react"
+import { IconChevronLeft, IconChevronRight, IconChevronDown, IconCalendarEvent, IconLayoutGrid, IconList, IconRefresh, IconArrowLeft, IconCalendar, IconClock, IconTrash, IconDeviceFloppy, IconTimeline, IconClipboardText } from "@tabler/icons-react"
 import { Button } from "@/shared/ui/button"
 import { useRouter } from "next/navigation"
 import { cn } from "@/shared/tailwind/tailwind-utils"
@@ -67,12 +67,12 @@ function DraggableEvent({ evt, canEdit, month, onClick, isPast, isInProgress, bg
             {...listeners}
             {...attributes}
             onClick={onClick}
-            className={cn(
-                "relative flex flex-col justify-between rounded p-2 cursor-pointer text-[10px] text-white overflow-hidden hover:ring-2 ring-white transition-all bg-cover bg-center min-h-[60px] border border-white/20 shadow-lg touch-none",
-                isDragging && "opacity-50 ring-2 ring-primary scale-95 rotate-2 shadow-2xl z-50",
-                isPast ? "opacity-60 grayscale-[0.5] hover:grayscale-0 hover:opacity-100" :
-                    isInProgress ? "bg-emerald-600 ring-2 ring-emerald-400/50 shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "bg-blue-600"
-            )}
+        className={cn(
+            "relative flex flex-col justify-between rounded-xl p-2.5 cursor-pointer text-[10px] text-white overflow-hidden transition-all duration-300 bg-cover bg-center min-h-[70px] border border-white/10 hover:border-white/30 shadow-[0_4px_12px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:-translate-y-0.5 group/event touch-none",
+            isDragging && "opacity-50 ring-2 ring-primary scale-95 rotate-1 shadow-2xl z-50",
+            isPast ? "opacity-50 grayscale-0 brightness-[0.7] hover:brightness-100 transition-all" :
+                isInProgress ? "ring-2 ring-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.2)]" : "bg-blue-600/40 backdrop-blur-md"
+        )}
         >
             {isPast && (
                 <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/40 backdrop-blur-[1px]">
@@ -131,10 +131,10 @@ function DroppableDay({ dateStr, d, isToday, canEdit, dayEvents, children, onCli
             ref={setNodeRef}
             onClick={onClick}
             className={cn(
-                "min-h-[120px] min-w-[120px] p-1 border-t border-r border-border/50 flex flex-col gap-1 relative group transition-all cursor-pointer",
-                isToday ? "bg-muted/10" : "hover:bg-muted/5",
-                isOver && "bg-primary/10 ring-2 ring-primary/40 z-10"
-            )}
+            "min-h-[140px] min-w-[120px] p-2 border-t border-r border-white/5 flex flex-col gap-1.5 relative group transition-all cursor-pointer",
+            isToday ? "bg-blue-500/[0.03]" : "hover:bg-white/[0.02]",
+            isOver && "bg-blue-500/10 ring-1 ring-blue-500/30 z-10"
+        )}
         >
             <div className="flex justify-between items-start">
                 {canEdit && dayEvents.length === 0 && (
@@ -143,8 +143,8 @@ function DroppableDay({ dateStr, d, isToday, canEdit, dayEvents, children, onCli
                     </div>
                 )}
                 <span className={cn(
-                    "text-xs font-semibold self-end mr-1 mb-1 mt-1 ml-auto",
-                    isToday ? "text-primary" : "text-muted-foreground"
+                    "text-[11px] font-black tracking-tighter self-end mr-1.5 mb-1.5 mt-1.5 ml-auto transition-colors",
+                    isToday ? "text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.5)]" : "text-zinc-500 group-hover:text-zinc-300"
                 )}>
                     {d < 10 ? `0${d}` : d}
                 </span>
@@ -291,7 +291,7 @@ export function CalendarClient({
     const cells = []
     // Empty cells for days before the 1st
     for (let i = 1; i < firstDay; i++) {
-        cells.push(<div key={`empty-${i}`} className="min-h-[120px] p-2 border-t border-r border-border/50 bg-muted/5 opacity-40 shadow-inner" />)
+        cells.push(<div key={`empty-${i}`} className="min-h-[140px] p-2 border-t border-r border-white/5 bg-black/10 opacity-40" />)
     }
 
     // Actual days
@@ -376,7 +376,7 @@ export function CalendarClient({
     const remainder = totalCells % 7
     if (remainder !== 0) {
         for (let i = 0; i < 7 - remainder; i++) {
-            cells.push(<div key={`empty-end-${i}`} className="min-h-[120px] p-2 border-t border-r border-border/50 bg-muted/5 opacity-40 shadow-inner" />)
+            cells.push(<div key={`empty-end-${i}`} className="min-h-[140px] p-2 border-t border-r border-white/5 bg-black/10 opacity-40" />)
         }
     }
 
@@ -390,15 +390,17 @@ export function CalendarClient({
 
     return (
         <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-            <div className={cn("flex flex-col gap-4 bg-background h-fit mb-8 transition-opacity duration-300", isUpdating && "opacity-60 pointer-events-none")}>
+            <div className={cn("flex flex-col gap-6 h-fit mb-8 transition-opacity duration-300", isUpdating && "opacity-60 pointer-events-none")}>
                 {/* Header Toolbar */}
                 <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold flex items-center gap-2">
-                            <IconCalendarEvent className="size-6 text-muted-foreground" />
+                    <div className="flex flex-col gap-1">
+                        <h1 className="text-3xl font-black tracking-tight flex items-center gap-3 text-white uppercase">
+                            <div className="p-2 rounded-xl bg-blue-500/10 border border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.1)]">
+                              <IconCalendar className="size-6 text-blue-400" />
+                            </div>
                             Calendario
                         </h1>
-                        <p className="text-sm text-muted-foreground">Bandas - Equipo raider</p>
+                        <p className="text-[11px] text-zinc-500 font-bold uppercase tracking-[0.2em] ml-1">Bandas - Equipo raider</p>
                     </div>
 
                     {/* Officer Actions */}
@@ -419,39 +421,49 @@ export function CalendarClient({
                     )}
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center justify-between py-2 border-b border-border/50 mt-4 gap-4">
-                    <Button variant="ghost" size="sm" onClick={prevMonth} className="text-muted-foreground w-full sm:w-auto justify-between sm:justify-start">
-                        <IconChevronLeft className="size-4 mr-1" />
+                <div className="flex items-center justify-between py-4 mt-2 gap-4">
+                    <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={prevMonth} 
+                        className="text-zinc-500 hover:text-white hover:bg-white/[0.05] rounded-xl px-4 font-bold uppercase tracking-widest text-[10px]"
+                    >
+                        <IconChevronLeft className="size-4 mr-2" />
                         {month === 0 ? monthNames[11] : monthNames[month - 1]}
                     </Button>
-
-                    <div className="flex gap-2 w-full sm:w-auto justify-center">
-                        <div className="px-3 py-1 bg-muted/30 rounded text-sm cursor-pointer hover:bg-muted/50 border border-border/50 flex items-center gap-2 font-medium">
-                            {monthNames[month]} <IconChevronLeft className="size-3 -rotate-90" />
+    
+                    <div className="flex gap-3">
+                        <div className="px-5 py-2 bg-white/[0.03] backdrop-blur-md rounded-xl text-xs border border-white/[0.05] flex items-center gap-3 font-bold uppercase tracking-widest text-white hover:bg-white/[0.06] transition-all cursor-pointer">
+                            {monthNames[month]} <IconChevronDown className="size-3 text-zinc-500" />
                         </div>
-                        <div className="px-3 py-1 bg-muted/30 rounded text-sm cursor-pointer hover:bg-muted/50 border border-border/50 flex items-center gap-2 font-medium">
-                            {year} <IconChevronLeft className="size-3 -rotate-90" />
+                        <div className="px-5 py-2 bg-white/[0.03] backdrop-blur-md rounded-xl text-xs border border-white/[0.05] flex items-center gap-3 font-bold uppercase tracking-widest text-white hover:bg-white/[0.06] transition-all cursor-pointer">
+                            {year} <IconChevronDown className="size-3 text-zinc-500" />
                         </div>
                     </div>
-
-                    <Button variant="ghost" size="sm" onClick={nextMonth} className="text-muted-foreground w-full sm:w-auto justify-between sm:justify-end">
+    
+                    <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={nextMonth} 
+                        className="text-zinc-500 hover:text-white hover:bg-white/[0.05] rounded-xl px-4 font-bold uppercase tracking-widest text-[10px]"
+                    >
                         {month === 11 ? monthNames[0] : monthNames[month + 1]}
-                        <IconChevronRight className="size-4 ml-1" />
+                        <IconChevronRight className="size-4 ml-2" />
                     </Button>
                 </div>
 
                 {/* Calendar View Area */}
                 {viewMode === "grid" ? (
-                    <div className="bg-[#1e1e24]/20 border-l border-b border-border/30 rounded-lg overflow-x-auto h-fit shadow-sm scrollbar-thin scrollbar-thumb-muted-foreground/20">
+                    <div className="bg-white/[0.01] backdrop-blur-3xl border border-white/[0.05] rounded-2xl overflow-hidden shadow-2xl">
                         <div className="min-w-[800px] w-full">
-                            <div className="grid grid-cols-7 border-b border-border/50">
+                            <div className="grid grid-cols-7 border-b border-white/[0.05] bg-white/[0.02]">
                                 {dayNames.map(d => (
-                                    <div key={d} className="text-center py-2 text-xs font-semibold text-muted-foreground bg-muted/5">
+                                    <div key={d} className="text-center py-4 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">
                                         {d}
                                     </div>
                                 ))}
                             </div>
-                            <div className="grid grid-cols-7 border-l border-border/50">
+                            <div className="grid grid-cols-7 border-l border-white/[0.05]">
                                 {cells}
                             </div>
                         </div>

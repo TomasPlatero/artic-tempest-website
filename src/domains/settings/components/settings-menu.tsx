@@ -83,6 +83,9 @@ export function SettingsMenuClient() {
       order_index: item.order_index,
       app_id: item.app_id || "",
       roles: item.navigation_item_roles?.map((r: any) => r.role_level) || [],
+      css_class: item.css_class || "",
+      element_id: item.element_id || "",
+      visibility: item.visibility || "all",
     });
   };
 
@@ -349,6 +352,61 @@ export function SettingsMenuClient() {
                   }
                   placeholder="ej: roster, calendar..."
                 />
+              </div>
+
+              <div className="space-y-2 col-span-1 sm:col-span-1 border-t border-white/5 pt-4">
+                <label className="text-xs font-black uppercase tracking-widest text-primary/60">
+                  Clase CSS Personalizada
+                </label>
+                <Input
+                  className="bg-zinc-950 border-white/5 h-11 transition-all focus:ring-1 focus:ring-primary/20"
+                  value={editForm.css_class || ""}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, css_class: e.target.value })
+                  }
+                  placeholder="ej: text-emerald-500 font-bold"
+                />
+              </div>
+
+              <div className="space-y-2 col-span-1 sm:col-span-1 border-t border-white/5 pt-4">
+                <label className="text-xs font-black uppercase tracking-widest text-primary/60">
+                  ID del Elemento
+                </label>
+                <Input
+                  className="bg-zinc-950 border-white/5 h-11 transition-all focus:ring-1 focus:ring-primary/20"
+                  value={editForm.element_id || ""}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, element_id: e.target.value })
+                  }
+                  placeholder="ej: my-nav-item"
+                />
+              </div>
+
+              <div className="space-y-2 col-span-1 sm:col-span-2 border-t border-white/5 pt-4">
+                <label className="text-xs font-black uppercase tracking-widest text-primary/60">
+                  Visibilidad del Dispositivo
+                </label>
+                <Select
+                  value={editForm.visibility || "all"}
+                  onValueChange={(v) =>
+                    setEditForm({ ...editForm, visibility: v })
+                  }
+                >
+                  <SelectTrigger className="bg-zinc-950 border-white/5 h-11 text-sm rounded-lg">
+                    <SelectValue placeholder="Cualquier dispositivo" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-900 border-white/10 text-white">
+                    <SelectItem value="all" className="text-xs py-2 font-medium">
+                      📱 + 💻 Cualquier dispositivo (Todos)
+                    </SelectItem>
+                    <SelectItem value="pc-only" className="text-xs py-2 font-medium">
+                      💻 Solo PC (Escritorio)
+                    </SelectItem>
+                    <SelectItem value="mobile-only" className="text-xs py-2 font-medium">
+                      📱 Solo Móvil
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-3 col-span-1 sm:col-span-2 mt-2">

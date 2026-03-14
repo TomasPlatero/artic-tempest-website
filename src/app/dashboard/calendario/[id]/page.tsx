@@ -5,9 +5,6 @@ import { getServerSession } from "next-auth"
 import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options"
 import { getAppPermission } from "@/shared/auth/permissions"
 
-import { AppSidebar } from "@/shared/layout/app-sidebar"
-import { SiteHeader } from "@/shared/layout/site-header"
-import { SidebarInset, SidebarProvider } from "@/shared/components/sidebar"
 import { RaidEditorClient } from "@/domains/calendar/components/raid-editor-client"
 
 export const runtime = "nodejs"
@@ -127,30 +124,20 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
         .eq("profile_id", session.user.id)
         .single()
 
-    const style = {
-        "--sidebar-width": "calc(var(--spacing) * 72)",
-        "--header-height": "calc(var(--spacing) * 12)",
-    } as React.CSSProperties
 
     return (
-        <SidebarProvider style={style} suppressHydrationWarning>
-            <AppSidebar variant="inset" />
-            <SidebarInset>
-                <SiteHeader />
-                <div className="flex flex-1 flex-col p-4 md:p-6">
-                    <RaidEditorClient
-                        initialRaid={details.event}
-                        initialSignups={details.signups}
-                        plannableMembers={details.plannableMembers}
-                        rankColors={details.rankColors}
-                        classRoles={details.classRoles}
-                        raids={details.raids}
-                        buffs={details.buffs}
-                        isReadOnly={true}
-                        currentMemberId={currentMember?.id}
-                    />
-                </div>
-            </SidebarInset>
-        </SidebarProvider>
+        <div className="flex flex-1 flex-col py-6 px-4 lg:px-6 w-full animate-in fade-in duration-500">
+            <RaidEditorClient
+                initialRaid={details.event}
+                initialSignups={details.signups}
+                plannableMembers={details.plannableMembers}
+                rankColors={details.rankColors}
+                classRoles={details.classRoles}
+                raids={details.raids}
+                buffs={details.buffs}
+                isReadOnly={true}
+                currentMemberId={currentMember?.id}
+            />
+        </div>
     )
 }

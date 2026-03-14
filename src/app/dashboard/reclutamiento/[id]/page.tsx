@@ -2,9 +2,6 @@ import { getServerSession } from "next-auth";
 import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options";
 import { redirect, notFound } from "next/navigation";
 import { RecruitmentDetailClient } from "@/domains/recruitment/components/recruitment-detail-client";
-import { AppSidebar } from "@/shared/layout/app-sidebar";
-import { SiteHeader } from "@/shared/layout/site-header";
-import { SidebarInset, SidebarProvider } from "@/shared/components/sidebar";
 import React from "react";
 import { getAppPermission } from "@/shared/auth/permissions";
 import { Forbidden } from "@/shared/components/forbidden";
@@ -58,24 +55,14 @@ export default async function RecruitmentDetailPage({
     .select("key, value, metadata")
     .eq("category", "wow_class");
 
-  const style = {
-    "--sidebar-width": "calc(var(--spacing) * 64)",
-    "--header-height": "calc(var(--spacing) * 12)",
-  } as React.CSSProperties;
 
   return (
-    <SidebarProvider style={style}>
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader />
-        <div className="flex flex-1 flex-col py-6 gap-6 px-4 lg:px-6">
-          <RecruitmentDetailClient
-            application={application}
-            answers={answers || []}
-            classConstants={classConstants || []}
-          />
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+    <div className="flex flex-1 flex-col py-6 gap-6 px-4 lg:px-6 w-full">
+      <RecruitmentDetailClient
+        application={application}
+        answers={answers || []}
+        classConstants={classConstants || []}
+      />
+    </div>
   );
 }
