@@ -236,7 +236,7 @@ export function DashboardTopNav({ guildName, iconUrl }: { guildName: string, ico
 
           <div className="h-4 w-px bg-white/5 mx-1 hidden sm:block" />
 
-          {/* Notifications - Desktop Only */}
+          {/* Notifications - Desktop Only
           {!isMobile && (
             <Link href="/dashboard/notificaciones">
               <Button variant="ghost" size="icon" className="relative h-9 w-9 text-zinc-400 hover:text-white hover:bg-white/[0.03] rounded-xl group/bell">
@@ -249,7 +249,7 @@ export function DashboardTopNav({ guildName, iconUrl }: { guildName: string, ico
                 )}
               </Button>
             </Link>
-          )}
+          )} */}
 
           <NavUser hideNameOnMobile={isMobile} />
         </div>
