@@ -5,9 +5,9 @@ import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { useSession, signIn } from "next-auth/react"
-import { 
-  IconDashboard, 
-  IconBell, 
+import {
+  IconDashboard,
+  IconBell,
   IconChevronDown,
   IconMenu2,
   IconUser,
@@ -24,15 +24,15 @@ import {
 } from "@tabler/icons-react"
 import { cn } from "@/shared/tailwind/tailwind-utils"
 import { NavUser } from "@/shared/navigation/nav-user"
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
 } from "@/shared/ui/dropdown-menu"
 import { Button } from "@/shared/ui/button"
 import { supabase } from "@/shared/supabase/client"
-import { 
+import {
   SidebarTrigger
 } from "@/shared/components/sidebar"
 import { getIconByName } from "@/shared/lib/icon-utils"
@@ -45,6 +45,7 @@ export function DashboardTopNav({ guildName, iconUrl }: { guildName: string, ico
   const [navItems, setNavItems] = React.useState<any[]>([])
   const [loading, setLoading] = React.useState(true)
   const [mobileIconUrl, setMobileIconUrl] = React.useState<string | null>(null)
+  const [version, setVersion] = React.useState<string>("v1.0.0 (dynamic)")
   const isMobile = useIsMobile()
 
   const fetchData = React.useCallback(async () => {
@@ -54,14 +55,16 @@ export function DashboardTopNav({ guildName, iconUrl }: { guildName: string, ico
       const navData = await navRes.json()
       if (!navRes.ok) throw new Error(navData.error)
       setNavItems(navData)
-      
+
       // Fetch guild info for mobile icon
       const guildRes = await fetch("/api/guild/info")
       const guildData = await guildRes.json()
       if (guildRes.ok && guildData.mobile_icon_url) {
         setMobileIconUrl(guildData.mobile_icon_url)
       }
-      
+      if (guildRes.ok && guildData.version) {
+        setVersion(guildData.version)
+      }
       // Fetch notifications
       const { count, error } = await supabase
         .from("notifications")
@@ -97,8 +100,8 @@ export function DashboardTopNav({ guildName, iconUrl }: { guildName: string, ico
           isMobile ? "justify-center absolute inset-x-0" : "gap-4"
         )}>
           {/* Logo & Guild Info */}
-          <Link 
-            href="/dashboard" 
+          <Link
+            href="/dashboard"
             className="flex items-center gap-3 group transition-all"
           >
             <div className={cn(
@@ -122,7 +125,7 @@ export function DashboardTopNav({ guildName, iconUrl }: { guildName: string, ico
               </span>
               <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest leading-none mt-1.5 flex items-center gap-1.5">
                 <span className="size-1 rounded-full bg-blue-500 animate-pulse" />
-                v0.9.5 Beta
+                {version}
               </span>
             </div>
           </Link>
@@ -140,79 +143,79 @@ export function DashboardTopNav({ guildName, iconUrl }: { guildName: string, ico
                   return navItem.children?.some((child: any) => checkActive(child)) || false
                 }
                 const isActive = checkActive(item)
-                
+
                 const Icon = getIconByName(item.icon_name)
                 const hasChildren = item.children && item.children.length > 0
                 const customClass = item.css_class || ""
                 const elementId = item.element_id || undefined
 
-              // For TopNav: Categories with children become dropdowns
-              if (hasChildren) {
-                return (
-                  <DropdownMenu key={item.id}>
-                    <DropdownMenuTrigger asChild>
-                      <Button 
-                        id={elementId}
-                        variant="ghost" 
-                        className={cn(
-                          "h-9 px-4 rounded-xl text-[13px] font-bold gap-2 transition-all",
-                          isActive 
-                            ? "text-blue-400" 
-                            : "text-zinc-400 hover:text-white hover:bg-white/[0.03]",
-                          customClass
-                        )}
-                      >
-                        <Icon className={cn("size-4", isActive ? "text-blue-400" : "text-zinc-500")} />
-                        {item.name}
-                        <IconChevronDown className="size-3 opacity-40 ml-1" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-56 bg-[#0d0d12]/95 backdrop-blur-2xl border-white/10 p-1.5 rounded-xl shadow-2xl">
-                      {item.children.map((child: any) => {
-                        const ChildIcon = getIconByName(child.icon_name)
-                        return (
-                          <DropdownMenuItem key={child.id} asChild className="rounded-lg focus:bg-blue-500/10 focus:text-white cursor-pointer group py-2">
-                            <Link href={child.url} id={child.element_id} className={cn("flex items-center gap-3", child.css_class)}>
-                              <ChildIcon className="size-4 text-zinc-500 group-hover:text-blue-400 transition-colors" />
-                              <span className="text-[13px] font-medium">{child.name}</span>
-                            </Link>
-                          </DropdownMenuItem>
-                        )
-                      })}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )
-              }
+                // For TopNav: Categories with children become dropdowns
+                if (hasChildren) {
+                  return (
+                    <DropdownMenu key={item.id}>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          id={elementId}
+                          variant="ghost"
+                          className={cn(
+                            "h-9 px-4 rounded-xl text-[13px] font-bold gap-2 transition-all",
+                            isActive
+                              ? "text-blue-400"
+                              : "text-zinc-400 hover:text-white hover:bg-white/[0.03]",
+                            customClass
+                          )}
+                        >
+                          <Icon className={cn("size-4", isActive ? "text-blue-400" : "text-zinc-500")} />
+                          {item.name}
+                          <IconChevronDown className="size-3 opacity-40 ml-1" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-56 bg-[#0d0d12]/95 backdrop-blur-2xl border-white/10 p-1.5 rounded-xl shadow-2xl">
+                        {item.children.map((child: any) => {
+                          const ChildIcon = getIconByName(child.icon_name)
+                          return (
+                            <DropdownMenuItem key={child.id} asChild className="rounded-lg focus:bg-blue-500/10 focus:text-white cursor-pointer group py-2">
+                              <Link href={child.url} id={child.element_id} className={cn("flex items-center gap-3", child.css_class)}>
+                                <ChildIcon className="size-4 text-zinc-500 group-hover:text-blue-400 transition-colors" />
+                                <span className="text-[13px] font-medium">{child.name}</span>
+                              </Link>
+                            </DropdownMenuItem>
+                          )
+                        })}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )
+                }
 
-              // Direct links
-              if (item.url) {
-                return (
-                  <Link
-                    key={item.id}
-                    id={elementId}
-                    href={item.url}
-                    className={cn(
-                      "relative h-9 px-4 flex items-center gap-2.5 rounded-xl text-[13px] font-bold transition-all group",
-                      isActive 
-                        ? "text-blue-400" 
-                        : "text-zinc-400 hover:text-white hover:bg-white/[0.03]",
-                      customClass
-                    )}
-                  >
-                    <Icon className={cn(
-                      "size-4 transition-transform group-hover:scale-110",
-                      isActive ? "text-blue-400" : "text-zinc-500 group-hover:text-blue-400"
-                    )} />
-                    {item.name}
-                    {isActive && (
-                      <span className="absolute -bottom-[17px] left-1/2 -translate-x-1/2 w-8 h-[2px] bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
-                    )}
-                  </Link>
-                )
-              }
+                // Direct links
+                if (item.url) {
+                  return (
+                    <Link
+                      key={item.id}
+                      id={elementId}
+                      href={item.url}
+                      className={cn(
+                        "relative h-9 px-4 flex items-center gap-2.5 rounded-xl text-[13px] font-bold transition-all group",
+                        isActive
+                          ? "text-blue-400"
+                          : "text-zinc-400 hover:text-white hover:bg-white/[0.03]",
+                        customClass
+                      )}
+                    >
+                      <Icon className={cn(
+                        "size-4 transition-transform group-hover:scale-110",
+                        isActive ? "text-blue-400" : "text-zinc-500 group-hover:text-blue-400"
+                      )} />
+                      {item.name}
+                      {isActive && (
+                        <span className="absolute -bottom-[17px] left-1/2 -translate-x-1/2 w-8 h-[2px] bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
+                      )}
+                    </Link>
+                  )
+                }
 
-              return null
-            })}
+                return null
+              })}
           </nav>
         </div>
 
@@ -221,7 +224,7 @@ export function DashboardTopNav({ guildName, iconUrl }: { guildName: string, ico
           {/* Download App CTA - Desktop Only */}
           {!isMobile && (
             <Link href="/api/download/latest-exe" prefetch={false}>
-              <Button 
+              <Button
                 className="h-9 gap-2 px-4 rounded-xl relative group overflow-hidden bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 text-white font-black uppercase tracking-widest text-[10px] border border-blue-400/20 transition-all hover:scale-[1.02] active:scale-95 shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)]"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
@@ -230,7 +233,7 @@ export function DashboardTopNav({ guildName, iconUrl }: { guildName: string, ico
               </Button>
             </Link>
           )}
-          
+
           <div className="h-4 w-px bg-white/5 mx-1 hidden sm:block" />
 
           {/* Notifications - Desktop Only */}
