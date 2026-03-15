@@ -49,7 +49,7 @@ export default function DashboardLayout({
           style={{ backgroundImage: 'url("/assets/images/midnight-battle.webp")' }}
         />
         <div className="fixed inset-0 z-0 bg-gradient-to-t from-[#020203] via-[#020203]/40 to-transparent pointer-events-none" />
-        <div className="fixed inset-0 z-0 bg-[radial-gradient(circle_at_50%_0%,rgba(59,130,246,0.15),transparent)] pointer-events-none" />
+        <div className="fixed inset-0 z-0 bg-[radial-gradient(circle_at_50%_0%,rgba(59,130,246,0.15),transparent)] pointer-events-none hidden desktop:block" />
 
         {isMobile && <AppSidebar />}
         

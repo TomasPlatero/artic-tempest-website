@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
+import { cn } from "@/shared/tailwind/tailwind-utils";
 import {
   Card,
   CardContent,
@@ -87,6 +88,40 @@ export function WeeklyVaultUploader({
   const [uploads, setUploads] = useState<Upload[]>(initialUploads as Upload[]);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [notes, setNotes] = useState<string>("");
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const droppedFile = e.dataTransfer.files[0];
+      if (droppedFile.type.startsWith("image/")) {
+        setFile(droppedFile);
+        setPreviewUrl(URL.createObjectURL(droppedFile));
+      } else {
+        toast.error("Por favor, sube solo archivos de imagen.");
+      }
+    }
+  };
+
+  const handleContainerClick = () => {
+    fileInputRef.current?.click();
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -193,45 +228,72 @@ export function WeeklyVaultUploader({
             <div className="space-y-2">
               <Label>Imagen de la Gran Cámara</Label>
               <div
-                className="flex justify-center rounded-lg border border-dashed border-gray-300 px-6 py-10"
+                onClick={handleContainerClick}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={cn(
+                  "relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed transition-all duration-200 cursor-pointer group px-6 py-10 overflow-hidden",
+                  isDragging 
+                    ? "border-blue-500 bg-blue-500/10 shadow-[0_0_20px_rgba(59,130,246,0.2)]" 
+                    : "border-border/40 hover:border-blue-500/40 hover:bg-white/[0.02]",
+                  previewUrl ? "border-solid" : "border-dashed"
+                )}
                 style={{
                   backgroundImage: previewUrl ? `url(${previewUrl})` : "none",
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                 }}
               >
-                <div
-                  className={`text-center ${previewUrl ? "bg-black/60 p-4 rounded-md" : ""}`}
-                >
+                {/* Overlay for preview mode */}
+                {previewUrl && (
+                  <div className="absolute inset-0 bg-black/60 group-hover:bg-black/40 transition-colors" />
+                )}
+
+                <div className="relative z-10 text-center flex flex-col items-center">
                   {!previewUrl && (
-                    <ImageIcon
-                      className="mx-auto h-12 w-12 text-gray-300"
-                      aria-hidden="true"
-                    />
-                  )}
-                  <div className="mt-4 flex text-sm leading-6 text-gray-600 justify-center">
-                    <label
-                      htmlFor="file-upload"
-                      className="relative cursor-pointer rounded-md font-semibold text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 hover:text-primary/80"
-                    >
-                      <span>
-                        {previewUrl ? "Cambiar imagen" : "Sube un archivo"}
-                      </span>
-                      <input
-                        id="file-upload"
-                        name="file-upload"
-                        type="file"
-                        className="sr-only"
-                        accept="image/*"
-                        onChange={handleFileChange}
+                    <div className={cn(
+                      "mb-4 p-4 rounded-full bg-white/[0.03] border border-white/5 transition-colors group-hover:bg-blue-500/10 group-hover:border-blue-500/20",
+                      isDragging && "bg-blue-500/20 border-blue-500/30"
+                    )}>
+                      <ImageIcon
+                        className={cn(
+                          "h-10 w-10 text-zinc-500 transition-colors group-hover:text-blue-400",
+                          isDragging && "text-blue-400"
+                        )}
+                        aria-hidden="true"
                       />
-                    </label>
-                  </div>
-                  {!previewUrl && (
-                    <p className="text-xs leading-5 text-gray-600">
-                      PNG, JPG, GIF hasta 5MB
-                    </p>
+                    </div>
                   )}
+                  
+                  <div className="flex flex-col gap-1 items-center">
+                    <span className={cn(
+                      "text-sm font-bold transition-colors group-hover:text-white",
+                      previewUrl ? "text-white" : "text-zinc-400"
+                    )}>
+                      {previewUrl ? "Cambiar imagen" : (isDragging ? "¡Suéltala aquí!" : "Sube un archivo")}
+                    </span>
+                    
+                    {!previewUrl && !isDragging && (
+                      <p className="text-xs text-zinc-500 font-medium">
+                        Click o arrastra: PNG, JPG, GIF hasta 5MB
+                      </p>
+                    )}
+                    
+                    {isDragging && (
+                      <p className="text-xs text-blue-400 font-bold animate-pulse">
+                        Listo para subir
+                      </p>
+                    )}
+                  </div>
+
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    className="sr-only"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                  />
                 </div>
               </div>
             </div>

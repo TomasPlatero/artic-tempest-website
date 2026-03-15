@@ -66,14 +66,13 @@ export function DashboardTopNav({ guildName, iconUrl }: { guildName: string, ico
         setVersion(guildData.version)
       }
       // Fetch notifications
-      const { count, error } = await supabase
-        .from("notifications")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", session?.user?.id)
-        .is("read_at", null)
-
-      if (error) throw error
-      setUnreadCount(count || 0)
+      const notifRes = await fetch("/api/notifications")
+      const notifData = await notifRes.json()
+      if (notifRes.ok && Array.isArray(notifData)) {
+        setUnreadCount(notifData.filter((n: any) => !n.isRead).length)
+      } else {
+        throw new Error(notifData.error || "Failed to fetch notifications")
+      }
     } catch (error) {
       console.error("Fetch error:", error)
     } finally {
@@ -89,15 +88,13 @@ export function DashboardTopNav({ guildName, iconUrl }: { guildName: string, ico
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/[0.05] bg-[#0d0d12]/80 backdrop-blur-3xl">
-      <div className="mx-auto max-w-[1600px] h-16 px-4 md:px-6 flex items-center justify-between gap-4 relative">
-        {/* Mobile Sidebar Trigger (Left) */}
-        {isMobile && (
-          <SidebarTrigger className="h-9 w-9 text-zinc-400 hover:text-white hover:bg-white/[0.03] rounded-xl z-20" />
-        )}
+      <div className="mx-auto max-w-[1600px] h-16 px-4 desktop:px-6 flex items-center justify-between gap-4 relative">
+        {/* Sidebar Trigger (Left) - Hidden on Desktop (desktop+) */}
+        <SidebarTrigger className="h-9 w-9 text-zinc-400 hover:text-white hover:bg-white/[0.03] rounded-xl z-20 desktop:hidden" />
 
         <div className={cn(
           "flex items-center flex-1 transition-all duration-300",
-          isMobile ? "justify-center absolute inset-x-0" : "gap-4"
+          "justify-center absolute inset-x-0 desktop:relative desktop:inset-auto desktop:justify-start desktop:gap-4 desktop:flex-none"
         )}>
           {/* Logo & Guild Info */}
           <Link
@@ -106,20 +103,40 @@ export function DashboardTopNav({ guildName, iconUrl }: { guildName: string, ico
           >
             <div className={cn(
               "relative rounded-xl overflow-hidden bg-gradient-to-br from-blue-500/20 to-indigo-500/20 border border-white/10 group-hover:border-blue-500/30 transition-all shadow-xl shadow-blue-500/5",
-              isMobile ? "h-10 w-auto bg-transparent border-none shadow-none overflow-visible rounded-none" : "size-10"
+              "h-10 w-auto bg-transparent border-none shadow-none overflow-visible rounded-none desktop:size-10 desktop:bg-gradient-to-br desktop:border desktop:shadow-xl desktop:rounded-xl desktop:overflow-hidden"
             )}>
-              {isMobile && mobileIconUrl ? (
-                <Image src={mobileIconUrl} alt={guildName} width={100} height={40} className="h-full w-auto object-contain" />
-              ) : iconUrl ? (
-                <Image src={iconUrl} alt={guildName} width={40} height={40} className="size-full object-cover" />
-              ) : (
-                <div className="size-full flex items-center justify-center">
-                  <IconDashboard className="size-5 text-blue-400" />
-                </div>
-              )}
-              {!isMobile && <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />}
+              <div className="desktop:hidden">
+                {mobileIconUrl && (
+                  <Image
+                    src={mobileIconUrl}
+                    alt={guildName}
+                    width={100}
+                    height={40}
+                    priority
+                    className="h-full w-auto object-contain"
+                    style={{ width: "auto" }}
+                  />
+                )}
+              </div>
+              <div className="hidden desktop:block size-full">
+                {iconUrl ? (
+                  <Image
+                    src={iconUrl}
+                    alt={guildName}
+                    width={40}
+                    height={40}
+                    priority
+                    className="size-full object-cover"
+                  />
+                ) : (
+                  <div className="size-full flex items-center justify-center">
+                    <IconDashboard className="size-5 text-blue-400" />
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+              </div>
             </div>
-            <div className="hidden lg:flex flex-col">
+            <div className="hidden desktop:flex flex-col">
               <span className="text-sm font-black text-white tracking-tight leading-none group-hover:text-blue-400 transition-colors uppercase">
                 {guildName}
               </span>
@@ -130,8 +147,8 @@ export function DashboardTopNav({ guildName, iconUrl }: { guildName: string, ico
             </div>
           </Link>
 
-          {/* Navigation Links - Desktop */}
-          <nav className="hidden md:flex items-center gap-1 px-8">
+          {/* Navigation Links - Desktop Only (1440px+) */}
+          <nav className="hidden desktop:flex items-center gap-1 px-8">
             {navItems
               .filter(item => !item.visibility || item.visibility === 'all' || item.visibility === 'pc-only')
               .map((item) => {
@@ -221,9 +238,8 @@ export function DashboardTopNav({ guildName, iconUrl }: { guildName: string, ico
 
         {/* Right Section: Actions & User */}
         <div className="flex items-center gap-2 sm:gap-3 z-20">
-          {/* Download App CTA - Desktop Only */}
-          {!isMobile && (
-            <Link href="/api/download/latest-exe" prefetch={false}>
+          {/* Download App CTA - Desktop Only (desktop+) */}
+          <Link href="/api/download/latest-exe" prefetch={false} className="hidden desktop:block">
               <Button
                 className="h-9 gap-2 px-4 rounded-xl relative group overflow-hidden bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 text-white font-black uppercase tracking-widest text-[10px] border border-blue-400/20 transition-all hover:scale-[1.02] active:scale-95 shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)]"
               >
@@ -232,7 +248,7 @@ export function DashboardTopNav({ guildName, iconUrl }: { guildName: string, ico
                 Descargar App
               </Button>
             </Link>
-          )}
+
 
           <div className="h-4 w-px bg-white/5 mx-1 hidden sm:block" />
 

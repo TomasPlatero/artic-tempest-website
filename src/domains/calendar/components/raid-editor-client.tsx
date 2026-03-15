@@ -682,36 +682,36 @@ export function RaidEditorClient({
                         opacity: 0.3
                     }}
                 />
-                <div className="relative z-10 flex flex-wrap items-start gap-x-12 gap-y-6">
-                    <div className="flex flex-col gap-1.5">
+                <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap items-start gap-6 lg:gap-x-12">
+                    <div className="flex flex-col gap-1.5 min-w-0">
                         <Label className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em]">Fecha y Hora</Label>
                         {isReadOnly ? (
-                            <div className="flex items-center gap-2 h-10 px-0 text-amber-200/90 font-medium">
-                                <IconCalendar className="size-4 opacity-50" />
-                                <span className="text-sm">{new Date(raid.event_date).toLocaleString('es-ES', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-                                {isPast && <span className="text-[10px] bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded uppercase font-bold border border-amber-500/20 ml-2">Histórico</span>}
+                            <div className="flex items-center gap-2 h-10 px-0 text-amber-200/90 font-medium truncate">
+                                <IconCalendar className="size-4 opacity-50 shrink-0" />
+                                <span className="text-sm truncate">{new Date(raid.event_date).toLocaleString('es-ES', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                                {isPast && <span className="text-[10px] bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded uppercase font-bold border border-amber-500/20 ml-2 shrink-0">Histórico</span>}
                             </div>
                         ) : (
                             <Input
                                 type="datetime-local"
                                 value={raid.event_date}
                                 onChange={(e) => setRaid({ ...raid, event_date: e.target.value })}
-                                className="bg-background/50 border-border/20 focus:border-primary/50 transition-colors h-10"
+                                className="bg-background/50 border-border/20 focus:border-primary/50 transition-colors h-10 w-full"
                             />
                         )}
                     </div>
-                    <div className="flex flex-col gap-1.5">
+                    <div className="flex flex-col gap-1.5 min-w-0">
                         <Label className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em]">Destino (Midnight)</Label>
                         {isReadOnly ? (
-                            <div className="flex items-center gap-2 h-10 px-0 text-white font-bold tracking-tight">
-                                <span className="text-sm">{raids.find((r: any) => r.id === raid.destination || r.name === raid.destination)?.name || raid.destination}</span>
+                            <div className="flex items-center gap-2 h-10 px-0 text-white font-bold tracking-tight truncate">
+                                <span className="text-sm truncate">{raids.find((r: any) => r.id === raid.destination || r.name === raid.destination)?.name || raid.destination}</span>
                             </div>
                         ) : (
                             <Select
                                 value={raid.destination}
                                 onValueChange={(val) => setRaid({ ...raid, destination: val })}
                             >
-                                <SelectTrigger className="bg-background/50 border-border/20 h-10">
+                                <SelectTrigger className="bg-background/50 border-border/20 h-10 w-full">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent className="bg-popover border-border/20">
@@ -722,12 +722,12 @@ export function RaidEditorClient({
                             </Select>
                         )}
                     </div>
-                    <div className="flex flex-col gap-1.5">
+                    <div className="flex flex-col gap-1.5 min-w-0">
                         <Label className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em]">Dificultad</Label>
                         {isReadOnly ? (
                             <div className="flex items-center gap-2 h-10 px-0">
                                 <span className={cn(
-                                    "text-xs font-black uppercase tracking-widest px-2.5 py-1 rounded-md",
+                                    "text-xs font-black uppercase tracking-widest px-2.5 py-1 rounded-md shrink-0",
                                     raid.difficulty.includes("Mítico") ? "bg-purple-500/10 text-purple-400 border border-purple-500/20" : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
                                 )}>
                                     {raid.difficulty}
@@ -738,7 +738,7 @@ export function RaidEditorClient({
                                 value={raid.difficulty}
                                 onValueChange={(val) => setRaid({ ...raid, difficulty: val })}
                             >
-                                <SelectTrigger className="bg-background/50 border-border/20 h-10">
+                                <SelectTrigger className="bg-background/50 border-border/20 h-10 w-full">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent className="bg-popover border-border/20">
@@ -749,16 +749,16 @@ export function RaidEditorClient({
                             </Select>
                         )}
                     </div>
-                    <div className="flex flex-col gap-1.5">
+                    <div className="flex flex-col gap-1.5 min-w-0">
                         <Label className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em]">Duración</Label>
                         {isReadOnly ? (
                             <div className="flex items-center gap-2 h-10 px-0 text-muted-foreground font-medium">
-                                <IconClock className="size-4 opacity-50" />
+                                <IconClock className="size-4 opacity-50 shrink-0" />
                                 <span className="text-sm">{duration} Horas</span>
                             </div>
                         ) : (
                             <Select value={duration} onValueChange={setDuration}>
-                                <SelectTrigger className="bg-background/50 border-border/20 h-10">
+                                <SelectTrigger className="bg-background/50 border-border/20 h-10 w-full">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent className="bg-popover border-border/20">
@@ -775,30 +775,18 @@ export function RaidEditorClient({
                 </div>
 
                 {!isReadOnly && (
-                    <div className="flex items-center gap-2 mt-2">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-2">
                         <Button
                             size="lg"
                             onClick={handleSave}
                             disabled={isSaving}
-                            className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold h-11 px-8 rounded-xl shadow-lg shadow-emerald-500/10 text-sm uppercase tracking-wider"
+                            className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold h-11 px-8 rounded-xl shadow-lg shadow-emerald-500/10 text-sm uppercase tracking-wider w-full sm:w-auto"
                         >
                             <IconDeviceFloppy className="size-4 mr-2" />
                             {isSaving ? "Guardando..." : "Guardar Evento"}
                         </Button>
                         {initialRaid && (
-                            <>
-                                <Button
-                                    variant="outline"
-                                    size="lg"
-                                    onClick={async () => {
-                                        if (!isReadOnly) await handleSave();
-                                        router.push(`/dashboard/planificador-cds?event_id=${initialRaid.id}`)
-                                    }}
-                                    className="px-6 h-11 rounded-xl border-blue-500/30 text-blue-400 hover:bg-blue-500/10 hover:text-blue-300 shadow-lg shadow-blue-500/5 group"
-                                >
-                                    <IconTimeline className="size-4 mr-2 group-hover:scale-110 transition-transform" />
-                                    <span className="text-sm font-black uppercase tracking-widest">Asignar CD&apos;s</span>
-                                </Button>
+                            <div className="flex flex-wrap items-center gap-2">
                                 <Button
                                     variant="outline"
                                     size="lg"
@@ -806,7 +794,7 @@ export function RaidEditorClient({
                                         if (!isReadOnly) await handleSave();
                                         router.push(`/dashboard/planificador-cds?event_id=${initialRaid.id}&tab=mrt`)
                                     }}
-                                    className="px-6 h-11 rounded-xl border-amber-500/30 text-amber-500 hover:bg-amber-500/10 hover:text-amber-400 shadow-lg shadow-amber-500/5 group"
+                                    className="px-6 h-11 rounded-xl border-amber-500/30 text-amber-500 hover:bg-amber-500/10 hover:text-amber-400 shadow-lg shadow-amber-500/5 group flex-1 sm:flex-none"
                                 >
                                     <IconClipboardText className="size-4 mr-2 group-hover:scale-110 transition-transform" />
                                     <span className="text-sm font-black uppercase tracking-widest">Nota MRT</span>
@@ -816,13 +804,13 @@ export function RaidEditorClient({
                                     size="lg"
                                     onClick={handleDelete}
                                     disabled={isSaving}
-                                    className="px-4 h-11 rounded-xl border-red-500/30 text-red-500 hover:bg-red-500/10 hover:text-red-400"
+                                    className="px-4 h-11 rounded-xl border-red-500/30 text-red-500 hover:bg-red-500/10 hover:text-red-400 flex-1 sm:flex-none"
                                     title="Eliminar Evento"
                                 >
                                     <IconTrash className="size-4 mr-2" />
                                     <span className="text-xs uppercase font-bold text-red-500">Eliminar</span>
                                 </Button>
-                            </>
+                            </div>
                         )}
                     </div>
                 )}
@@ -1050,7 +1038,7 @@ export function RaidEditorClient({
                                                 }
                                             }}
                                             className={cn(
-                                                "flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold transition-all uppercase tracking-tight border cursor-pointer group",
+                                                "flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-[11px] sm:text-xs font-bold transition-all uppercase tracking-tight border cursor-pointer group",
                                                 isActiveTab
                                                     ? "bg-primary/20 text-primary border-primary/50 shadow-lg shadow-primary/5"
                                                     : cn(colors.bg, colors.text, colors.border, colors.hover)

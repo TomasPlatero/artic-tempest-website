@@ -129,7 +129,7 @@ import { supabase } from "@/shared/supabase/client";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
-  const { toggleSidebar, state: sidebarState } = useSidebar();
+  const { toggleSidebar, state: sidebarState, isMobile } = useSidebar();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const showCollapseToggle =
@@ -407,6 +407,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     alt="Guild Logo"
                     width={20}
                     height={20}
+                    priority
                     className="size-5 rounded-full object-cover shrink-0 border border-border/30"
                   />
                 ) : (
@@ -517,7 +518,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             )}
           </div>
         )}
-        <NavUser />
+        {!isMobile && <NavUser />}
       </SidebarFooter>
     </Sidebar>
   );

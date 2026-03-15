@@ -232,14 +232,14 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
             </div>
 
             <Tabs defaultValue="progreso" className="w-full">
-                <TabsList className="mb-4 w-full justify-start overflow-x-auto h-auto min-h-10 bg-muted/20 p-1">
-                    <TabsTrigger value="progreso" className="flex-1 min-w-[120px] flex items-center gap-2 text-xs py-2">
+                <TabsList className="mb-4 w-full justify-start overflow-x-auto h-auto min-h-10 bg-muted/20 p-1 flex-nowrap scrollbar-none">
+                    <TabsTrigger value="progreso" className="flex-1 min-w-[100px] flex items-center justify-center gap-2 text-[10px] sm:text-xs py-2">
                         <IconTrophy className="size-3.5" /> Progreso
                     </TabsTrigger>
-                    <TabsTrigger value="wcl" className="flex-1 min-w-[120px] flex items-center gap-2 text-xs py-2">
+                    <TabsTrigger value="wcl" className="flex-1 min-w-[100px] flex items-center justify-center gap-2 text-[10px] sm:text-xs py-2">
                         <IconSwords className="size-3.5" /> Logs
                     </TabsTrigger>
-                    <TabsTrigger value="inspector" className="flex-1 min-w-[120px] flex items-center gap-2 text-xs py-2">
+                    <TabsTrigger value="inspector" className="flex-1 min-w-[100px] flex items-center justify-center gap-2 text-[10px] sm:text-xs py-2">
                         <IconChartBar className="size-3.5" /> Armería
                     </TabsTrigger>
                 </TabsList>
@@ -347,59 +347,65 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                 <TabsContent value="wcl" className="space-y-6 animate-in fade-in-50 mb-10">
                     <Card className="border-border/40 shadow-sm bg-card/60 pt-0 overflow-hidden">
                         <CardHeader className="border-b bg-muted/20 pb-6 pt-6">
-                            <div className="flex flex-col items-center justify-center gap-5">
+                            <div className="flex flex-col items-center justify-center gap-4 md:gap-5">
                                 <div className="space-y-1 text-center flex flex-col items-center">
                                     <div className="flex items-center justify-center gap-2">
-                                        <CardTitle className="text-lg">Rendimiento en WarcraftLogs</CardTitle>
+                                        <CardTitle className="text-base md:text-lg">Rendimiento en WarcraftLogs</CardTitle>
                                     </div>
-                                    <CardDescription className="text-xs">
+                                    <CardDescription className="text-[10px] md:text-xs max-w-[280px] md:max-w-none">
                                         Accede a los últimos reportes y análisis de combate de la hermandad.
                                     </CardDescription>
                                 </div>
-                                <div className="flex items-center justify-center gap-3 flex-wrap">
+                                <div className="flex flex-col md:flex-row items-stretch md:items-center justify-center gap-3 w-full md:w-auto">
                                     <a
                                         href="https://www.warcraftlogs.com/guild/id/743623"
                                         target="_blank"
                                         rel="noreferrer"
-                                        className="h-9 px-4 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-2 transition-colors shadow-lg shadow-blue-900/20"
+                                        className="h-9 px-4 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors shadow-lg shadow-blue-900/20"
                                     >
                                         <IconSwords className="size-4" />
                                         Perfil de Hermandad
                                     </a>
-                                    <Select value={wclZoneFilter} onValueChange={setWclZoneFilter}>
-                                        <SelectTrigger className="h-9 w-auto min-w-[200px] bg-background/50 border-border/40 text-xs">
-                                            <SelectValue placeholder="Raid / Zona" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">Todas las zonas</SelectItem>
-                                            {WCL_ZONES.map((group) => (
-                                                <div key={group.group}>
-                                                    <div className="px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">{group.group}</div>
-                                                    {group.zones.map((z) => (
-                                                        <SelectItem key={z.id} value={z.id}>{z.name}</SelectItem>
-                                                    ))}
-                                                </div>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    {wclTags.length > 0 && (
-                                        <Select value={wclTagFilter} onValueChange={setWclTagFilter}>
-                                            <SelectTrigger className="h-9 w-auto min-w-[130px] bg-background/50 border-border/40 text-xs">
-                                                <SelectValue placeholder="Tag" />
+                                    <div className="grid grid-cols-2 md:flex md:items-center gap-2 w-full md:w-auto">
+                                        <Select value={wclZoneFilter} onValueChange={setWclZoneFilter}>
+                                            <SelectTrigger className="h-9 w-full md:w-auto md:min-w-[180px] bg-background/50 border-border/40 text-[10px] md:text-xs">
+                                                <SelectValue placeholder="Raid / Zona" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="all">Todos los Tags</SelectItem>
-                                                {wclTags.map((tag) => (
-                                                    <SelectItem key={tag.id} value={String(tag.id)}>{tag.name}</SelectItem>
+                                                <SelectItem value="all">Todas las zonas</SelectItem>
+                                                {WCL_ZONES.map((group) => (
+                                                    <div key={group.group}>
+                                                        <div className="px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">{group.group}</div>
+                                                        {group.zones.map((z) => (
+                                                            <SelectItem key={z.id} value={z.id}>{z.name}</SelectItem>
+                                                        ))}
+                                                    </div>
                                                 ))}
                                             </SelectContent>
                                         </Select>
-                                    )}
+                                        {wclTags.length > 0 ? (
+                                            <Select value={wclTagFilter} onValueChange={setWclTagFilter}>
+                                                <SelectTrigger className="h-9 w-full md:w-auto md:min-w-[110px] bg-background/50 border-border/40 text-[10px] md:text-xs">
+                                                    <SelectValue placeholder="Tag" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="all">Todos los Tags</SelectItem>
+                                                    {wclTags.map((tag) => (
+                                                        <SelectItem key={tag.id} value={String(tag.id)}>{tag.name}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        ) : (
+                                            <div className="h-9 px-3 rounded-md bg-background/50 border border-border/40 flex items-center justify-center text-[10px] text-muted-foreground/40 md:hidden">
+                                                Sin Tags
+                                            </div>
+                                        )}
+                                    </div>
                                     <div className="relative w-full md:w-48">
                                         <IconSearch className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
                                         <Input
                                             placeholder="Buscar reporte..."
-                                            className="pl-9 h-9 bg-background/50 border-border/40 text-xs"
+                                            className="pl-9 h-9 bg-background/50 border-border/40 text-[10px] md:text-xs"
                                             value={wclSearchQuery}
                                             onChange={(e) => setWclSearchQuery(e.target.value)}
                                         />
@@ -429,22 +435,26 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                                         <div
                                             key={report.code}
                                             onClick={() => handleViewWclReport(report)}
-                                            className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-blue-500/5 transition-colors group"
+                                            className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 px-4 py-4 md:py-3 cursor-pointer hover:bg-blue-500/5 transition-colors group"
                                         >
-                                            <IconSwords className="size-4 text-muted-foreground/30 group-hover:text-blue-500/60 transition-colors shrink-0" />
-                                            <span className="font-bold text-sm group-hover:text-blue-400 transition-colors truncate flex-1 min-w-0">
-                                                {report.title}
-                                            </span>
-                                            <div className="flex items-center gap-2 shrink-0">
-                                                <Badge variant="secondary" className="bg-background/80 text-[10px] font-bold text-muted-foreground/80 py-0 px-1.5">
-                                                    {report.zone?.name || "Desconocido"}
-                                                </Badge>
-                                                {report.guildTag?.name && (
-                                                    <Badge variant="outline" className="text-[10px] font-bold py-0 px-1.5 border-blue-500/30 text-blue-400/80">
-                                                        {report.guildTag.name}
+                                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                <IconSwords className="size-4 text-muted-foreground/30 group-hover:text-blue-500/60 transition-colors shrink-0" />
+                                                <span className="font-bold text-sm group-hover:text-blue-400 transition-colors truncate">
+                                                    {report.title}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center justify-between md:justify-end gap-2 md:gap-3 pl-7 md:pl-0">
+                                                <div className="flex items-center gap-1.5 shrink-0">
+                                                    <Badge variant="secondary" className="bg-background/80 text-[9px] md:text-[10px] font-bold text-muted-foreground/80 py-0 px-1.5 whitespace-nowrap">
+                                                        {report.zone?.name || "Desconocido"}
                                                     </Badge>
-                                                )}
-                                                <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-wider w-20 text-right">
+                                                    {report.guildTag?.name && (
+                                                        <Badge variant="outline" className="text-[9px] md:text-[10px] font-bold py-0 px-1.5 border-blue-500/30 text-blue-400/80 whitespace-nowrap">
+                                                            {report.guildTag.name}
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                                <span className="text-[9px] md:text-[10px] font-bold text-muted-foreground/40 uppercase tracking-wider w-auto md:w-20 text-right">
                                                     {new Date(report.startTime).toLocaleDateString()}
                                                 </span>
                                             </div>

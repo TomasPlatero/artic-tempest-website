@@ -426,17 +426,17 @@ export function CalendarClient({
                         variant="ghost" 
                         size="sm" 
                         onClick={prevMonth} 
-                        className="text-zinc-500 hover:text-white hover:bg-white/[0.05] rounded-xl px-4 font-bold uppercase tracking-widest text-[10px]"
+                        className="text-zinc-500 hover:text-white hover:bg-white/[0.05] rounded-xl px-2 sm:px-4 font-bold uppercase tracking-widest text-[10px]"
                     >
-                        <IconChevronLeft className="size-4 mr-2" />
-                        {month === 0 ? monthNames[11] : monthNames[month - 1]}
+                        <IconChevronLeft className="size-4 sm:mr-2" />
+                        <span className="hidden sm:inline">{month === 0 ? monthNames[11] : monthNames[month - 1]}</span>
                     </Button>
     
-                    <div className="flex gap-3">
-                        <div className="px-5 py-2 bg-white/[0.03] backdrop-blur-md rounded-xl text-xs border border-white/[0.05] flex items-center gap-3 font-bold uppercase tracking-widest text-white hover:bg-white/[0.06] transition-all cursor-pointer">
+                    <div className="flex gap-1.5 sm:gap-3">
+                        <div className="px-3 sm:px-5 py-2 bg-white/[0.03] backdrop-blur-md rounded-xl text-[10px] sm:text-xs border border-white/[0.05] flex items-center gap-1.5 sm:gap-3 font-bold uppercase tracking-widest text-white hover:bg-white/[0.06] transition-all cursor-pointer">
                             {monthNames[month]} <IconChevronDown className="size-3 text-zinc-500" />
                         </div>
-                        <div className="px-5 py-2 bg-white/[0.03] backdrop-blur-md rounded-xl text-xs border border-white/[0.05] flex items-center gap-3 font-bold uppercase tracking-widest text-white hover:bg-white/[0.06] transition-all cursor-pointer">
+                        <div className="px-3 sm:px-5 py-2 bg-white/[0.03] backdrop-blur-md rounded-xl text-[10px] sm:text-xs border border-white/[0.05] flex items-center gap-1.5 sm:gap-3 font-bold uppercase tracking-widest text-white hover:bg-white/[0.06] transition-all cursor-pointer">
                             {year} <IconChevronDown className="size-3 text-zinc-500" />
                         </div>
                     </div>
@@ -445,10 +445,10 @@ export function CalendarClient({
                         variant="ghost" 
                         size="sm" 
                         onClick={nextMonth} 
-                        className="text-zinc-500 hover:text-white hover:bg-white/[0.05] rounded-xl px-4 font-bold uppercase tracking-widest text-[10px]"
+                        className="text-zinc-500 hover:text-white hover:bg-white/[0.05] rounded-xl px-2 sm:px-4 font-bold uppercase tracking-widest text-[10px]"
                     >
-                        {month === 11 ? monthNames[0] : monthNames[month + 1]}
-                        <IconChevronRight className="size-4 ml-2" />
+                        <span className="hidden sm:inline">{month === 11 ? monthNames[0] : monthNames[month + 1]}</span>
+                        <IconChevronRight className="size-4 sm:ml-2" />
                     </Button>
                 </div>
 

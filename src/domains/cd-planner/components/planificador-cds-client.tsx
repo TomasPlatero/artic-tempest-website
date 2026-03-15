@@ -28,12 +28,13 @@ import {
   IconEye,
   IconEyeOff,
   IconGripVertical,
+  IconDeviceDesktop,
+  IconCalendar,
   IconShield,
   IconPlus,
   IconSword,
   IconBow,
   IconHelpCircle,
-  IconDeviceDesktop,
   IconChevronDown,
   IconChevronRight,
 } from "@tabler/icons-react";
@@ -687,12 +688,12 @@ export function PlanificadorCdsClient() {
       const res = await fetch(`/api/cd-planner/boss-abilities?boss_name=${encodeURIComponent(bossName)}`);
       if (!res.ok) throw new Error("Failed to fetch boss abilities");
       const data = await res.json();
-      
+
       const meta: Record<string, any> = {};
       data.forEach((ability: any) => {
         // Map by name_en to match BOSS_TIMELINES
         meta[ability.name_en] = {
-          icon: ability.icon_url || `https://wow.zamimg.com/images/wow/icons/large/${ability.name_en.toLowerCase().replace(/ /g, '_')}.jpg`, 
+          icon: ability.icon_url || `https://wow.zamimg.com/images/wow/icons/large/${ability.name_en.toLowerCase().replace(/ /g, '_')}.jpg`,
           color: BOSS_ABILITY_META[ability.name_en]?.color || "#a855f7", // Keep original theme colors if available
           nameEs: ability.name_es,
           bnet_spell_id: ability.bnet_spell_id
@@ -1125,88 +1126,90 @@ export function PlanificadorCdsClient() {
       );
 
     return (
-      <div key={boss} className="flex flex-col gap-3">
-        <Card
+      <div key={boss} className="flex flex-col mb-6 group/boss-container">
+        <div
           className={cn(
-            "border-border/40 overflow-hidden relative rounded-xl shadow-2xl border flex flex-col transition-all duration-300",
-            eventIdParam ? "h-44" : "h-[85px] justify-center",
+            "group/boss relative rounded-[2rem] border overflow-hidden transition-all duration-700 shadow-2xl",
+            eventIdParam ? "h-64" : "h-24 px-8 mt-2 rounded-b-none border-b-0",
             isBossEnabled
-              ? "bg-[#121217]/90 group/boss hover:border-blue-500/30"
-              : "bg-[#121217]/40 grayscale opacity-60",
+              ? "bg-[#0b0c14]/60 border-white/5 hover:border-blue-500/30 shadow-blue-500/5 hover:-translate-y-1"
+              : "bg-[#0b0c14]/40 border-white/5 grayscale opacity-60",
           )}
         >
+          {/* Background Image with more visibility and glass effect */}
           <div
             className={cn(
-              "absolute inset-x-0 top-0 bg-cover bg-center transition-all duration-500",
-              eventIdParam ? "h-32" : "h-full",
+              "absolute inset-0 bg-cover bg-center transition-all duration-1000 scale-110 group-hover/boss:scale-100",
               isBossEnabled
-                ? "opacity-20 group-hover/boss:opacity-40 grayscale group-hover/boss:grayscale-0"
-                : "opacity-10 grayscale",
+                ? "opacity-30 group-hover/boss:opacity-60"
+                : "opacity-10",
             )}
             style={{ backgroundImage: `url(${parentRaid.image})` }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d12] via-[#0d0d12]/60 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-[#09090b]/80 to-transparent pointer-events-none" />
 
           {/* Disabled overlay */}
           {!isBossEnabled && (
-            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/60 backdrop-blur-[2px]">
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/60 backdrop-blur-sm">
               <div className="flex flex-col items-center gap-2">
-                <span className="text-red-500/80 font-black uppercase text-sm tracking-widest border border-red-500/20 px-3 py-1 rounded bg-red-950/40">
-                  No hay roster
+                <span className="text-red-500/80 font-black uppercase text-[10px] tracking-[0.3em] border border-red-500/20 px-5 py-2 rounded-2xl bg-[#09090b]/80 backdrop-blur-3xl shadow-2xl">
+                  Roster Pendiente
                 </span>
               </div>
             </div>
           )}
 
-          <CardHeader
+          <div
             className={cn(
-              "relative z-10 pl-5 pb-0",
-              eventIdParam ? "pt-3" : "pt-0",
+              "relative z-10 px-5 sm:px-8 flex flex-col h-full",
+              eventIdParam ? "pt-6 sm:pt-8 pb-6 sm:pb-10" : "flex-row items-center justify-between py-0",
             )}
           >
-            <h3
-              className={cn(
-                "text-[17px] font-black uppercase tracking-tight truncate",
-                isBossEnabled
-                  ? "text-white/90 group-hover:text-white transition-colors"
-                  : "text-white/40",
-              )}
-            >
-              {boss}
-            </h3>
-            <span className="text-[9px] font-black text-muted-foreground/50 uppercase tracking-[0.2em] mt-1 truncate block">
-              {parentRaid.name}
-            </span>
-          </CardHeader>
-
-          {eventIdParam && (
-            <CardContent className="relative z-10 px-5 pt-5 pb-6 mt-auto flex gap-2">
-              <Button
-                variant="secondary"
-                disabled={!isBossEnabled}
-                className="flex-1 h-9 text-[9px] font-black px-2 bg-blue-600/10 text-blue-400 border border-blue-500/20 hover:bg-blue-600 hover:text-white transition-all uppercase tracking-widest shadow-xl backdrop-blur-md"
-                onClick={() => {
-                  setSelectedBoss(boss);
-                  setActiveTab("planner");
-                }}
+            <div className="flex flex-col flex-1 min-w-0 py-4 sm:py-0">
+              <h3
+                className={cn(
+                  "text-lg font-black uppercase tracking-tight leading-tight transition-colors duration-500 truncate w-full",
+                  isBossEnabled
+                    ? "text-white group-hover/boss:text-blue-400"
+                    : "text-white/40",
+                )}
+                title={boss}
               >
-                Asignar CD&apos;s
-              </Button>
-              <Button
-                variant="secondary"
-                disabled={!isBossEnabled}
-                className="flex-1 h-9 text-[9px] font-black px-2 bg-amber-600/10 text-amber-500 border border-amber-500/20 hover:bg-amber-600 hover:text-white transition-all uppercase tracking-widest shadow-xl backdrop-blur-md"
-                onClick={() => goToMrtTab(boss)}
-              >
-                Nota MRT
-              </Button>
-            </CardContent>
-          )}
-        </Card>
+                {boss}
+              </h3>
+            </div>
 
-        {/* Boss Planning Details Card (Viserio Style) */}
+            {eventIdParam && (
+              <div className="mt-auto flex flex-col lg:flex-row gap-2.5 lg:gap-4 pt-4">
+                <Button
+                  variant="secondary"
+                  disabled={!isBossEnabled}
+                  className="w-full lg:flex-1 h-12 lg:h-14 text-[10px] font-black px-6 bg-blue-600/10 text-blue-400 border border-blue-500/10 hover:bg-blue-600 hover:text-white transition-all duration-500 uppercase tracking-[0.2em] shadow-2xl backdrop-blur-3xl rounded-xl lg:rounded-2xl group/btn active:scale-95"
+                  onClick={() => {
+                    setSelectedBoss(boss);
+                    setActiveTab("planner");
+                  }}
+                >
+                  <IconTimeline className="size-4 mr-2.5 opacity-60 group-hover/btn:rotate-12 transition-transform" />
+                  Asignar
+                </Button>
+                <Button
+                  variant="secondary"
+                  disabled={!isBossEnabled}
+                  className="w-full lg:flex-1 h-12 lg:h-14 text-[10px] font-black px-6 bg-amber-600/10 text-amber-500 border border-amber-500/10 hover:bg-amber-600 hover:text-white transition-all duration-500 uppercase tracking-[0.2em] shadow-2xl backdrop-blur-3xl rounded-xl lg:rounded-2xl group/btn2 active:scale-95"
+                  onClick={() => goToMrtTab(boss)}
+                >
+                  <IconClipboardText className="size-4 mr-2.5 opacity-60 group-hover/btn2:scale-110 transition-transform" />
+                  Nota MRT
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Boss Planning Details Card (Unified Style) */}
         {!eventIdParam && (
-          <div className="bg-[#121217]/60 border border-border/20 rounded-xl p-4 flex flex-col gap-3 shadow-inner">
+          <div className="bg-[#0b0c14]/40 border border-t-white/[0.03] border-white/5 rounded-b-[2rem] p-5 flex flex-col gap-3 shadow-2xl group-hover/boss-container:border-blue-500/20 transition-all duration-700">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest">
                 Planificaciones
@@ -1272,131 +1275,124 @@ export function PlanificadorCdsClient() {
   if (!mounted) return null;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)] overflow-hidden bg-background w-full min-w-0">
-      {/* Mobile Warning Overlay */}
-      <div className="flex lg:hidden flex-col items-center justify-center p-8 text-center h-full bg-[#0a0a0f] z-50">
-        <IconDeviceDesktop className="size-20 text-blue-500 mb-6 opacity-80" />
-        <h2 className="text-2xl font-black italic tracking-tighter mb-4 text-white uppercase">
-          Requiere Pantalla Grande
-        </h2>
-        <p className="text-sm font-medium text-muted-foreground/80 leading-relaxed max-w-sm">
-          El Planificador de CD&apos;s es una herramienta avanzada con una
-          interfaz compleja. Para garantizar una experiencia óptima, está
-          diseñado para ser utilizado en monitores grandes.
-        </p>
-      </div>
+    <div className="flex flex-col w-full min-w-0">
 
-      {/* Desktop App */}
-      <div className="hidden lg:flex flex-col flex-1 h-full overflow-hidden w-full min-w-0">
-        {/* Dragging Zoom Overlay */}
-        {draggingAssignment && (
-          <TimelineZoomOverlay
-            cooldownId={draggingAssignment.cooldownId}
-            cooldownDefinitions={cooldownDefinitions}
-            dragTime={
-              assignments.find((a) => a.id === draggingAssignment.id)
-                ?.time_seconds || 0
-            }
-            mouseX={floatingTooltip.x}
-            mouseY={floatingTooltip.y}
-            selectedBoss={selectedBoss}
-            assignments={assignments}
-            healers={healers}
-            bossAbilitiesMeta={bossAbilitiesMeta}
-          />
-        )}
+      {/* Dragging Zoom Overlay */}
+      {draggingAssignment && (
+        <TimelineZoomOverlay
+          cooldownId={draggingAssignment.cooldownId}
+          cooldownDefinitions={cooldownDefinitions}
+          dragTime={
+            assignments.find((a) => a.id === draggingAssignment.id)
+              ?.time_seconds || 0
+          }
+          mouseX={floatingTooltip.x}
+          mouseY={floatingTooltip.y}
+          selectedBoss={selectedBoss}
+          assignments={assignments}
+          healers={healers}
+          bossAbilitiesMeta={bossAbilitiesMeta}
+        />
+      )}
 
-        {/* Header Main Card */}
-        <Card className="bg-[#0a0a0f]/80 border border-border/40 rounded-xl p-6 shadow-2xl relative group/header h-32 flex items-center">
-          {selectedRaid.image && (
-            <div
-              className="absolute inset-0 z-0 bg-cover bg-center pointer-events-none transition-all duration-700 opacity-10 group-hover/header:opacity-20 scale-105 group-hover/header:scale-100"
-              style={{
-                backgroundImage: `url(${selectedRaid.image})`,
-              }}
-            />
-          )}
-          <div className="flex items-center gap-6 relative z-10">
-            <div className="size-16 rounded-xl bg-blue-600/10 flex items-center justify-center border border-blue-500/20 shadow-lg backdrop-blur-sm">
-              <IconTimeline className="size-8 text-blue-400" stroke={1.5} />
-            </div>
-            <div className="flex-1">
-              <h1 className="text-[28px] font-black uppercase tracking-tight text-white mb-1">
-                Planificador de CD&apos;s
-              </h1>
-              <p className="text-[10px] font-bold text-blue-400/80 uppercase tracking-[0.3em] font-mono">
-                Planificador de Cd&apos;s y Asignaciones.
-              </p>
-            </div>
-          </div>
-        </Card>
+      <div className="flex flex-col flex-1 w-full min-w-0">
 
-        {/* Active Event Information */}
-        {eventIdParam && currentEvent && (
-          <div className="mb-2 mt-3">
-            <div className="bg-blue-600/5 border border-blue-500/20 rounded-xl p-4 backdrop-blur-md flex items-center justify-between group/event-banner hover:border-blue-500/40 transition-all duration-300">
-              <div className="flex items-center gap-6">
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">
-                      Evento Activo
-                    </span>
-                    {isPast && (
-                      <span className="bg-amber-500/10 text-amber-500 text-[9px] px-1.5 py-0.5 rounded border border-amber-500/20 font-black uppercase tracking-tighter animate-pulse">
-                        Finalizado
-                      </span>
-                    )}
-                  </div>
-                  <h2 className="text-lg font-black text-white/90 uppercase tracking-tight">
-                    {currentEvent.destination}
-                  </h2>
-                </div>
-                <div className="h-10 w-px bg-border/20" />
-                <div className="flex items-center gap-8">
-                  <div className="flex flex-col">
-                    <span className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest mb-0.5">
-                      Fecha
-                    </span>
-                    <span className="text-sm font-bold text-white/80">
-                      {new Date(currentEvent.event_date).toLocaleDateString(
-                        "es-ES",
-                        { day: "2-digit", month: "long", year: "numeric" },
-                      )}
-                    </span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest mb-0.5">
-                      Dificultad
-                    </span>
-                    <span className="text-sm font-bold text-amber-400/80 uppercase">
-                      {currentEvent.difficulty}
-                    </span>
-                  </div>
+        {/* Premium Hero Header Section */}
+        <div className="relative mb-8 mt-4 shrink-0">
+          <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-[2.5rem] blur-2xl opacity-10 group-hover:opacity-20 transition duration-1000 hidden lg:block"></div>
+          <div className="relative bg-[#0b0c14]/40 border border-white/5 rounded-[2rem] p-8 backdrop-blur-3xl overflow-hidden shadow-2xl">
+            {/* Animated Background Element */}
+            <div className="absolute top-0 right-0 -mr-16 -mt-16 size-64 bg-blue-500/5 rounded-full blur-3xl animate-pulse hidden lg:block"></div>
+
+            <div className="flex flex-col items-center text-center relative z-10">
+              <div className="size-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 p-[1px] mb-6 shadow-[0_0_30px_rgba(59,130,246,0.2)]">
+                <div className="w-full h-full rounded-2xl bg-[#0b0c14] flex items-center justify-center backdrop-blur-xl">
+                  <IconTimeline className="size-8 text-blue-400" />
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                {selectedBoss ? (
+
+              <h1 className="text-3xl font-black text-white uppercase tracking-tighter italic mb-2">
+                PLANIFICADOR DE <span className="text-blue-500">CDS</span>
+              </h1>
+              <div className="flex items-center gap-3">
+                <div className="h-px w-8 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent"></div>
+                <p className="text-[10px] font-black text-blue-400 uppercase tracking-[0.4em] opacity-80">
+                  Gestión de Cooldowns
+                </p>
+                <div className="h-px w-8 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Ultra-Premium Active Event Banner */}
+        {eventIdParam && currentEvent && (
+          <div className="mb-10 group/event-hero shrink-0">
+            <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[#0f111a]/80 backdrop-blur-3xl shadow-2xl transition-all duration-700 hover:border-blue-500/30">
+              {/* Background Glow */}
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-transparent opacity-30"></div>
+
+              <div className="relative px-6 py-7 flex flex-col gap-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col">
+                    <h2 className="text-2xl font-black text-white uppercase tracking-tight leading-none">
+                      {currentEvent.destination}
+                    </h2>
+                  </div>
+
+                  {isPast && (
+                    <div className="px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                      <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest">
+                        Finalizado
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-white/5 rounded-2xl p-4 border border-white/[0.03] backdrop-blur-xl">
+                    <span className="text-[8px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] block mb-1.5">
+                      Fecha
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <IconCalendar className="size-3.5 text-blue-400" />
+                      <span className="text-sm font-black text-white/90 font-mono tracking-tighter">
+                        {new Date(currentEvent.event_date).toLocaleDateString(
+                          "es-ES",
+                          { day: "2-digit", month: "short" },
+                        )}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="bg-white/5 rounded-2xl p-4 border border-white/[0.03] backdrop-blur-xl flex flex-col justify-center">
+                    <span className="text-[8px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] block mb-1.5">
+                      Dificultad
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <div className={cn(
+                        "px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-tighter",
+                        currentEvent.difficulty?.[0] === "M" ? "bg-red-500/20 text-red-400 border border-red-500/20" :
+                          currentEvent.difficulty?.[0] === "H" ? "bg-blue-500/20 text-blue-400 border border-blue-500/20" :
+                            "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20"
+                      )}>
+                        {currentEvent.difficulty || "Normal"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex pt-2">
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
-                    className="text-[10px] font-black uppercase tracking-widest text-amber-400 border-amber-500/20 bg-amber-500/5 hover:bg-amber-500/10 hover:text-amber-300 gap-2"
-                    onClick={() => goToMrtTab(selectedBoss)}
+                    onClick={() => (window.location.href = "/dashboard/planificador-cds")}
+                    className="w-full bg-white/5 hover:bg-white/10 text-white/60 hover:text-white border border-white/5 rounded-xl h-12 text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500"
                   >
-                    <IconClipboardText className="size-4" />
-                    Exportar
+                    <IconArrowLeft className="size-4 mr-2" />
+                    Cambiar Evento
                   </Button>
-                ) : null}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-white hover:bg-white/5 gap-2"
-                  onClick={() =>
-                    (window.location.href = "/dashboard/planificador-cds")
-                  }
-                >
-                  <IconArrowLeft className="size-4" />
-                  Cambiar Evento
-                </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -1404,9 +1400,9 @@ export function PlanificadorCdsClient() {
 
         {/* Raid Selection Sub-Menu Card - Only show in selection tab */}
         {activeTab === "selection" && (
-          <div className="relative group/tabs">
-            <Card className="bg-[#121217]/50 border border-border/40 rounded-xl px-2 shadow-xl relative overflow-hidden backdrop-blur-sm">
-              <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide py-1 no-scrollbar flex-nowrap touch-pan-x">
+          <div className="relative mb-10 shrink-0 px-1">
+            <div className="bg-[#0b0c14]/40 border border-white/5 rounded-2xl p-1.5 backdrop-blur-3xl shadow-2xl relative overflow-hidden group/tabs-container">
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 flex-nowrap touch-pan-x relative z-10 px-1">
                 {MIDNIGHT_RAIDS.map((raid) => (
                   <button
                     key={raid.id}
@@ -1414,22 +1410,27 @@ export function PlanificadorCdsClient() {
                       setSelectedRaid(raid);
                       setActiveTab("selection");
                     }}
-                    className={`flex-1 min-w-[max-content] px-6 py-3 text-[11px] font-black uppercase tracking-[0.2em] whitespace-nowrap transition-all duration-300 relative rounded-lg shrink-0 ${
+                    className={cn(
+                      "flex-1 min-w-[max-content] px-8 py-3.5 text-[10px] sm:text-[11px] font-black uppercase tracking-[0.3em] whitespace-nowrap transition-all duration-700 relative rounded-xl shrink-0 group/tab-item bg-white/[0.02] border border-white/5",
                       selectedRaid.id === raid.id
-                        ? "text-blue-400 bg-blue-500/5 shadow-[inset_0_0_20px_rgba(59,130,246,0.05)] border border-blue-500/10"
-                        : "text-muted-foreground hover:text-foreground hover:bg-white/5 border border-transparent"
-                    }`}
-                  >
-                    <span className="relative z-10">{raid.name}</span>
-                    {selectedRaid.id === raid.id && (
-                      <div className="absolute inset-x-2 bottom-1 h-0.5 bg-blue-500/50 rounded-full blur-[0.5px]" />
+                        ? "text-blue-400 border-blue-500/40 shadow-[0_0_25px_rgba(59,130,246,0.2)]"
+                        : "text-muted-foreground/40 hover:text-white hover:bg-white/[0.05]"
                     )}
+                  >
+                    {/* Capsule Indicator */}
+                    {selectedRaid.id === raid.id && (
+                      <div className="absolute inset-0 bg-blue-500/20 border border-blue-500/40 rounded-xl shadow-[0_0_30px_rgba(59,130,246,0.25)] transition-all duration-700 animate-in fade-in zoom-in-95"></div>
+                    )}
+                    <span className={cn(
+                      "relative z-10 transition-all duration-500",
+                      selectedRaid.id === raid.id ? "drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] scale-105" : ""
+                    )}>
+                      {raid.name}
+                    </span>
                   </button>
                 ))}
               </div>
-            </Card>
-            <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#121217] to-transparent pointer-events-none opacity-0 group-hover/tabs:opacity-100 transition-opacity" />
-            <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#121217] to-transparent pointer-events-none opacity-0 group-hover/tabs:opacity-100 transition-opacity" />
+            </div>
           </div>
         )}
 
@@ -1444,15 +1445,15 @@ export function PlanificadorCdsClient() {
             <TabsTrigger value="mrt">MRT Note</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="selection" className="m-0">
+          <TabsContent value="selection" className="m-0 flex-1 pb-6 px-0.5">
             {selectedRaid.id === "Todas las Raids" ? (
-              <div className="flex flex-col gap-10">
+              <div className="flex flex-col gap-6 sm:gap-10">
                 {MIDNIGHT_RAIDS.filter((r) => r.id !== "Todas las Raids").map(
                   (subRaid) => (
                     <div key={subRaid.id} className="flex flex-col gap-4">
                       <div className="flex items-center gap-3">
                         <div className="h-4 w-1 bg-primary/40 rounded-full" />
-                        <h3 className="text-[12px] font-black uppercase tracking-[0.3em] text-white/60">
+                        <h3 className="text-[11px] sm:text-[12px] font-black uppercase tracking-[0.2em] text-white/60">
                           {subRaid.name}
                         </h3>
                         <div className="h-px flex-1 bg-border/10" />
@@ -1477,10 +1478,31 @@ export function PlanificadorCdsClient() {
 
           <TabsContent
             value="planner"
-            className="flex-1 m-0 flex flex-col min-h-0 bg-[#121217] data-[state=inactive]:hidden w-full max-w-full overflow-hidden"
+            className="flex-1 m-0 flex flex-col min-h-0 lg:min-h-[600px] data-[state=inactive]:hidden w-full max-w-full overflow-hidden"
           >
-            <Card className="bg-[#121217] flex-1 border-border/50 shadow-2xl rounded-xl flex flex-col min-h-0 relative pt-2 pb-0 w-full max-w-full overflow-hidden">
-              <div className="flex border-b border-border/40 bg-muted/5 items-center justify-between px-4 h-15 shrink-0 relative z-50">
+            {/* Mobile Restriction Warning for Planner tab only */}
+            <div className="flex lg:hidden flex-col items-center justify-center p-12 text-center h-full bg-[#0a0a0f] rounded-3xl border border-white/5 my-2 shadow-[inset_0_0_50px_rgba(0,0,0,0.5)]">
+              <div className="size-24 rounded-3xl bg-blue-500/5 flex items-center justify-center border border-blue-500/10 mb-8 shadow-2xl backdrop-blur-sm">
+                <IconDeviceDesktop className="size-12 text-blue-500 opacity-60 animate-pulse" />
+              </div>
+              <h2 className="text-2xl font-black italic tracking-tighter mb-4 text-white uppercase leading-none">
+                Planner: Solo Escritorio
+              </h2>
+              <p className="text-xs font-medium text-muted-foreground/60 leading-relaxed max-w-xs px-4">
+                La interfaz de planificación requiere de una pantalla grande para visualizar la línea de tiempo de forma óptima.
+                <br /><br />
+                Puedes usar la <span className="text-amber-500">Nota MRT</span> para copiar las asignaciones.
+              </p>
+              <Button
+                className="mt-10 bg-amber-600 hover:bg-amber-500 text-[10px] font-black uppercase tracking-[0.2em] px-10 h-12 rounded-2xl shadow-[0_0_20px_rgba(245,158,11,0.2)]"
+                onClick={() => setActiveTab("mrt")}
+              >
+                Acceder a Nota MRT
+              </Button>
+            </div>
+
+            <Card className="hidden lg:flex bg-[#121217] flex-1 border-border/50 shadow-2xl rounded-xl flex-col min-h-0 relative pt-2 pb-0 w-full max-w-full overflow-hidden max-h-[600px]">
+              <div className="flex border-b border-border/40 bg-muted/5 items-center justify-between px-4 h-15 shrink-0 relative z-50 ">
                 <div className="flex items-center gap-4">
                   <Button
                     variant="ghost"
@@ -2215,7 +2237,7 @@ export function PlanificadorCdsClient() {
                                           ? "opacity-50 cursor-grabbing scale-95 ring-2 ring-white/20"
                                           : "hover:brightness-125 cursor-grab active:cursor-grabbing",
                                         isConflict &&
-                                          "bg-red-500/30 border border-red-500/50 ring-1 ring-red-400/40 shadow-[0_0_15px_rgba(239,68,68,0.3)] z-30",
+                                        "bg-red-500/30 border border-red-500/50 ring-1 ring-red-400/40 shadow-[0_0_15px_rgba(239,68,68,0.3)] z-30",
                                       )}
                                       style={{
                                         left: `${startPct}%`,
@@ -2582,7 +2604,7 @@ export function PlanificadorCdsClient() {
                                             borderLeftColor: cd.color,
                                             width:
                                               cd.active_duration &&
-                                              cd.active_duration > 0
+                                                cd.active_duration > 0
                                                 ? `calc(max(60px, ${(cd.active_duration / TOTAL_FIGHT_SECONDS) * 100}%))`
                                                 : "60px",
                                           }}
@@ -2599,7 +2621,7 @@ export function PlanificadorCdsClient() {
                                         {rowAssignments.map((assign: any) => {
                                           const actDurSec =
                                             cd.active_duration &&
-                                            cd.active_duration > 0
+                                              cd.active_duration > 0
                                               ? cd.active_duration
                                               : 0;
                                           // Minimum width for clickability if active duration is 0
@@ -2638,14 +2660,14 @@ export function PlanificadorCdsClient() {
                                           const actPct =
                                             renderActDur > 0
                                               ? (renderActDur /
-                                                  TOTAL_FIGHT_SECONDS) *
-                                                100
+                                                TOTAL_FIGHT_SECONDS) *
+                                              100
                                               : 0;
                                           const cdPct =
                                             renderDur > 0
                                               ? (renderDur /
-                                                  TOTAL_FIGHT_SECONDS) *
-                                                100
+                                                TOTAL_FIGHT_SECONDS) *
+                                              100
                                               : 0;
 
                                           const isConflict =
@@ -2726,7 +2748,7 @@ export function PlanificadorCdsClient() {
                                                     ? "opacity-50 cursor-grabbing scale-95 ring-2 ring-white/20"
                                                     : "hover:brightness-125 cursor-grab active:cursor-grabbing",
                                                   isConflict &&
-                                                    "bg-red-500/30 border border-red-500/50 ring-1 ring-red-400/40 shadow-[0_0_15px_rgba(239,68,68,0.3)] z-30",
+                                                  "bg-red-500/30 border border-red-500/50 ring-1 ring-red-400/40 shadow-[0_0_15px_rgba(239,68,68,0.3)] z-30",
                                                 )}
                                                 style={{
                                                   left: `${startPct}%`,
@@ -2828,26 +2850,26 @@ export function PlanificadorCdsClient() {
             </div>
           )}
 
-          <TabsContent value="mrt" className="m-0">
-            <Card className="bg-[#121217] border-border/50 overflow-hidden shadow-2xl rounded-xl">
-              <div className="flex border-b border-border/40 bg-muted/5 items-center justify-between px-6 h-16">
-                <div className="flex items-center gap-4">
+          <TabsContent value="mrt" className="m-0 flex-1 min-h-0 lg:min-h-[600px] overflow-hidden">
+            <Card className="border-border/50 overflow-hidden shadow-2xl rounded-xl flex flex-col h-full">
+              <div className="flex border-b border-border/40 bg-muted/5 items-center justify-between px-3 sm:px-6 h-14 sm:h-16 shrink-0">
+                <div className="flex items-center gap-2 sm:gap-4 overflow-hidden">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground h-9 gap-2"
+                    className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground h-8 sm:h-9 gap-1 sm:gap-2 px-1 sm:px-3"
                     onClick={() => setActiveTab("selection")}
                   >
-                    <IconArrowLeft className="size-4" />
-                    Volver a Bosses
+                    <IconArrowLeft className="size-3.5 sm:size-4" />
+                    <span className="hidden xs:inline">Volver</span>
                   </Button>
-                  <div className="h-4 w-px bg-border/40 mx-2" />
-                  <div className="flex flex-col">
-                    <span className="text-[11px] font-black uppercase text-amber-500 tracking-wider truncate max-w-[250px]">
-                      {selectedBoss} - Nota MRT
+                  <div className="h-4 w-px bg-border/40 mx-1 sm:mx-2" />
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-[10px] sm:text-[11px] font-black uppercase text-amber-500 tracking-wider truncate max-w-[150px] sm:max-w-[250px]">
+                      {selectedBoss}
                     </span>
-                    <span className="text-[9px] font-bold text-muted-foreground/60 uppercase tracking-widest">
-                      Generador de Notas
+                    <span className="text-[8px] sm:text-[9px] font-bold text-muted-foreground/60 uppercase tracking-widest truncate">
+                      Nota MRT
                     </span>
                   </div>
                 </div>
@@ -2856,7 +2878,7 @@ export function PlanificadorCdsClient() {
                     size="sm"
                     onClick={() => handleCopyNote()}
                     className={cn(
-                      "h-9 px-4 text-[10px] font-black uppercase tracking-widest transition-all",
+                      "h-8 sm:h-9 px-2 sm:px-4 text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all",
                       copySuccess
                         ? "bg-emerald-600 hover:bg-emerald-500"
                         : "bg-amber-600 hover:bg-amber-500",
@@ -2864,40 +2886,42 @@ export function PlanificadorCdsClient() {
                   >
                     {copySuccess ? (
                       <>
-                        <IconCheck className="size-4 mr-2" />
-                        Copiado!
+                        <IconCheck className="size-3.5 sm:size-4 mr-1 sm:mr-2" />
+                        <span className="hidden sm:inline">Copiado!</span>
+                        <span className="sm:hidden">OK</span>
                       </>
                     ) : (
                       <>
-                        <IconCopy className="size-4 mr-2" />
-                        Copiar Nota
+                        <IconCopy className="size-3.5 sm:size-4 mr-1 sm:mr-2" />
+                        <span className="hidden sm:inline">Copiar Nota</span>
+                        <span className="sm:hidden">Copiar</span>
                       </>
                     )}
                   </Button>
                 </div>
               </div>
 
-              <div className="p-8 bg-[#0a0a0f]">
-                <div className="max-w-3xl mx-auto">
-                  <div className="mb-6 flex items-center justify-between">
+              <div className="p-4 sm:p-8 bg-[#0a0a0f] flex-1 overflow-y-auto no-scrollbar">
+                <div className="max-w-3xl mx-auto h-full flex flex-col">
+                  <div className="mb-4 sm:mb-6 flex items-center justify-between shrink-0">
                     <div className="flex items-center gap-3">
-                      <div className="size-10 rounded-lg bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
-                        <IconClipboardText className="size-5 text-amber-500" />
+                      <div className="size-8 sm:size-10 rounded-lg bg-amber-500/10 flex items-center justify-center border border-amber-500/20 shrink-0">
+                        <IconClipboardText className="size-4 sm:size-5 text-amber-500" />
                       </div>
                       <div>
-                        <h4 className="text-sm font-black uppercase tracking-widest text-white">
+                        <h4 className="text-xs sm:text-sm font-black uppercase tracking-widest text-white truncate">
                           Method Raid Tools Note
                         </h4>
-                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-0.5">
-                          Copia este texto y pégalo en el MRT ingame
+                        <p className="text-[8px] sm:text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-0.5">
+                          Copia y pega en el MRT ingame
                         </p>
                       </div>
                     </div>
                   </div>
-                  <div className="relative group">
+                  <div className="relative group flex-1 min-h-[300px]">
                     <textarea
                       readOnly
-                      className="w-full h-[400px] bg-black/60 border border-border/20 rounded-xl p-6 font-mono text-sm text-amber-500/90 focus:outline-none focus:border-amber-500/40 transition-all resize-none shadow-inner"
+                      className="w-full h-full bg-black/60 border border-border/20 min-h-[300px] rounded-xl p-4 sm:p-6 font-mono text-xs sm:text-sm text-amber-500/90 focus:outline-none focus:border-amber-500/40 transition-all resize-none shadow-inner"
                       value={generateMRTNote()}
                     />
                   </div>

@@ -641,7 +641,7 @@ function WishlistCard({
   activeSpecName,
 }: {
   selectedMember: EligibleMember | undefined;
-  difficulty: string;
+  difficulty: "normal" | "heroic" | "mythic";
   selections: BisSelection[];
   loadingSelections: boolean;
   translateSlot: (s: string) => string;
@@ -651,7 +651,7 @@ function WishlistCard({
   activeSpecName?: string;
 }) {
   return (
-    <Card className="h-fit sticky top-20">
+    <Card className="h-fit sticky top-20 w-full overflow-hidden">
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
           <IconListCheck className="size-5" />
@@ -741,19 +741,19 @@ function WishlistCard({
                     <p className="text-sm font-bold text-purple-400 truncate leading-none mb-1">
                       {sel.item_name}
                     </p>
-                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground truncate font-medium">
+                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium min-w-0">
                       <span className="shrink-0 text-foreground/40 font-bold tracking-tight">
                         {sel.ilvl ? `${sel.ilvl} · ` : ""}
                       </span>
                       <span
                         className={cn(
-                          "px-1 py-0.5 rounded-[3px] text-[8px] font-black",
+                          "shrink-0 px-1 py-0.5 rounded-[3px] text-[8px] font-black",
                           priorityColor,
                         )}
                       >
                         {priorityLabel}
                       </span>
-                      <span className="truncate">
+                      <span className="truncate min-w-0 block">
                         {sel.boss_name} · {translateSlot(sel.slot)}
                       </span>
                     </div>
@@ -1112,7 +1112,7 @@ export function BisClient({
   }
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-8 w-full max-w-full overflow-hidden">
       <Script
         id="wowhead-tooltips-setup"
         strategy="afterInteractive"
@@ -1141,18 +1141,18 @@ export function BisClient({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex bg-muted/30 p-1 rounded-xl border border-border/50 shadow-inner">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <div className="flex bg-muted/30 p-1 rounded-xl border border-border/50 shadow-inner w-full sm:w-auto">
             <button
               onClick={() => setActiveTab("personal")}
-              className={`flex items-center gap-2 px-4 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all rounded-lg ${activeTab === "personal" ? "bg-background text-primary shadow-sm ring-1 ring-border/20" : "text-muted-foreground hover:text-foreground"}`}
+              className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all rounded-lg ${activeTab === "personal" ? "bg-background text-primary shadow-sm ring-1 ring-border/20" : "text-muted-foreground hover:text-foreground"}`}
             >
               <IconUser className="size-3.5" />
               Mi Lista
             </button>
             <button
               onClick={() => setActiveTab("guild")}
-              className={`flex items-center gap-2 px-4 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all rounded-lg ${activeTab === "guild" ? "bg-background text-primary shadow-sm ring-1 ring-border/20" : "text-muted-foreground hover:text-foreground"}`}
+              className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all rounded-lg ${activeTab === "guild" ? "bg-background text-primary shadow-sm ring-1 ring-border/20" : "text-muted-foreground hover:text-foreground"}`}
             >
               <IconUsers className="size-3.5" />
               Visión General
@@ -1164,7 +1164,7 @@ export function BisClient({
               variant="outline"
               size="sm"
               asChild
-              className="h-9 px-4 rounded-xl bg-blue-500/5 text-blue-400 border-blue-500/20 hover:bg-blue-500/10 hover:text-blue-300 gap-2 font-black text-[10px] uppercase tracking-widest shadow-lg"
+              className="h-9 px-4 rounded-xl bg-blue-500/5 text-blue-400 border-blue-500/20 hover:bg-blue-500/10 hover:text-blue-300 gap-2 font-black text-[10px] uppercase tracking-widest shadow-lg w-full sm:w-auto"
             >
               <Link href="/dashboard/bis/admin">
                 <IconSettings className="size-3.5" />
@@ -1180,7 +1180,7 @@ export function BisClient({
         <div className="flex flex-wrap items-center gap-3">
           {/* Character Selector - Only for Personal tab */}
           {activeTab === "personal" && (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
               <Select
                 value={selectedMemberId}
                 onValueChange={(val) => {
@@ -1196,7 +1196,7 @@ export function BisClient({
               >
                 <SelectTrigger
                   className={cn(
-                    "w-[220px] h-10 text-xs bg-background border-border/40 rounded-xl font-bold",
+                    "w-full sm:w-[220px] h-10 text-xs bg-background border-border/40 rounded-xl font-bold",
                     !isInternalMember && "border-blue-500/50 bg-blue-500/5",
                   )}
                 >
@@ -1278,7 +1278,7 @@ export function BisClient({
               {!isInternalMember && selectedMember && (
                 <Badge
                   variant="outline"
-                  className="h-10 px-3 rounded-xl bg-blue-500/10 text-blue-400 border-blue-500/20 gap-2 border-dashed"
+                  className="h-10 px-3 rounded-xl bg-blue-500/10 text-blue-400 border-blue-500/20 gap-2 border-dashed w-full sm:w-auto"
                 >
                   <IconSettings className="size-3 animate-pulse" />
                   <span className="text-[10px] font-black uppercase tracking-widest">
@@ -1301,7 +1301,7 @@ export function BisClient({
 
           {/* Raid Selector */}
           <Select value={selectedRaidId} onValueChange={setSelectedRaidId}>
-            <SelectTrigger className="w-[220px] h-10 text-xs bg-background border-border/40 rounded-xl font-bold">
+            <SelectTrigger className="w-full sm:w-[220px] h-10 text-xs bg-background border-border/40 rounded-xl font-bold">
               <IconFilter className="size-4 mr-2 text-muted-foreground" />
               <SelectValue placeholder="Seleccionar Banda" />
             </SelectTrigger>
@@ -1321,21 +1321,21 @@ export function BisClient({
           </Select>
 
           {/* Difficulty */}
-          <div className="flex bg-muted/30 p-1 rounded-xl border border-border/50">
+          <div className="flex bg-muted/30 p-1 rounded-xl border border-border/50 w-full sm:w-auto">
             <button
-              className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all rounded-lg ${difficulty === "normal" ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20" : "text-muted-foreground hover:text-foreground"}`}
+              className={`flex-1 sm:flex-none px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all rounded-lg ${difficulty === "normal" ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20" : "text-muted-foreground hover:text-foreground"}`}
               onClick={() => setDifficulty("normal")}
             >
               Normal
             </button>
             <button
-              className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all rounded-lg ${difficulty === "heroic" ? "bg-green-600 text-white shadow-lg shadow-green-500/20" : "text-muted-foreground hover:text-foreground"}`}
+              className={`flex-1 sm:flex-none px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all rounded-lg ${difficulty === "heroic" ? "bg-green-600 text-white shadow-lg shadow-green-500/20" : "text-muted-foreground hover:text-foreground"}`}
               onClick={() => setDifficulty("heroic")}
             >
               Heroico
             </button>
             <button
-              className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all rounded-lg ${difficulty === "mythic" ? "bg-purple-600 text-white shadow-lg shadow-purple-500/20" : "text-muted-foreground hover:text-foreground"}`}
+              className={`flex-1 sm:flex-none px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all rounded-lg ${difficulty === "mythic" ? "bg-purple-600 text-white shadow-lg shadow-purple-500/20" : "text-muted-foreground hover:text-foreground"}`}
               onClick={() => setDifficulty("mythic")}
             >
               Mítico
@@ -1344,9 +1344,9 @@ export function BisClient({
 
           {/* Specialization Selector */}
           {selectedMember && (
-            <div className="flex items-center gap-1.5 bg-muted/30 p-1 rounded-xl border border-border/50 ml-auto lg:ml-0">
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-2 hidden sm:inline">
-                Especialización
+            <div className="flex items-center gap-1.5 bg-muted/30 p-1 rounded-xl border border-border/50 w-full sm:w-auto justify-between sm:justify-start">
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-2">
+                Spec
               </span>
               <div className="flex gap-1">
                 {CLASS_SPECS[selectedMember.class_id]?.map((spec) => (
@@ -1380,15 +1380,15 @@ export function BisClient({
 
         <div className="flex items-center gap-3">
           {/* View Mode */}
-          <div className="flex bg-muted/30 p-1 rounded-xl border border-border/50">
+          <div className="flex bg-muted/30 p-1 rounded-xl border border-border/50 flex-1 sm:flex-none">
             <button
-              className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 rounded-lg ${viewMode === "slot" ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" : "text-muted-foreground hover:text-foreground"}`}
+              className={`flex-1 sm:flex-none px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 rounded-lg ${viewMode === "slot" ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" : "text-muted-foreground hover:text-foreground"}`}
               onClick={() => setViewMode("slot")}
             >
               <IconLayoutGrid className="size-3.5" /> Ranura
             </button>
             <button
-              className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 rounded-lg ${viewMode === "boss" ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" : "text-muted-foreground hover:text-foreground"}`}
+              className={`flex-1 sm:flex-none px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 rounded-lg ${viewMode === "boss" ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" : "text-muted-foreground hover:text-foreground"}`}
               onClick={() => setViewMode("boss")}
             >
               <IconSword className="size-3.5" /> Jefe
@@ -1447,15 +1447,15 @@ export function BisClient({
               return (
                 <Card
                   key={boss.id}
-                  className="bg-card/30 border-border/40 overflow-hidden shadow-none backdrop-blur-sm h-fit rounded-2xl"
+                  className="bg-card/20 border-border/30 overflow-hidden shadow-none backdrop-blur-md h-fit rounded-[2rem] group"
                 >
-                  <div className="px-4 py-2 bg-muted/20 border-b border-border/40 flex items-center justify-between">
-                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500/80">
+                  <div className="px-5 py-3.5 bg-muted/10 border-b border-border/20 flex items-center justify-between">
+                    <h3 className="text-[11px] font-black uppercase tracking-[0.25em] text-amber-500/90 group-hover:text-amber-400 transition-colors">
                       {boss.name}
                     </h3>
                     <Badge
                       variant="outline"
-                      className="text-[10px] h-4 py-0 border-amber-500/10 text-amber-500/40"
+                      className="text-[10px] h-5 px-2 bg-amber-500/5 border-amber-500/20 text-amber-500/60 font-black rounded-lg"
                     >
                       {bossItems.length}
                     </Badge>
@@ -1479,7 +1479,7 @@ export function BisClient({
                         return (
                           <div
                             key={item.id}
-                            className="p-3 hover:bg-muted/5 transition-colors"
+                            className="p-4 hover:bg-muted/5 transition-colors"
                           >
                             <div className="flex items-start gap-2.5 mb-2.5">
                               {item.icon && (
@@ -1487,9 +1487,9 @@ export function BisClient({
                                   unoptimized
                                   src={getIconUrl(item.icon, item.name) || ""}
                                   alt=""
-                                  width={28}
-                                  height={28}
-                                  className="rounded border border-border/50 shadow-sm shrink-0"
+                                  width={32}
+                                  height={32}
+                                  className="rounded-lg border border-border/50 shadow-sm shrink-0"
                                 />
                               )}
                               <div className="min-w-0 flex-1">
@@ -1511,46 +1511,54 @@ export function BisClient({
                                 </span>
                               </div>
                             </div>
-                            <div className="flex flex-wrap gap-1.5 ml-1">
-                              {selectors.map((sel) => (
-                                <div
-                                  key={`${sel.member_id}-${item.id}`}
-                                  className="flex items-center gap-1.5 bg-background/40 border border-border/40 rounded px-1.5 py-0.5 shadow-sm group hover:border-primary/30 transition-all"
-                                >
-                                  <span
-                                    className="text-[10px] font-bold"
+                            <div className="flex flex-wrap gap-2 pt-1">
+                              {selectors.map((sel) => {
+                                const classId = (Array.isArray(sel.guild_members)
+                                  ? sel.guild_members[0]?.class_id
+                                  : sel.guild_members?.class_id) || 1;
+                                const charName = (Array.isArray(sel.guild_members)
+                                  ? sel.guild_members[0]?.character_name
+                                  : sel.guild_members?.character_name) || "Desconocido";
+                                const classColor = CLASS_COLORS[classId] || "#ffffff";
+
+                                return (
+                                  <div
+                                    key={`${sel.member_id}-${item.id}`}
+                                    className="flex items-center gap-1.5 bg-background/30 backdrop-blur-sm border border-white/5 rounded-lg px-2 py-1 shadow-sm transition-all hover:bg-background/50"
                                     style={{
-                                      color:
-                                        CLASS_COLORS[
-                                          (Array.isArray(sel.guild_members)
-                                            ? sel.guild_members[0]?.class_id
-                                            : sel.guild_members?.class_id) || 1
-                                        ] || "inherit",
+                                      boxShadow: `0 2px 8px -2px ${classColor}20`,
+                                      borderColor: `${classColor}30`,
                                     }}
                                   >
-                                    {(Array.isArray(sel.guild_members)
-                                      ? sel.guild_members[0]?.character_name
-                                      : sel.guild_members?.character_name) ||
-                                      "Desconocido"}
-                                  </span>
-                                  <span
-                                    className={cn(
-                                      "px-1 rounded-[2px] text-[8px] font-black leading-none py-0.5",
-                                      sel.priority === 1
-                                        ? "bg-green-500/20 text-green-500"
+                                    <div 
+                                      className="size-1.5 rounded-full" 
+                                      style={{ backgroundColor: classColor, boxShadow: `0 0 4px ${classColor}` }}
+                                    />
+                                    <span
+                                      className="text-[10px] font-bold tracking-tight"
+                                      style={{ color: classColor }}
+                                    >
+                                      {charName}
+                                    </span>
+                                    <span
+                                      className={cn(
+                                        "px-1 rounded-[3px] text-[7px] font-black leading-none py-0.5 ml-0.5",
+                                        sel.priority === 1
+                                          ? "bg-green-500/20 text-green-500"
+                                          : sel.priority === 2
+                                            ? "bg-orange-500/20 text-orange-500"
+                                            : "bg-red-500/20 text-red-500",
+                                      )}
+                                    >
+                                      {sel.priority === 1
+                                        ? "S"
                                         : sel.priority === 2
-                                          ? "bg-orange-500/20 text-orange-500"
-                                          : "bg-red-500/20 text-red-500",
-                                    )}
-                                  >
-                                    {sel.priority === 1
-                                      ? "S"
-                                      : sel.priority === 2
-                                        ? "B"
-                                        : "H"}
-                                  </span>
-                                </div>
-                              ))}
+                                          ? "B"
+                                          : "H"}
+                                    </span>
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
                         );
@@ -1589,8 +1597,8 @@ export function BisClient({
           ) : (
             <div className="grid gap-8 lg:grid-cols-[1fr_340px]">
               {/* Main Loot Grid */}
-              <div className="space-y-6">
-                <div className="lg:hidden mb-6">
+              <div className="space-y-6 min-w-0">
+                <div className="lg:hidden mb-6 w-full min-w-0">
                   <WishlistCard
                     selectedMember={selectedMember}
                     difficulty={difficulty}
