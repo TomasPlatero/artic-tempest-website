@@ -236,7 +236,7 @@ export function RosterTable({
         <TableHeader className="border-b border-border/40 bg-muted/20">
           <TableRow className="hover:bg-transparent border-0">
             <TableHead
-              className="w-[45%] text-muted-foreground font-bold uppercase tracking-widest text-[10px] py-3 pl-4 cursor-pointer hover:bg-muted transition-colors select-none group"
+              className="w-[25%] text-muted-foreground font-bold uppercase tracking-widest text-[10px] py-3 pl-4 cursor-pointer hover:bg-muted transition-colors select-none group"
               onClick={() => onSort?.("name")}
             >
               <div className="flex items-center gap-2">
@@ -244,7 +244,7 @@ export function RosterTable({
               </div>
             </TableHead>
             <TableHead
-              className="w-[15%] text-muted-foreground font-bold uppercase tracking-widest text-[10px] py-3 cursor-pointer hover:bg-muted transition-colors select-none group"
+              className="w-[25%] text-muted-foreground font-bold uppercase tracking-widest text-[10px] py-3 cursor-pointer hover:bg-muted transition-colors select-none group"
               onClick={() => onSort?.("class")}
             >
               <div className="flex items-center justify-center lg:justify-start gap-2">
@@ -252,7 +252,7 @@ export function RosterTable({
               </div>
             </TableHead>
             <TableHead
-              className="w-[20%] text-muted-foreground font-bold uppercase tracking-widest text-[10px] py-3 cursor-pointer hover:bg-muted transition-colors select-none group"
+              className="w-[30%] text-muted-foreground font-bold uppercase tracking-widest text-[10px] py-3 cursor-pointer hover:bg-muted transition-colors select-none group"
               onClick={() => onSort?.("rank")}
             >
               <div className="flex items-center justify-center lg:justify-start gap-2">
@@ -268,7 +268,7 @@ export function RosterTable({
           {members.length > 0 ? (
             members.map((m) => {
               const dbClassColor = classColors[m.class_id ?? 0];
-              const currentClass = classRoleMapping[m.class_id ?? 0] || "Desconocido";
+              const currentClass = classNames[m.class_id ?? 0] || "Desconocido";
               const rankName = rankNames?.[m.rank] || RANK_NAMES[m.rank];
 
               const classIconStyle = dbClassColor ? { color: dbClassColor } : {};
@@ -305,7 +305,7 @@ export function RosterTable({
                         <div className="size-5 lg:size-6 rounded bg-[#1e1e24] border border-border/30 shadow-inner shrink-0"></div>
                       )}
                       <span 
-                        className="hidden lg:inline text-[10px] font-black uppercase tracking-tighter bg-muted/40 px-2 py-0.5 rounded border border-border/10 truncate max-w-[80px]"
+                        className="hidden lg:inline text-[10px] font-black uppercase tracking-tighter bg-muted/40 px-2 py-0.5 rounded border border-border/10 whitespace-nowrap"
                         style={classIconStyle}
                       >
                         {currentClass}
@@ -429,7 +429,7 @@ export function RosterTable({
                                     </div>
                                     <div className="bg-muted/30 rounded-lg p-2 border border-border/10 flex flex-col items-center">
                                       <span className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest">Clase</span>
-                                      <span className="text-[10px] font-black uppercase truncate w-full text-center" style={classIconStyle}>
+                                      <span className="text-[10px] font-black uppercase w-full text-center" style={classIconStyle}>
                                         {currentClass}
                                       </span>
                                     </div>

@@ -103,6 +103,7 @@ const PERMISSION_GROUPS = [
       { id: "bis", name: "BiS / Wishlist" },
       { id: "bis-admin", name: "Gestion BiS" },
       { id: "recruitment", name: "Bandeja Reclutamiento" },
+      { id: "donations", name: "Economía y Donaciones" },
     ],
   },
 ] as const;
@@ -283,6 +284,9 @@ export function SettingsRolesClient({
     appId: string,
     action: "view" | "edit" | "manage",
   ) => {
+    // GM ALWAYS has all permissions in UI
+    if (level === "gm") return true;
+
     const p = permissions.find(
       (p) => p.role_level === level && p.app_id === appId,
     );

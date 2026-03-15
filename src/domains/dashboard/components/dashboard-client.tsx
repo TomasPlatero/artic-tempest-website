@@ -10,7 +10,8 @@ import {
     IconExternalLink,
     IconClock,
     IconSettings,
-    IconUser
+    IconUser,
+    IconHeart
 } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/shared/ui/button"
@@ -21,6 +22,7 @@ import { cn } from "@/shared/tailwind/tailwind-utils"
 import { Loader2 } from "lucide-react"
 
 import React from "react"
+import { DonationSection } from "./donation-section"
 
 const RAID_BG_MAP: Record<string, string> = {
     "Palacio Nerub'ar": "https://wow.zamimg.com/uploads/screenshots/normal/1175440.jpg",
@@ -525,6 +527,16 @@ export function DashboardClient({ data, blocks, roleLevel }: { data: any, blocks
                         dangerouslySetInnerHTML={{ __html: block.content.html || '' }}
                     />
                 )
+            case 'donations':
+                return <DonationSection 
+                    key={block.id} 
+                    roleLevel={roleLevel} 
+                    recentDonations={data.recentDonations} 
+                    donationGoal={data.donationGoal}
+                    donationGoals={data.donationGoals}
+                    myCharacters={data.myCharacters}
+                    guildSettings={data.guildSettings}
+                />
             default:
                 return null;
         }

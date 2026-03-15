@@ -22,6 +22,7 @@ export type AppId =
   | 'bis-admin'
   | 'weekly-vault'
   | 'weekly-vault-admin'
+  | 'donations'
   | 'desktop-app-cta';
 export type RoleLevel = 'gm' | 'officer' | 'raider' | 'member' | 'invitado';
 
@@ -71,6 +72,13 @@ export async function getAppPermission(
     return { canView: false, canEdit: false, canManage: false };
   }
 
+  const normalizedRole = roleLevel.trim().toLowerCase();
+
+  // Guild Master always has all permissions (Absolute Bypass)
+  if (normalizedRole === 'gm') {
+    return { canView: true, canEdit: true, canManage: true };
+  }
+
   try {
     const { data } = await supabaseAdmin
       .from('app_permissions')
@@ -114,6 +122,12 @@ export async function ensureAppPermission(
   const session = await ensureAuthenticatedSession();
 
   const roleLevel = session.user.roleLevel;
+  
+  // FAIL-SAFE: Guild Master always has all permissions
+  if (roleLevel && roleLevel.trim().toLowerCase() === 'gm') {
+    return session;
+  }
+
   const permissions = await getAppPermission(roleLevel, appId);
 
   let hasPermission = false;
@@ -122,6 +136,8 @@ export async function ensureAppPermission(
   else if (action === 'manage') hasPermission = permissions.canManage;
 
   if (!hasPermission) {
+    console.error(`[AUTH] Permission denied for role: "${roleLevel}", appId: "${appId}", action: "${action}"`);
+    console.error(`[AUTH] Permissions object:`, permissions);
     throw new Error(
       `Unauthorized: Role ${roleLevel} cannot ${action} ${appId}`,
     );

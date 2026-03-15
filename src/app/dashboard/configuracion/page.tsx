@@ -11,6 +11,7 @@ import {
   IconBrandDiscord,
   IconBrandTwitch,
   IconDatabase,
+  IconHeart,
 } from "@tabler/icons-react";
 import { AdminPageHeader } from "@/shared/components/admin-page-header";
 import React from "react";
@@ -62,6 +63,7 @@ export default async function SettingsHubPage() {
     roleLevel,
     "settings-streamers",
   );
+  const donationsPermission = await getAppPermission(roleLevel, "donations");
 
   const internalSettings = [
     {
@@ -167,6 +169,16 @@ export default async function SettingsHubPage() {
       color: "text-blue-500",
       bg: "bg-blue-500/10",
       visible: apiPermission.canView,
+    },
+    {
+      title: "Economía y Donaciones",
+      description:
+        "Gestiona las metas de recaudación, visualiza el historial de aportaciones y configura objetivos comunes.",
+      icon: IconHeart,
+      href: "/dashboard/configuracion/donaciones",
+      color: "text-rose-500",
+      bg: "bg-rose-500/10",
+      visible: donationsPermission.canManage,
     },
   ];
 

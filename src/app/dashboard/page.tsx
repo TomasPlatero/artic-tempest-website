@@ -3,6 +3,8 @@ import type React from "react";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options";
+import fs from 'fs';
+import path from 'path';
 
 import { DashboardClient } from "@/domains/dashboard/components/dashboard-client";
 import { getAppPermission } from "@/shared/auth/permissions";
@@ -64,15 +66,20 @@ async function getDashboardData(userId: string | undefined, roleLevel: string) {
   let myBisSelections: any[] = [];
   let recruitmentApplications: any[] = [];
   let recentLogs: any[] = [];
+  let recentDonations: any[] = [];
+  let donationGoal: any = null;
+  let donationGoals: any[] = [];
+  let sessionUser: any = null;
 
   if (userId) {
-    const { data: profile } = await supabaseAdmin
-      .from("profiles")
-      .select("user_id, battlenet_battletag")
-      .eq("user_id", userId)
-      .single();
-
-    isBnetLinked = !!profile?.battlenet_battletag;
+      const { data: profile } = await supabaseAdmin
+        .from("profiles")
+        .select("user_id, battlenet_battletag")
+        .eq("user_id", userId)
+        .single();
+  
+      isBnetLinked = !!profile?.battlenet_battletag;
+      sessionUser = profile;
 
     if (isBnetLinked) {
       const { data: chars } = await supabaseAdmin
@@ -190,6 +197,38 @@ async function getDashboardData(userId: string | undefined, roleLevel: string) {
       console.error("Dashboard: Error fetching WCL logs:", e);
     }
   }
+  
+  // Fetch Recent Donations
+  const { data: donations } = await supabaseAdmin
+    .from("guild_donations")
+    .select("character_name, amount, description, created_at")
+    .order("created_at", { ascending: false })
+    .limit(5);
+  recentDonations = donations || [];
+
+  // Fetch Active Donation Goals and their current amounts
+  const { data: activeGoals } = await supabaseAdmin
+    .from("guild_goals")
+    .select("*")
+    .eq("is_active", true)
+    .order("created_at", { ascending: false });
+  
+  const goalsWithAmounts = [];
+  if (activeGoals && activeGoals.length > 0) {
+    for (const goal of activeGoals) {
+      const { data: goalDonations } = await supabaseAdmin
+        .from("guild_donations")
+        .select("amount")
+        .eq("description", goal.name) // Linking by goal name as it's used in description
+        .gte("created_at", goal.created_at);
+      
+      const currentAmount = goalDonations?.reduce((acc, curr) => acc + Number(curr.amount), 0) || 0;
+      goalsWithAmounts.push({ ...goal, current_amount: currentAmount });
+    }
+  }
+  
+  donationGoals = goalsWithAmounts;
+  donationGoal = donationGoals[0] || null;
 
   // Fetch true last sync from members table
   const { data: lastSyncedRecord } = await supabaseAdmin
@@ -198,6 +237,13 @@ async function getDashboardData(userId: string | undefined, roleLevel: string) {
     .order("synced_at", { ascending: false })
     .limit(1)
     .single();
+
+  // Fetch guild settings (Bizum, PayPal)
+  const { data: guildSettings } = await supabaseAdmin
+    .from("guilds_managed")
+    .select("bizum_number, paypal_link")
+    .limit(1)
+    .maybeSingle();
 
   return {
     guildName: guild?.name ?? "Artic Tempest",
@@ -213,7 +259,12 @@ async function getDashboardData(userId: string | undefined, roleLevel: string) {
     myBisSelections,
     recruitmentApplications,
     recentLogs,
+    recentDonations,
+    donationGoal,
+    donationGoals,
+    sessionUser,
     roleLevel,
+    guildSettings: guildSettings || { bizum_number: "", paypal_link: "" },
     blocks: [], // Placeholder, will fetch below
   };
 }
@@ -248,6 +299,8 @@ async function getDashboardBlocks(roleLevel: string) {
 
 import { DashboardTopNav } from "@/shared/layout/dashboard-top-nav";
 
+
+
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -261,7 +314,8 @@ export default async function DashboardPage() {
     redirect("/mis-personajes");
   }
 
-  const dashboardData = await getDashboardData(session.user?.id, roleLevel)
+  const dashboardData = await getDashboardData(session.user?.id, roleLevel);
+
   const blocks = await getDashboardBlocks(roleLevel)
 
   return (
