@@ -26,26 +26,60 @@ export type RosterGroups = {
     alters_total: RosterMember[];
 };
 
+export type SortColumn = "name" | "realm" | "class" | "rank";
+
 export function useRoster(
     members: RosterMember[],
     classRoleMapping: Record<number, string> = {}
 ) {
     const [search, setSearch] = useState("");
+    const [sortColumn, setSortColumn] = useState<SortColumn>("rank");
+    const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+
+    const normalizeString = (str: string) => {
+        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    };
+
+    const handleSort = (column: SortColumn) => {
+        if (sortColumn === column) {
+            setSortDirection(prev => prev === "asc" ? "desc" : "asc");
+        } else {
+            setSortColumn(column);
+            setSortDirection("asc");
+        }
+    };
 
     const filteredMembers = useMemo(() => {
+        const normalizedSearch = normalizeString(search);
+        
         const baseFiltered = members.filter((m) => {
-            if (search && !m.character_name.toLowerCase().includes(search.toLowerCase())) {
-                return false;
-            }
-            return true;
+            if (!search) return true;
+            return normalizeString(m.character_name).includes(normalizedSearch);
         });
 
-        // Sort: Rank First (asc), then Name (asc)
+        // Dynamic Sort
         return [...baseFiltered].sort((a, b) => {
-            if (a.rank !== b.rank) return a.rank - b.rank;
-            return a.character_name.localeCompare(b.character_name);
+            let result = 0;
+            if (sortColumn === "name") {
+                result = a.character_name.localeCompare(b.character_name);
+            } else if (sortColumn === "realm") {
+                result = (a.realm_name || a.realm_slug).localeCompare(b.realm_name || b.realm_slug);
+            } else if (sortColumn === "class") {
+                const classA = classRoleMapping[a.class_id ?? 0] || "";
+                const classB = classRoleMapping[b.class_id ?? 0] || "";
+                result = classA.localeCompare(classB);
+            } else if (sortColumn === "rank") {
+                result = a.rank - b.rank;
+            }
+
+            // Secondary sort by name if primary is same
+            if (result === 0 && sortColumn !== "name") {
+                result = a.character_name.localeCompare(b.character_name);
+            }
+
+            return sortDirection === "asc" ? result : -result;
         });
-    }, [members, search]);
+    }, [members, search, sortColumn, sortDirection, classRoleMapping]);
 
     const grouped = useMemo(() => {
         const groups: RosterGroups = {
@@ -61,12 +95,7 @@ export function useRoster(
         };
 
         filteredMembers.forEach((m) => {
-            let role = m.role?.toLowerCase();
-
-            // Fallback to class mapping if explicit role isn't set
-            if (!role || !["tank", "heal", "melee", "ranged"].includes(role)) {
-                role = classRoleMapping[m.class_id ?? 0] ?? "ranged";
-            }
+            let role = (m.role || classRoleMapping[m.class_id ?? 0] || "ranged").toLowerCase();
 
             // Ranks 7+ are considered 'Alters' in this guild's logic
             if (m.rank >= 7) {
@@ -92,6 +121,9 @@ export function useRoster(
     return {
         search,
         setSearch,
+        sortColumn,
+        sortDirection,
+        handleSort,
         filteredMembers,
         grouped,
     };

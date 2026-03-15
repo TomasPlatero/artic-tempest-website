@@ -132,9 +132,14 @@ export type GuildMemberRaw = {
     name: string;
     id: number;
     realm: { slug: string; name: string };
-    level: number;
     playable_class: { id: number };
     playable_race: { id: number };
+    level: number;
+    guild?: {
+      name: string;
+      id: number;
+      realm: { slug: string; name: string };
+    };
   };
   rank: number;
   role?: string; // dynamically fetched
@@ -211,6 +216,51 @@ export async function fetchGuildSummary(
     if (!res.ok) return null;
     return await res.json();
   } catch {
+    return null;
+  }
+}
+
+/** Fetch base character profile from Blizzard API */
+export async function fetchCharacterProfile(
+  realmSlug: string,
+  characterName: string,
+  region: string = 'eu',
+  locale: string = 'en_US'
+): Promise<GuildMemberRaw['character'] | null> {
+  const token = await getAccessToken();
+  const nameSlug = characterName.toLowerCase().trim();
+  const url = `https://${region}.api.blizzard.com/profile/wow/character/${realmSlug}/${nameSlug}?namespace=profile-${region}&locale=${locale}`;
+
+  try {
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
+    });
+
+    if (!res.ok) return null;
+    const data = await res.json();
+    
+    return {
+      id: data.id,
+      name: data.name,
+      realm: {
+        slug: data.realm.slug,
+        name: data.realm.name
+      },
+      playable_class: { id: data.character_class.id },
+      playable_race: { id: data.race.id },
+      level: data.level,
+      guild: data.guild ? {
+        name: data.guild.name,
+        id: data.guild.id,
+        realm: {
+          slug: data.guild.realm.slug,
+          name: data.guild.realm.name
+        }
+      } : undefined
+    };
+  } catch (error) {
+    console.error(`Error fetching character profile for ${characterName}-${realmSlug}:`, error);
     return null;
   }
 }

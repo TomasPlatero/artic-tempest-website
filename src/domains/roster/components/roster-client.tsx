@@ -15,6 +15,7 @@ export function RosterClient({
   classNames = {},
   classColors = {},
   classRoleMapping = {},
+  raceNames = {},
 }: {
   members: any[];
   canEdit?: boolean;
@@ -24,8 +25,16 @@ export function RosterClient({
   classNames?: Record<number, string>;
   classColors?: Record<number, string>;
   classRoleMapping?: Record<number, string>;
+  raceNames?: Record<number, string>;
 }) {
-  const { search, setSearch, grouped } = useRoster(members, classRoleMapping);
+  const { 
+    search, 
+    setSearch, 
+    grouped, 
+    sortColumn, 
+    sortDirection, 
+    handleSort 
+  } = useRoster(members, classRoleMapping);
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -43,7 +52,7 @@ export function RosterClient({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-4 px-4 lg:px-6">
+      <div className="flex flex-col gap-4">
         <div className="relative w-full md:max-w-md">
           <IconSearch className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -55,7 +64,7 @@ export function RosterClient({
         </div>
       </div>
 
-      <div className="px-4 lg:px-6 grid gap-6 grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 xl:grid-cols-3">
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
         {/* Tanques */}
         <div className="flex flex-col gap-2">
           <div className="py-2 flex items-center gap-2 text-base font-semibold text-sky-400 border-b border-border/40">
@@ -72,8 +81,10 @@ export function RosterClient({
               classNames={classNames}
               classColors={classColors}
               classRoleMapping={classRoleMapping}
-              sortColumn="rank"
-              sortDirection="asc"
+              raceNames={raceNames}
+              sortColumn={sortColumn}
+              sortDirection={sortDirection}
+              onSort={handleSort}
             />
           </div>
         </div>
@@ -94,8 +105,10 @@ export function RosterClient({
               classNames={classNames}
               classColors={classColors}
               classRoleMapping={classRoleMapping}
-              sortColumn="rank"
-              sortDirection="asc"
+              raceNames={raceNames}
+              sortColumn={sortColumn}
+              sortDirection={sortDirection}
+              onSort={handleSort}
             />
           </div>
         </div>
@@ -116,8 +129,10 @@ export function RosterClient({
               classNames={classNames}
               classColors={classColors}
               classRoleMapping={classRoleMapping}
-              sortColumn="rank"
-              sortDirection="asc"
+              raceNames={raceNames}
+              sortColumn={sortColumn}
+              sortDirection={sortDirection}
+              onSort={handleSort}
             />
           </div>
         </div>
@@ -138,22 +153,24 @@ export function RosterClient({
               classNames={classNames}
               classColors={classColors}
               classRoleMapping={classRoleMapping}
-              sortColumn="rank"
-              sortDirection="asc"
+              raceNames={raceNames}
+              sortColumn={sortColumn}
+              sortDirection={sortDirection}
+              onSort={handleSort}
             />
           </div>
         </div>
       </div>
 
       {grouped.alters_total.length > 0 && (
-        <div className="px-4 lg:px-6 pt-10 border-t border-border/20">
+        <div className="pt-10 border-t border-border/20">
           <div className="flex flex-col gap-4">
             <div className="py-2 flex items-center gap-2 text-base font-black italic uppercase tracking-tighter text-slate-400 border-b border-border/40">
               <IconUsers className="size-6" />
               {rankNames?.[7] || "Alters"} ({grouped.alters_total.length})
             </div>
 
-            <div className="grid gap-6 grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 xl:grid-cols-3">
+            <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
               {/* Tanques Alter */}
               <div className="flex flex-col gap-2 opacity-60 hover:opacity-100 transition-opacity">
                 <div className="py-2 flex items-center gap-2 text-xs font-bold text-sky-400/70 border-b border-border/20">
@@ -169,8 +186,9 @@ export function RosterClient({
                   classNames={classNames}
                   classColors={classColors}
                   classRoleMapping={classRoleMapping}
-                  sortColumn="rank"
-                  sortDirection="asc"
+                  sortColumn={sortColumn}
+                  sortDirection={sortDirection}
+                  onSort={handleSort}
                 />
               </div>
 
@@ -189,8 +207,9 @@ export function RosterClient({
                   classNames={classNames}
                   classColors={classColors}
                   classRoleMapping={classRoleMapping}
-                  sortColumn="rank"
-                  sortDirection="asc"
+                  sortColumn={sortColumn}
+                  sortDirection={sortDirection}
+                  onSort={handleSort}
                 />
               </div>
 
@@ -209,8 +228,9 @@ export function RosterClient({
                   classNames={classNames}
                   classColors={classColors}
                   classRoleMapping={classRoleMapping}
-                  sortColumn="rank"
-                  sortDirection="asc"
+                  sortColumn={sortColumn}
+                  sortDirection={sortDirection}
+                  onSort={handleSort}
                 />
               </div>
 
@@ -229,8 +249,9 @@ export function RosterClient({
                   classNames={classNames}
                   classColors={classColors}
                   classRoleMapping={classRoleMapping}
-                  sortColumn="rank"
-                  sortDirection="asc"
+                  sortColumn={sortColumn}
+                  sortDirection={sortDirection}
+                  onSort={handleSort}
                 />
               </div>
             </div>

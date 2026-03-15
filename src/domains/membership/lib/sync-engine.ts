@@ -32,19 +32,28 @@ async function refreshDiscordToken(refreshToken: string) {
 }
 
 /**
- * Verifica si el usuario está en el servidor de Discord
+ * Verifica las membresías y roles de Discord
  */
-async function checkDiscordMembership(
+async function getDiscordMemberData(
   accessToken: string,
   guildId: string,
-): Promise<boolean> {
-  const res = await fetch(
-    `https://discord.com/api/users/@me/guilds/${guildId}/member`,
-    {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    },
-  );
-  return res.ok; // 200 means member, 404/others mean not member
+): Promise<{ isMember: boolean; roles: string[] }> {
+  try {
+    const res = await fetch(
+      `https://discord.com/api/users/@me/guilds/${guildId}/member`,
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      },
+    );
+
+    if (!res.ok) return { isMember: false, roles: [] };
+
+    const data = await res.json();
+    return { isMember: true, roles: data.roles || [] };
+  } catch (e) {
+    console.error("Error fetching Discord member data:", e);
+    return { isMember: false, roles: [] };
+  }
 }
 
 /**
@@ -90,21 +99,25 @@ export async function verifyUser(userId: string): Promise<SyncResult> {
 
   const creds = await getGuildCredentials();
   let discordValid = false;
+  let discordRoles: string[] = [];
   let bnetValid = false;
   let newRefreshToken = profile.discord_refresh_token;
 
   // --- CHECK DISCORD ---
   if (profile.discord_refresh_token) {
     try {
-      // Intentamos refrescar para asegurar que tenemos acceso
       const refreshed = await refreshDiscordToken(
         profile.discord_refresh_token,
       );
       newRefreshToken = refreshed.refresh_token;
-      discordValid = await checkDiscordMembership(
+
+      const discordData = await getDiscordMemberData(
         refreshed.access_token,
         creds.discord_guild_id,
       );
+
+      discordValid = discordData.isMember;
+      discordRoles = discordData.roles;
     } catch (e) {
       console.error(`Verification Discord fail for ${userId}:`, e);
     }
@@ -118,19 +131,43 @@ export async function verifyUser(userId: string): Promise<SyncResult> {
   }
 
   const oldRole = profile.role_level as RoleLevel;
-  let newRole = oldRole;
+  let newRole: RoleLevel = "invitado";
 
-  // Lógica de ascenso/degradación
   const isActuallyInGuild = discordValid || bnetValid;
 
   if (isActuallyInGuild) {
-    // Promocionar a Miembro si era Invitado
-    if (oldRole === 'invitado') newRole = 'member';
-  } else {
-    // Degradación automática si no cumple requisitos
-    // Solo degradamos si era Miembro (no tocamos Raider/Officer/GM manualmente)
-    if (oldRole === 'member') {
-      newRole = 'invitado';
+    // Definimos prioridad de roles de la App
+    const rolePriority: Record<RoleLevel, number> = {
+      gm: 5,
+      officer: 4,
+      raider: 3,
+      member: 2,
+      invitado: 1,
+    };
+
+    // 1. Empezamos con el rol básico si están en Discord o tienen Bnet vinculado
+    newRole = "member";
+
+    // 2. Si hay roles de Discord, buscamos si alguno mapea a un nivel superior
+    if (discordRoles.length > 0) {
+      const { data: mappings } = await supabaseAdmin
+        .from("discord_roles")
+        .select("role_id, level");
+
+      if (mappings && mappings.length > 0) {
+        let highestMappedLevel: RoleLevel = "member";
+
+        for (const roleId of discordRoles) {
+          const mapping = mappings.find((m) => m.role_id === roleId);
+          if (mapping) {
+            const mappedLevel = mapping.level as RoleLevel;
+            if (rolePriority[mappedLevel] > rolePriority[highestMappedLevel]) {
+              highestMappedLevel = mappedLevel;
+            }
+          }
+        }
+        newRole = highestMappedLevel;
+      }
     }
   }
 
@@ -141,8 +178,9 @@ export async function verifyUser(userId: string): Promise<SyncResult> {
       role_level: newRole,
       discord_refresh_token: newRefreshToken,
       last_verification_check: new Date().toISOString(),
-      verification_status: { discord: discordValid, bnet: bnetValid },
-      tokens_invalidated: !newRefreshToken, // Marcar si el refresh falló
+      vertex_sync_at: new Date().toISOString(), // Optional tracking field if exists
+      verification_status: { discord: discordValid, bnet: bnetValid, discordRoles },
+      tokens_invalidated: !newRefreshToken,
     })
     .eq('user_id', userId);
 

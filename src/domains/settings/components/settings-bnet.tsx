@@ -8,6 +8,8 @@ import {
     IconX,
     IconTrash,
     IconArrowLeft,
+    IconUserPlus,
+    IconSearch,
 } from "@tabler/icons-react";
 import { Button } from "@/shared/ui/button";
 import {
@@ -19,6 +21,17 @@ import {
 } from "@/shared/ui/card";
 import { Badge } from "@/shared/ui/badge";
 import { Separator } from "@/shared/ui/separator";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/shared/ui/dialog";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
 import Link from "next/link";
 
 type SettingsBnetClientProps = {
@@ -36,6 +49,12 @@ export function SettingsBnetClient({
 }: SettingsBnetClientProps) {
     const [syncing, setSyncing] = useState(false);
     const [wiping, setWiping] = useState(false);
+    
+    // Manual character add state
+    const [manualName, setManualName] = useState("");
+    const [manualRealm, setManualRealm] = useState("");
+    const [addingManual, setAddingManual] = useState(false);
+    const [openDialog, setOpenDialog] = useState(false);
 
     const handleSync = async () => {
         setSyncing(true);
@@ -104,25 +123,130 @@ export function SettingsBnetClient({
         }
     };
 
+    const handleAddManual = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!manualName || !manualRealm) {
+            toast.error("Faltan datos", { description: "Reino y nombre son obligatorios." });
+            return;
+        }
+
+        setAddingManual(true);
+        try {
+            const res = await fetch("/api/guild/roster/manual", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: manualName,
+                    realm: manualRealm,
+                }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                toast.error("Error", { 
+                    description: data.details ? `${data.error}: ${data.details}` : (data.error || "No se pudo añadir el personaje.") 
+                });
+                return;
+            }
+
+            toast.success("Personaje añadido", {
+                description: `${data.character.character_name} se ha añadido correctamente al roster.`,
+            });
+            
+            setOpenDialog(false);
+            setManualName("");
+            setManualRealm("");
+            
+            // Refresh counts/data
+            window.location.reload();
+        } catch {
+            toast.error("Error de conexión");
+        } finally {
+            setAddingManual(false);
+        }
+    };
+
     return (
-        <div className="flex flex-col gap-6 p-4 md:p-6">
-            <div className="flex items-center gap-6">
-                <Link href="/dashboard/configuracion">
-                    <Button variant="outline" size="icon" className="size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 transition-all shadow-xl">
-                        <IconArrowLeft className="size-6" />
-                    </Button>
-                </Link>
-                <div>
-                    <h1 className="text-3xl font-black font-heading italic tracking-tight uppercase flex items-center gap-3">
-                        SINCRONIZACIÓN BATTLE.NET
-                    </h1>
-                    <p className="text-sm font-medium text-white/40 mt-2 uppercase tracking-widest leading-tight">
-                        Gestiona la importación de miembros y datos desde la API oficial de Blizzard.
-                    </p>
+        <div className="flex flex-col gap-6 p-4 md:p-6 italic">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 not-italic">
+                <div className="flex items-center gap-6">
+                    <Link href="/dashboard/configuracion">
+                        <Button variant="outline" size="icon" className="size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 transition-all shadow-xl">
+                            <IconArrowLeft className="size-6 text-white/50" />
+                        </Button>
+                    </Link>
+                    <div>
+                        <h1 className="text-3xl font-black font-heading italic tracking-tight uppercase flex items-center gap-3">
+                            SINCRONIZACIÓN BATTLE.NET
+                        </h1>
+                        <p className="text-sm font-medium text-white/40 mt-2 uppercase tracking-widest leading-tight">
+                            Gestiona la importación de miembros y datos desde la API oficial de Blizzard.
+                        </p>
+                    </div>
                 </div>
+
+                <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" className="h-12 px-6 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 transition-all shadow-xl font-bold uppercase tracking-widest text-xs gap-2 shrink-0">
+                            <IconUserPlus className="size-5" />
+                            Añadir Personaje a Mano
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="bg-zinc-950 border-white/5 shadow-2xl rounded-2xl sm:rounded-3xl">
+                        <DialogHeader>
+                            <DialogTitle className="text-2xl font-black uppercase tracking-tight italic">AÑADIR PERSONAJE</DialogTitle>
+                            <DialogDescription className="text-white/40 font-medium">
+                                Introduce el nombre y el reino del personaje para buscarlo en la API de Blizzard y añadirlo al roster.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handleAddManual} className="space-y-6 pt-4">
+                            <div className="grid gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="char-name" className="text-xs font-bold uppercase tracking-widest text-white/40 ml-1">Nombre del Personaje</Label>
+                                    <Input
+                                        id="char-name"
+                                        placeholder="Ej: Thrall"
+                                        value={manualName}
+                                        onChange={(e) => setManualName(e.target.value)}
+                                        className="bg-white/5 border-white/5 h-12 rounded-xl text-lg font-bold placeholder:text-white/10 placeholder:font-normal"
+                                        autoFocus
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="char-realm" className="text-xs font-bold uppercase tracking-widest text-white/40 ml-1">Reino (Slug)</Label>
+                                    <Input
+                                        id="char-realm"
+                                        placeholder="Ej: dun-modr"
+                                        value={manualRealm}
+                                        onChange={(e) => setManualRealm(e.target.value)}
+                                        className="bg-white/5 border-white/5 h-12 rounded-xl font-mono text-sm placeholder:text-white/10 placeholder:font-sans"
+                                    />
+                                    <p className="text-[10px] text-white/20 italic ml-1">Escribe el nombre del reino separado por guiones (ej: sanguino, dun-modr, silvermoon).</p>
+                                </div>
+                            </div>
+                            <DialogFooter className="pt-4">
+                                <Button
+                                    type="submit"
+                                    disabled={addingManual || !manualName || !manualRealm}
+                                    className="w-full h-14 rounded-xl font-black uppercase tracking-widest bg-blue-600 hover:bg-blue-500 shadow-xl shadow-blue-600/20 group"
+                                >
+                                    {addingManual ? (
+                                        <IconRefresh className="size-5 animate-spin" />
+                                    ) : (
+                                        <>
+                                            <IconSearch className="size-5 mr-2 group-hover:scale-110 transition-transform" />
+                                            Buscar y Añadir
+                                        </>
+                                    )}
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
             </div>
 
-            <Card>
+            <Card className="not-italic">
                 <CardHeader>
                     <CardTitle>Estado y Sincronización</CardTitle>
                     <CardDescription>
@@ -183,7 +307,7 @@ export function SettingsBnetClient({
                                 No se han detectado las credenciales de la API de Battle.net.
                                 Necesitas configurarlas para activar la sincronización automática.
                             </p>
-                            <Link href="/dashboard/configuracion/api">
+                            <Link href="/dashboard/configuracion/general">
                                 <Button variant="outline" size="sm" className="bg-orange-500/10 border-orange-500/30 hover:bg-orange-500/20 text-orange-600">
                                     Configurar Credenciales API
                                 </Button>
@@ -203,7 +327,7 @@ export function SettingsBnetClient({
                 </CardContent>
             </Card>
 
-            <Card className="border-red-500/20 bg-red-500/5">
+            <Card className="border-red-500/20 bg-red-500/5 not-italic">
                 <CardHeader>
                     <CardTitle className="text-red-500">Zona de Peligro</CardTitle>
                     <CardDescription className="text-red-500/70">

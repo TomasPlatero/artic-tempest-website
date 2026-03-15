@@ -61,18 +61,38 @@ export async function POST() {
         .eq('name', guild.name);
     }
 
+    // 5. Fetch existing members to preserve manually assigned roles and notes
+    const { data: existingMembers } = await supabaseAdmin.from('guild_members')
+      .select('character_name, realm_slug, role, note');
+
+    const existingMap = new Map<string, { role: string | null; note: string | null }>();
+    existingMembers?.forEach((m) => {
+      existingMap.set(`${m.character_name}:${m.realm_slug}`, {
+        role: m.role || null,
+        note: m.note || null,
+      });
+    });
+
     // 6. Upsert to DB
-    const rows = members.map((m) => ({
-      character_name: m.character.name,
-      realm_slug: m.character.realm.slug,
-      realm_name: m.character.realm.name,
-      class_id: m.character.playable_class.id,
-      race_id: m.character.playable_race.id,
-      level: m.character.level,
-      rank: m.rank,
-      role: m.role || null,
-      synced_at: new Date().toISOString(),
-    }));
+    const rows = members.map((m) => {
+      const key = `${m.character.name}:${m.character.realm.slug}`;
+      const existing = existingMap.get(key);
+
+      return {
+        character_name: m.character.name,
+        realm_slug: m.character.realm.slug,
+        realm_name: m.character.realm.name,
+        class_id: m.character.playable_class.id,
+        race_id: m.character.playable_race.id,
+        level: m.character.level,
+        rank: m.rank,
+        // If character already exists, keep their role and note. 
+        // Otherwise use the role from Blizzard and null note.
+        role: existing ? existing.role : (m.role || null),
+        note: existing ? existing.note : null,
+        synced_at: new Date().toISOString(),
+      };
+    });
 
     const { error: upsertError } = await supabaseAdmin.from('guild_members')
       .upsert(rows, { onConflict: 'character_name,realm_slug' });
@@ -101,34 +121,9 @@ export async function POST() {
       }
     }
 
-    // 7. Auto-update profile permissions based on WoW ranks
-    // Fetch all members with a linked profile
-    const { data: linkedMembers } = await supabaseAdmin.from('guild_members')
-      .select('profile_id, rank, profiles(role_level)')
-      .not('profile_id', 'is', null);
-
-    const { data: ranksConfig } = await supabaseAdmin.from('guild_ranks')
-      .select('rank, app_role');
-
-    if (linkedMembers && ranksConfig) {
-      for (const member of linkedMembers) {
-        if (!member.profile_id || !member.profiles) continue;
-
-        const rankConfig = ranksConfig.find(r => r.rank === member.rank);
-        if (rankConfig) {
-          const currentLevel = (member.profiles as any).role_level;
-          const targetLevel = rankConfig.app_role;
-
-          // Update if they differ
-          if (currentLevel !== targetLevel) {
-            console.log(`Syncing profile ${member.profile_id} permission: ${currentLevel} -> ${targetLevel} (Was Rank ${member.rank})`);
-            await supabaseAdmin.from('profiles')
-              .update({ role_level: targetLevel })
-              .eq('user_id', member.profile_id);
-          }
-        }
-      }
-    }
+    // 7. Auto-update profile permissions based on WoW ranks (REMOVED)
+    // Root cause of overwriting Discord-mapped roles.
+    // Roles are now handled by the sync-engine via verifyUser.
 
     return NextResponse.json({
       success: true,

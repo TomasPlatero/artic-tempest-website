@@ -84,6 +84,7 @@ async function getRoster() {
   const classNames: Record<number, string> = {};
   const classColors: Record<number, string> = {};
   const classRoleMapping: Record<number, string> = {};
+  const raceNames: Record<number, string> = {};
 
   constants?.forEach((c) => {
     if (c.category === "wow_class") {
@@ -92,6 +93,9 @@ async function getRoster() {
     }
     if (c.category === "class_role") {
       classRoleMapping[Number(c.key)] = c.value;
+    }
+    if (c.category === "wow_race") {
+      raceNames[Number(c.key)] = c.value;
     }
   });
 
@@ -114,6 +118,7 @@ async function getRoster() {
     classNames,
     classColors,
     classRoleMapping,
+    raceNames,
   };
 }
 
@@ -137,6 +142,7 @@ export default async function RosterPage() {
     classNames,
     classColors,
     classRoleMapping,
+    raceNames,
   } = await getRoster();
 
 
@@ -156,6 +162,7 @@ export default async function RosterPage() {
         classNames={classNames}
         classColors={classColors}
         classRoleMapping={classRoleMapping}
+        raceNames={raceNames}
       />
     </div>
   );

@@ -176,9 +176,9 @@ export function DashboardClient({ data, blocks, roleLevel }: { data: any, blocks
                 })
 
                 const raidDate = data.nextRaid ? new Date(data.nextRaid.event_date) : null
-                const isSameDay = (d1: Date, d2: Date) => 
-                    d1.getDate() === d2.getDate() && 
-                    d1.getMonth() === d2.getMonth() && 
+                const isSameDay = (d1: Date, d2: Date) =>
+                    d1.getDate() === d2.getDate() &&
+                    d1.getMonth() === d2.getMonth() &&
                     d1.getFullYear() === d2.getFullYear()
 
                 return (
@@ -190,7 +190,7 @@ export function DashboardClient({ data, blocks, roleLevel }: { data: any, blocks
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-card via-card/50 to-transparent" />
                         </div>
-                        
+
                         <div className="relative z-10 p-6 flex flex-col items-center gap-6 h-full w-full">
                             <div className="flex items-center gap-3 font-black italic uppercase tracking-widest text-lg text-muted-foreground/80">
                                 <IconCalendarEvent className="size-6 text-primary" />
@@ -202,10 +202,10 @@ export function DashboardClient({ data, blocks, roleLevel }: { data: any, blocks
                                 {daysOfWeek.map((date, i) => {
                                     const hasRaid = raidDate && isSameDay(date, raidDate)
                                     const isToday = i === 0
-                                    
+
                                     return (
-                                        <div 
-                                            key={i} 
+                                        <div
+                                            key={i}
                                             className={cn(
                                                 "flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all duration-300",
                                                 isToday ? "bg-primary/20 border-primary/40 shadow-[0_0_15px_rgba(var(--primary),0.1)]" : "bg-muted/10 border-white/5",
@@ -250,7 +250,7 @@ export function DashboardClient({ data, blocks, roleLevel }: { data: any, blocks
                                                 })}
                                             </p>
                                         </div>
-                                        
+
                                         <div className="flex items-center gap-2 mt-2 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20">
                                             <div className="rounded-full bg-emerald-500 size-1.5 animate-pulse" />
                                             <span className="text-[9px] font-black italic text-emerald-400 uppercase tracking-widest">Próxima Raid Confirmada</span>
