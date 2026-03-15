@@ -163,7 +163,7 @@ export default async function SettingsHubPage() {
       description:
         "Crea y gestiona copias de seguridad completas de la base de datos desde el panel de administración.",
       icon: IconDatabase,
-      href: "/admin/backup",
+      href: "/dashboard/configuracion/backup",
       color: "text-blue-500",
       bg: "bg-blue-500/10",
       visible: apiPermission.canView,

@@ -82,8 +82,13 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
-        source: '/dashboard/recruitment/:path*',
-        destination: '/dashboard/reclutamiento/:path*',
+        source: '/admin/backup/:path*',
+        destination: '/dashboard/configuracion/backup/:path*',
+        permanent: true,
+      },
+      {
+        source: '/api/admin/backup/:path*',
+        destination: '/api/configuracion/backup/:path*',
         permanent: true,
       },
     ];

@@ -71,7 +71,7 @@ export default function AdminBackupPage() {
   const fetchHistory = useCallback(async () => {
     try {
       setIsLoadingHistory(true);
-      const res = await fetch("/api/admin/backup/history");
+      const res = await fetch("/api/configuracion/backup/history");
       if (res.ok) {
         const data = await res.json();
         setHistory(data);
@@ -90,7 +90,7 @@ export default function AdminBackupPage() {
   const pollActiveJob = useCallback(async (jobId: string) => {
     const t = setInterval(async () => {
       try {
-        const res = await fetch(`/api/admin/backup/status?jobId=${jobId}`);
+        const res = await fetch(`/api/configuracion/backup/status?jobId=${jobId}`);
         if (!res.ok) throw new Error("Status check failed");
         
         const data = await res.json();
@@ -111,7 +111,7 @@ export default function AdminBackupPage() {
   const startBackup = useCallback(async () => {
     setError(null);
     try {
-      const res = await fetch(`/api/admin/backup`, { method: "POST" });
+      const res = await fetch(`/api/configuracion/backup`, { method: "POST" });
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || "No se pudo iniciar el backup");
@@ -119,7 +119,7 @@ export default function AdminBackupPage() {
       const data = await res.json();
       if (data.jobId) {
         // Query initial job state
-        const statusRes = await fetch(`/api/admin/backup/status?jobId=${data.jobId}`);
+        const statusRes = await fetch(`/api/configuracion/backup/status?jobId=${data.jobId}`);
         const jobData = await statusRes.json();
         setActiveJob(jobData);
         pollActiveJob(data.jobId);

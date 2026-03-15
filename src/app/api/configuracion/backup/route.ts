@@ -11,15 +11,24 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function runBackupScript(jobId: string) {
-  const script = path.resolve(process.cwd(), 'scripts', 'backup-full-dump.js');
+  // Aggressively hide the path from Turbopack static analysis
+  const getScriptPath = () => {
+    const b = Buffer.from('YmFja3VwLWZ1bGwtZHVtcC5qcw==', 'base64').toString();
+    return path.resolve(process.cwd(), 'scripts', b);
+  };
+  const script = getScriptPath();
   
-  const child = spawn(process.execPath, [script, jobId], {
-    detached: true,
-    stdio: 'ignore',
-    env: { ...process.env }
-  });
-  
-  child.unref();
+  // Use eval to completely hide the spawn call and its arguments from Turbopack static analysis
+  eval(`
+    const { spawn } = require('child_process');
+    const path = require('path');
+    const child = spawn(process.execPath, ['${script.replace(/\\/g, '\\\\')}', '${jobId}'], {
+      detached: true,
+      stdio: 'ignore',
+      env: { ...process.env }
+    });
+    child.unref();
+  `);
 }
 
 export async function POST(request: Request) {
@@ -55,7 +64,7 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const jobId = url.searchParams.get('jobId');
   if (jobId) {
-    return NextResponse.redirect(new URL(`/api/admin/backup/status?jobId=${jobId}`, request.url));
+    return NextResponse.redirect(new URL(`/api/configuracion/backup/status?jobId=${jobId}`, request.url));
   }
   return NextResponse.json({ error: 'jobId required' }, { status: 400 });
 }
