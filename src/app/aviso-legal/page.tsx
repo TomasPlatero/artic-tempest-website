@@ -62,14 +62,22 @@ export default function AvisoLegalPage() {
                             <IconCopyright className="text-emerald-500 size-6" />
                             <h2 className="text-2xl font-black text-white uppercase tracking-tight m-0">2. Propiedad Intelectual e Industrial</h2>
                         </div>
-                        <p className="text-zinc-400 leading-relaxed">
-                            Artic Tempest es el titular de todos los derechos de propiedad intelectual e industrial de su página web, así como de los elementos contenidos en la misma. Queda expresamente prohibida la reproducción total o parcial de los textos o recursos gráficos propios sin consentimiento.
+                        <p className="text-zinc-400 leading-relaxed text-sm">
+                            Artic Tempest es el titular de todos los derechos de propiedad intelectual e industrial de su página web, así como de los elementos contenidos en la misma (logotipos, diseños propios y textos originales). Queda expresamente prohibida la reproducción total o parcial de estos sin consentimiento previo.
                         </p>
-                        <div className="mt-6 p-6 rounded-2xl bg-amber-500/5 border border-amber-500/10 flex gap-4 items-start">
-                            <IconAlertTriangle className="size-6 text-amber-500 shrink-0" />
-                            <p className="text-xs text-amber-200/60 leading-relaxed italic">
-                                <strong>Nota sobre Blizzard:</strong> World of Warcraft y Blizzard Entertainment son marcas comerciales o marcas comerciales registradas de Blizzard Entertainment, Inc. en los EE. UU. y/o otros países. Los recursos visuales de WoW utilizados en esta web pertenecen a sus respectivos dueños.
-                            </p>
+                        <div className="mt-8 space-y-4">
+                            <div className="p-6 rounded-[24px] bg-zinc-900/80 border border-white/5 flex gap-4 items-start shadow-xl">
+                                <IconAlertTriangle className="size-6 text-emerald-500 shrink-0 mt-1" />
+                                <div className="space-y-2">
+                                    <p className="text-xs font-bold text-white uppercase tracking-widest leading-none">Descargo de Responsabilidad (Blizzard)</p>
+                                    <p className="text-xs text-zinc-500 leading-relaxed italic">
+                                        Artic Tempest es una <strong>hermandad de jugadores</strong> (guild) dentro del videojuego World of Warcraft®. Este sitio web es un portal de fans no oficial destinado a la gestión interna de nuestra comunidad y el entretenimiento de nuestros miembros. No somos socios, representantes ni empleados de Blizzard Entertainment.
+                                    </p>
+                                    <p className="text-[10px] text-zinc-600 font-medium leading-relaxed border-t border-white/5 pt-3">
+                                        World of Warcraft® y Blizzard Entertainment® son marcas comerciales o marcas comerciales registradas de Blizzard Entertainment, Inc. en los EE. UU. y/o otros países. Todos los derechos sobre los recursos visuales, nombres, personajes y entornos relacionados con el juego pertenecen exclusivamente a Blizzard Entertainment, Inc.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </section>
 

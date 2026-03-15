@@ -28,8 +28,11 @@ export function LandingFooter() {
                         <Link href="/ayuda" className="hover:text-white/60 transition-colors">Ayuda</Link>
                     </div>
 
-                    <p className="text-white/20 text-[10px] font-medium">
+                    <p className="text-white/20 text-[10px] font-bold leading-normal uppercase tracking-widest mt-2">
                         © {new Date().getFullYear()} Artic Tempest. Todos los derechos reservados.
+                    </p>
+                    <p className="text-[9px] text-white/10 font-medium leading-relaxed max-w-xs mt-2 italic">
+                        World of Warcraft® y Blizzard Entertainment® son marcas registradas de Blizzard Entertainment, Inc. Artic Tempest es un sitio web de fans no oficial y no está afiliado, respaldado, patrocinado ni aprobado específicamente por Blizzard Entertainment.
                     </p>
                 </div>
 
