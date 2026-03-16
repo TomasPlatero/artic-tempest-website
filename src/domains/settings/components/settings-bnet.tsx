@@ -32,6 +32,14 @@ import {
 } from "@/shared/ui/dialog";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/shared/ui/select";
+import { WOW_REALMS } from "@/shared/integrations/bnet/realms";
 import Link from "next/link";
 
 type SettingsBnetClientProps = {
@@ -132,7 +140,7 @@ export function SettingsBnetClient({
 
         setAddingManual(true);
         try {
-            const res = await fetch("/api/guild/roster/manual", {
+            const res = await fetch("/api/guild/roster", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -214,15 +222,30 @@ export function SettingsBnetClient({
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="char-realm" className="text-xs font-bold uppercase tracking-widest text-white/40 ml-1">Reino (Slug)</Label>
-                                    <Input
-                                        id="char-realm"
-                                        placeholder="Ej: dun-modr"
-                                        value={manualRealm}
-                                        onChange={(e) => setManualRealm(e.target.value)}
-                                        className="bg-white/5 border-white/5 h-12 rounded-xl font-mono text-sm placeholder:text-white/10 placeholder:font-sans"
-                                    />
-                                    <p className="text-[10px] text-white/20 italic ml-1">Escribe el nombre del reino separado por guiones (ej: sanguino, dun-modr, silvermoon).</p>
+                                    <Label htmlFor="char-realm" className="text-xs font-bold uppercase tracking-widest text-white/40 ml-1">Reino</Label>
+                                    <Select 
+                                        value={manualRealm} 
+                                        onValueChange={setManualRealm}
+                                    >
+                                        <SelectTrigger className="bg-white/5 border-white/5 h-12 rounded-xl text-lg font-bold">
+                                            <SelectValue placeholder="Selecciona el reino" />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-zinc-950 border-white/5 max-h-[300px]">
+                                            {WOW_REALMS.map((realm) => (
+                                                <SelectItem 
+                                                    key={realm.slug} 
+                                                    value={realm.slug}
+                                                    className="font-bold py-3"
+                                                >
+                                                    {realm.name}
+                                                </SelectItem>
+                                            ))}
+                                            <Separator className="my-2 bg-white/5" />
+                                            <div className="p-2 text-[10px] text-white/20 italic text-center">
+                                                Si no aparece el reino, puedes escribirlo manualmente arriba
+                                            </div>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                             </div>
                             <DialogFooter className="pt-4">

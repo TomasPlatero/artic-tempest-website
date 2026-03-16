@@ -11,7 +11,8 @@ import {
     IconClock,
     IconSettings,
     IconUser,
-    IconHeart
+    IconHeart,
+    IconChartBar
 } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/shared/ui/button"
@@ -509,9 +510,9 @@ export function DashboardClient({ data, blocks, roleLevel }: { data: any, blocks
                                 <Button
                                     variant="glass"
                                     className="w-full mt-2 text-[10px] uppercase font-black tracking-widest gap-2 h-11"
-                                    onClick={() => window.open('https://www.warcraftlogs.com/guild/id/743623', '_blank')}
+                                    onClick={() => router.push('/dashboard/estadisticas?tab=logs')}
                                 >
-                                    <IconExternalLink className="size-4" /> Ver en WarcraftLogs
+                                    <IconChartBar className="size-4" /> Ver estadísticas detalladas
                                 </Button>
                             </div>
                         ) : (

@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import {
     Card,
     CardContent,
@@ -32,11 +33,21 @@ import {
 import { IconCheck, IconX, IconExternalLink } from "@tabler/icons-react"
 
 export function StatsClient({ members, rioData, classColors = {} }: { members: any[], rioData?: any, classColors?: Record<number, string> }) {
+    const searchParams = useSearchParams()
     const [isMounted, setIsMounted] = useState(false)
+    const [activeTab, setActiveTab] = useState("progreso")
 
     useEffect(() => {
         setIsMounted(true)
-    }, [])
+        const tab = searchParams.get("tab")
+        if (tab === "logs") {
+            setActiveTab("wcl")
+        } else if (tab === "armeria" || tab === "inspector") {
+            setActiveTab("inspector")
+        } else if (tab === "progreso") {
+            setActiveTab("progreso")
+        }
+    }, [searchParams])
 
 
 
@@ -231,7 +242,7 @@ export function StatsClient({ members, rioData, classColors = {} }: { members: a
                 </p>
             </div>
 
-            <Tabs defaultValue="progreso" className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="mb-4 w-full justify-start overflow-x-auto h-auto min-h-10 bg-muted/20 p-1 flex-nowrap scrollbar-none">
                     <TabsTrigger value="progreso" className="flex-1 min-w-[100px] flex items-center justify-center gap-2 text-[10px] sm:text-xs py-2">
                         <IconTrophy className="size-3.5" /> Progreso
