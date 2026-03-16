@@ -198,7 +198,7 @@ export default async function RootLayout({
           {process.env.NEXT_PUBLIC_GA_ID && (
             <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
           )}
-          <VercelToolbar />
+          {process.env.NODE_ENV === 'development' && <VercelToolbar />}
         </ThemeProvider>
       </body>
     </html>

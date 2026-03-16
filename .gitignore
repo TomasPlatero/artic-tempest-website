@@ -40,12 +40,7 @@ lint_results_*v2.json
 # ========================
 # Environment variables (todas las variantes comunes)
 # ========================
-.env
-.env.local
-.env.development
-.env.production
-.env.test
-.env.*.local
+.env*
 
 # ========================
 # Claves / certificados
@@ -120,3 +115,4 @@ scripts/list-raids.js
 scripts/add-raid.js
 eslint.json
 .opencode
+.env.example
