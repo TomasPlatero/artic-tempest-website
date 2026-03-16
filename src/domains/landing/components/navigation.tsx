@@ -215,18 +215,18 @@ export function LandingNavigation() {
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" className="relative h-10 w-10 rounded-full border border-white/10 hover:bg-white/5 p-0 overflow-hidden ring-offset-zinc-950 focus-visible:ring-2 focus-visible:ring-blue-500">
                                         <Image
-                                            src={session.user.image || `https://ui-avatars.com/api/?name=${session.user.name}&background=0D8ABC&color=fff`}
-                                            alt={session.user.name || "Avatar"}
+                                            src={session.user.avatarUrl || `https://ui-avatars.com/api/?name=${session.user.username}&background=0D8ABC&color=fff`}
+                                            alt={session.user.username || "Avatar"}
                                             fill
                                             className="object-cover"
                                         />
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-56 mt-2 bg-zinc-900/95 backdrop-blur-xl border-white/10 text-white" align="right">
+                                <DropdownMenuContent className="w-56 mt-2 bg-zinc-900/95 backdrop-blur-xl border-white/10 text-white" align="end">
                                     <div className="flex items-center justify-start gap-2 p-2">
                                         <div className="flex flex-col space-y-0.5">
-                                            <p className="text-sm font-bold leading-none">{session.user.name}</p>
-                                            <p className="text-xs leading-none text-white/40">{session.user.email}</p>
+                                            <p className="text-sm font-bold leading-none">{session.user.username}</p>
+                                            <p className="text-xs leading-none text-white/40">{session.user.username}</p>
                                         </div>
                                     </div>
                                     <DropdownMenuSeparator className="bg-white/5" />
@@ -270,8 +270,8 @@ export function LandingNavigation() {
                     {session ? (
                         <Link href="/dashboard" className="relative h-9 w-9 rounded-full border border-white/10 overflow-hidden active:scale-90 transition-transform">
                             <Image
-                                src={session.user.image || `https://ui-avatars.com/api/?name=${session.user.name}&background=0D8ABC&color=fff`}
-                                alt={session.user.name || "Avatar"}
+                                src={session.user.avatarUrl || `https://ui-avatars.com/api/?name=${session.user.username}&background=0D8ABC&color=fff`}
+                                alt={session.user.username || "Avatar"}
                                 fill
                                 className="object-cover"
                             />
