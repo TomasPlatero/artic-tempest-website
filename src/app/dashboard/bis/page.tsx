@@ -25,10 +25,28 @@ type EligibleMember = {
 };
 
 async function getBisData(userId: string, forceFullRoster = false) {
-  // ... (keeping implementation identical)
-  let { data: rawRanks, error: ranksError } = await supabaseAdmin
-    .from("guild_ranks")
-    .select("rank, is_visible");
+  const [ranksRes, bnetCharsRes, membersRes] = await Promise.all([
+    supabaseAdmin
+      .from("guild_ranks")
+      .select("rank, is_visible") as any,
+    supabaseAdmin
+      .from("bnet_characters")
+      .select("id, name, realm_slug")
+      .eq("user_id", userId) as any,
+    supabaseAdmin
+      .from("guild_members")
+      .select(
+        "id, character_name, realm_slug, class_id, rank, role, bis_dps_gain, bis_pct_gain, spec_name, spec_id, profile_id, bnet_character_id"
+      )
+      .order("rank", { ascending: true })
+      .order("character_name", { ascending: true }) as any,
+  ]);
+
+  let rawRanks = ranksRes.data;
+  const ranksError = ranksRes.error;
+  const bnetChars = bnetCharsRes.data;
+  const members = membersRes.data;
+  const membersError = membersRes.error;
 
   if (ranksError && (ranksError.code === "PGRST204" || ranksError.message.includes("schema cache"))) {
     const { data: fallbackRanks } = await supabaseAdmin
@@ -36,8 +54,8 @@ async function getBisData(userId: string, forceFullRoster = false) {
       .select("rank_id, is_visible");
 
     if (fallbackRanks) {
-      rawRanks = fallbackRanks.map((r) => ({
-        rank: (r as any).rank_id,
+      rawRanks = fallbackRanks.map((r: any) => ({
+        rank: r.rank_id,
         is_visible: r.is_visible,
       }));
     }
@@ -45,32 +63,19 @@ async function getBisData(userId: string, forceFullRoster = false) {
 
   const visibilityMap: Record<number, boolean> = {};
   for (let i = 0; i <= 9; i++) visibilityMap[i] = true;
-  rawRanks?.forEach((r) => {
+  rawRanks?.forEach((r: any) => {
     visibilityMap[Number(r.rank)] = r.is_visible;
   });
-
-  const { data: bnetChars } = await supabaseAdmin
-    .from("bnet_characters")
-    .select("id, name, realm_slug")
-    .eq("user_id", userId);
 
   const linkedCharacterKeys = new Set(
     (bnetChars || []).map((c: any) => `${c.name}::${c.realm_slug}`)
   );
   const linkedBnetIds = new Set((bnetChars || []).map((c: any) => c.id));
 
-  const { data: members, error: membersError } = await supabaseAdmin
-    .from("guild_members")
-    .select(
-      "id, character_name, realm_slug, class_id, rank, role, bis_dps_gain, bis_pct_gain, spec_name, spec_id, profile_id, bnet_character_id"
-    )
-    .order("rank", { ascending: true })
-    .order("character_name", { ascending: true });
-
   if (membersError) throw membersError;
 
   const allVisibleMembers = (members || []).filter(
-    (m) => visibilityMap[Number(m.rank)] !== false
+    (m: any) => visibilityMap[Number(m.rank)] !== false
   );
 
   const eligibleMembers = allVisibleMembers.filter((m: any) => {

@@ -14,21 +14,24 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 async function getRoster() {
-  const { data } = await supabaseAdmin
-    .from("guild_members")
-    .select(
-      "id, character_name, realm_slug, realm_name, class_id, race_id, level, rank, synced_at, note, role",
-    )
-    .order("rank", { ascending: true })
-    .order("character_name", { ascending: true });
+  const [membersRes, ranksRes, constantsRes] = await Promise.all([
+    supabaseAdmin
+      .from("guild_members")
+      .select("id, character_name, realm_slug, realm_name, class_id, race_id, level, rank, synced_at, note, role")
+      .order("rank", { ascending: true })
+      .order("character_name", { ascending: true }) as any,
+    supabaseAdmin
+      .from("guild_ranks")
+      .select("rank, name, is_visible, color") as any,
+    supabaseAdmin
+      .from("game_constants")
+      .select("category, key, value, metadata") as any
+  ]);
 
-  // Fetch rank configurations
-  let { data: rawRanks, error: ranksError } = (await supabaseAdmin
-    .from("guild_ranks")
-    .select("rank, name, is_visible, color")) as {
-    data: any[] | null;
-    error: any;
-  };
+  const data = membersRes.data;
+  let rawRanks = ranksRes.data;
+  const ranksError = ranksRes.error;
+  const constants = constantsRes.data;
 
   // Handle missing color column gracefully
   if (
@@ -37,20 +40,11 @@ async function getRoster() {
       ranksError.message.toLowerCase().includes("color") ||
       ranksError.message.toLowerCase().includes("schema cache"))
   ) {
-    console.warn(
-      "[ROSTER PAGE] 'color' column missing, retrying select without it...",
-    );
     const { data: retryRanks } = await supabaseAdmin
       .from("guild_ranks")
       .select("rank, name, is_visible");
     rawRanks = retryRanks;
   }
-
-  if (ranksError && !rawRanks) {
-    console.error("[ROSTER PAGE] Error fetching ranks:", ranksError);
-  }
-
-  console.log("[ROSTER PAGE] Loaded ranks count:", rawRanks?.length || 0);
 
   const visibilityMap: Record<number, boolean> = {};
   const rankColors: (string | null)[] = [];
@@ -70,24 +64,18 @@ async function getRoster() {
 
   const maxRank = 9;
   for (let i = 0; i <= maxRank; i++) {
-    const found = rawRanks?.find((v) => v.rank === i);
-    // Default to true if not found in DB yet
+    const found = rawRanks?.find((v: any) => v.rank === i);
     visibilityMap[i] = found ? found.is_visible : true;
     rankNames[i] = found?.name || defaultNames[i] || `Rank ${i}`;
     rankColors[i] = found?.color || null;
   }
-
-  // Fetch Game Constants (Classes, Role Mappings)
-  const { data: constants } = await supabaseAdmin
-    .from("game_constants")
-    .select("category, key, value, metadata");
 
   const classNames: Record<number, string> = {};
   const classColors: Record<number, string> = {};
   const classRoleMapping: Record<number, string> = {};
   const raceNames: Record<number, string> = {};
 
-  constants?.forEach((c) => {
+  constants?.forEach((c: any) => {
     if (c.category === "wow_class") {
       classNames[Number(c.key)] = c.value;
       if (c.metadata?.color) classColors[Number(c.key)] = c.metadata.color;
@@ -101,7 +89,7 @@ async function getRoster() {
   });
 
   // Filter members based on visibility
-  const filteredRoster = (data ?? []).filter((m) => {
+  const filteredRoster = (data ?? []).filter((m: any) => {
     const r = Number(m.rank);
     const isVisible = visibilityMap[r] ?? true;
     return isVisible;

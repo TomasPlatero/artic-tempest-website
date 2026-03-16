@@ -132,6 +132,35 @@ export default async function NewsDetailPage({
         <main className="min-h-screen bg-black selection:bg-blue-500/30 dark text-white">
             <LandingNavigation />
 
+            {/* Structured Data (JSON-LD) */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "NewsArticle",
+                        "headline": item.title,
+                        "description": item.summary,
+                        "image": [
+                            item.image_url || `${baseUrl}/assets/images/midnight-battle.webp`
+                        ],
+                        "datePublished": item.created_at,
+                        "author": [{
+                            "@type": "Person",
+                            "name": item.author
+                        }],
+                        "publisher": {
+                            "@type": "Organization",
+                            "name": "Artic Tempest",
+                            "logo": {
+                                "@type": "ImageObject",
+                                "url": `${baseUrl}/favicon.ico`
+                            }
+                        }
+                    })
+                }}
+            />
+
             {item.status === 'draft' && (
                 <div className="fixed top-20 left-0 right-0 z-[100] flex justify-center pointer-events-none px-4">
                     <div className="bg-amber-500/90 backdrop-blur-md text-black px-6 py-2 rounded-full font-black uppercase text-[10px] tracking-widest shadow-2xl flex items-center gap-2 border border-white/20 animate-bounce">

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Montserrat, Oswald, Bebas_Neue, Cinzel } from "next/font/google";
+import { Geist, Montserrat, Cinzel } from "next/font/google";
 import { ThemeProvider } from "@/shared/layout/theme-provider"
 import { ThemedToaster } from "@/shared/ui/sonner"
 import { SessionProvider } from "@/shared/layout/session-provider"
@@ -23,27 +23,10 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 const montserrat = Montserrat({
   weight: "900",
   subsets: ["latin"],
   variable: "--font-montserrat",
-});
-
-const oswald = Oswald({
-  weight: "700",
-  subsets: ["latin"],
-  variable: "--font-oswald",
-});
-
-const bebas = Bebas_Neue({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-bebas",
 });
 
 const cinzel = Cinzel({
@@ -59,7 +42,7 @@ export async function generateMetadata(): Promise<Metadata> {
     .from("guilds_managed")
     .select("name, icon_url")
     .limit(1)
-    .single();
+    .maybeSingle() as any;
 
   const title = guild ? `${guild.name}` : "Artic Tempest";
   const desc = "Sitio web oficial y Dashboard de la hermandad Artic Tempest (World of Warcraft). Gestiona tu roster, calendario y estadísticas de raideo.";
@@ -170,8 +153,27 @@ export default async function RootLayout({
       {process.env.NEXT_PUBLIC_GTM_ID && (
         <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID} />
       )}
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "Artic Tempest",
+              "url": "https://artictempest.es",
+              "logo": "https://artictempest.es/favicon.ico",
+              "sameAs": [
+                "https://twitter.com/artictempest",
+                "https://www.warcraftlogs.com/guild/id/743623"
+              ],
+              "description": "Hermandad competitiva de World of Warcraft en el reino Dun Modr (EU)."
+            })
+          }}
+        />
+      </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable} ${oswald.variable} ${bebas.variable} ${cinzel.variable} antialiased`}
+        className={`${geistSans.variable} ${montserrat.variable} ${cinzel.variable} antialiased`}
       >
         <ThemeProvider
           attribute="class"
