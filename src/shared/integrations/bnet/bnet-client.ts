@@ -85,6 +85,17 @@ export async function fetchCharacterSpec(
   region: string,
   token: string,
 ): Promise<string | null> {
+  const data = await fetchCharacterSummary(realmSlug, characterNameSlug, region, token);
+  return data?.spec || null;
+}
+
+/** Fetch character summary (spec + level) from Battle.net character profile */
+export async function fetchCharacterSummary(
+  realmSlug: string,
+  characterNameSlug: string,
+  region: string,
+  token: string,
+): Promise<{ spec: string | null; level: number | null } | null> {
   const url = `https://${region}.api.blizzard.com/profile/wow/character/${realmSlug}/${characterNameSlug}?namespace=profile-${region}&locale=en_US`;
 
   try {
@@ -95,7 +106,10 @@ export async function fetchCharacterSpec(
     if (!res.ok) return null;
 
     const data = await res.json();
-    return data.active_spec?.name || null;
+    return {
+      spec: data.active_spec?.name || null,
+      level: data.level || null,
+    };
   } catch {
     return null;
   }

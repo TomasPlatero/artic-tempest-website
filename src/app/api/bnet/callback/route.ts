@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options"
 import { cookies } from "next/headers"
 import { getGuildCredentials } from "@/shared/auth/credentials"
-import { fetchCharacterSpec, fetchCharacterMedia } from "@/shared/integrations/bnet/bnet-client"
+import { fetchCharacterSummary, fetchCharacterMedia } from "@/shared/integrations/bnet/bnet-client"
 
 export const runtime = "nodejs"
 
@@ -134,7 +134,9 @@ export async function GET(request: Request) {
 
             const charRows = await Promise.all(characters.map(async c => {
                 const nameSlug = c.name.toLowerCase();
-                const specName = await fetchCharacterSpec(c.realm.slug, nameSlug, "eu", accessToken)
+                const charSummary = await fetchCharacterSummary(c.realm.slug, nameSlug, "eu", accessToken)
+                const specName = charSummary?.spec || "Unknown"
+                const actualLevel = charSummary?.level || c.level
                 const thumbnailUrl = await fetchCharacterMedia(c.realm.slug, nameSlug, "eu", accessToken)
 
                 // Find metadata
@@ -148,7 +150,7 @@ export async function GET(request: Request) {
                     realm_slug: c.realm_slug || c.realm.slug,
                     class_id: c.playable_class.id,
                     race_id: c.playable_race.id,
-                    level: c.level,
+                    level: actualLevel,
                     faction: c.faction?.type?.toLowerCase() || 'neutral',
                     spec: specName || "Unknown",
                     spec_id: specMeta?.id || null,
@@ -159,11 +161,14 @@ export async function GET(request: Request) {
                 }
             }))
 
-            const { error: insertErr } = await supabaseAdmin.from("bnet_characters").insert(charRows)
+            const { error: insertErr } = await supabaseAdmin
+                .from("bnet_characters")
+                .upsert(charRows, { onConflict: 'user_id,realm_slug,name' })
+
             if (insertErr) {
-                console.error("[BNET CALLBACK] DB Insert Error:", insertErr)
+                console.error("[BNET CALLBACK] DB Upsert Error:", insertErr)
             } else {
-                console.log(`[BNET CALLBACK] Inserted ${charRows.length} characters with full metadata successfully`)
+                console.log(`[BNET CALLBACK] Upserted ${charRows.length} characters with full metadata successfully`)
             }
 
             // Finalmente: "Reclamar" los que ya estén en la hermandad (guild_members)
