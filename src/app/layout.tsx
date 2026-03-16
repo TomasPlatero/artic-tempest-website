@@ -7,9 +7,12 @@ import { CookieConsentLoader } from "@/shared/components/cookie-consent"
 import { NotificationToastListener } from "@/domains/notifications/components/notification-toast-listener"
 import { NotificationPermissionModal } from "@/domains/notifications/components/notification-permission-modal"
 import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import { GoogleAnalytics, GoogleTagManager } from '@next/third-parties/google'
 import { ScrollToTop } from "@/shared/ui/scroll-to-top"
 import { PwaPrompt } from "@/shared/components/pwa-prompt"
+import { FlagsProvider } from "@/shared/layout/flags-provider"
+import { showBetaFeatures } from "@/flags"
 import "./globals.css";
 
 const geistSans = Geist({
@@ -142,11 +145,16 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Resolve flags server-side
+  const flags = {
+    showBetaFeatures: await showBetaFeatures(),
+  };
+
   return (
     <html lang="es" suppressHydrationWarning>
       {process.env.NEXT_PUBLIC_GTM_ID && (
@@ -162,15 +170,18 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <SessionProvider>
-            <NotificationToastListener />
-            <NotificationPermissionModal />
-            <ScrollToTop />
-            {children}
+            <FlagsProvider flags={flags}>
+              <NotificationToastListener />
+              <NotificationPermissionModal />
+              <ScrollToTop />
+              {children}
+            </FlagsProvider>
           </SessionProvider>
           <CookieConsentLoader />
           <PwaPrompt />
           <ThemedToaster />
           <Analytics />
+          <SpeedInsights />
           {process.env.NEXT_PUBLIC_GA_ID && (
             <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
           )}
