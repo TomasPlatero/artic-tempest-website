@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options"
 import { cookies } from "next/headers"
 import { getGuildCredentials } from "@/shared/auth/credentials"
-import { fetchCharacterSpec } from "@/shared/integrations/bnet/bnet-client"
+import { fetchCharacterSpec, fetchCharacterMedia } from "@/shared/integrations/bnet/bnet-client"
 
 export const runtime = "nodejs"
 
@@ -77,7 +77,8 @@ export async function GET(request: Request) {
 
         // 2. Fetch Account User profile (BattleTag + Account ID)
         const userInfoRes = await fetch("https://oauth.battle.net/userinfo", {
-            headers: { "Authorization": `Bearer ${accessToken}` }
+            headers: { "Authorization": `Bearer ${accessToken}` },
+            cache: "no-store"
         })
 
         if (!userInfoRes.ok) {
@@ -90,7 +91,8 @@ export async function GET(request: Request) {
 
         // 3. Fetch WoW Profile (Characters)
         const wowRes = await fetch("https://eu.api.blizzard.com/profile/user/wow?namespace=profile-eu&locale=es_ES", {
-            headers: { "Authorization": `Bearer ${accessToken}` }
+            headers: { "Authorization": `Bearer ${accessToken}` },
+            cache: "no-store"
         })
 
         // El usuario puede no tener cuenta de WoW
@@ -131,7 +133,9 @@ export async function GET(request: Request) {
                 .select("id, armor_type")
 
             const charRows = await Promise.all(characters.map(async c => {
-                const specName = await fetchCharacterSpec(c.realm.slug, c.name.toLowerCase(), "eu", accessToken)
+                const nameSlug = c.name.toLowerCase();
+                const specName = await fetchCharacterSpec(c.realm.slug, nameSlug, "eu", accessToken)
+                const thumbnailUrl = await fetchCharacterMedia(c.realm.slug, nameSlug, "eu", accessToken)
 
                 // Find metadata
                 const specMeta = specsMetadata?.find(s => s.name === specName && s.class_id === c.playable_class.id)
@@ -150,7 +154,8 @@ export async function GET(request: Request) {
                     spec_id: specMeta?.id || null,
                     role: specMeta?.role || null,
                     main_stat: specMeta?.main_stat || null,
-                    armor_type: classMeta?.armor_type || null
+                    armor_type: classMeta?.armor_type || null,
+                    thumbnail_url: thumbnailUrl
                 }
             }))
 

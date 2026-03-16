@@ -101,6 +101,31 @@ export async function fetchCharacterSpec(
   }
 }
 
+/** Fetch character media (avatar/thumbnail) from Battle.net */
+export async function fetchCharacterMedia(
+  realmSlug: string,
+  characterNameSlug: string,
+  region: string,
+  token: string,
+): Promise<string | null> {
+  const url = `https://${region}.api.blizzard.com/profile/wow/character/${realmSlug}/${characterNameSlug}/character-media?namespace=profile-${region}&locale=en_US`;
+
+  try {
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
+    });
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    // Assets: 'avatar' (small), 'inset' (medium), 'main' (large)
+    const avatarAsset = data.assets?.find((a: any) => a.key === "avatar") || data.assets?.[0];
+    return avatarAsset?.value || null;
+  } catch {
+    return null;
+  }
+}
+
 /** Fetch a character's item level from Battle.net */
 export async function fetchCharacterItemLevel(
   realmSlug: string,
