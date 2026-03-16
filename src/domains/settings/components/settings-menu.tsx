@@ -392,7 +392,7 @@ function SortableRow({
         {/* Main Info */}
         <div className="flex items-center gap-2 min-w-0 sm:min-w-[200px] flex-1">
           <div className="p-1.5 bg-white/5 rounded-lg border border-white/5 group-hover:border-primary/20 transition-colors">
-            <Icon className="size-4 text-primary" />
+            {React.createElement(Icon, { className: "size-4 text-primary" })}
           </div>
           <span className="font-bold text-sm tracking-tight truncate">
             {item.name}

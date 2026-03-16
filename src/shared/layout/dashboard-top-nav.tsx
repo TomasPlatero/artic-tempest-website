@@ -78,7 +78,7 @@ export function DashboardTopNav({ guildName, iconUrl }: { guildName: string, ico
     } finally {
       setLoading(false)
     }
-  }, [session?.user?.id])
+  }, [])
 
   React.useEffect(() => {
     if (status === "authenticated") {
