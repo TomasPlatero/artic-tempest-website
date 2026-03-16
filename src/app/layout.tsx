@@ -13,6 +13,7 @@ import { ScrollToTop } from "@/shared/ui/scroll-to-top"
 import { PwaPrompt } from "@/shared/components/pwa-prompt"
 import { FlagsProvider } from "@/shared/layout/flags-provider"
 import { showBetaFeatures } from "@/flags"
+import * as flagsList from "@/flags"
 import { FlagValues } from 'flags/react';
 import { VercelToolbar } from '@vercel/toolbar/next';
 import "./globals.css";
@@ -154,7 +155,14 @@ export default async function RootLayout({
 }>) {
   // Resolve flags server-side
   const flags = {
-    showBetaFeatures: await showBetaFeatures(),
+    showBetaFeatures: (await showBetaFeatures()) as boolean,
+    enableRoster: (await flagsList.enableRoster()) as boolean,
+    enableCalendar: (await flagsList.enableCalendar()) as boolean,
+    enableWishlist: (await flagsList.enableWishlist()) as boolean,
+    enablePlanner: (await flagsList.enablePlanner()) as boolean,
+    enableStatsLogs: (await flagsList.enableStatsLogs()) as boolean,
+    enableWeeklyVault: (await flagsList.enableWeeklyVault()) as boolean,
+    enableEconomy: (await flagsList.enableEconomy()) as boolean,
   };
 
   return (

@@ -1,7 +1,8 @@
-import { createFlagsDiscoveryEndpoint, getProviderData } from 'flags/next';
+import { getProviderData } from '@vercel/flags/next';
+import { NextResponse } from 'next/server';
 import * as flags from '@/flags';
 
-export const GET = createFlagsDiscoveryEndpoint(async (request) => {
+export async function GET(request: Request) {
   const apiData = await getProviderData(flags);
-  return apiData;
-});
+  return NextResponse.json(apiData);
+}
