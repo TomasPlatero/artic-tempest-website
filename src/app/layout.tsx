@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Montserrat, Cinzel } from "next/font/google";
+import { Geist, Montserrat } from "next/font/google";
 import { ThemeProvider } from "@/shared/layout/theme-provider"
 import { ThemedToaster } from "@/shared/ui/sonner"
 import { SessionProvider } from "@/shared/layout/session-provider"
@@ -28,13 +28,6 @@ const montserrat = Montserrat({
   weight: "900",
   subsets: ["latin"],
   variable: "--font-montserrat",
-  display: "swap",
-});
-
-const cinzel = Cinzel({
-  weight: "700",
-  subsets: ["latin"],
-  variable: "--font-cinzel",
   display: "swap",
 });
 
@@ -176,7 +169,7 @@ export default async function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${montserrat.variable} ${cinzel.variable} antialiased`}
+        className={`${geistSans.variable} ${montserrat.variable} antialiased`}
       >
         <ThemeProvider
           attribute="class"

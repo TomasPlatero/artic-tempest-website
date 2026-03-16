@@ -137,6 +137,7 @@ export function WantedClasses() {
                                             alt={cls.name}
                                             fill
                                             className="object-cover"
+                                            sizes="40px"
                                         />
                                     </div>
                                     <CardTitle className="text-lg font-black uppercase tracking-tighter" style={{ color: cls.color }}>

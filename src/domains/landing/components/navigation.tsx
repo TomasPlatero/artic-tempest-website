@@ -90,7 +90,7 @@ export function LandingNavigation() {
                                             alt="Artic Tempest Logo"
                                             fill
                                             className="object-contain"
-                                            sizes="150px"
+                                            sizes="128px"
                                         />
                                     </div>
                                 </SheetTitle>
