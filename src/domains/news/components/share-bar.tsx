@@ -35,7 +35,7 @@ export function ShareBar({ title, url }: ShareBarProps) {
             name: "Facebook",
             icon: IconBrandFacebook,
             href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
-            color: "hover:bg-blue-600",
+            color: "hover:bg-blue-700",
         },
         {
             name: "WhatsApp",
@@ -84,7 +84,7 @@ export function ShareBar({ title, url }: ShareBarProps) {
                     variant="ghost"
                     size="icon"
                     onClick={copyToClipboard}
-                    className="size-10 rounded-xl bg-white/[0.03] border border-white/5 text-zinc-400 hover:bg-blue-600 hover:text-white hover:border-transparent transition-all duration-300 hover:scale-110 active:scale-95 shadow-lg group"
+                    className="size-10 rounded-xl bg-white/[0.03] border border-white/5 text-zinc-400 hover:bg-blue-700 hover:text-white hover:border-transparent transition-all duration-300 hover:scale-110 active:scale-95 shadow-lg group"
                     title="Copiar enlace"
                 >
                     <AnimatePresence mode="wait">

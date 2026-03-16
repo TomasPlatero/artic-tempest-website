@@ -11,6 +11,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next"
 import { GoogleAnalytics, GoogleTagManager } from '@next/third-parties/google'
 import { ScrollToTop } from "@/shared/ui/scroll-to-top"
 import { PwaPrompt } from "@/shared/components/pwa-prompt"
+import { SkipLink } from "@/shared/components/skip-link"
 import { FlagsProvider } from "@/shared/layout/flags-provider"
 import { showBetaFeatures } from "@/flags"
 import * as flagsList from "@/flags"
@@ -183,7 +184,10 @@ export default async function RootLayout({
               <NotificationToastListener />
               <NotificationPermissionModal />
               <ScrollToTop />
-              {children}
+              <SkipLink />
+              <main id="main-content">
+                {children}
+              </main>
             </FlagsProvider>
           </SessionProvider>
           <CookieConsentLoader />

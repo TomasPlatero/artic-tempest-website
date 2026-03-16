@@ -102,13 +102,13 @@ export function WantedClasses() {
 
 
     return (
-        <section className="py-24 px-6 max-w-7xl mx-auto w-full">
+        <section className="py-24 px-6 max-w-7xl mx-auto w-full" aria-labelledby="reclutamiento-title">
             <div className="flex flex-col items-center mb-16 text-center">
-                <h2 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tighter uppercase">
+                <h2 id="reclutamiento-title" className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tighter uppercase">
                     Reclutamiento
                 </h2>
                 <div className="h-1 w-20 bg-blue-500 rounded-full mb-6" />
-                <p className="text-blue-100/60 max-w-2xl text-lg font-medium">
+                <p className="text-blue-100/80 max-w-2xl text-lg font-medium">
                     Buscamos jugadores excepcionales para completar nuestro roster de Midnight. Revisa nuestras prioridades actuales.
                 </p>
             </div>
@@ -171,7 +171,7 @@ export function WantedClasses() {
                 </div>
             ) : (
                 <div className="text-center py-20 bg-white/5 border border-dashed border-white/10 rounded-3xl">
-                    <p className="text-blue-100/40 text-lg font-medium italic">
+                    <p className="text-blue-100/70 text-lg font-medium italic">
                         No hay vacantes abiertas actualmente, pero siempre revisamos aplicaciones excelentes.
                     </p>
                 </div>

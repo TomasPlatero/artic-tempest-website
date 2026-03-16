@@ -502,7 +502,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <Button
                     size="icon"
                     variant="ghost"
-                    className="size-9 rounded-xl bg-blue-600/10 text-blue-400 hover:bg-blue-600 hover:text-white border border-blue-500/10"
+                    className="size-9 rounded-xl bg-blue-600/10 text-blue-400 hover:bg-blue-800 hover:text-white border border-blue-500/10"
                     onClick={() => window.open(ctaItem.url, "_blank")}
                   >
                     <IconDownload className="size-5" />

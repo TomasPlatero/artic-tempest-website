@@ -71,13 +71,13 @@ export function LandingNavigation() {
     }
 
     return (
-        <nav className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-md border-b border-white/10 dark">
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-md border-b border-white/10 dark" aria-label="Navegación principal">
             <div className="mx-auto max-w-[1600px] h-16 px-4 md:px-6 flex items-center justify-between gap-4 relative">
                 <div className="flex items-center gap-2">
                     {/* Botón de Menú Mobile */}
                     <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                         <SheetTrigger asChild>
-                            <Button variant="ghost" size="icon" className="lg:hidden h-10 w-10 text-white/70 hover:text-white hover:bg-white/5 transition-colors -ml-2">
+                            <Button variant="ghost" size="icon" className="lg:hidden h-10 w-10 text-white/90 hover:text-white hover:bg-white/5 transition-colors -ml-2" aria-label="Abrir menú de navegación">
                                 <IconMenu2 className="size-6" />
                             </Button>
                         </SheetTrigger>
@@ -157,7 +157,7 @@ export function LandingNavigation() {
                                 )}
                             </div>
                             <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-zinc-950 to-transparent">
-                                <p className="text-[10px] text-white/20 font-medium uppercase tracking-[0.2em]">Artic Tempest Hermandad</p>
+                                <p className="text-[10px] text-white/40 font-medium uppercase tracking-[0.2em]">Artic Tempest Hermandad</p>
                             </div>
                         </SheetContent>
                     </Sheet>
@@ -182,7 +182,7 @@ export function LandingNavigation() {
                         <Link
                             key={link.href}
                             href={link.href}
-                            className="text-sm font-medium text-white/70 hover:text-white transition-colors relative"
+                            className="text-sm font-medium text-white/80 hover:text-white transition-colors relative"
                             title={link.title}
                         >
                             {link.label}

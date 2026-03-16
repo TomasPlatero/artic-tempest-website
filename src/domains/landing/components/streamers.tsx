@@ -29,12 +29,12 @@ export function LandingStreamers({ limit, initialStreamers }: { limit?: number, 
     if (streamers.length === 0) return null
 
     return (
-        <section id="streamers" className="py-24 px-6 max-w-7xl mx-auto text-center">
-            <h2 className="text-4xl font-black text-white mb-4 uppercase tracking-tight flex items-center justify-center gap-3">
+        <section id="streamers" className="py-24 px-6 max-w-7xl mx-auto text-center" aria-labelledby="streamers-title">
+            <h2 id="streamers-title" className="text-4xl font-black text-white mb-4 uppercase tracking-tight flex items-center justify-center gap-3">
                 <IconBrandTwitch className="size-10 text-purple-500" />
                 Nuestros Streamers
             </h2>
-            <p className="text-white/60 mb-12 max-w-2xl mx-auto">
+            <p className="text-white/80 mb-12 max-w-2xl mx-auto">
                 Sigue en directo nuestro progreso, raids y contenido diario a través de los canales oficiales de nuestros miembros.
             </p>
 

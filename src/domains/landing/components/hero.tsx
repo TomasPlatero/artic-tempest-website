@@ -22,11 +22,11 @@ export function LandingHero() {
                 />
             </div>
             {/* Advanced Overlays for Maximum Readability */}
-            <div className="absolute inset-0 z-1 bg-black/50 pointer-events-none" />
-            <div className="absolute inset-0 z-1 bg-gradient-to-b from-black/60 via-transparent to-black/80 pointer-events-none" />
+            <div className="absolute inset-0 z-1 bg-black/50 pointer-events-none" aria-hidden="true" />
+            <div className="absolute inset-0 z-1 bg-gradient-to-b from-black/60 via-transparent to-black/80 pointer-events-none" aria-hidden="true" />
 
             {/* Central Glow / Blur for Text Focus */}
-            <div className="absolute inset-0 z-1 flex items-center justify-center">
+            <div className="absolute inset-0 z-1 flex items-center justify-center" aria-hidden="true">
                 <div className="w-full max-w-4xl h-[400px] bg-blue-900/20 rounded-full blur-[160px] opacity-60" />
             </div>
 
@@ -66,16 +66,17 @@ export function LandingHero() {
             {/* Scroll Indicator */}
             <motion.button
                 onClick={() => document.getElementById('reclutamiento')?.scrollIntoView({ behavior: 'smooth' })}
-                className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-white/60 hover:text-white transition-colors cursor-pointer group z-20 p-4"
+                className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-white/80 hover:text-white transition-colors cursor-pointer group z-20 p-4"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1, y: [0, 8, 0] }}
                 transition={{
                     opacity: { duration: 1, delay: 1 },
                     y: { duration: 2, repeat: Infinity, ease: "easeInOut" }
                 }}
+                aria-label="Explorar hacia abajo"
             >
-                <span className="text-[10px] uppercase tracking-[0.2em] font-black text-white/70 group-hover:text-blue-400 transition-colors">Explorar</span>
-                <IconChevronDown className="size-6 text-blue-400/80 group-hover:text-blue-400 transition-colors" />
+                <span className="text-[10px] uppercase tracking-[0.2em] font-black text-white/90 group-hover:text-blue-400 transition-colors">Explorar</span>
+                <IconChevronDown className="size-6 text-blue-400 group-hover:text-blue-400 transition-colors" />
             </motion.button>
         </section>
     )

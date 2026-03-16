@@ -58,7 +58,7 @@ export function LandingNoticias() {
                         Últimas <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">Noticias</span>
                     </h3>
                 </div>
-                <Link href="/noticias" className="group flex items-center justify-center sm:justify-start gap-2 text-zinc-500 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest border border-white/5 sm:border-none p-3 sm:p-0 rounded-xl bg-white/[0.02] sm:bg-transparent">
+                <Link href="/noticias" className="group flex items-center justify-center sm:justify-start gap-2 text-zinc-400 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest border border-white/5 sm:border-none p-3 sm:p-0 rounded-xl bg-white/[0.02] sm:bg-transparent">
                     Ver todas las noticias
                     <IconArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
@@ -75,9 +75,9 @@ export function LandingNoticias() {
                             viewport={{ once: true }}
                             className="group relative h-[400px] md:h-[500px] rounded-3xl overflow-hidden border border-white/10"
                         >
-                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" aria-hidden="true" />
                             <div className="absolute inset-0 z-0">
-                                <div className="absolute inset-0 bg-blue-900/20 mix-blend-overlay group-hover:opacity-0 transition-opacity" />
+                                <div className="absolute inset-0 bg-blue-900/20 mix-blend-overlay group-hover:opacity-0 transition-opacity" aria-hidden="true" />
                                 <div className="w-full h-full bg-zinc-900 animate-pulse" /> {/* Placeholder while image loads */}
                                 {/* In a real app, use next/image with actual sources */}
                                 <div
@@ -95,11 +95,11 @@ export function LandingNoticias() {
                                 <h4 className="text-xl md:text-4xl font-black text-white mb-3 md:mb-4 leading-tight group-hover:text-blue-400 transition-colors italic uppercase tracking-tighter">
                                     {featuredNews.title}
                                 </h4>
-                                <p className="text-zinc-300 text-xs md:text-lg max-w-2xl line-clamp-2 md:line-clamp-none mb-6 font-medium text-balance opacity-80 md:opacity-100">
+                                <p className="text-zinc-200 text-xs md:text-lg max-w-2xl line-clamp-2 md:line-clamp-none mb-6 font-medium text-balance opacity-90 md:opacity-100">
                                     {featuredNews.summary}
                                 </p>
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-t border-white/10 pt-6">
-                                    <div className="flex items-center gap-6 text-zinc-500 text-[10px] font-bold uppercase tracking-widest">
+                                    <div className="flex items-center gap-6 text-zinc-400 text-[10px] font-bold uppercase tracking-widest">
                                         <div className="flex items-center gap-2">
                                             <CharacterAvatar name={featuredNews.author} size={24} className="border-border/50 shadow-inner" />
                                             {featuredNews.author}
@@ -116,7 +116,7 @@ export function LandingNoticias() {
                                     </div>
                                 </div>
                             </div>
-                            <Link href={`/noticias/${featuredNews.slug || featuredNews.id}`} className="absolute inset-0 z-30" title={featuredNews.title} />
+                            <Link href={`/noticias/${featuredNews.slug || featuredNews.id}`} className="absolute inset-0 z-30" aria-label={`Leer más sobre ${featuredNews.title}`} />
                         </motion.div>
                     )}
 
@@ -132,7 +132,7 @@ export function LandingNoticias() {
                                 className="group relative flex flex-col bg-zinc-950 border border-white/5 rounded-2xl overflow-hidden hover:border-blue-500/30 transition-all"
                             >
                                 <div className="relative aspect-video overflow-hidden">
-                                    <div className="absolute inset-0 bg-blue-900/10 z-10 group-hover:opacity-0 transition-opacity" />
+                                    <div className="absolute inset-0 bg-blue-900/10 z-10 group-hover:opacity-0 transition-opacity" aria-hidden="true" />
                                     <div
                                         className="absolute inset-0 bg-cover bg-center group-hover:scale-110 transition-transform duration-500"
                                         style={{ backgroundImage: `url(${n.image_url || '/assets/images/midnight-battle.webp'})` }}
@@ -141,7 +141,7 @@ export function LandingNoticias() {
                                 <div className="p-6 flex flex-col flex-1">
                                     <div className="flex items-center justify-between mb-4">
                                         <span className="text-blue-400 text-[9px] font-black uppercase tracking-[0.2em]">{n.category}</span>
-                                        <span className="text-zinc-600 text-[9px] font-bold uppercase tracking-widest">{new Date(n.created_at).toLocaleDateString()}</span>
+                                        <span className="text-zinc-500 text-[9px] font-bold uppercase tracking-widest">{new Date(n.created_at).toLocaleDateString()}</span>
                                     </div>
                                     <h5 className="text-lg font-bold text-white group-hover:text-blue-400 transition-colors line-clamp-2 leading-tight">
                                         {n.title}
@@ -149,12 +149,12 @@ export function LandingNoticias() {
                                     <div className="mt-auto pt-6 flex items-center justify-between">
                                         <div className="flex items-center gap-2">
                                             <CharacterAvatar name={n.author} size={24} className="border-border/50 shadow-inner" />
-                                            <span className="text-[10px] font-bold text-zinc-400">{n.author}</span>
+                                            <span className="text-[10px] font-bold text-zinc-300">{n.author}</span>
                                         </div>
                                         <IconArrowRight className="size-4 text-zinc-700 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
                                     </div>
                                 </div>
-                                <Link href={`/noticias/${n.slug || n.id}`} className="absolute inset-0 z-20" />
+                                <Link href={`/noticias/${n.slug || n.id}`} className="absolute inset-0 z-20" aria-label={`Leer más sobre ${n.title}`} />
                             </motion.div>
                         ))}
                     </div>
@@ -174,19 +174,19 @@ export function LandingNoticias() {
                             </p>
                             <Link
                                 href="/reclutamiento"
-                                className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-400 text-white font-black uppercase tracking-widest text-[10px] px-6 py-3 rounded-xl transition-all shadow-lg shadow-blue-500/20 hover:scale-105"
+                                className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-700 text-white font-black uppercase tracking-widest text-[10px] px-6 py-3 rounded-xl transition-all shadow-lg shadow-blue-500/20 hover:scale-105"
                             >
                                 Aplicar Ahora
                                 <IconArrowRight className="size-3" />
                             </Link>
                         </div>
                         {/* Static Decoration */}
-                        <div className="absolute top-0 right-0 -mr-12 -mt-12 size-48 bg-blue-500/10 blur-[60px] rounded-full group-hover:bg-blue-500/20 transition-all pointer-events-none" />
+                        <div className="absolute top-0 right-0 -mr-12 -mt-12 size-48 bg-blue-500/10 blur-[60px] rounded-full group-hover:bg-blue-500/20 transition-all pointer-events-none" aria-hidden="true" />
                     </div>
 
                     {/* Ads Banner */}
                     <div className="space-y-4">
-                        <p className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.3em] px-2 flex items-center gap-2">
+                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] px-2 flex items-center gap-2">
                             Publicidad <span className="h-px bg-zinc-800 flex-1" />
                         </p>
                         <AdBanner

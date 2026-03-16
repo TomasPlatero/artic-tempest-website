@@ -1185,7 +1185,7 @@ export function PlanificadorCdsClient() {
                 <Button
                   variant="secondary"
                   disabled={!isBossEnabled}
-                  className="w-full lg:flex-1 h-12 lg:h-14 text-[10px] font-black px-6 bg-blue-600/10 text-blue-400 border border-blue-500/10 hover:bg-blue-600 hover:text-white transition-all duration-500 uppercase tracking-[0.2em] shadow-2xl backdrop-blur-3xl rounded-xl lg:rounded-2xl group/btn active:scale-95"
+                  className="w-full lg:flex-1 h-12 lg:h-14 text-[10px] font-black px-6 bg-blue-600/10 text-blue-400 border border-blue-500/10 hover:bg-blue-700 hover:text-white transition-all duration-500 uppercase tracking-[0.2em] shadow-2xl backdrop-blur-3xl rounded-xl lg:rounded-2xl group/btn active:scale-95"
                   onClick={() => {
                     setSelectedBoss(boss);
                     setActiveTab("planner");
@@ -1529,7 +1529,7 @@ export function PlanificadorCdsClient() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="flex items-center gap-2 px-3 py-1.5 bg-blue-600/10 rounded-lg border border-blue-500/30 text-blue-400 hover:bg-blue-600/20 hover:text-blue-300 transition-colors h-9"
+                    className="flex items-center gap-2 px-3 py-1.5 bg-blue-600/10 rounded-lg border border-blue-500/30 text-blue-400 hover:bg-blue-700/20 hover:text-blue-300 transition-colors h-9"
                     onClick={() => setShowHelpDialog(true)}
                   >
                     <IconHelpCircle className="size-4" />
@@ -1670,7 +1670,7 @@ export function PlanificadorCdsClient() {
                             Ninguno
                           </button>
                           <button
-                            className="flex-1 text-[9px] font-black uppercase tracking-wider py-1.5 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 transition-colors"
+                            className="flex-1 text-[9px] font-black uppercase tracking-wider py-1.5 rounded-lg bg-blue-600/20 hover:bg-blue-700/30 text-blue-400 transition-colors"
                             onClick={() =>
                               setActiveFilters(
                                 new Set([
