@@ -39,28 +39,44 @@ export default function AvisoLegalPage() {
                 </header>
 
                 <div className="prose prose-invert max-w-none space-y-16">
-                    <section>
-                        <div className="flex items-center gap-3 mb-6">
-                            <IconBriefcase className="text-emerald-500 size-6" />
+                    <section className="bg-zinc-900/50 p-8 md:p-10 rounded-[32px] border border-white/5 space-y-8">
+                        <div className="flex items-center gap-4 border-b border-white/5 pb-6">
+                            <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
+                                <IconBriefcase className="text-emerald-500 size-6" />
+                            </div>
                             <h2 className="text-2xl font-black text-white uppercase tracking-tight m-0">1. Datos del Responsable</h2>
                         </div>
-                        <div className="bg-zinc-900/50 p-8 rounded-[32px] border border-white/5 space-y-4">
+                        <div className="space-y-4">
                             <p className="text-zinc-400 leading-relaxed text-sm">
                                 En cumplimiento del artículo 10 de la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y de Comercio Electrónico (LSSI-CE), se informa que:
                             </p>
                             <ul className="list-none p-0 m-0 space-y-3">
-                                <li className="text-sm font-bold text-white/50 border-b border-white/5 pb-2">PROPIETARIO: <span className="text-white ml-2 text-base">Tomás Platero (Zatoshi - GM) / Artic Tempest</span></li>
-                                <li className="text-sm font-bold text-white/50 border-b border-white/5 pb-2">DOMINIO: <span className="text-emerald-400 ml-2">artictempest.es</span></li>
-                                <li className="text-sm font-bold text-white/50 border-b border-white/5 pb-2">CONTACTO: <span className="text-white ml-2">admin@artictempest.es</span></li>
-                                <li className="text-sm font-bold text-white/50">FINALIDAD: <span className="text-white ml-2">Gestión de comunidad competitiva de WoW y panel de herramientas para miembros.</span></li>
+                                <li className="text-sm font-bold text-white/50 border-b border-white/5 pb-3 flex flex-wrap items-baseline gap-2">
+                                    <span className="uppercase tracking-widest text-[10px]">Propietario:</span>
+                                    <span className="text-white">Tomás Platero (Zatoshi - GM) / Artic Tempest</span>
+                                </li>
+                                <li className="text-sm font-bold text-white/50 border-b border-white/5 pb-3 flex flex-wrap items-baseline gap-2">
+                                    <span className="uppercase tracking-widest text-[10px]">Dominio:</span>
+                                    <span className="text-emerald-400">artictempest.es</span>
+                                </li>
+                                <li className="text-sm font-bold text-white/50 border-b border-white/5 pb-3 flex flex-wrap items-baseline gap-2">
+                                    <span className="uppercase tracking-widest text-[10px]">Contacto:</span>
+                                    <span className="text-white">admin@artictempest.es</span>
+                                </li>
+                                <li className="text-sm font-bold text-white/50 flex flex-wrap items-baseline gap-2 pt-1">
+                                    <span className="uppercase tracking-widest text-[10px]">Finalidad:</span>
+                                    <span className="text-white">Gestión de comunidad competitiva de WoW y panel de herramientas para miembros.</span>
+                                </li>
                             </ul>
                         </div>
                     </section>
 
-                    <section>
-                        <div className="flex items-center gap-3 mb-6">
-                            <IconCopyright className="text-emerald-500 size-6" />
-                            <h2 className="text-2xl font-black text-white uppercase tracking-tight m-0">2. Propiedad Intelectual e Industrial</h2>
+                    <section className="bg-zinc-900/50 p-8 md:p-10 rounded-[32px] border border-white/5 space-y-8">
+                        <div className="flex items-center gap-4 border-b border-white/5 pb-6">
+                            <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
+                                <IconCopyright className="text-emerald-500 size-6" />
+                            </div>
+                            <h2 className="text-2xl font-black text-white uppercase tracking-tight m-0">2. Propiedad Intelectual</h2>
                         </div>
                         <p className="text-zinc-400 leading-relaxed text-sm">
                             Artic Tempest es el titular de todos los derechos de propiedad intelectual e industrial de su página web, así como de los elementos contenidos en la misma (logotipos, diseños propios y textos originales). Queda expresamente prohibida la reproducción total o parcial de estos sin consentimiento previo.
@@ -81,9 +97,11 @@ export default function AvisoLegalPage() {
                         </div>
                     </section>
 
-                    <section>
-                        <div className="flex items-center gap-3 mb-6">
-                            <IconUsers className="text-emerald-500 size-6" />
+                    <section className="bg-zinc-900/50 p-8 md:p-10 rounded-[32px] border border-white/5 space-y-8">
+                        <div className="flex items-center gap-4 border-b border-white/5 pb-6">
+                            <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
+                                <IconUsers className="text-emerald-500 size-6" />
+                            </div>
                             <h2 className="text-2xl font-black text-white uppercase tracking-tight m-0">3. Condiciones de Uso</h2>
                         </div>
                         <p className="text-zinc-400 leading-relaxed">

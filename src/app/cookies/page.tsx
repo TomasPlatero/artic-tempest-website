@@ -39,10 +39,12 @@ export default function CookiesPage() {
                 </header>
 
                 <div className="prose prose-invert max-w-none space-y-16">
-                    <section>
-                        <div className="flex items-start gap-3 mb-6">
-                            <IconInfoCircle className="text-amber-500 size-8 shrink-0 mt-1" />
-                            <h2 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight !m-0 !leading-snug">1. ¿Qué son las Cookies?</h2>
+                    <section className="bg-zinc-900/50 p-8 md:p-10 rounded-[32px] border border-white/5 space-y-8">
+                        <div className="flex items-center gap-4 border-b border-white/5 pb-6">
+                            <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20">
+                                <IconInfoCircle className="text-amber-500 size-6 text-amber-500" />
+                            </div>
+                            <h2 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight m-0">1. ¿Qué son las Cookies?</h2>
                         </div>
                         <p className="text-zinc-400 leading-relaxed text-lg">
                             Las cookies son pequeños ficheros de datos que se descargan en tu navegador al acceder a nuestra web. En Artic Tempest las usamos exclusivamente para que el sitio funcione de manera segura (mantener tu sesión), recordar tus preferencias y comprender cómo interactúas con nosotros para mejorar el servicio.
@@ -50,9 +52,11 @@ export default function CookiesPage() {
                     </section>
 
                     <section className="bg-zinc-900/80 p-6 md:p-12 rounded-[40px] border border-white/5 backdrop-blur-md">
-                        <div className="flex items-start gap-3 mb-8">
-                            <IconSettings className="text-amber-500 size-8 shrink-0 mt-1" />
-                            <h2 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight !m-0 !leading-snug">2. Cookies que utilizamos</h2>
+                        <div className="flex items-center gap-4 border-b border-white/5 pb-8 mb-8">
+                            <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20">
+                                <IconSettings className="text-amber-500 size-6" />
+                            </div>
+                            <h2 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight m-0">2. Cookies que utilizamos</h2>
                         </div>
                         <div className="space-y-8">
                             <div className="p-6 md:p-8 rounded-3xl bg-white/5 border border-white/5 relative overflow-hidden group">
@@ -166,10 +170,12 @@ export default function CookiesPage() {
                         </div>
                     </section>
 
-                    <section>
-                        <div className="flex items-start gap-3 mb-6">
-                            <IconSettings className="text-amber-500 size-8 shrink-0 mt-1" />
-                            <h2 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight !m-0 !leading-snug">3. Cómo gestionar las cookies</h2>
+                    <section className="bg-zinc-900/50 p-8 md:p-10 rounded-[32px] border border-white/5 space-y-8">
+                        <div className="flex items-center gap-4 border-b border-white/5 pb-6">
+                            <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20">
+                                <IconSettings className="text-amber-500 size-6 text-amber-500" />
+                            </div>
+                            <h2 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight m-0">3. Cómo gestionar las cookies</h2>
                         </div>
                         <p className="text-zinc-400 leading-relaxed text-lg">
                             Puedes restringir, bloquear o borrar las cookies de cualquier sitio web utilizando tu navegador. Cada navegador tiene una configuración diferente, pero normalmente se encuentra en el menú de &quot;Preferencias&quot; o &quot;Herramientas de privacidad&quot;.

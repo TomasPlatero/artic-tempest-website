@@ -40,9 +40,11 @@ export default function PrivacidadPage() {
                 </header>
 
                 <div className="prose prose-invert max-w-none space-y-16">
-                    <section>
-                        <div className="flex items-center gap-3 mb-6">
-                            <IconFileText className="text-blue-400 size-6" />
+                    <section className="bg-zinc-900/50 p-8 md:p-10 rounded-[32px] border border-white/5 space-y-8">
+                        <div className="flex items-center gap-4 border-b border-white/5 pb-6">
+                            <div className="p-3 rounded-2xl bg-blue-500/10 border border-blue-500/20">
+                                <IconFileText className="text-blue-400 size-6" />
+                            </div>
                             <h2 className="text-2xl font-black text-white uppercase tracking-tight m-0">1. Compromiso RGPD</h2>
                         </div>
                         <p className="text-zinc-400 leading-relaxed text-lg">
@@ -51,8 +53,10 @@ export default function PrivacidadPage() {
                     </section>
 
                     <section className="bg-white/5 p-8 md:p-12 rounded-[40px] border border-white/10 backdrop-blur-xl">
-                        <div className="flex items-center gap-3 mb-8">
-                            <IconEye className="text-blue-400 size-6" />
+                        <div className="flex items-center gap-4 border-b border-white/5 pb-8 mb-8">
+                            <div className="p-3 rounded-2xl bg-blue-500/10 border border-blue-500/20">
+                                <IconEye className="text-blue-400 size-6" />
+                            </div>
                             <h2 className="text-2xl font-black text-white uppercase tracking-tight m-0">2. Información que recopilamos</h2>
                         </div>
                         <div className="grid gap-8">
@@ -77,9 +81,11 @@ export default function PrivacidadPage() {
                         </div>
                     </section>
 
-                    <section>
-                        <div className="flex items-center gap-3 mb-6">
-                            <IconLock className="text-blue-400 size-6" />
+                    <section className="bg-zinc-900/50 p-8 md:p-10 rounded-[32px] border border-white/5 space-y-8">
+                        <div className="flex items-center gap-4 border-b border-white/5 pb-6">
+                            <div className="p-3 rounded-2xl bg-blue-500/10 border border-blue-500/20">
+                                <IconLock className="text-blue-400 size-6" />
+                            </div>
                             <h2 className="text-2xl font-black text-white uppercase tracking-tight m-0">3. Seguridad de los datos</h2>
                         </div>
                         <p className="text-zinc-400 leading-relaxed">
@@ -87,9 +93,11 @@ export default function PrivacidadPage() {
                         </p>
                     </section>
 
-                    <section className="bg-blue-500/5 p-10 rounded-[40px] border border-blue-500/10">
-                        <div className="flex items-center gap-3 mb-6">
-                            <IconTrash className="text-blue-400 size-6" />
+                    <section className="bg-blue-500/5 p-10 rounded-[40px] border border-blue-500/10 space-y-8">
+                        <div className="flex items-center gap-4 border-b border-blue-500/20 pb-6 mb-2">
+                            <div className="p-3 rounded-2xl bg-blue-500/10 border border-blue-500/20">
+                                <IconTrash className="text-blue-400 size-6" />
+                            </div>
                             <h2 className="text-2xl font-black text-white uppercase tracking-tight m-0 text-blue-100">4. Tus Derechos (ARCO)</h2>
                         </div>
                         <p className="text-zinc-400 leading-relaxed mb-6 italic">
