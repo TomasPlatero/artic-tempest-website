@@ -7,6 +7,7 @@ import Image from "next/image"
 export function LandingStreamers({ limit, initialStreamers }: { limit?: number, initialStreamers?: any[] }) {
     const [streamers, setStreamers] = useState<any[]>(initialStreamers || [])
     const [loading, setLoading] = useState(!initialStreamers)
+    const [activeStream, setActiveStream] = useState<string | null>(null)
 
     useEffect(() => {
         if (initialStreamers) return; // Skip if provided by server
@@ -40,10 +41,24 @@ export function LandingStreamers({ limit, initialStreamers }: { limit?: number, 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {streamers.map((s) => (
                     <div key={s.id} className="bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-purple-500/50 transition-all group overflow-hidden">
-                        <div className="aspect-video w-full rounded-xl overflow-hidden bg-black/50 mb-4 relative">
-                            {s.is_live ? (
+                        <div className="aspect-video w-full rounded-xl overflow-hidden bg-black/50 mb-4 relative cursor-pointer group/stream" onClick={() => setActiveStream(s.twitch_username)}>
+                            {s.is_live && activeStream !== s.twitch_username && (
+                                <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40 group-hover/stream:bg-black/20 transition-colors">
+                                    <div className="size-16 rounded-full bg-purple-600 flex items-center justify-center text-white shadow-xl scale-90 group-hover/stream:scale-100 transition-transform">
+                                        <IconBrandTwitch className="size-8 animate-pulse" />
+                                    </div>
+                                    <div className="absolute top-4 left-4 flex items-center gap-2">
+                                        <span className="flex h-2 w-2">
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                                        </span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-white shadow-sm">En Vivo</span>
+                                    </div>
+                                </div>
+                            )}
+                            {s.is_live && activeStream === s.twitch_username ? (
                                 <iframe
-                                    src={`https://player.twitch.tv/?channel=${s.twitch_username}&parent=localhost&parent=127.0.0.1&parent=artictempest.es&parent=www.artictempest.es&muted=true`}
+                                    src={`https://player.twitch.tv/?channel=${s.twitch_username}&parent=localhost&parent=127.0.0.1&parent=artictempest.es&parent=www.artictempest.es&muted=true&autoplay=true`}
                                     className="w-full h-full border-none"
                                     allowFullScreen
                                 />

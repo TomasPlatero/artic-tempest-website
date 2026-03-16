@@ -117,7 +117,7 @@ export default async function HomePage() {
   }
   // --- End Progression Data Fetching ---
 
-  const streamers = await getEnrichedStreamers();
+  // const streamers = await getEnrichedStreamers();
 
   return (
     <>
@@ -132,7 +132,7 @@ export default async function HomePage() {
         url={baseUrl}
         description={`Sitio web oficial de ${guildName}. Dashboard de hermandad, roster, calendario y progresión de raids.`}
       />
-      <HomePageClient initialProgression={progression} initialStreamers={streamers} />
+      <HomePageClient initialProgression={progression} />
     </>
   )
 }

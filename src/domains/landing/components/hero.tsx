@@ -18,7 +18,7 @@ export function LandingHero() {
                     className="object-cover"
                     sizes="100vw"
                     priority
-                    quality={90}
+                    quality={75}
                 />
             </div>
             {/* Advanced Overlays for Maximum Readability */}

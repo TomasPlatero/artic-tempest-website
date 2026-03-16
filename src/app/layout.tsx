@@ -21,18 +21,21 @@ import "./globals.css";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const montserrat = Montserrat({
   weight: "900",
   subsets: ["latin"],
   variable: "--font-montserrat",
+  display: "swap",
 });
 
 const cinzel = Cinzel({
   weight: "700",
   subsets: ["latin"],
   variable: "--font-cinzel",
+  display: "swap",
 });
 
 import { supabaseAdmin } from "@/shared/auth/auth-options";
