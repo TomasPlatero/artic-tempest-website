@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
+import Image from "next/image";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
@@ -329,10 +330,13 @@ export function WeeklyVaultUploader({
               <Card key={upload.id}>
                 <CardContent className="p-4 flex gap-4 items-center">
                   <div className="h-16 w-16 rounded overflow-hidden shrink-0 border bg-muted">
-                    <img
+                    <Image
                       src={upload.image_url}
                       alt="Vault"
+                      width={64}
+                      height={64}
                       className="h-full w-full object-cover"
+                      unoptimized
                     />
                   </div>
                   <div className="flex-1 min-w-0">

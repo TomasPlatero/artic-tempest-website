@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/shared/supabase/server"
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://artictempest.es'
 import { IconCalendar, IconUserEdit, IconArrowRight } from "@tabler/icons-react"
 import Link from "next/link"
 import React from "react"
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
     openGraph: {
         title: 'Noticias | Artic Tempest',
         description: 'Actualidad y novedades de la hermandad Artic Tempest.',
-        url: 'https://artictempest.es/noticias',
+        url: `${baseUrl}/noticias`,
         siteName: 'Artic Tempest',
         type: 'website',
     }

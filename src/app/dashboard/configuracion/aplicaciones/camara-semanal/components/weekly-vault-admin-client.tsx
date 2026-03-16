@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useMemo } from "react"
+import Image from "next/image"
 import { format, parseISO } from "date-fns"
 import { es } from "date-fns/locale"
 import { Card, CardContent } from "@/shared/ui/card"
@@ -232,10 +233,13 @@ export function WeeklyVaultAdminClient({ initialUploads }: Props) {
                                                 rel="noreferrer"
                                                 className="block w-24 h-16 rounded overflow-hidden border border-white/10 shrink-0 relative"
                                             >
-                                                <img
+                                                <Image
                                                     src={upload.image_url}
                                                     alt="Vault"
+                                                    width={96}
+                                                    height={64}
                                                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                                    unoptimized
                                                 />
                                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                                     <IconExternalLink className="size-5 text-white drop-shadow-md" />
@@ -250,10 +254,13 @@ export function WeeklyVaultAdminClient({ initialUploads }: Props) {
                                         <td className="px-4 py-3 whitespace-nowrap">
                                             <div className="flex items-center gap-2">
                                                 {upload.profiles?.discord_avatar ? (
-                                                    <img
+                                                    <Image
                                                         src={upload.profiles.discord_avatar}
                                                         alt="Avatar"
+                                                        width={24}
+                                                        height={24}
                                                         className="size-6 rounded-full bg-white/10 shrink-0"
+                                                        unoptimized
                                                     />
                                                 ) : (
                                                     <div className="size-6 rounded-full bg-white/10 shrink-0" />
@@ -310,10 +317,13 @@ export function WeeklyVaultAdminClient({ initialUploads }: Props) {
                                     rel="noreferrer"
                                     className="block w-full h-28 overflow-hidden border-b border-white/10 shrink-0 relative"
                                 >
-                                    <img
+                                    <Image
                                         src={upload.image_url}
                                         alt="Vault"
+                                        width={400}
+                                        height={112}
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                        unoptimized
                                     />
                                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                         <IconExternalLink className="size-8 text-white drop-shadow-lg" />
@@ -323,10 +333,13 @@ export function WeeklyVaultAdminClient({ initialUploads }: Props) {
                                     <div className="flex flex-col min-w-0 flex-1">
                                         <div className="flex items-center gap-2 mb-1">
                                             {upload.profiles?.discord_avatar ? (
-                                                <img
+                                                <Image
                                                     src={upload.profiles.discord_avatar}
                                                     alt="Avatar"
+                                                    width={20}
+                                                    height={20}
                                                     className="size-5 rounded-full bg-white/10 shrink-0"
+                                                    unoptimized
                                                 />
                                             ) : (
                                                 <div className="size-5 rounded-full bg-white/10 shrink-0" />

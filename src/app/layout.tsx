@@ -75,7 +75,7 @@ export async function generateMetadata(): Promise<Metadata> {
       address: false,
       telephone: false,
     },
-    metadataBase: new URL(process.env.NEXTAUTH_URL || 'http://localhost:3000'),
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://artictempest.es'),
     alternates: {
       canonical: '/',
     },

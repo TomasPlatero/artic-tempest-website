@@ -57,6 +57,15 @@ import {
   BOSS_ABILITY_META,
 } from "@/shared/constants/cd-planner";
 
+const normalizeBossName = (value: string | null | undefined) => {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[’']/g, "'")
+    .trim()
+    .toUpperCase();
+};
+
 export type CooldownDefinition = {
   id: string;
   name: string;
@@ -433,7 +442,7 @@ export function PlanificadorCdsClient() {
     CooldownDefinition[]
   >([]);
 
-  const BOSS_NAME_ALIASES: Record<string, string[]> = {
+  const BOSS_NAME_ALIASES: Record<string, string[]> = useMemo(() => ({
     "Imperator Averzian": ["IMPERATOR AVERZIAN"],
     Vorasius: ["VORASIUS"],
     "Fallen-King Salhadaar": ["REY CAIDO SALHADAAR", "REY CAÍDO SALHADAAR"],
@@ -453,16 +462,8 @@ export function PlanificadorCdsClient() {
       "CAÍDA DE MEDIANOCHE (L'URA)",
       "L'URA",
     ],
-  };
+  }), []);
 
-  const normalizeBossName = useCallback((value: string | null | undefined) => {
-    return String(value || "")
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[’']/g, "'")
-      .trim()
-      .toUpperCase();
-  }, []);
 
   const bossMatchesSelection = useCallback(
     (plannerBoss: string, eventBoss: string | null | undefined) => {
@@ -475,7 +476,7 @@ export function PlanificadorCdsClient() {
         (alias) => normalizeBossName(alias) === eventNormalized,
       );
     },
-    [normalizeBossName],
+    [BOSS_NAME_ALIASES],
   );
 
   const getBossTimeline = useCallback(
@@ -500,7 +501,7 @@ export function PlanificadorCdsClient() {
 
       return aliasKey ? BOSS_TIMELINES[aliasKey] || [] : [];
     },
-    [normalizeBossName],
+    [BOSS_NAME_ALIASES],
   );
 
   const isPast = useMemo(() => {

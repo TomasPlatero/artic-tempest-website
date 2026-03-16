@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next'
 import { createAdminClient } from '@/shared/supabase/server'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL || 'https://artictempest.es'
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://artictempest.es'
     const supabase = await createAdminClient()
 
     // Static routes
@@ -30,6 +30,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             lastModified: new Date(),
             changeFrequency: 'weekly',
             priority: 0.7,
+        },
+        {
+            url: `${baseUrl}/aviso-legal`,
+            lastModified: new Date(),
+            changeFrequency: 'monthly',
+            priority: 0.3,
+        },
+        {
+            url: `${baseUrl}/cookies`,
+            lastModified: new Date(),
+            changeFrequency: 'monthly',
+            priority: 0.3,
+        },
+        {
+            url: `${baseUrl}/privacidad`,
+            lastModified: new Date(),
+            changeFrequency: 'monthly',
+            priority: 0.3,
         },
         {
             url: `${baseUrl}/ayuda`,

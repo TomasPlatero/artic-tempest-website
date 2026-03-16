@@ -12,6 +12,8 @@ import { ShareBar } from "@/domains/news/components/share-bar"
 
 import { Metadata } from "next"
 
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://artictempest.es'
+
 interface NewsItem {
     id: string
     title: string
@@ -79,12 +81,13 @@ export async function generateMetadata({
         }
     }
 
-    const url = `https://artictempest.es/noticias/${item.slug || item.id}`
-    const images = item.image_url ? [item.image_url] : ['https://artictempest.es/assets/images/midnight-battle.webp']
+    const url = `${baseUrl}/noticias/${item.slug || item.id}`
+    const images = item.image_url ? [item.image_url] : [`${baseUrl}/assets/images/midnight-battle.webp`]
 
     return {
         title: `${item.title} | Artic Tempest`,
         description: item.summary,
+        robots: (canViewDraft) ? { index: false, follow: false } : undefined,
         openGraph: {
             title: item.title,
             description: item.summary,
@@ -144,7 +147,7 @@ export default async function NewsDetailPage({
                     <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#0a0a0b] via-[#0a0a0b]/40 to-transparent" />
                     <div
                         className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat scale-105"
-                        style={{ backgroundImage: `url(${item.image_url || 'https://artictempest.es/assets/images/midnight-battle.webp'})` }}
+                        style={{ backgroundImage: `url(${item.image_url || `${baseUrl}/assets/images/midnight-battle.webp`})` }}
                     />
 
                     <div className="absolute inset-0 z-20 flex flex-col justify-end max-w-7xl mx-auto px-6 pb-12">
@@ -186,7 +189,7 @@ export default async function NewsDetailPage({
                     <div className="bg-white/[0.02] border border-white/5 rounded-[32px] md:rounded-[40px] p-6 md:p-16 backdrop-blur-sm shadow-2xl">
                         <ShareBar
                             title={item.title}
-                            url={`https://artictempest.es/noticias/${item.slug || item.id}`}
+                            url={`${baseUrl}/noticias/${item.slug || item.id}`}
                         />
                         <div
                             className="prose prose-invert prose-blue max-w-none 

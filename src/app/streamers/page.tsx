@@ -5,7 +5,7 @@ import { LandingFooter } from "@/domains/landing/components/footer"
 import { BreadcrumbJsonLd } from "@/shared/seo/json-ld"
 import { getEnrichedStreamers } from "@/domains/streamers/lib/server-actions"
 
-const baseUrl = process.env.NEXTAUTH_URL || 'https://artictempest.com'
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://artictempest.es'
 
 export const metadata: Metadata = {
     title: "Streamers | Artic Tempest – Creadores de Contenido WoW",
