@@ -13,6 +13,8 @@ import { ScrollToTop } from "@/shared/ui/scroll-to-top"
 import { PwaPrompt } from "@/shared/components/pwa-prompt"
 import { FlagsProvider } from "@/shared/layout/flags-provider"
 import { showBetaFeatures } from "@/flags"
+import { FlagValues } from 'flags/react';
+import { VercelToolbar } from '@vercel/toolbar/next';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -171,6 +173,7 @@ export default async function RootLayout({
         >
           <SessionProvider>
             <FlagsProvider flags={flags}>
+              <FlagValues values={flags} />
               <NotificationToastListener />
               <NotificationPermissionModal />
               <ScrollToTop />
@@ -185,6 +188,7 @@ export default async function RootLayout({
           {process.env.NEXT_PUBLIC_GA_ID && (
             <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
           )}
+          <VercelToolbar />
         </ThemeProvider>
       </body>
     </html>

@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import withVercelToolbar from '@vercel/toolbar/plugins/next';
 
 /** @type {import('next').NextConfig} */
 const nextConfig: NextConfig = {
@@ -10,6 +11,8 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: [
     'cataractous-overharshly-keshia.ngrok-free.dev',
     'localhost:3000',
+    '127.0.0.1:3000',
+    '127.0.0.1',
     '192.168.1.108',
     '192.168.1.108:3000',
   ],
@@ -139,4 +142,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withVercelToolbar()(nextConfig);

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
 import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options"
 import { getAppPermission } from "@/shared/auth/permissions"
+import * as flags from "@/flags"
 
 import { CalendarClient } from "@/domains/calendar/components/calendar-client"
 
@@ -32,7 +33,7 @@ export default async function CalendarioPage() {
     const roleLevel = session.user?.roleLevel ?? "member"
     const { canView, canEdit } = await getAppPermission(roleLevel, 'calendar')
 
-    if (!canView) {
+    if (!canView || !(await flags.enableCalendar())) {
         redirect("/dashboard")
     }
 

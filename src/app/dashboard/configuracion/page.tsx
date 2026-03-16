@@ -20,6 +20,7 @@ import { Forbidden } from "@/shared/components/forbidden";
 import { getAppPermission } from "@/shared/auth/permissions";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/shared/auth/auth-options";
+import * as flags from "@/flags";
 
 export default async function SettingsHubPage() {
   const session = await getServerSession(authOptions);
@@ -178,7 +179,7 @@ export default async function SettingsHubPage() {
       href: "/dashboard/configuracion/donaciones",
       color: "text-rose-500",
       bg: "bg-rose-500/10",
-      visible: donationsPermission.canManage,
+      visible: donationsPermission.canManage && (await flags.enableEconomy()),
     },
   ];
 

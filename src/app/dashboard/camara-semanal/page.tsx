@@ -1,10 +1,16 @@
 import { ensureAppPermission } from '@/shared/auth/permissions';
 import { supabaseAdmin } from '@/shared/auth/auth-options';
+import * as flags from "@/flags"
 import { WeeklyVaultUploader } from './components/weekly-vault-uploader';
 import React from 'react';
 
 export default async function WeeklyVaultPage() {
   const session = await ensureAppPermission('weekly-vault', 'view');
+
+  if (!(await flags.enableWeeklyVault())) {
+    const { redirect } = await import('next/navigation');
+    redirect('/dashboard');
+  }
 
   // Fetch the user's characters 
   const { data: characters, error: charsError } = await supabaseAdmin

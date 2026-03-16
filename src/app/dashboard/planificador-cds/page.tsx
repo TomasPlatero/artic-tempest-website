@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/shared/auth/auth-options"
 import { getAppPermission } from "@/shared/auth/permissions"
 import { redirect } from "next/navigation"
+import * as flags from "@/flags"
 
 export default async function PlanificadorCdsPage({ searchParams }: { searchParams: Promise<{ event_id?: string }> }) {
     const session = await getServerSession(authOptions)
@@ -12,7 +13,7 @@ export default async function PlanificadorCdsPage({ searchParams }: { searchPara
     const roleLevel = session.user?.roleLevel ?? "member"
     const { canView } = await getAppPermission(roleLevel, 'planificador-cds')
 
-    if (!canView) {
+    if (!canView || !(await flags.enablePlanner())) {
         redirect("/dashboard")
     }
 

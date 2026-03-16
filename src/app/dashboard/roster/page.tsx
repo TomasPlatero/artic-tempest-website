@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options";
 import { getAppPermission } from "@/shared/auth/permissions";
+import * as flags from "@/flags";
 
 import { AdminPageHeader } from "@/shared/components/admin-page-header";
 import { RosterClient } from "@/domains/roster/components/roster-client";
@@ -131,7 +132,7 @@ export default async function RosterPage() {
   const roleLevel = session.user?.roleLevel ?? "member";
   const { canView, canEdit } = await getAppPermission(roleLevel, "roster");
 
-  if (!canView) {
+  if (!canView || !(await flags.enableRoster())) {
     redirect("/dashboard");
   }
 

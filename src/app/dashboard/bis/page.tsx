@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options";
 import { getAppPermission } from "@/shared/auth/permissions";
+import * as flags from "@/flags";
 
 import { BisClient } from "@/domains/bis/components/bis-client";
 
@@ -101,7 +102,7 @@ export default async function BisPage() {
   const roleLevel = session.user?.roleLevel ?? "member";
   const { canView, canEdit } = await getAppPermission(roleLevel, "bis");
 
-  if (!canView) {
+  if (!canView || !(await flags.enableWishlist())) {
     redirect("/dashboard");
   }
 

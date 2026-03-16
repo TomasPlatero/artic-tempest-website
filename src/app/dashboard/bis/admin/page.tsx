@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/shared/auth/auth-options";
 import { getAppPermission } from "@/shared/auth/permissions";
+import * as flags from "@/flags";
 
 import { AdminPageHeader } from "@/shared/components/admin-page-header";
 import { BisAdminClient } from "@/domains/bis/components/bis-admin-client";
@@ -19,7 +20,9 @@ export default async function BisAdminPage() {
   const roleLevel = session.user?.roleLevel ?? "member";
   const { canView } = await getAppPermission(roleLevel, "bis-admin");
 
-  if (!canView) redirect("/dashboard/bis");
+  if (!canView || !(await flags.enableWishlist())) {
+    redirect("/dashboard/bis");
+  }
 
   return (
     <div className="flex flex-1 flex-col p-4 md:p-6 gap-4">

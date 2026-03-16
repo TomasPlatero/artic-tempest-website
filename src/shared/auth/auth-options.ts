@@ -42,16 +42,23 @@ const {
   DISCORD_CLIENT_SECRET = '',
   DISCORD_REQUESTED_SCOPES = 'identify guilds guilds.members.read email',
   NEXT_PUBLIC_SUPABASE_URL,
+  SUPABASE_URL,
   SUPABASE_SERVICE_ROLE_KEY,
+  SUPABASE_SERVICE_ROLE,
 } = process.env;
 
 if (!NEXTAUTH_SECRET) throw new Error('Falta NEXTAUTH_SECRET');
-if (!NEXT_PUBLIC_SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY)
-  throw new Error('Falta configuración de Supabase');
+
+const finalSupabaseUrl = NEXT_PUBLIC_SUPABASE_URL || SUPABASE_URL;
+const finalSupabaseKey = SUPABASE_SERVICE_ROLE_KEY || SUPABASE_SERVICE_ROLE;
+
+if (!finalSupabaseUrl || !finalSupabaseKey) {
+  console.error('❌ Error: Falta configuración de Supabase (URL o Key)');
+}
 
 export const supabaseAdmin = createClient(
-  NEXT_PUBLIC_SUPABASE_URL,
-  SUPABASE_SERVICE_ROLE_KEY,
+  finalSupabaseUrl || '',
+  finalSupabaseKey || '',
   {
     auth: { persistSession: false },
   },

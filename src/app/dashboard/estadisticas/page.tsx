@@ -3,6 +3,7 @@ import type React from "react"
 import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
 import { authOptions, supabaseAdmin } from "@/shared/auth/auth-options"
+import * as flags from "@/flags"
 
 import { StatsClient } from "@/domains/stats/components/stats-client"
 import { fetchGuildProgression } from "@/shared/integrations/raiderio/raiderio-client"
@@ -78,7 +79,7 @@ export default async function EstadisticasPage() {
     const roleLevel = session.user?.roleLevel ?? "member"
     const { canView } = await getAppPermission(roleLevel, 'stats')
 
-    if (!canView) {
+    if (!canView || !(await flags.enableStatsLogs())) {
         redirect("/dashboard")
     }
 

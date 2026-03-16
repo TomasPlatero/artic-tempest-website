@@ -1,7 +1,9 @@
 // src/app/dashboard/configuracion/donaciones/page.tsx
 import { supabaseAdmin, authOptions } from "@/shared/auth/auth-options"
 import { getServerSession } from "next-auth"
+import { redirect } from "next/navigation"
 import { getAppPermission } from "@/shared/auth/permissions"
+import * as flags from "@/flags"
 import { Forbidden } from "@/shared/components/forbidden"
 import { SettingsDonationsClient } from "@/domains/settings/components/settings-donations"
 import { AdminPageHeader } from "@/shared/components/admin-page-header"
@@ -16,8 +18,8 @@ export default async function SettingsDonationsPage() {
     
     // Check permission
     const permission = await getAppPermission(roleLevel, "donations")
-    if (!permission.canManage) {
-        return <Forbidden />
+    if (!permission.canManage || !(await flags.enableEconomy())) {
+        redirect("/dashboard")
     }
 
     // Fetch all logs
