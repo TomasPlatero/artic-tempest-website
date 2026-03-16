@@ -13,6 +13,7 @@ export async function GET() {
             .from("navigation_items")
             .select(`
         *,
+        description,
         navigation_item_roles (role_level)
       `)
             .eq("is_active", true)

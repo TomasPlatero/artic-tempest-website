@@ -33,6 +33,25 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  DragOverlay,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -54,6 +73,14 @@ export function SettingsMenuClient() {
   const [loading, setLoading] = React.useState(true);
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [editForm, setEditForm] = React.useState<any>({});
+  const [activeId, setActiveId] = React.useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   React.useEffect(() => {
     setMounted(true);
@@ -81,11 +108,13 @@ export function SettingsMenuClient() {
       url: item.url || "",
       icon_name: item.icon_name || "",
       order_index: item.order_index,
+      parent_id: item.parent_id,
       app_id: item.app_id || "",
       roles: item.navigation_item_roles?.map((r: any) => r.role_level) || [],
       css_class: item.css_class || "",
       element_id: item.element_id || "",
       visibility: item.visibility || "all",
+      description: item.description || "",
     });
   };
 
@@ -107,6 +136,53 @@ export function SettingsMenuClient() {
     router.refresh();
   };
 
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    // We use the flattened list to find correct indices for arrayMove
+    const oldIndex = flattenedItems.findIndex((i) => i.id === active.id);
+    const newIndex = flattenedItems.findIndex((i) => i.id === over.id);
+
+    // Get the item that we are dropping after/over
+    const overItem = flattenedItems[newIndex];
+    
+    // Logic: The moved item will take the parent of the item it's dropped onto
+    // This allows moving items between categories in the flat list representation
+    const newParentId = overItem.parent_id;
+
+    // Create the new list state
+    const newFlattened = arrayMove(flattenedItems, oldIndex, newIndex);
+    
+    // We update the local state immediately for responsiveness
+    // Note: We need to update 'items' which is our source of truth.
+    // 'items' is the flat database array.
+    const updatedItems = items.map(item => {
+      if (item.id === active.id) {
+        return { ...item, parent_id: newParentId };
+      }
+      return item;
+    });
+
+    // Re-calculate the indices based on the NEW order in the flattened list
+    const finalOrder = newFlattened.map((item, index) => ({
+      id: item.id,
+      order_index: (index + 1) * 10,
+      parent_id: item.id === active.id ? newParentId : item.parent_id
+    }));
+
+    setItems(updatedItems); // Optimistic update for parent
+
+    // Send bulk update to a new endpoint or existing PATCH with array
+    await fetch("/api/admin/navigation/reorder", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items: finalOrder }),
+    });
+
+    await fetchItems();
+    router.refresh();
+  };
   const handleCreate = async (type: "category" | "link") => {
     await fetch("/api/admin/navigation", {
       method: "POST",
@@ -123,7 +199,30 @@ export function SettingsMenuClient() {
     router.refresh();
   };
 
-  // Hierarchy building helper
+  // Flattened list for SortableContext (the IDs in the order they appear in the tree)
+  const flattenedItems = React.useMemo(() => {
+    const flatten = (nodes: any[]): any[] => {
+      let result: any[] = [];
+      for (const node of nodes) {
+        result.push(node);
+        if (node.children) {
+          result = result.concat(flatten(node.children));
+        }
+      }
+      return result;
+    };
+    const treeData = (() => {
+      const build = (parentId: string | null = null): any[] => {
+        return items
+          .filter((i) => i.parent_id === parentId)
+          .map((i) => ({ ...i, children: build(i.id) }));
+      };
+      return build(null);
+    })();
+    return flatten(treeData);
+  }, [items]);
+
+  // Tree for rendering (recursive starting point)
   const tree = React.useMemo(() => {
     const build = (parentId: string | null = null): any[] => {
       return items
@@ -132,356 +231,6 @@ export function SettingsMenuClient() {
     };
     return build(null);
   }, [items]);
-
-  const renderRow = (
-    item: any,
-    depth = 0,
-    parentRoles: string[] | null = null,
-  ) => {
-    const isEditing = editingId === item.id;
-    const Icon = getIconByName(item.icon_name);
-
-    // Effective roles for this item (own or inherited)
-    const ownRoles =
-      item.navigation_item_roles?.map((r: any) => r.role_level) || [];
-    const hasOwnRoles = ownRoles.length > 0;
-    const effectiveRoles = hasOwnRoles ? ownRoles : parentRoles;
-
-    return (
-      <React.Fragment key={item.id}>
-        <div
-          className={cn(
-            "flex flex-col sm:flex-row sm:items-center gap-3 p-3 border-b border-border/40 hover:bg-white/5 transition-colors group relative",
-            depth > 0 && "pl-8 sm:pl-10",
-          )}
-        >
-          {/* Main Info */}
-          <div className="flex items-center gap-2 min-w-0 sm:min-w-[200px] flex-1">
-            <div className="p-1.5 bg-white/5 rounded-lg border border-white/5 group-hover:border-primary/20 transition-colors">
-              <Icon className="size-4 text-primary" />
-            </div>
-            <span className="font-bold text-sm tracking-tight truncate">
-              {item.name}
-            </span>
-            {!item.url && (
-              <Badge
-                variant="outline"
-                className="text-[9px] px-1 py-0 h-4 bg-primary/5 text-primary border-primary/20 uppercase font-black"
-              >
-                Cat
-              </Badge>
-            )}
-          </div>
-
-          {/* URL/Path */}
-          <div className="flex-1 text-xs text-muted-foreground truncate opacity-60 sm:opacity-100 pl-9 sm:pl-0">
-            {item.url || (
-              <span className="italic text-[10px] uppercase tracking-wider opacity-40">
-                Sin ruta
-              </span>
-            )}
-          </div>
-
-          {/* Stats & Actions */}
-          <div className="flex items-center justify-between sm:justify-end gap-2 pl-9 sm:pl-0">
-            <div className="flex items-center gap-1">
-              {effectiveRoles && effectiveRoles.length > 0 ? (
-                <div
-                  className={cn(
-                    "flex -space-x-1",
-                    !hasOwnRoles && "opacity-40 grayscale-[0.5]",
-                  )}
-                  title={
-                    !hasOwnRoles
-                      ? "Heredado de la categoría"
-                      : "Permisos específicos"
-                  }
-                >
-                  {effectiveRoles.map((role: string) => (
-                    <div
-                      key={role}
-                      className="size-4 rounded-full border border-zinc-950 bg-primary flex items-center justify-center text-[8px] font-black text-zinc-950 uppercase"
-                    >
-                      {role.substring(0, 1)}
-                    </div>
-                  ))}
-                  {!hasOwnRoles && (
-                    <div className="size-4 flex items-center justify-center ml-1">
-                      <IconChevronRight className="size-2 text-primary" />
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="text-[9px] font-black tracking-tighter text-muted-foreground/40 uppercase">
-                  Public
-                </div>
-              )}
-              <div className="h-3 w-px bg-white/5 mx-1 hidden sm:block" />
-              <span className="text-[10px] font-mono opacity-40">
-                #{item.order_index}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-1">
-              <Button
-                size="icon"
-                variant="ghost"
-                className="size-8 hover:bg-primary hover:text-zinc-950 rounded-lg transition-all"
-                onClick={() => handleEdit(item)}
-              >
-                <IconEdit className="size-4" />
-              </Button>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="size-8 text-destructive hover:bg-destructive hover:text-white rounded-lg transition-all"
-                onClick={() => handleDelete(item.id)}
-              >
-                <IconTrash className="size-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {isEditing && (
-          <div className="p-4 sm:p-6 bg-muted/40 border-b border-border shadow-inner animate-in slide-in-from-top duration-200">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-xs font-black uppercase tracking-widest text-primary/60">
-                  Nombre
-                </label>
-                <Input
-                  className="bg-zinc-950 border-white/5 h-11"
-                  value={editForm.name}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, name: e.target.value })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-black uppercase tracking-widest text-primary/60">
-                  URL / Ruta
-                </label>
-                <Input
-                  className="bg-zinc-950 border-white/5 h-11"
-                  value={editForm.url || ""}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, url: e.target.value || null })
-                  }
-                  placeholder="/ej: /roster"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-black uppercase tracking-widest text-primary/60">
-                  Visualización{" "}
-                  {!editForm.url && (
-                    <span className="text-[10px] opacity-40 lowercase font-medium">
-                      (opcional para categorías)
-                    </span>
-                  )}
-                </label>
-                <IconPicker
-                  value={editForm.icon_name}
-                  onSelect={(name: string) =>
-                    setEditForm({ ...editForm, icon_name: name })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-black uppercase tracking-widest text-primary/60">
-                  Orden Prioridad
-                </label>
-                <Input
-                  className="bg-zinc-950 border-white/5 h-11"
-                  type="number"
-                  value={editForm.order_index}
-                  onChange={(e) =>
-                    setEditForm({
-                      ...editForm,
-                      order_index: parseInt(e.target.value),
-                    })
-                  }
-                />
-              </div>
-              <div className="space-y-2 col-span-1 sm:col-span-2">
-                <label className="text-xs font-black uppercase tracking-widest text-primary/60">
-                  Padre (Superior)
-                </label>
-                <Select
-                  value={editForm.parent_id || "null"}
-                  onValueChange={(v) =>
-                    setEditForm({
-                      ...editForm,
-                      parent_id: v === "null" ? null : v,
-                    })
-                  }
-                >
-                  <SelectTrigger className="bg-zinc-950 border-white/5 h-11 text-sm rounded-lg">
-                    <SelectValue placeholder="Ninguno (Raíz)" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-zinc-900 border-white/10 text-white">
-                    <SelectItem
-                      value="null"
-                      className="text-xs py-2 uppercase font-bold"
-                    >
-                      Ninguno (Raíz)
-                    </SelectItem>
-                    {items
-                      .filter((i) => !i.url && i.id !== item.id)
-                      .map((i) => (
-                        <SelectItem
-                          key={i.id}
-                          value={i.id}
-                          className="text-xs py-2 font-medium"
-                        >
-                          {i.name}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2 col-span-1 sm:col-span-2">
-                <label className="text-xs font-black uppercase tracking-widest text-primary/60">
-                  Identificador de App (Opcional)
-                </label>
-                <Input
-                  className="bg-zinc-950 border-white/5 h-11 transition-all focus:ring-1 focus:ring-primary/20"
-                  value={editForm.app_id || ""}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, app_id: e.target.value })
-                  }
-                  placeholder="ej: roster, calendar..."
-                />
-              </div>
-
-              <div className="space-y-2 col-span-1 sm:col-span-1 border-t border-white/5 pt-4">
-                <label className="text-xs font-black uppercase tracking-widest text-primary/60">
-                  Clase CSS Personalizada
-                </label>
-                <Input
-                  className="bg-zinc-950 border-white/5 h-11 transition-all focus:ring-1 focus:ring-primary/20"
-                  value={editForm.css_class || ""}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, css_class: e.target.value })
-                  }
-                  placeholder="ej: text-emerald-500 font-bold"
-                />
-              </div>
-
-              <div className="space-y-2 col-span-1 sm:col-span-1 border-t border-white/5 pt-4">
-                <label className="text-xs font-black uppercase tracking-widest text-primary/60">
-                  ID del Elemento
-                </label>
-                <Input
-                  className="bg-zinc-950 border-white/5 h-11 transition-all focus:ring-1 focus:ring-primary/20"
-                  value={editForm.element_id || ""}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, element_id: e.target.value })
-                  }
-                  placeholder="ej: my-nav-item"
-                />
-              </div>
-
-              <div className="space-y-2 col-span-1 sm:col-span-2 border-t border-white/5 pt-4">
-                <label className="text-xs font-black uppercase tracking-widest text-primary/60">
-                  Visibilidad del Dispositivo
-                </label>
-                <Select
-                  value={editForm.visibility || "all"}
-                  onValueChange={(v) =>
-                    setEditForm({ ...editForm, visibility: v })
-                  }
-                >
-                  <SelectTrigger className="bg-zinc-950 border-white/5 h-11 text-sm rounded-lg">
-                    <SelectValue placeholder="Cualquier dispositivo" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-zinc-900 border-white/10 text-white">
-                    <SelectItem value="all" className="text-xs py-2 font-medium">
-                      📱 + 💻 Cualquier dispositivo (Todos)
-                    </SelectItem>
-                    <SelectItem value="pc-only" className="text-xs py-2 font-medium">
-                      💻 Solo PC (Escritorio)
-                    </SelectItem>
-                    <SelectItem value="mobile-only" className="text-xs py-2 font-medium">
-                      📱 Solo Móvil
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-3 col-span-1 sm:col-span-2 mt-2">
-                <label className="text-xs font-black uppercase tracking-widest text-primary/60">
-                  Permisos de Visualización
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 p-3 bg-zinc-950/50 border border-white/5 rounded-xl">
-                  {(
-                    [
-                      "gm",
-                      "officer",
-                      "raider",
-                      "member",
-                      "invitado",
-                    ] as RoleLevel[]
-                  ).map((role) => (
-                    <div
-                      key={role}
-                      className="flex items-center gap-2 group cursor-pointer p-2 rounded-lg hover:bg-white/5 transition-colors"
-                      onClick={() => {
-                        const current = editForm.roles || [];
-                        const exists = current.includes(role);
-                        const newRoles = exists
-                          ? current.filter((r: string) => r !== role)
-                          : [...current, role];
-                        setEditForm({ ...editForm, roles: newRoles });
-                      }}
-                    >
-                      <Checkbox
-                        id={`role-${role}`}
-                        checked={editForm.roles?.includes(role)}
-                        onCheckedChange={() => {}}
-                        className="border-white/20 data-[state=checked]:bg-primary data-[state=checked]:text-zinc-950 rounded"
-                      />
-                      <label className="text-[10px] font-black uppercase tracking-tighter text-white/50 group-hover:text-white transition-colors cursor-pointer select-none">
-                        {role === "gm"
-                          ? "GM"
-                          : role === "officer"
-                            ? "Oficial"
-                            : role}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-[10px] text-muted-foreground/60 italic px-1">
-                  {parentRoles && parentRoles.length > 0
-                    ? `Heredando de categoría: ${parentRoles.join(", ").toUpperCase()}`
-                    : "Si no se selecciona ninguno, el ítem será visible para todos."}
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 mt-6">
-              <Button
-                variant="ghost"
-                className="h-11 px-6 font-bold uppercase text-xs tracking-widest"
-                onClick={() => setEditingId(null)}
-              >
-                Cancelar
-              </Button>
-              <Button
-                onClick={() => handleSave(item.id)}
-                className="gap-2 h-11 px-8 font-black uppercase text-xs tracking-widest shadow-lg shadow-primary/20"
-              >
-                <IconDeviceFloppy className="size-4" /> Guardar Cambios
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {item.children?.map((child: any) =>
-          renderRow(child, depth + 1, effectiveRoles),
-        )}
-      </React.Fragment>
-    );
-  };
 
   if (!mounted) return null;
 
@@ -538,13 +287,458 @@ export function SettingsMenuClient() {
                 </span>
               </div>
             ) : (
-              <div className="divide-y divide-white/5">
-                {tree.map((i) => renderRow(i))}
-              </div>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+                modifiers={[restrictToVerticalAxis]}
+              >
+                <SortableContext
+                  items={flattenedItems.map((i) => i.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="divide-y divide-white/5">
+                    {tree.map((i) => (
+                      <SortableRow
+                        key={i.id}
+                        item={i}
+                        handleEdit={handleEdit}
+                        handleDelete={handleDelete}
+                        handleSave={handleSave}
+                        editForm={editForm}
+                        setEditForm={setEditForm}
+                        editingId={editingId}
+                        setEditingId={setEditingId}
+                        parentRoles={null}
+                        items={items}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
             )}
           </div>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+// Sub-component for each sortable row
+function SortableRow({
+  item,
+  depth = 0,
+  parentRoles = null,
+  handleEdit,
+  handleDelete,
+  handleSave,
+  editForm,
+  setEditForm,
+  editingId,
+  setEditingId,
+  items,
+}: any) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id });
+
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : undefined,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const isEditing = editingId === item.id;
+  const Icon = getIconByName(item.icon_name);
+
+  // Effective roles for this item (own or inherited)
+  const ownRoles =
+    item.navigation_item_roles?.map((r: any) => r.role_level) || [];
+  const hasOwnRoles = ownRoles.length > 0;
+  const effectiveRoles = hasOwnRoles ? ownRoles : parentRoles;
+
+  return (
+    <div ref={setNodeRef} style={style} className="flex flex-col">
+      <div
+        className={cn(
+          "flex flex-col sm:flex-row sm:items-center gap-3 p-3 border-b border-border/40 hover:bg-white/5 transition-colors group relative",
+          item.id === "active-drag" ? "bg-primary/10" : "",
+        )}
+      >
+        {/* Depth Spacer */}
+        {depth > 0 && (
+          <div 
+            className="hidden sm:block border-l-2 border-white/5 ml-4 mr-2 h-8" 
+            style={{ width: `${depth * 20}px` }} 
+          />
+        )}
+
+        {/* Drag handle - Flex child for perfect alignment */}
+        <div
+          {...attributes}
+          {...listeners}
+          className="flex items-center justify-center p-2 rounded-lg hover:bg-primary hover:text-zinc-950 transition-all cursor-grab active:cursor-grabbing text-muted-foreground/30 group-hover:text-muted-foreground/60 active:scale-95"
+          title="Arrastrar para reordenar"
+        >
+          <IconGripVertical className="size-5" />
+        </div>
+
+        {/* Main Info */}
+        <div className="flex items-center gap-2 min-w-0 sm:min-w-[200px] flex-1">
+          <div className="p-1.5 bg-white/5 rounded-lg border border-white/5 group-hover:border-primary/20 transition-colors">
+            <Icon className="size-4 text-primary" />
+          </div>
+          <span className="font-bold text-sm tracking-tight truncate">
+            {item.name}
+          </span>
+          {!item.url && (
+            <Badge
+              variant="outline"
+              className="text-[9px] px-1 py-0 h-4 bg-primary/5 text-primary border-primary/20 uppercase font-black"
+            >
+              Cat
+            </Badge>
+          )}
+        </div>
+
+        {/* URL/Path */}
+        <div className="flex-1 text-xs text-muted-foreground truncate opacity-60 sm:opacity-100 pl-9 sm:pl-0">
+          {item.url || (
+            <span className="italic text-[10px] uppercase tracking-wider opacity-40">
+              Sin ruta
+            </span>
+          )}
+        </div>
+
+        {/* Stats & Actions */}
+        <div className="flex items-center justify-between sm:justify-end gap-2 pl-9 sm:pl-0">
+          <div className="flex items-center gap-1">
+            {effectiveRoles && effectiveRoles.length > 0 ? (
+              <div
+                className={cn(
+                  "flex -space-x-1",
+                  !hasOwnRoles && "opacity-40 grayscale-[0.5]",
+                )}
+                title={
+                  !hasOwnRoles
+                    ? "Heredado de la categoría"
+                    : "Permisos específicos"
+                }
+              >
+                {effectiveRoles.map((role: string) => (
+                  <div
+                    key={role}
+                    className="size-4 rounded-full border border-zinc-950 bg-primary flex items-center justify-center text-[8px] font-black text-zinc-950 uppercase"
+                  >
+                    {role.substring(0, 1)}
+                  </div>
+                ))}
+                {!hasOwnRoles && (
+                  <div className="size-4 flex items-center justify-center ml-1">
+                    <IconChevronRight className="size-2 text-primary" />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-[9px] font-black tracking-tighter text-muted-foreground/40 uppercase">
+                Public
+              </div>
+            )}
+            <div className="h-3 w-px bg-white/5 mx-1 hidden sm:block" />
+            <span className="text-[10px] font-mono opacity-40">
+              #{item.order_index}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="size-8 hover:bg-primary hover:text-zinc-950 rounded-lg transition-all"
+              onClick={() => handleEdit(item)}
+            >
+              <IconEdit className="size-4" />
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="size-8 text-destructive hover:bg-destructive hover:text-white rounded-lg transition-all"
+              onClick={() => handleDelete(item.id)}
+            >
+              <IconTrash className="size-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {isEditing && (
+        <div className="p-4 sm:p-6 bg-muted/40 border-b border-border shadow-inner animate-in slide-in-from-top duration-200">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-primary/60">
+                Nombre
+              </label>
+              <Input
+                className="bg-zinc-950 border-white/5 h-11"
+                value={editForm.name}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, name: e.target.value })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-primary/60">
+                URL / Ruta
+              </label>
+              <Input
+                className="bg-zinc-950 border-white/5 h-11"
+                value={editForm.url || ""}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, url: e.target.value || null })
+                }
+                placeholder="/ej: /roster"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-primary/60">
+                Visualización{" "}
+                {!editForm.url && (
+                  <span className="text-[10px] opacity-40 lowercase font-medium">
+                    (opcional para categorías)
+                  </span>
+                )}
+              </label>
+              <IconPicker
+                value={editForm.icon_name}
+                onSelect={(name: string) =>
+                  setEditForm({ ...editForm, icon_name: name })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-primary/60">
+                Orden Prioridad
+              </label>
+              <Input
+                className="bg-zinc-950 border-white/5 h-11"
+                type="number"
+                value={editForm.order_index}
+                onChange={(e) =>
+                  setEditForm({
+                    ...editForm,
+                    order_index: parseInt(e.target.value),
+                  })
+                }
+              />
+            </div>
+            <div className="space-y-2 col-span-1 sm:col-span-2">
+              <label className="text-xs font-black uppercase tracking-widest text-primary/60">
+                Padre (Superior)
+              </label>
+              <Select
+                value={editForm.parent_id || "null"}
+                onValueChange={(v) =>
+                  setEditForm({
+                    ...editForm,
+                    parent_id: v === "null" ? null : v,
+                  })
+                }
+              >
+                <SelectTrigger className="bg-zinc-950 border-white/5 h-11 text-sm rounded-lg">
+                  <SelectValue placeholder="Ninguno (Raíz)" />
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-900 border-white/10 text-white">
+                  <SelectItem
+                    value="null"
+                    className="text-xs py-2 uppercase font-bold"
+                  >
+                    Ninguno (Raíz)
+                  </SelectItem>
+                  {items
+                    .filter((i: any) => !i.url && i.id !== item.id)
+                    .map((i: any) => (
+                      <SelectItem
+                        key={i.id}
+                        value={i.id}
+                        className="text-xs py-2 font-medium"
+                      >
+                        {i.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2 col-span-1 sm:col-span-2">
+              <label className="text-xs font-black uppercase tracking-widest text-primary/60">
+                Identificador de App (Opcional)
+              </label>
+              <Input
+                className="bg-zinc-950 border-white/5 h-11 transition-all focus:ring-1 focus:ring-primary/20"
+                value={editForm.app_id || ""}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, app_id: e.target.value })
+                }
+                placeholder="ej: roster, calendar..."
+              />
+            </div>
+            <div className="space-y-2 col-span-1 sm:col-span-2">
+              <label className="text-xs font-black uppercase tracking-widest text-primary/60">
+                Descripción (Mega Menú)
+              </label>
+              <Input
+                className="bg-zinc-950 border-white/5 h-11 transition-all focus:ring-1 focus:ring-primary/20"
+                value={editForm.description || ""}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, description: e.target.value })
+                }
+                placeholder="ej: Gestión completa de los miembros y rangos..."
+              />
+            </div>
+
+            <div className="space-y-2 col-span-1 sm:col-span-1 border-t border-white/5 pt-4">
+              <label className="text-xs font-black uppercase tracking-widest text-primary/60">
+                Clase CSS Personalizada
+              </label>
+              <Input
+                className="bg-zinc-950 border-white/5 h-11 transition-all focus:ring-1 focus:ring-primary/20"
+                value={editForm.css_class || ""}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, css_class: e.target.value })
+                }
+                placeholder="ej: text-emerald-500 font-bold"
+              />
+            </div>
+
+            <div className="space-y-2 col-span-1 sm:col-span-1 border-t border-white/5 pt-4">
+              <label className="text-xs font-black uppercase tracking-widest text-primary/60">
+                ID del Elemento
+              </label>
+              <Input
+                className="bg-zinc-950 border-white/5 h-11 transition-all focus:ring-1 focus:ring-primary/20"
+                value={editForm.element_id || ""}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, element_id: e.target.value })
+                }
+                placeholder="ej: my-nav-item"
+              />
+            </div>
+
+            <div className="space-y-2 col-span-1 sm:col-span-2 border-t border-white/5 pt-4">
+              <label className="text-xs font-black uppercase tracking-widest text-primary/60">
+                Visibilidad del Dispositivo
+              </label>
+              <Select
+                value={editForm.visibility || "all"}
+                onValueChange={(v) =>
+                  setEditForm({ ...editForm, visibility: v })
+                }
+              >
+                <SelectTrigger className="bg-zinc-950 border-white/5 h-11 text-sm rounded-lg">
+                  <SelectValue placeholder="Cualquier dispositivo" />
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-900 border-white/10 text-white">
+                  <SelectItem value="all" className="text-xs py-2 font-medium">
+                    📱 + 💻 Cualquier dispositivo (Todos)
+                  </SelectItem>
+                  <SelectItem value="pc-only" className="text-xs py-2 font-medium">
+                    💻 Solo PC (Escritorio)
+                  </SelectItem>
+                  <SelectItem value="mobile-only" className="text-xs py-2 font-medium">
+                    📱 Solo Móvil
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-3 col-span-1 sm:col-span-2 mt-2">
+              <label className="text-xs font-black uppercase tracking-widest text-primary/60">
+                Permisos de Visualización
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 p-3 bg-zinc-950/50 border border-white/5 rounded-xl">
+                {(
+                  [
+                    "gm",
+                    "officer",
+                    "raider",
+                    "member",
+                    "invitado",
+                  ] as RoleLevel[]
+                ).map((role) => (
+                  <div
+                    key={role}
+                    className="flex items-center gap-2 group cursor-pointer p-2 rounded-lg hover:bg-white/5 transition-colors"
+                    onClick={() => {
+                      const current = editForm.roles || [];
+                      const exists = current.includes(role);
+                      const newRoles = exists
+                        ? current.filter((r: string) => r !== role)
+                        : [...current, role];
+                      setEditForm({ ...editForm, roles: newRoles });
+                    }}
+                  >
+                    <Checkbox
+                      id={`role-${role}`}
+                      checked={editForm.roles?.includes(role)}
+                      onCheckedChange={() => {}}
+                      className="border-white/20 data-[state=checked]:bg-primary data-[state=checked]:text-zinc-950 rounded"
+                    />
+                    <label className="text-[10px] font-black uppercase tracking-tighter text-white/50 group-hover:text-white transition-colors cursor-pointer select-none">
+                      {role === "gm"
+                        ? "GM"
+                        : role === "officer"
+                          ? "Oficial"
+                          : role}
+                    </label>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground/60 italic px-1">
+                {parentRoles && parentRoles.length > 0
+                  ? `Heredando de categoría: ${parentRoles.join(", ").toUpperCase()}`
+                  : "Si no se selecciona ninguno, el ítem será visible para todos."}
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 mt-6">
+            <Button
+              variant="ghost"
+              className="h-11 px-6 font-bold uppercase text-xs tracking-widest"
+              onClick={() => setEditingId(null)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => handleSave(item.id)}
+              className="gap-2 h-11 px-8 font-black uppercase text-xs tracking-widest shadow-lg shadow-primary/20"
+            >
+              <IconDeviceFloppy className="size-4" /> Guardar Cambios
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {item.children?.map((child: any) => (
+        <SortableRow
+          key={child.id}
+          item={child}
+          depth={depth + 1}
+          parentRoles={effectiveRoles}
+          handleEdit={handleEdit}
+          handleDelete={handleDelete}
+          handleSave={handleSave}
+          editForm={editForm}
+          setEditForm={setEditForm}
+          editingId={editingId}
+          setEditingId={setEditingId}
+          items={items}
+        />
+      ))}
     </div>
   );
 }

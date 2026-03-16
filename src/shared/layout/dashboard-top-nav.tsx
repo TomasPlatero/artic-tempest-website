@@ -187,18 +187,76 @@ export function DashboardTopNav({ guildName, iconUrl }: { guildName: string, ico
                           <IconChevronDown className="size-3 opacity-40 ml-1" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="w-56 bg-[#0d0d12]/95 backdrop-blur-2xl border-white/10 p-1.5 rounded-xl shadow-2xl">
-                        {item.children.map((child: any) => {
-                          const ChildIcon = getIconByName(child.icon_name)
-                          return (
-                            <DropdownMenuItem key={child.id} asChild className="rounded-lg focus:bg-blue-500/10 focus:text-white cursor-pointer group py-2">
-                              <Link href={child.url} id={child.element_id} className={cn("flex items-center gap-3", child.css_class)}>
-                                <ChildIcon className="size-4 text-zinc-500 group-hover:text-blue-400 transition-colors" />
-                                <span className="text-[13px] font-medium">{child.name}</span>
-                              </Link>
-                            </DropdownMenuItem>
-                          )
-                        })}
+                      <DropdownMenuContent
+                        align="start"
+                        sideOffset={12}
+                        className="w-[600px] bg-[#0d0d12]/95 backdrop-blur-3xl border-white/10 p-0 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+                      >
+                        <div className="flex h-full min-h-[320px]">
+                          {/* Left Panel: Category Info */}
+                          <div className="w-[200px] bg-gradient-to-br from-blue-600/10 via-indigo-600/5 to-transparent p-6 flex flex-col border-r border-white/[0.05] relative overflow-hidden group/sidebar">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-[60px] rounded-full -mr-16 -mt-16 group-hover/sidebar:bg-blue-400/20 transition-all duration-700" />
+
+                            {/* Decorative Background Icon */}
+                            <div className="absolute -bottom-8 -left-8 opacity-[0.03] group-hover/sidebar:opacity-[0.06] transition-opacity duration-700 pointer-events-none rotate-12 group-hover/sidebar:rotate-0 group-hover/sidebar:scale-110 transition-all">
+                              <Icon className="size-48 text-white" stroke={1} />
+                            </div>
+
+                            <div className="relative z-10 flex flex-col h-full pt-2">
+                              <h3 className="text-lg font-black text-white uppercase tracking-tight mb-2 leading-none">
+                                {item.name}
+                              </h3>
+                              <p className="text-[11px] text-zinc-400 font-medium leading-relaxed uppercase tracking-widest opacity-60">
+                                {item.description || "Gestión y herramientas avanzadas."}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Right Panel: Sub-items Grid */}
+                          <div className="flex-1 p-3 grid grid-cols-1 gap-1 bg-white/[0.01]">
+                            <div className="px-3 pb-2 pt-1">
+                              <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">Enlaces Rápidos</span>
+                            </div>
+                            {item.children.map((child: any) => {
+                              const ChildIcon = getIconByName(child.icon_name)
+                              const isChildActive = pathname === child.url
+
+                              return (
+                                <DropdownMenuItem key={child.id} asChild className="rounded-xl outline-none focus:bg-white/[0.03] p-0 mb-0.5 transition-all">
+                                  <Link
+                                    href={child.url}
+                                    id={child.element_id}
+                                    className={cn(
+                                      "flex items-start gap-4 p-3 group/item transition-all",
+                                      isChildActive ? "bg-blue-500/5 border border-blue-500/20" : "border border-transparent"
+                                    )}
+                                  >
+                                    <div className={cn(
+                                      "p-2 rounded-lg transition-all duration-300 group-hover/item:scale-110",
+                                      isChildActive ? "bg-blue-500/20 text-blue-400" : "bg-zinc-800/50 text-zinc-500 group-hover/item:bg-blue-500/10 group-hover/item:text-blue-400"
+                                    )}>
+                                      <ChildIcon className="size-5" stroke={1.5} />
+                                    </div>
+                                    <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+                                      <div className="flex items-center gap-2">
+                                        <span className={cn(
+                                          "text-[13px] font-bold transition-colors",
+                                          isChildActive ? "text-blue-400" : "text-zinc-200 group-hover/item:text-white"
+                                        )}>
+                                          {child.name}
+                                        </span>
+                                        {isChildActive && <div className="size-1.5 bg-blue-500 rounded-full animate-pulse" />}
+                                      </div>
+                                      <p className="text-[11px] text-zinc-500 font-medium leading-snug break-words opacity-80 group-hover/item:text-zinc-400 transition-colors">
+                                        {child.description || "Acceder a " + child.name}
+                                      </p>
+                                    </div>
+                                  </Link>
+                                </DropdownMenuItem>
+                              )
+                            })}
+                          </div>
+                        </div>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   )
@@ -240,14 +298,14 @@ export function DashboardTopNav({ guildName, iconUrl }: { guildName: string, ico
         <div className="flex items-center gap-2 sm:gap-3 z-20">
           {/* Download App CTA - Desktop Only (desktop+) */}
           <Link href="/api/download/latest-exe" prefetch={false} className="hidden desktop:block">
-              <Button
-                className="h-9 gap-2 px-4 rounded-xl relative group overflow-hidden bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 text-white font-black uppercase tracking-widest text-[10px] border border-blue-400/20 transition-all hover:scale-[1.02] active:scale-95 shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)]"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                <IconDeviceMobile className="size-3.5 mr-2 group-hover:scale-110 transition-transform" />
-                Descargar App
-              </Button>
-            </Link>
+            <Button
+              className="h-9 gap-2 px-4 rounded-xl relative group overflow-hidden bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 text-white font-black uppercase tracking-widest text-[10px] border border-blue-400/20 transition-all hover:scale-[1.02] active:scale-95 shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)]"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+              <IconDeviceMobile className="size-3.5 mr-2 group-hover:scale-110 transition-transform" />
+              Descargar App
+            </Button>
+          </Link>
 
 
           <div className="h-4 w-px bg-white/5 mx-1 hidden sm:block" />
