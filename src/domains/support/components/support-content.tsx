@@ -14,7 +14,8 @@ import {
 } from "@tabler/icons-react"
 import { Card, CardHeader, CardTitle, CardDescription } from "@/shared/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs"
-import { cn } from "@/shared/tailwind/tailwind-utils"
+import { cn } from "@/shared/lib/utils"
+import { DotPattern } from "@/shared/ui/dot-pattern"
 import Link from "next/link"
 
 export function SupportContent() {
@@ -22,40 +23,54 @@ export function SupportContent() {
     const isMember = !!session?.user
 
     return (
-        <div className="flex-1 flex flex-col pt-12 pb-20 w-full">
+        <div className="flex-1 flex flex-col pt-12 pb-20 w-full relative overflow-hidden">
+            {/* Background Effects */}
+            <div className="absolute inset-0 pointer-events-none z-0">
+                <DotPattern 
+                    className={cn(
+                        "[mask-image:radial-gradient(ellipse_at_center,white,transparent_80%)]",
+                        "opacity-40"
+                    )}
+                />
+                
+                {/* Glows */}
+                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-500/10 rounded-full blur-[120px] animate-pulse" />
+                <div className="absolute bottom-[20%] right-[-5%] w-[40%] h-[40%] bg-indigo-600/10 rounded-full blur-[150px]" />
+            </div>
+
             {/* Hero Section */}
-            <div className="pt-8 pb-20 relative">
+            <div className="pt-8 pb-20 relative px-4">
                 <div className="max-w-5xl mx-auto text-center relative z-10 space-y-6">
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest animate-in fade-in zoom-in duration-500">
                         <IconLifebuoy className="size-4" />
                         Support Hub
                     </div>
-                    <h1 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tighter leading-tight animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    <h1 className="text-5xl md:text-8xl font-black text-white uppercase tracking-tighter leading-[0.9] animate-in fade-in slide-in-from-bottom-4 duration-700">
                         ¿Cómo podemos <br />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-indigo-400">ayudarte?</span>
                     </h1>
-                    <p className="text-lg text-white/40 font-medium max-w-2xl mx-auto leading-relaxed">
+                    <p className="text-lg md:text-xl text-white/40 font-medium max-w-2xl mx-auto leading-relaxed">
                         Envíanos tus sugerencias para seguir mejorando o revisa nuestras guías si ya eres parte de la hermandad.
                     </p>
                 </div>
             </div>
 
             {/* Content Section */}
-            <div className="flex-1 pb-32">
+            <div className="flex-1 pb-32 px-4 relative z-10">
                 <div className="max-w-6xl mx-auto">
                     <Tabs defaultValue="feedback" className="w-full">
                         <div className="flex justify-center mb-16">
-                            <TabsList className="bg-zinc-900/50 p-1.5 rounded-[2rem] border border-white/5 h-auto gap-2 inline-flex backdrop-blur-3xl shadow-2xl overflow-x-auto no-scrollbar">
+                            <TabsList className="bg-white/[0.03] p-1.5 rounded-[2.5rem] border border-white/5 h-auto gap-2 inline-flex backdrop-blur-3xl shadow-2xl overflow-x-auto no-scrollbar">
                                 <TabsTrigger
                                     value="feedback"
-                                    className="px-8 py-4 rounded-[1.5rem] font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-primary data-[state=active]:text-zinc-950 shadow-xl transition-all gap-3"
+                                    className="px-10 py-5 rounded-[2rem] font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-primary data-[state=active]:text-zinc-950 data-[state=active]:shadow-[0_0_30px_rgba(var(--primary),0.3)] transition-all gap-3"
                                 >
                                     <IconMessageCircle className="size-4" />
                                     Buzón de Sugerencias
                                 </TabsTrigger>
                                 <TabsTrigger
                                     value="guides"
-                                    className="px-8 py-4 rounded-[1.5rem] font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-primary data-[state=active]:text-zinc-950 shadow-xl transition-all gap-3"
+                                    className="px-10 py-5 rounded-[2rem] font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-primary data-[state=active]:text-zinc-950 data-[state=active]:shadow-[0_0_30px_rgba(var(--primary),0.3)] transition-all gap-3"
                                 >
                                     <IconBook className="size-4" />
                                     Guías Rápidas

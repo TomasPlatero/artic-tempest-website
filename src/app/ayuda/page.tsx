@@ -1,5 +1,7 @@
 import { Metadata } from "next"
 import { SupportContent } from "@/domains/support/components/support-content"
+import { LandingNavigation } from "@/domains/landing/components/navigation"
+import { LandingFooter } from "@/domains/landing/components/footer"
 
 export const metadata: Metadata = {
     title: "Centro de Ayuda | Artic Tempest – Soporte y Guías",
@@ -15,5 +17,13 @@ export const metadata: Metadata = {
 }
 
 export default function AyudaPage() {
-    return <SupportContent />
+    return (
+        <main className="min-h-screen bg-black selection:bg-blue-500/30 dark flex flex-col">
+            <LandingNavigation />
+            <div className="flex-1 pt-24">
+                <SupportContent />
+            </div>
+            <LandingFooter />
+        </main>
+    )
 }
