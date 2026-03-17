@@ -42,7 +42,7 @@ export async function generateMetadata(): Promise<Metadata> {
     .maybeSingle() as any;
 
   const title = guild ? `${guild.name}` : "Artic Tempest";
-  const desc = "Sitio web oficial y Dashboard de la hermandad Artic Tempest (World of Warcraft). Gestiona tu roster, calendario y estadísticas de raideo.";
+  const desc = "Somos una hermandad comprometida con el progreso PvE en dificultad Mítica, formada por jugadores con experiencia que comparten el objetivo de avanzar juntos y completar el contenido de cada temporada.";
   const icon = guild?.icon_url || "/favicon.ico";
 
   return {
@@ -168,7 +168,7 @@ export default async function RootLayout({
                 "https://twitter.com/artictempest",
                 "https://www.warcraftlogs.com/guild/id/743623"
               ],
-              "description": "Hermandad competitiva de World of Warcraft en el servidor Dun Modr (EU)."
+              "description": "Somos una hermandad comprometida con el progreso PvE en dificultad Mítica, formada por jugadores con experiencia que comparten el objetivo de avanzar juntos y completar el contenido de cada temporada."
             })
           }}
         />
