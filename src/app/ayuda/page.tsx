@@ -18,12 +18,12 @@ export const metadata: Metadata = {
 
 export default function AyudaPage() {
     return (
-        <main className="min-h-screen bg-black selection:bg-blue-500/30 dark flex flex-col">
+        <div className="min-h-screen bg-black selection:bg-blue-500/30 dark flex flex-col">
             <LandingNavigation />
             <div className="flex-1 pt-24">
                 <SupportContent />
             </div>
             <LandingFooter />
-        </main>
+        </div>
     )
 }

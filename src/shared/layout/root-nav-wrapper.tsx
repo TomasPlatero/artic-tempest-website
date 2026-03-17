@@ -43,9 +43,9 @@ export function RootNavWrapper({
         />
         
         {/* Main Content Area - Centered by default */}
-        <main className="relative z-10 flex-1 flex flex-col w-full max-w-[1600px] mx-auto min-h-[calc(100vh-80px-300px)] px-4 lg:px-6 py-6 transition-all duration-300">
+        <div className="relative z-10 flex-1 flex flex-col w-full max-w-[1600px] mx-auto min-h-[calc(100vh-80px-300px)] px-4 lg:px-6 py-6 transition-all duration-300">
           {children}
-        </main>
+        </div>
 
         <LandingFooter />
       </SidebarProvider>

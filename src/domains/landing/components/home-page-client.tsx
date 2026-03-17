@@ -33,7 +33,7 @@ export function HomePageClient({ initialProgression, initialStreamers }: { initi
     }, [initialProgression])
 
     return (
-        <main className="min-h-screen bg-black selection:bg-blue-500/30 dark">
+        <>
             <LandingNavigation />
             <LandingHero />
             <LandingNoticias />
@@ -118,6 +118,6 @@ export function HomePageClient({ initialProgression, initialStreamers }: { initi
             </section>
 
             <LandingFooter />
-        </main>
+        </>
     )
 }

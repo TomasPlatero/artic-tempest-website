@@ -41,7 +41,7 @@ export default async function ApplicationStatusPage() {
     }
 
     return (
-        <main className="min-h-screen bg-black">
+        <div className="min-h-screen bg-black">
             <LandingNavigation />
             <div className="pt-32 pb-20 px-6 max-w-6xl mx-auto">
                 <div className="mb-10 text-center md:text-left">
@@ -51,6 +51,6 @@ export default async function ApplicationStatusPage() {
 
                 <ApplicationStatusClient application={application} />
             </div>
-        </main>
+        </div>
     )
 }

@@ -42,7 +42,7 @@ export default async function MisPersonajesPage(props: {
         .order("name", { ascending: true })
 
     return (
-        <main className="min-h-screen bg-black">
+        <div className="min-h-screen bg-black">
             <LandingNavigation />
             <div className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
                 <div className="mb-10 text-center md:text-left">
@@ -71,6 +71,6 @@ export default async function MisPersonajesPage(props: {
                     />
                 </div>
             </div>
-        </main>
+        </div>
     )
 }

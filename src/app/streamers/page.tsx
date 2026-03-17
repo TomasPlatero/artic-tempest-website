@@ -25,7 +25,7 @@ export default async function StreamersPage() {
     const streamers = await getEnrichedStreamers();
 
     return (
-        <main className="min-h-screen bg-black selection:bg-blue-500/30 dark flex flex-col">
+        <div className="min-h-screen bg-black selection:bg-blue-500/30 dark flex flex-col">
             <BreadcrumbJsonLd items={[
                 { name: "Inicio", url: baseUrl },
                 { name: "Streamers", url: `${baseUrl}/streamers` },
@@ -37,6 +37,6 @@ export default async function StreamersPage() {
             </div>
 
             <LandingFooter />
-        </main>
+        </div>
     )
 }

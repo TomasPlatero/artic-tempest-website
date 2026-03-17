@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 export default function PrivacidadPage() {
     return (
-        <main className="min-h-screen bg-black flex flex-col relative overflow-hidden dark">
+        <div className="min-h-screen bg-black flex flex-col relative overflow-hidden dark">
             {/* Background Image & Decor */}
             <div className="absolute inset-0 z-0 select-none pointer-events-none overflow-hidden h-full w-full">
                 <Image
@@ -130,6 +130,6 @@ export default function PrivacidadPage() {
             </div>
 
             <LandingFooter />
-        </main>
+        </div>
     )
 }

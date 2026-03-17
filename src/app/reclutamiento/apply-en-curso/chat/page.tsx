@@ -33,7 +33,7 @@ export default async function ApplicantChatPage() {
     }
 
     return (
-        <main className="min-h-screen bg-black flex flex-col">
+        <div className="min-h-screen bg-black flex flex-col">
             <LandingNavigation />
             <div className="flex-1 flex flex-col pt-24 pb-6 px-4 md:px-8 lg:px-12 w-full h-[calc(100vh-1px)]">
                 <div className="flex items-center gap-4 mb-6 shrink-0">
@@ -57,6 +57,6 @@ export default async function ApplicantChatPage() {
                     />
                 </div>
             </div>
-        </main>
+        </div>
     )
 }

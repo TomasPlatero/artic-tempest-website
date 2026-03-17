@@ -274,6 +274,11 @@ html #cc-main,
 /* Hide the icon inside the tooltip box to avoid redundancy and misalignment */
 .wowhead-tooltip .whtt-tooltip-icon {
   left: -32px !important;
-  display: show !important;
+  display: block !important;
   top: 10px !important;
+}
+
+/* Fix for vanilla-cookieconsent invalid overflow-y: overlay */
+#cc-main .pm__body {
+  overflow-y: auto !important;
 }

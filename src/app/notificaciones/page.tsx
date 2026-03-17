@@ -111,7 +111,7 @@ export default function PublicNotificationsPage() {
     if (status === "loading") return null
 
     return (
-        <main className="min-h-screen bg-black flex flex-col relative overflow-hidden">
+        <div className="min-h-screen bg-black flex flex-col relative overflow-hidden">
             {/* Background Image & Decor */}
             <div className="absolute inset-0 z-0 select-none pointer-events-none overflow-hidden h-full w-full">
                 <Image
@@ -277,6 +277,6 @@ export default function PublicNotificationsPage() {
             </div>
 
             <LandingFooter />
-        </main>
+        </div>
     )
 }

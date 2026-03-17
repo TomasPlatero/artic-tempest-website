@@ -129,7 +129,7 @@ export default async function NewsDetailPage({
     }
 
     return (
-        <main className="min-h-screen bg-black selection:bg-blue-500/30 dark text-white">
+        <div className="min-h-screen bg-black selection:bg-blue-500/30 dark text-white">
             <LandingNavigation />
 
             {/* Structured Data (JSON-LD) */}
@@ -249,6 +249,6 @@ export default async function NewsDetailPage({
                 </article>
             </div>
             <LandingFooter />
-        </main>
+        </div>
     )
 }

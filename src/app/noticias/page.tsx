@@ -66,7 +66,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
     const otherNews = featuredNews ? newsItems.filter(item => item.id !== featuredNews.id) : newsItems
 
     return (
-        <main className="min-h-screen bg-black selection:bg-blue-500/30 dark">
+        <div className="min-h-screen bg-black selection:bg-blue-500/30 dark">
             <LandingNavigation />
             <div className="pt-32 pb-20 px-4 md:px-6">
                 <div className="max-w-7xl mx-auto">
@@ -217,6 +217,6 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
                 </div>
             </div>
             <LandingFooter />
-        </main>
+        </div>
     )
 }

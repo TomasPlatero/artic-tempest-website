@@ -51,7 +51,7 @@ export default async function ApplyPage({ searchParams }: { searchParams: Promis
     const isMember = ["gm", "officer", "raider", "member"].includes(session.user.roleLevel) && !(canSimulate && simulate === "true")
 
     return (
-        <main className="min-h-screen bg-black">
+        <div className="min-h-screen bg-black">
             <LandingNavigation />
             <div className="pt-32 pb-20 px-6 max-w-3xl mx-auto">
                 <div className="mb-10 text-center md:text-left">
@@ -94,6 +94,6 @@ export default async function ApplyPage({ searchParams }: { searchParams: Promis
                     />
                 )}
             </div>
-        </main>
+        </div>
     )
 }

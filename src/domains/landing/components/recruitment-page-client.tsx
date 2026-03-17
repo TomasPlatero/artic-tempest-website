@@ -30,7 +30,7 @@ export function RecruitmentPageClient() {
         checkApplication()
     }, [session])
     return (
-        <main className="min-h-screen bg-black overflow-x-hidden dark">
+        <div className="min-h-screen bg-black overflow-x-hidden dark">
             <LandingNavigation />
 
             <div className="relative overflow-hidden group">
@@ -156,6 +156,6 @@ export function RecruitmentPageClient() {
             <div className="bg-zinc-950/50 py-20 border-t border-white/5">
                 <WantedClasses />
             </div>
-        </main>
+        </div>
     )
 }

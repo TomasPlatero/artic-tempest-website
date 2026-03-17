@@ -28,7 +28,7 @@ export function LoginPageClient() {
     }
 
     return (
-        <main className="min-h-screen bg-black flex flex-col items-center justify-center p-6 relative overflow-hidden dark font-sans">
+        <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 relative overflow-hidden dark font-sans">
             {/* Background Image & Decor */}
             <div className="absolute inset-0 z-0 select-none pointer-events-none overflow-hidden h-full w-full">
                 <Image
@@ -160,6 +160,6 @@ export function LoginPageClient() {
                     </p>
                 </div>
             </div>
-        </main>
+        </div>
     )
 }

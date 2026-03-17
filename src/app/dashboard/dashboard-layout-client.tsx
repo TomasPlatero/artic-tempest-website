@@ -55,11 +55,11 @@ export function DashboardLayoutClient({
         
         <div className="relative z-10 flex flex-1 flex-col overflow-hidden">
           <DashboardTopNav guildName={guildInfo.name} iconUrl={guildInfo.iconUrl} />
-          <main className="flex-1 overflow-y-auto overflow-x-hidden">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden">
             <div className="mx-auto max-w-[1600px] w-full px-4 md:px-6 py-6 transition-all duration-500 ease-in-out">
               {children}
             </div>
-          </main>
+          </div>
         </div>
       </div>
     </SidebarProvider>
