@@ -39,7 +39,7 @@ export function LandingFooter() {
                             </div>
                             <span className="text-sm font-medium">Discord Oficial</span>
                         </a>
-                        <a href="https://x.com/artictempestwow" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-white/70 hover:text-blue-400 transition-colors group" aria-label="Síguenos en Twitter / X">
+                        <a href="https://x.com/artictempestWoW" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-white/70 hover:text-blue-400 transition-colors group" aria-label="Síguenos en Twitter / X">
                             <div className="p-2 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors">
                                 <IconBrandX className="size-4 group-hover:text-white transition-colors" />
                             </div>
@@ -67,7 +67,7 @@ export function LandingFooter() {
                         <a href="https://www.wowprogress.com/guild/eu/dun-modr/Artic+Tempest" target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-blue-500/30 hover:bg-white/10 transition-all group" aria-label="WoW Progress profile">
                             <IconChartBar className="size-6 text-white/60 group-hover:text-amber-400 rotate-90 transition-colors" />
                         </a>
-                        <a href="https://guildsofwow.com/artic-tempest" target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-blue-500/30 hover:bg-white/10 transition-all group" aria-label="Guilds Of WoW profile">
+                        <a href="https://guildsofwow.com/guild/artic-tempest" target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-blue-500/30 hover:bg-white/10 transition-all group" aria-label="Guilds Of WoW profile">
                             <Image src="/assets/images/icons/guildsofwow.webp" width={35} height={35} className="size-6 grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all object-contain" alt="Guilds Of WoW Logo" />
                         </a>
                         <a href="https://worldofwarcraft.blizzard.com/en-gb/guild/eu/dun-modr/artic-tempest" target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-blue-500/30 hover:bg-white/10 transition-all group" aria-label="Armería WoW profile">

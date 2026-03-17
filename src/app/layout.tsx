@@ -164,7 +164,7 @@ export default async function RootLayout({
               "url": "https://artictempest.es",
               "logo": "https://artictempest.es/favicon.ico",
               "sameAs": [
-                "https://twitter.com/artictempest",
+                "https://x.com/artictempestWoW",
                 "https://www.warcraftlogs.com/guild/id/743623"
               ],
               "description": "Hermandad de WoW en Dun Modr centrada en el progreso PvE Mítico. Un equipo con experiencia para completar el contenido más exigente de cada temporada."

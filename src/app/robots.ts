@@ -16,6 +16,7 @@ export default function robots(): MetadataRoute.Robots {
                     '/notificaciones/',
                     '/editor-00/',
                     '/api/',
+                    '/cdn-cgi/',
                 ],
             },
         ],
