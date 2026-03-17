@@ -95,6 +95,22 @@ export async function POST(req: Request) {
       .single();
 
     if (error) throw error;
+
+    // Si la noticia se publica directamente, crear notificación de sistema
+    if (status === 'published') {
+      try {
+        await supabaseAdmin.from('system_notifications').insert({
+          title: `📰 Nueva Noticia: ${title}`,
+          content: summary || 'Se ha publicado una nueva actualización en la web.',
+          type: 'info',
+          created_by: session.user.id,
+        });
+      } catch (notifyError) {
+        console.error('[NEWS_POST_NOTIFICATION_ERROR]', notifyError);
+        // No bloqueamos la respuesta principal si falla la notificación
+      }
+    }
+
     return NextResponse.json(data);
   } catch (error) {
     console.error('[NEWS_POST]', error);
@@ -104,7 +120,7 @@ export async function POST(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
-    await ensureAppPermission('settings-news', 'edit');
+    const session = await ensureAppPermission('settings-news', 'edit');
 
     const body = await req.json();
     const { id, ...updates } = body;
@@ -136,6 +152,21 @@ export async function PATCH(req: Request) {
       .single();
 
     if (error) throw error;
+
+    // Si el estado ha cambiado a 'published', crear notificación de sistema
+    if (updates.status === 'published') {
+      try {
+        await supabaseAdmin.from('system_notifications').insert({
+          title: `📰 Actualización: ${updates.title || data.title}`,
+          content: updates.summary || data.summary || 'Hay novedades en el sitio oficial.',
+          type: 'info',
+          created_by: (session as any).user.id,
+        });
+      } catch (notifyError) {
+        console.error('[NEWS_PATCH_NOTIFICATION_ERROR]', notifyError);
+      }
+    }
+
     return NextResponse.json(data);
   } catch (error) {
     console.error('[NEWS_PATCH]', error);
