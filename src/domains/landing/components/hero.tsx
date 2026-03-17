@@ -41,9 +41,8 @@ export function LandingHero() {
                     </h1>
                     <div className="relative inline-block mb-10">
                         <div className="absolute inset-0 bg-black/40 blur-2xl rounded-full -m-6" />
-                        <p className="relative text-xl md:text-3xl text-blue-50/90 max-w-3xl mx-auto font-bold drop-shadow-2xl leading-tight">
-                            Disciplina, progreso y compromiso real. Una hermandad consolidada en Azeroth donde la constancia y el trabajo en equipo convierten objetivos en resultados.
-                        </p>
+                        <p className="relative text-xl md:text-2xl text-blue-50/90 max-w-3xl mx-auto font-bold drop-shadow-2xl leading-tight">
+                            Somos es una hermandad comprometida con el progreso PvE en dificultad Mítica, formada por jugadores con experiencia que comparten el objetivo de avanzar juntos y completar el contenido de cada temporada.                        </p>
                     </div>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
