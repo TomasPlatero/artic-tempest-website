@@ -82,11 +82,38 @@ const EmojiButton = React.memo(({ emoji, onSelect }: { emoji: string, onSelect: 
 ))
 EmojiButton.displayName = "EmojiButton"
 
+const RECENT_KEY = "artic-recent-emojis"
+const DEFAULT_RECENT = ["🔥", "✨", "✅", "🎮", "⚔️", "💎", "🚀", "❤️", "👍", "👑"]
+
 export function EmojiPicker({ onSelect, children }: EmojiPickerProps) {
     const [search, setSearch] = React.useState("")
     const deferredSearch = useDeferredValue(search)
     const [open, setOpen] = React.useState(false)
     const [activeTab, setActiveTab] = React.useState("recent")
+    const [recentEmojis, setRecentEmojis] = React.useState<string[]>([])
+
+    // Load recent on mount
+    React.useEffect(() => {
+        const saved = localStorage.getItem(RECENT_KEY)
+        if (saved) {
+            try {
+                setRecentEmojis(JSON.parse(saved))
+            } catch (e) {
+                setRecentEmojis(DEFAULT_RECENT)
+            }
+        } else {
+            setRecentEmojis(DEFAULT_RECENT)
+        }
+    }, [])
+
+    const categoriesWithRecent = React.useMemo(() => {
+        return EMOJI_CATEGORIES.map(cat => {
+            if (cat.id === "recent") {
+                return { ...cat, emojis: recentEmojis.length > 0 ? recentEmojis : cat.emojis }
+            }
+            return cat
+        })
+    }, [recentEmojis])
 
     // Memoize filtering
     const filteredCategories = React.useMemo(() => {
@@ -102,11 +129,16 @@ export function EmojiPicker({ onSelect, children }: EmojiPickerProps) {
         onSelect(emoji)
         setOpen(false)
         setSearch("")
-    }, [onSelect])
+
+        // Update recent
+        const updated = [emoji, ...recentEmojis.filter(e => e !== emoji)].slice(0, 14)
+        setRecentEmojis(updated)
+        localStorage.setItem(RECENT_KEY, JSON.stringify(updated))
+    }, [onSelect, recentEmojis])
 
     const activeCategory = React.useMemo(() => 
-        EMOJI_CATEGORIES.find(cat => cat.id === activeTab)
-    , [activeTab])
+        categoriesWithRecent.find(cat => cat.id === activeTab)
+    , [activeTab, categoriesWithRecent])
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
@@ -141,7 +173,7 @@ export function EmojiPicker({ onSelect, children }: EmojiPickerProps) {
                     {search === "" && (
                         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                             <TabsList className="w-full h-8 bg-transparent p-0 justify-between gap-0.5">
-                                {EMOJI_CATEGORIES.map(cat => (
+                                {categoriesWithRecent.map(cat => (
                                     <TabsTrigger
                                         key={cat.id}
                                         value={cat.id}

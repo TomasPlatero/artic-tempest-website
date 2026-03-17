@@ -14,6 +14,8 @@ import { Toolbar } from "./toolbar"
 import { SlashCommandPlugin } from "./slash-command-plugin"
 import { AutoLinkPlugin } from "@lexical/react/LexicalAutoLinkPlugin"
 import { ImagePlugin } from "./ImagePlugin"
+import { MentionPlugin } from "./mention-plugin"
+import { EmojiShortcodePlugin } from "./emoji-shortcode-plugin"
 
 const URL_MATCHER = /((https?:\/\/(www\.)?)|(www\.))[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
 
@@ -67,7 +69,11 @@ export function Plugins() {
         <ImagePlugin />
 
         {floatingAnchorElem && (
-          <SlashCommandPlugin />
+          <>
+            <SlashCommandPlugin />
+            <MentionPlugin />
+            <EmojiShortcodePlugin />
+          </>
         )}
       </div>
     </div>

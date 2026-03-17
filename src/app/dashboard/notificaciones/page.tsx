@@ -14,6 +14,7 @@ import { cn } from "@/shared/tailwind/tailwind-utils"
 
 export default function NotificationsPage() {
     const { data: session } = useSession()
+    const [expandedIds, setExpandedIds] = React.useState<Set<string>>(new Set())
     const [notifications, setNotifications] = React.useState<any[]>([])
     const [loading, setLoading] = React.useState(true)
     const [activeFilter, setActiveFilter] = React.useState<'all' | 'unread' | 'read' | 'info' | 'update' | 'warning' | 'important'>('all')
@@ -24,12 +25,27 @@ export default function NotificationsPage() {
             const data = await res.json()
             if (Array.isArray(data)) {
                 setNotifications(data)
+                // Expand unread notifications by default
+                const unreadIds = data.filter((n: any) => !n.isRead).map((n: any) => n.id)
+                setExpandedIds(new Set(unreadIds))
             }
         } catch (err) {
             console.error("Failed to fetch notifications:", err)
         } finally {
             setLoading(false)
         }
+    }
+
+    const toggleExpand = (id: string) => {
+        setExpandedIds(prev => {
+            const next = new Set(prev)
+            if (next.has(id)) {
+                next.delete(id)
+            } else {
+                next.add(id)
+            }
+            return next
+        })
     }
 
     React.useEffect(() => {
@@ -214,69 +230,99 @@ export default function NotificationsPage() {
                         </Card>
                     ) : (
                         <div className="grid gap-4">
-                            {filteredNotifications.map((n) => (
-                                <Card
-                                    key={n.id}
-                                    className={cn(
-                                        "relative overflow-hidden transition-all duration-500 border-border/40 group hover:border-blue-500/30",
-                                        !n.isRead
-                                            ? "bg-blue-500/[0.03] border-blue-500/20"
-                                            : "bg-card/20 opacity-70"
-                                    )}
-                                >
-                                    {!n.isRead && (
-                                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
-                                    )}
-                                    <CardHeader className="flex flex-row items-start gap-4 pb-3">
-                                        <div className={cn(
-                                            "p-3 rounded-xl border shadow-sm transition-colors duration-500",
-                                            !n.isRead ? "bg-blue-500/10 border-blue-500/20" : "bg-muted/10 border-border/20"
-                                        )}>
-                                            {getTypeIcon(n.type)}
-                                        </div>
-                                        <div className="flex-1 flex flex-col gap-1 min-w-0">
-                                            <div className="flex items-center justify-between gap-4">
-                                                <CardTitle className={cn(
-                                                    "text-xl font-black tracking-tight transition-colors duration-500 truncate",
-                                                    !n.isRead ? "text-white" : "text-zinc-500"
-                                                )}>
-                                                    {n.title}
-                                                </CardTitle>
-                                                {!n.isRead && (
-                                                    <Badge className="bg-blue-500 text-white text-[9px] font-black uppercase tracking-[0.2em] px-2 h-5 rounded-md animate-pulse">Nuevo</Badge>
-                                                )}
-                                            </div>
-                                            <div className="flex items-center gap-2 text-[10px] text-muted-foreground/60 font-black uppercase tracking-widest">
-                                                <IconClock className="size-3" />
-                                                {new Date(n.created_at).toLocaleDateString("es-ES", { day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit' })}
-                                            </div>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div
-                                            className={cn(
-                                                "text-sm leading-relaxed transition-colors duration-500 prose prose-invert prose-sm max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-2 prose-li:my-0.5 prose-img:rounded-xl",
-                                                !n.isRead ? "text-zinc-200" : "text-zinc-600"
-                                            )}
-                                            dangerouslySetInnerHTML={{
-                                                __html: DOMPurify.sanitize(n.content)
-                                            }}
-                                        />
-                                        {!n.isRead && (
-                                            <div className="flex justify-end mt-6">
-                                                <button
-                                                    type="button"
-                                                    className="inline-flex items-center justify-center whitespace-nowrap rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors h-9 px-5 bg-emerald-500/5 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/10 hover:border-emerald-500/40"
-                                                    onClick={() => markAsRead(n.id)}
-                                                >
-                                                    <IconCheck className="size-3.5 mr-2" />
-                                                    Marcar como leído
-                                                </button>
-                                            </div>
+                            {filteredNotifications.map((n) => {
+                                const isExpanded = expandedIds.has(n.id)
+                                
+                                return (
+                                    <Card
+                                        key={n.id}
+                                        className={cn(
+                                            "relative overflow-hidden transition-all duration-500 border-border/40 group",
+                                            !n.isRead
+                                                ? "bg-blue-500/[0.03] border-blue-500/20"
+                                                : "bg-card/20 opacity-70",
+                                            isExpanded && "hover:border-blue-500/30 shadow-xl shadow-blue-500/5"
                                         )}
-                                    </CardContent>
-                                </Card>
-                            ))}
+                                    >
+                                        {!n.isRead && (
+                                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
+                                        )}
+                                        <CardHeader 
+                                            className="flex flex-row items-center gap-4 py-4 cursor-pointer select-none"
+                                            onClick={() => toggleExpand(n.id)}
+                                        >
+                                            <div className={cn(
+                                                "p-2.5 rounded-xl border shadow-sm transition-all duration-500",
+                                                !n.isRead ? "bg-blue-500/10 border-blue-500/20" : "bg-muted/10 border-border/20",
+                                                !isExpanded && "opacity-50"
+                                            )}>
+                                                {getTypeIcon(n.type)}
+                                            </div>
+                                            <div className="flex-1 flex flex-col gap-0.5 min-w-0">
+                                                <div className="flex items-center justify-between gap-4">
+                                                    <CardTitle className={cn(
+                                                        "text-lg font-black tracking-tight transition-colors duration-500 truncate",
+                                                        !n.isRead ? "text-white" : "text-zinc-500",
+                                                        !isExpanded && "text-zinc-400"
+                                                    )}>
+                                                        {n.title}
+                                                    </CardTitle>
+                                                    <div className="flex items-center gap-3">
+                                                        {!n.isRead && (
+                                                            <Badge className="bg-blue-500 text-white text-[8px] font-black uppercase tracking-[0.2em] px-1.5 h-4.5 rounded-md animate-pulse">Nuevo</Badge>
+                                                        )}
+                                                        <div className={cn(
+                                                            "size-6 rounded-lg bg-white/5 flex items-center justify-center transition-transform duration-300",
+                                                            isExpanded ? "rotate-180" : "rotate-0"
+                                                        )}>
+                                                            <svg className="size-3 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2 text-[9px] text-muted-foreground/60 font-black uppercase tracking-widest leading-none">
+                                                    <IconClock className="size-2.5" />
+                                                    {new Date(n.created_at).toLocaleDateString("es-ES", { day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit' })}
+                                                </div>
+                                            </div>
+                                        </CardHeader>
+                                        
+                                        <div className={cn(
+                                            "transition-all duration-500 ease-in-out overflow-hidden",
+                                            isExpanded ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
+                                        )}>
+                                            <CardContent className="pt-0 pb-6">
+                                                <div className="h-px bg-white/5 mb-6" />
+                                                <div
+                                                    className={cn(
+                                                        "text-sm leading-relaxed transition-colors duration-500 prose prose-invert prose-sm max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-2 prose-li:my-0.5 prose-img:rounded-xl",
+                                                        !n.isRead ? "text-zinc-200" : "text-zinc-600"
+                                                    )}
+                                                    dangerouslySetInnerHTML={{
+                                                        __html: DOMPurify.sanitize(n.content)
+                                                    }}
+                                                />
+                                                {!n.isRead && (
+                                                    <div className="flex justify-end mt-6">
+                                                        <button
+                                                            type="button"
+                                                            className="inline-flex items-center justify-center whitespace-nowrap rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors h-9 px-5 bg-emerald-500/5 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/10 hover:border-emerald-500/40"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                markAsRead(n.id)
+                                                            }}
+                                                        >
+                                                            <IconCheck className="size-3.5 mr-2" />
+                                                            Marcar como leído
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </CardContent>
+                                        </div>
+                                    </Card>
+                                )
+                            })}
                         </div>
                     )}
                 </div>

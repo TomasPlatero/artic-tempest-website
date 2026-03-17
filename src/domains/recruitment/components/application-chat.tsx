@@ -1,15 +1,18 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { useSession } from "next-auth/react"
 import { supabase } from "@/shared/supabase/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { Badge } from "@/shared/ui/badge"
-import { IconSend, IconLoader2, IconUser, IconMessageCircle, IconShield } from "@tabler/icons-react"
+import { IconSend, IconLoader2, IconUser, IconMessageCircle, IconShield, IconMoodSmile } from "@tabler/icons-react"
 import Image from "next/image"
 import { toast } from "sonner"
+import { EmojiSuggestionList } from "@/shared/ui/emoji-suggestion-list"
+import { EMOJI_LIST } from "@/shared/lib/emojis"
+import { EmojiPicker } from "@/shared/components/emoji-picker"
 
 type Props = {
     applicationId: string
@@ -24,23 +27,61 @@ export function ApplicationChat({ applicationId, otherPartyName }: Props) {
     const [sending, setSending] = useState(false)
     const scrollRef = useRef<HTMLDivElement>(null)
 
+    // Emoji Logic
+    const [showEmojis, setShowEmojis] = useState(false)
+    const [emojiFilter, setEmojiFilter] = useState("")
+    const [emojiCursorPos, setEmojiCursorPos] = useState(0)
+    const inputRef = useRef<HTMLInputElement>(null)
+
+    const filteredEmojis = useMemo(() => {
+        if (!emojiFilter) return EMOJI_LIST.slice(0, 15).map(e => e.char)
+        const query = emojiFilter.toLowerCase()
+        return EMOJI_LIST
+            .filter(e => e.name.toLowerCase().includes(query))
+            .slice(0, 15)
+            .map(e => e.char)
+    }, [emojiFilter])
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value
+        setNewMessage(value)
+
+        const cursorPos = e.target.selectionStart || 0
+        const textBeforeCursor = value.slice(0, cursorPos)
+        const match = textBeforeCursor.match(/:(\w*)$/)
+
+        if (match) {
+            setShowEmojis(true)
+            setEmojiFilter(match[1])
+            setEmojiCursorPos(cursorPos - match[0].length)
+        } else {
+            setShowEmojis(false)
+        }
+    }
+
+    const onSelectEmoji = (emoji: any) => {
+        // En EmojiSuggestionList se llama con { name: item } donde item es el char
+        const char = typeof emoji === 'string' ? emoji : emoji.name
+        const textBefore = newMessage.slice(0, emojiCursorPos)
+        const textAfter = newMessage.slice(inputRef.current?.selectionStart || 0)
+        
+        const updated = textBefore + char + " " + textAfter
+        setNewMessage(updated)
+        setShowEmojis(false)
+        
+        // Focus back to input
+        setTimeout(() => inputRef.current?.focus(), 10)
+    }
+
     useEffect(() => {
         if (!applicationId) return
-
-        let interval: NodeJS.Timeout
 
         async function fetchMessages() {
             try {
                 const res = await fetch(`/api/recruitment/chat?applicationId=${applicationId}`)
                 if (res.ok) {
                     const data = await res.json()
-                    setMessages((prev) => {
-                        // Optimización simple para no renderizar si no hay cambios en longitud
-                        if (prev.length !== data.length) return data
-                        return prev
-                    })
-                } else {
-                    console.error("Error fetching messages")
+                    setMessages(data)
                 }
             } catch (error) {
                 console.error("Network error fetching messages:", error)
@@ -51,11 +92,42 @@ export function ApplicationChat({ applicationId, otherPartyName }: Props) {
 
         fetchMessages()
 
-        // Polling cada 5 segundos ya que RLS bloquea subscripciones Realtime para clientes con JWT de NextAuth
-        interval = setInterval(fetchMessages, 5000)
+        // Suscripción Realtime a los nuevos mensajes de esta solicitud
+        const channel = supabase
+            .channel(`recruitment_chat_${applicationId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'recruitment_chat_messages',
+                    filter: `application_id=eq.${applicationId}`
+                },
+                async (payload) => {
+                    const newMessage = payload.new as any
+                    
+                    // Si el mensaje ya existe (por el update optimista), no lo añadimos
+                    setMessages(prev => {
+                        if (prev.some(m => m.id === newMessage.id)) return prev
+                        
+                        // Necesitamos el perfil del autor para el renderizado (avatar, username)
+                        // Como el payload de realtime no trae joins, hacemos un fetch rápido del perfil
+                        fetch(`/api/recruitment/chat/author?authorId=${newMessage.author_id}`)
+                            .then(res => res.json())
+                            .then(authorData => {
+                                setMessages(current => current.map(m => 
+                                    m.id === newMessage.id ? { ...m, author: authorData } : m
+                                ))
+                            })
+
+                        return [...prev.filter(m => !m.id.startsWith('temp-')), newMessage]
+                    })
+                }
+            )
+            .subscribe()
 
         return () => {
-            clearInterval(interval)
+            supabase.removeChannel(channel)
         }
     }, [applicationId])
 
@@ -208,20 +280,39 @@ export function ApplicationChat({ applicationId, otherPartyName }: Props) {
                 {/* Input Area */}
                 <form
                     onSubmit={handleSendMessage}
-                    className="p-4 border-t border-white/5 bg-white/[0.01]"
+                    className="p-4 border-t border-white/5 bg-white/[0.01] relative"
                 >
-                    <div className="flex gap-2">
-                        <Input
-                            value={newMessage}
-                            onChange={(e) => setNewMessage(e.target.value)}
-                            placeholder="Escribe un mensaje..."
-                            className="bg-black/40 border-white/10 h-11 rounded-xl text-sm focus:border-blue-500/50"
-                            autoComplete="off"
-                        />
+                    {showEmojis && filteredEmojis.length > 0 && (
+                        <div className="absolute bottom-full left-4 mb-2 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                            <EmojiSuggestionList 
+                                items={filteredEmojis}
+                                command={onSelectEmoji}
+                            />
+                        </div>
+                    )}
+                    <div className="flex gap-2 items-end">
+                        <div className="relative flex-1 group">
+                            <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
+                                <EmojiPicker onSelect={(emojiValue: string) => {
+                                    const textBefore = newMessage.slice(0, inputRef.current?.selectionStart || 0)
+                                    const textAfter = newMessage.slice(inputRef.current?.selectionEnd || 0)
+                                    setNewMessage(textBefore + emojiValue + textAfter)
+                                    setTimeout(() => inputRef.current?.focus(), 10)
+                                }} />
+                            </div>
+                            <Input
+                                ref={inputRef}
+                                value={newMessage}
+                                onChange={handleInputChange}
+                                placeholder="Escribe un mensaje... (Usa : para emojis)"
+                                className="bg-black/40 border-white/10 h-11 pl-11 rounded-xl text-sm focus:border-blue-500/50 transition-all group-focus-within:bg-black/60"
+                                autoComplete="off"
+                            />
+                        </div>
                         <Button
                             type="submit"
                             disabled={sending || !newMessage.trim()}
-                            className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20 shrink-0"
+                            className="h-11 px-5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20 shrink-0 transition-all hover:scale-105 active:scale-95"
                         >
                             {sending ? <IconLoader2 className="size-5 animate-spin" /> : <IconSend className="size-4" />}
                         </Button>
