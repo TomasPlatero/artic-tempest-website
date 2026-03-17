@@ -21,8 +21,8 @@ export async function generateMetadata(): Promise<Metadata> {
     .limit(1)
     .single()
 
-  const title = guild ? `${guild.name} – Hermandad WoW` : "Artic Tempest – Hermandad WoW"
-  const desc = "Somos una hermandad comprometida con el progreso PvE en dificultad Mítica, formada por jugadores con experiencia que comparten el objetivo de avanzar juntos y completar el contenido de cada temporada.";
+  const title = guild ? `${guild.name} – Hermandad WoW | Progreso Mítico` : "Artic Tempest – Hermandad WoW | Progreso Mítico"
+  const desc = "Hermandad de WoW en Dun Modr centrada en el progreso PvE Mítico. Un equipo con experiencia para completar el contenido más exigente de cada temporada.";
 
   return {
     title,

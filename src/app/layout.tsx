@@ -41,8 +41,8 @@ export async function generateMetadata(): Promise<Metadata> {
     .limit(1)
     .maybeSingle() as any;
 
-  const title = guild ? `${guild.name}` : "Artic Tempest";
-  const desc = "Somos una hermandad comprometida con el progreso PvE en dificultad Mítica, formada por jugadores con experiencia que comparten el objetivo de avanzar juntos y completar el contenido de cada temporada.";
+  const title = guild ? `${guild.name} – Hermandad WoW | Progreso Mítico en Dun Modr` : "Artic Tempest – Hermandad WoW | Progreso Mítico en Dun Modr";
+  const desc = "Hermandad de WoW en Dun Modr centrada en el progreso PvE Mítico. Un equipo con experiencia para completar el contenido más exigente de cada temporada.";
   const icon = guild?.icon_url || "/favicon.ico";
 
   return {
@@ -151,7 +151,6 @@ export default async function RootLayout({
         <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID} />
       )}
       <head>
-        <title>Artic Tempest – Hermandad WoW</title>
         {/* Critical Image Preloads for LCP */}
         <link rel="preload" as="image" href="/assets/images/midnight-battle.webp" fetchPriority="high" />
         <link rel="preload" as="image" href="/assets/images/raids/voidspire.webp" fetchPriority="high" />
@@ -168,7 +167,7 @@ export default async function RootLayout({
                 "https://twitter.com/artictempest",
                 "https://www.warcraftlogs.com/guild/id/743623"
               ],
-              "description": "Somos una hermandad comprometida con el progreso PvE en dificultad Mítica, formada por jugadores con experiencia que comparten el objetivo de avanzar juntos y completar el contenido de cada temporada."
+              "description": "Hermandad de WoW en Dun Modr centrada en el progreso PvE Mítico. Un equipo con experiencia para completar el contenido más exigente de cada temporada."
             })
           }}
         />
