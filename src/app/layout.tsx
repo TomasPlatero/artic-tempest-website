@@ -196,7 +196,7 @@ export default async function RootLayout({
           <ThemedToaster />
           <Analytics />
           <SpeedInsights />
-          {process.env.NEXT_PUBLIC_GA_ID && (
+          {process.env.NEXT_PUBLIC_GA_ID && !process.env.NEXT_PUBLIC_GTM_ID && (
             <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
           )}
           {process.env.NODE_ENV === 'development' && <VercelToolbar />}

@@ -77,12 +77,14 @@ export function LandingNoticias() {
                         >
                             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" aria-hidden="true" />
                             <div className="absolute inset-0 z-0">
-                                <div className="absolute inset-0 bg-blue-900/20 mix-blend-overlay group-hover:opacity-0 transition-opacity" aria-hidden="true" />
-                                <div className="w-full h-full bg-zinc-900 animate-pulse" /> {/* Placeholder while image loads */}
-                                {/* In a real app, use next/image with actual sources */}
-                                <div
-                                    className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-700"
-                                    style={{ backgroundImage: `url(${featuredNews.image_url || '/assets/images/midnight-battle.webp'})` }}
+                                <div className="absolute inset-0 bg-blue-900/20 mix-blend-overlay group-hover:opacity-0 transition-opacity z-10" aria-hidden="true" />
+                                <Image
+                                    src={featuredNews.image_url || '/assets/images/midnight-battle.webp'}
+                                    alt={featuredNews.title}
+                                    fill
+                                    className="object-cover group-hover:scale-105 transition-transform duration-700"
+                                    priority
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 50vw"
                                 />
                             </div>
 
@@ -133,9 +135,12 @@ export function LandingNoticias() {
                             >
                                 <div className="relative aspect-video overflow-hidden">
                                     <div className="absolute inset-0 bg-blue-900/10 z-10 group-hover:opacity-0 transition-opacity" aria-hidden="true" />
-                                    <div
-                                        className="absolute inset-0 bg-cover bg-center group-hover:scale-110 transition-transform duration-500"
-                                        style={{ backgroundImage: `url(${n.image_url || '/assets/images/midnight-battle.webp'})` }}
+                                    <Image
+                                        src={n.image_url || '/assets/images/midnight-battle.webp'}
+                                        alt={n.title}
+                                        fill
+                                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
                                     />
                                 </div>
                                 <div className="p-6 flex flex-col flex-1">
