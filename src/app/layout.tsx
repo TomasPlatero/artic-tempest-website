@@ -189,9 +189,7 @@ export default async function RootLayout({
               <NotificationPermissionModal />
               <ScrollToTop />
               <SkipLink />
-              <main id="main-content">
-                {children}
-              </main>
+              {children}
             </FlagsProvider>
           </SessionProvider>
           <CookieConsentLoader />

@@ -174,7 +174,7 @@ export function LandingNoticias() {
                             </p>
                             <Link
                                 href="/reclutamiento"
-                                className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-800 text-white font-black uppercase tracking-widest text-[10px] px-6 py-3 rounded-xl transition-all shadow-lg shadow-blue-500/20 hover:scale-105"
+                                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest text-[10px] px-6 py-3 rounded-xl transition-all shadow-lg shadow-blue-500/20 hover:scale-105"
                             >
                                 Aplicar Ahora
                                 <IconArrowRight className="size-3" />

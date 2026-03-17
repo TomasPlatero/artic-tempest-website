@@ -68,7 +68,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
     return (
         <div className="min-h-screen bg-black selection:bg-blue-500/30 dark">
             <LandingNavigation />
-            <div className="pt-32 pb-20 px-4 md:px-6">
+            <main id="main-content" className="pt-32 pb-20 px-4 md:px-6">
                 <div className="max-w-7xl mx-auto">
                     {/* Header */}
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
@@ -215,7 +215,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
                         </div>
                     )}
                 </div>
-            </div>
+            </main>
             <LandingFooter />
         </div>
     )
