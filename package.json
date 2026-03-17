@@ -1,10 +1,7 @@
 {
   "name": "artic-tempest-website",
-  "version": "0.9.5 Beta",
+  "version": "0.9.10 Beta",
   "private": true,
-  "engines": {
-    "node": "20.x"
-  },
   "scripts": {
     "dev": "next dev --turbopack",
     "dev:debug": "cross-env NODE_OPTIONS=--inspect next dev --turbopack",
