@@ -152,6 +152,9 @@ export default async function RootLayout({
       )}
       <head>
         <title>Artic Tempest – Hermandad WoW</title>
+        {/* Critical Image Preloads for LCP */}
+        <link rel="preload" as="image" href="/assets/images/midnight-battle.webp" fetchPriority="high" />
+        <link rel="preload" as="image" href="/assets/images/raids/voidspire.webp" fetchPriority="high" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

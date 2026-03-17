@@ -8,6 +8,7 @@ import { WantedClasses } from "@/domains/landing/components/wanted-classes"
 import { Separator } from "@/shared/ui/separator"
 import { LandingFooter } from "@/domains/landing/components/footer"
 import { LandingStreamers } from "@/domains/landing/components/streamers"
+import NextImage from "next/image"
 
 interface RaidProgression {
     name: string
@@ -53,13 +54,19 @@ export function HomePageClient({ initialProgression, initialStreamers }: { initi
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {progression.filter(r => r.expansion === 'Midnight').map((raid, idx) => (
                         <div key={raid.name} className={`bg-zinc-900/40 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:border-blue-500/50 transition-all group overflow-hidden relative min-h-[300px] flex flex-col justify-end`}>
-                            {/* Background Image */}
+                            {/* Background Image Optimized */}
                             {raid.imageUrl && (
                                 <>
-                                    <div 
-                                        className="absolute inset-0 z-0 bg-cover bg-center group-hover:scale-110 transition-transform duration-700 opacity-60 grayscale-[0.5] group-hover:grayscale-0 group-hover:opacity-80"
-                                        style={{ backgroundImage: `url(${raid.imageUrl})` }}
-                                    />
+                                    <div className="absolute inset-0 z-0 overflow-hidden">
+                                        <NextImage
+                                            src={raid.imageUrl}
+                                            alt={raid.name}
+                                            fill
+                                            className="object-cover group-hover:scale-110 transition-transform duration-700 opacity-60 grayscale-[0.5] group-hover:grayscale-0 group-hover:opacity-80"
+                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
+                                            priority={idx === 0}
+                                        />
+                                    </div>
                                     <div className="absolute inset-0 z-[1] bg-gradient-to-t from-zinc-950 via-zinc-900/40 to-transparent" />
                                 </>
                             )}

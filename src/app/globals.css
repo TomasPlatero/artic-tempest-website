@@ -282,3 +282,14 @@ html #cc-main,
 #cc-main .pm__body {
   overflow-y: auto !important;
 }
+
+/* Skeleton Loading Pulse */
+@keyframes anim-p {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 0.8; }
+}
+
+.skeleton-card {
+    animation: anim-p 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    background: rgba(255, 255, 255, 0.05);
+}
