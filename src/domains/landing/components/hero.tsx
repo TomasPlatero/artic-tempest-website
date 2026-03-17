@@ -64,7 +64,7 @@ export function LandingHero() {
 
             {/* Scroll Indicator */}
             <motion.button
-                onClick={() => document.getElementById('reclutamiento')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={() => document.getElementById('noticias')?.scrollIntoView({ behavior: 'smooth' })}
                 className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-white/80 hover:text-white transition-colors cursor-pointer group z-20 p-4"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1, y: [0, 8, 0] }}
