@@ -23,6 +23,7 @@ import {
 import { cn } from '@/shared/tailwind/tailwind-utils';
 import { Button } from './button';
 import { useEffect } from 'react';
+import { EmojiPicker } from '../components/emoji-picker';
 
 interface RichTextEditorProps {
     value: string;
@@ -144,6 +145,7 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
                     icon={IconCode}
                     tooltip="Código"
                 />
+                <EmojiPicker onSelect={(emoji) => editor.chain().focus().insertContent(emoji).run()} />
                 <div className="w-px h-4 bg-white/10 mx-1" />
                 <MenuButton
                     onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}

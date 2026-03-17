@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext"
-import { $getSelection, $isRangeSelection, FORMAT_TEXT_COMMAND, UNDO_COMMAND, REDO_COMMAND } from "lexical"
+import { $getSelection, $isRangeSelection, FORMAT_TEXT_COMMAND, UNDO_COMMAND, REDO_COMMAND, $createTextNode, $insertNodes } from "lexical"
 import { $setBlocksType } from "@lexical/selection"
 import { $createHeadingNode, $createQuoteNode, HeadingTagType } from "@lexical/rich-text"
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND, REMOVE_LIST_COMMAND } from "@lexical/list"
@@ -22,7 +22,8 @@ import {
     IconArrowBackUp,
     IconArrowForwardUp,
     IconMinus,
-    IconPhoto
+    IconPhoto,
+    IconMoodSmile
 } from "@tabler/icons-react"
 import { INSERT_IMAGE_COMMAND } from "./ImagePlugin"
 import { Button } from "@/shared/ui/button"
@@ -30,6 +31,7 @@ import { Separator } from "@/shared/ui/separator"
 import { Toggle } from "@/shared/ui/toggle"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/shared/ui/tooltip"
 import { INSERT_HORIZONTAL_RULE_COMMAND } from "@lexical/react/LexicalHorizontalRuleNode"
+import { EmojiPicker } from "../../components/emoji-picker"
 
 export function Toolbar() {
     const [editor] = useLexicalComposerContext()
@@ -184,6 +186,15 @@ export function Toolbar() {
                     tooltip="Insertar imagen"
                 />
                 <ToolbarButton onClick={insertHorizontalRule} icon={IconMinus} tooltip="Línea horizontal" />
+                <EmojiPicker onSelect={(emoji) => {
+                    editor.update(() => {
+                        $insertNodes([$createTextNode(emoji)])
+                    })
+                }}>
+                    <Button variant="ghost" size="icon" className="size-8 p-0">
+                        <IconMoodSmile className="size-4" />
+                    </Button>
+                </EmojiPicker>
             </div>
         </div>
     )

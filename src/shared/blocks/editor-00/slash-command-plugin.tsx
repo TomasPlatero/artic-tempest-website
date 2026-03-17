@@ -9,7 +9,7 @@ import {
 } from "@lexical/react/LexicalTypeaheadMenuPlugin"
 import { $createHeadingNode } from "@lexical/rich-text"
 import { $setBlocksType } from "@lexical/selection"
-import { $getSelection, $isRangeSelection, TextNode, $createParagraphNode } from "lexical"
+import { $getSelection, $isRangeSelection, TextNode, $createParagraphNode, $insertNodes, $createTextNode } from "lexical"
 import { $createQuoteNode } from "@lexical/rich-text"
 import { $createCodeNode } from "@lexical/code"
 import { INSERT_HORIZONTAL_RULE_COMMAND } from "@lexical/react/LexicalHorizontalRuleNode"
@@ -23,7 +23,8 @@ import {
     IconCode,
     IconMinus,
     IconTable,
-    IconPhoto
+    IconPhoto,
+    IconMoodSmile
 } from "@tabler/icons-react"
 import { INSERT_IMAGE_COMMAND } from "./ImagePlugin"
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND } from "@lexical/list"
@@ -145,6 +146,15 @@ export function SlashCommandPlugin() {
                 keywords: ["table", "tabla", "grid"],
                 onSelect: () => {
                     editor.dispatchCommand(INSERT_TABLE_COMMAND, { columns: '3', rows: '3' })
+                },
+            }),
+            new SlashMenuItemOption("Emoji", {
+                icon: <IconMoodSmile className="size-4" />,
+                keywords: ["emoji", "smile", "cara", "mood"],
+                onSelect: () => {
+                    editor.update(() => {
+                        $insertNodes([$createTextNode("😀")])
+                    })
                 },
             }),
         ]

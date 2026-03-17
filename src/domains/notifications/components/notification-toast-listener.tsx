@@ -2,11 +2,13 @@
 
 import React from "react"
 import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { supabase } from "@/shared/supabase/client"
 
 export function NotificationToastListener() {
     const { status } = useSession()
+    const router = useRouter()
     const [lastNotifiedCount, setLastNotifiedCount] = React.useState<number | null>(null)
     const [guildInfo, setGuildInfo] = React.useState<{ name: string, icon_url: string | null } | null>(null)
 
@@ -63,7 +65,11 @@ export function NotificationToastListener() {
                     if (unread > 0) {
                         toast("Notificaciones pendientes", {
                             id: "pending-notifications",
-                            description: `Tienes ${unread} mensaje${unread > 1 ? 's' : ''} nuevo${unread > 1 ? 's' : ''} en tu bandeja.`
+                            description: `Tienes ${unread} mensaje${unread > 1 ? 's' : ''} nuevo${unread > 1 ? 's' : ''} en tu bandeja.`,
+                            action: {
+                                label: "Ver bandeja",
+                                onClick: () => router.push("/notificaciones")
+                            }
                         })
                     }
                     setLastNotifiedCount(unread)
@@ -74,7 +80,11 @@ export function NotificationToastListener() {
                     const message = "Acabas de recibir un mensaje oficial, revisa tus notificaciones."
 
                     toast(title, {
-                        description: message
+                        description: message,
+                        action: {
+                            label: "Ver ahora",
+                            onClick: () => router.push("/notificaciones")
+                        }
                     })
 
                     sendNativeNotification(
