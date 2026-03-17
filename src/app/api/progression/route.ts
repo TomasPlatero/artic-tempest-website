@@ -69,6 +69,7 @@ export async function GET() {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({ query: gqlQuery }),
+                next: { revalidate: 3600 }
             });
             if (wclRes.ok) {
                 const json = await wclRes.json();

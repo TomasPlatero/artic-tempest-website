@@ -1,6 +1,5 @@
 "use client"
 
-import { motion } from "framer-motion"
 import { Button } from "@/shared/ui/button"
 import { IconChevronDown, IconChevronRight, IconSword } from "@tabler/icons-react"
 import Link from "next/link"
@@ -10,7 +9,7 @@ export function LandingHero() {
     return (
         <section className="relative h-screen flex items-center justify-center overflow-hidden">
             {/* Background Image Layer with Native Next.js Optimization */}
-            <div className="absolute inset-0 z-0 select-none pointer-events-none scale-110 animate-[slow-zoom_20s_infinite_alternate]">
+            <div className="absolute inset-0 z-0 select-none pointer-events-none scale-105">
                 <Image
                     src="/assets/images/midnight-battle.webp"
                     alt="Midnight Battle Hero"
@@ -30,12 +29,8 @@ export function LandingHero() {
                 <div className="w-full max-w-4xl h-[400px] bg-blue-900/20 rounded-full blur-[160px] opacity-60" />
             </div>
 
-            <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 1, ease: "easeOut" }}
-                >
+            <div className="relative z-10 max-w-5xl mx-auto px-6 text-center animate-in fade-in zoom-in duration-1000">
+                <div>
                     <h1 className="text-6xl md:text-9xl font-black text-white mb-6 uppercase tracking-tighter drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
                         Artic <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-indigo-400">Tempest</span>
                     </h1>
@@ -59,24 +54,18 @@ export function LandingHero() {
                             </Link>
                         </Button>
                     </div>
-                </motion.div>
+                </div>
             </div>
 
             {/* Scroll Indicator */}
-            <motion.button
+            <button
                 onClick={() => document.getElementById('noticias')?.scrollIntoView({ behavior: 'smooth' })}
-                className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-white/80 hover:text-white transition-colors cursor-pointer group z-20 p-4"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1, y: [0, 8, 0] }}
-                transition={{
-                    opacity: { duration: 1, delay: 1 },
-                    y: { duration: 2, repeat: Infinity, ease: "easeInOut" }
-                }}
+                className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-white/80 hover:text-white transition-colors cursor-pointer group z-20 p-4 animate-bounce"
                 aria-label="Explorar hacia abajo"
             >
                 <span className="text-[10px] uppercase tracking-[0.2em] font-black text-white/90 group-hover:text-blue-400 transition-colors">Explorar</span>
                 <IconChevronDown className="size-6 text-blue-400 group-hover:text-blue-400 transition-colors" />
-            </motion.button>
+            </button>
         </section>
     )
 }

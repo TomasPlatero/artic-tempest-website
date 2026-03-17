@@ -60,7 +60,7 @@ export async function fetchCharacterRole(
   try {
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
-      cache: 'no-store',
+      next: { revalidate: 3600 },
     });
     if (!res.ok) return null;
 
@@ -101,7 +101,7 @@ export async function fetchCharacterSummary(
   try {
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
-      cache: 'no-store',
+      next: { revalidate: 3600 },
     });
     if (!res.ok) return null;
 
@@ -127,7 +127,7 @@ export async function fetchCharacterMedia(
   try {
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
-      cache: 'no-store',
+      next: { revalidate: 86400 }, // Media is static enough for 24h
     });
     if (!res.ok) return null;
 
@@ -152,7 +152,7 @@ export async function fetchCharacterItemLevel(
   try {
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
-      cache: 'no-store',
+      next: { revalidate: 3600 },
     });
     if (!res.ok) return null;
 
@@ -202,7 +202,7 @@ export async function fetchGuildRoster(
 
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
-    cache: 'no-store',
+    next: { revalidate: 3600 },
   });
 
   if (!res.ok) {
@@ -249,7 +249,7 @@ export async function fetchGuildSummary(
   try {
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
-      cache: 'no-store',
+      next: { revalidate: 3600 },
     });
 
     if (!res.ok) return null;
@@ -273,7 +273,7 @@ export async function fetchCharacterProfile(
   try {
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
-      cache: 'no-store',
+      next: { revalidate: 3600 },
     });
 
     if (!res.ok) return null;
@@ -316,7 +316,7 @@ export async function fetchCharacterEquipment(
   try {
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
-      cache: 'no-store',
+      next: { revalidate: 3600 },
     });
     if (!res.ok) return null;
     return await res.json();
@@ -336,6 +336,7 @@ export async function fetchItemData(
   try {
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
+      next: { revalidate: 86400 }, // Item data is static
     });
     if (!res.ok) return null;
     return await res.json();
@@ -356,6 +357,7 @@ export async function fetchEncounterAbilities(
   try {
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
+      next: { revalidate: 86400 }, // Static journal data
     });
     if (!res.ok) return null;
     return await res.json();
@@ -376,6 +378,7 @@ export async function fetchSpellMedia(
       headers: {
         Authorization: `Bearer ${token}`,
       },
+      next: { revalidate: 86400 }, // Spell media is static
     });
 
     if (!res.ok) {

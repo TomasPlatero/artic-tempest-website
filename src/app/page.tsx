@@ -39,7 +39,9 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-export default async function HomePage() {
+export const revalidate = 3600; // Revalidate every hour
+
+export default async function Home() {
   const baseUrl = process.env.NEXTAUTH_URL || 'https://artictempest.com'
 
   const { data: guild } = await supabaseAdmin
