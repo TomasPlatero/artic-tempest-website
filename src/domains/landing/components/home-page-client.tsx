@@ -16,13 +16,16 @@ interface RaidProgression {
     progress: string
     rank: string
     status: string
+    imageUrl?: string
 }
 
 export function HomePageClient({ initialProgression, initialStreamers }: { initialProgression?: RaidProgression[], initialStreamers?: any[] }) {
     const [progression, setProgression] = useState<RaidProgression[]>(initialProgression || [])
 
     useEffect(() => {
-        if (initialProgression) return; // Skip if already provided by server
+        // Si ya tenemos datos iniciales, podemos mostrarlos inmediatamente pero
+        // seguimos haciendo el fetch para obtener el progreso live de WCL.
+        // if (initialProgression) return; 
 
         fetch("/api/progression")
             .then(res => res.json())
@@ -49,16 +52,29 @@ export function HomePageClient({ initialProgression, initialStreamers }: { initi
                 <h2 id="progreso-title" className="text-4xl font-black text-white mb-12 uppercase tracking-tight">Progreso en Midnight</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {progression.filter(r => r.expansion === 'Midnight').map((raid, idx) => (
-                        <div key={raid.name} className={`bg-zinc-900/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:border-blue-500/50 transition-all group overflow-hidden relative ${idx > 0 ? 'grayscale opacity-85 blur-[0.5px]' : ''}`}>
-                            {idx > 0 && (
-                                <div className="absolute top-4 right-4 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/5 z-20">
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-white/90">Próximamente</span>
-                                </div>
+                        <div key={raid.name} className={`bg-zinc-900/40 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:border-blue-500/50 transition-all group overflow-hidden relative min-h-[300px] flex flex-col justify-end`}>
+                            {/* Background Image */}
+                            {raid.imageUrl && (
+                                <>
+                                    <div 
+                                        className="absolute inset-0 z-0 bg-cover bg-center group-hover:scale-110 transition-transform duration-700 opacity-60 grayscale-[0.5] group-hover:grayscale-0 group-hover:opacity-80"
+                                        style={{ backgroundImage: `url(${raid.imageUrl})` }}
+                                    />
+                                    <div className="absolute inset-0 z-[1] bg-gradient-to-t from-zinc-950 via-zinc-900/40 to-transparent" />
+                                </>
                             )}
-                            <p className="text-blue-300 font-bold mb-2 uppercase tracking-widest text-[10px]">{raid.tier || raid.expansion}</p>
-                            <h3 className="text-xl font-bold text-white mb-4">{raid.name}</h3>
-                            <div className="text-5xl font-black text-white tracking-tighter mb-2">{raid.progress}</div>
-                            <p className="text-white/90 text-sm font-medium">{raid.rank !== '-' ? raid.rank : raid.status}</p>
+                            
+                            <div className="relative z-10">
+                                {raid.progress.startsWith('0/') && (
+                                    <div className="absolute -top-16 right-0 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/5">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-white/90">En espera</span>
+                                    </div>
+                                )}
+                                <p className="text-blue-300 font-bold mb-2 uppercase tracking-widest text-[10px]">{raid.tier || raid.expansion}</p>
+                                <h3 className="text-2xl font-black text-white mb-4 uppercase tracking-tighter">{raid.name}</h3>
+                                <div className="text-5xl font-black text-white tracking-tighter mb-2">{raid.progress}</div>
+                                <p className="text-white/90 text-sm font-medium">{raid.rank !== '-' ? raid.rank : raid.status}</p>
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -91,7 +107,7 @@ export function HomePageClient({ initialProgression, initialStreamers }: { initi
             <Separator className="bg-white/5 max-w-7xl mx-auto" />
 
             {/* History Section */}
-            <section id="historia" className="py-24 px-6 max-w-4xl mx-auto text-center" aria-labelledby="historia-title">
+            <section id="historia" className="py-24 px-6 max-w-5xl mx-auto text-center" aria-labelledby="historia-title">
                 <h2 id="historia-title" className="text-4xl font-black text-white mb-8 uppercase tracking-tight">Nuestra Historia</h2>
 
                 <div className="space-y-6">

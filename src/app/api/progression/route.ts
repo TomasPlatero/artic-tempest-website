@@ -39,54 +39,80 @@ export async function GET() {
             throw new Error("No hay datos de raids en la base de datos");
         }
 
+        // 3. Fetch live data from WCL for current raids
+        // Note: For Midnight, we query by Zone ID. If unknown, we'll try to find them.
+        // For now, we'll use a placeholder logic that can be updated with real IDs.
+        const midnightZoneIds = {
+            "voidspire": 41, // Example ID, would need verification
+            "dreamwell": 42,
+            "sunwell": 43
+        };
+
+        const gqlQuery = `
+          query {
+            guildData {
+              guild(id: 743623) {
+                voidspire: raidProgression(zoneId: 41) { summary { mythicKills mythicRank } }
+                dreamwell: raidProgression(zoneId: 42) { summary { mythicKills mythicRank } }
+                sunwell: raidProgression(zoneId: 43) { summary { mythicKills mythicRank } }
+              }
+            }
+          }
+        `;
+
+        let wclData: any = null;
+        try {
+            const wclRes = await fetch("https://www.warcraftlogs.com/api/v2/client", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${access_token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ query: gqlQuery }),
+            });
+            if (wclRes.ok) {
+                const json = await wclRes.json();
+                wclData = json.data?.guildData?.guild;
+            }
+        } catch (e) {
+            console.error("Error fetching live WCL data:", e);
+        }
+
         const progression = raids.filter((r: any) => r.key !== 'Todas las Raids').sort((a: any, b: any) => {
-            const keys = ['Voidspire', 'Dreamrift', "March on Quel'Danas"];
+            const keys = ['voidspire', 'dreamwell', "sunwell"];
             return keys.indexOf(a.key) - keys.indexOf(b.key);
         }).map((r: any) => {
             const bossCount = r.metadata?.boss_count || r.metadata?.bosses?.length || 0;
+            const live = wclData ? wclData[r.key] : null;
+
+            const kills = live?.summary?.mythicKills || 0;
+            const rank = live?.summary?.mythicRank;
+
+            // Normalized keys for image mapping
+            const normalizedKey = r.key.toLowerCase().trim()
+                .replace(/['"']/g, "")
+                .replace(/\s+/g, "");
+
+            const imageMap: Record<string, string> = {
+                "voidspire": "/assets/images/raids/voidspire.webp",
+                "dreamwell": "/assets/images/raids/dreamrift.webp",
+                "dreamrift": "/assets/images/raids/dreamrift.webp",
+                "sunwell": "/assets/images/raids/marchonqueldanas.webp",
+                "marchonqueldanas": "/assets/images/raids/marchonqueldanas.webp"
+            };
+
             return {
                 name: r.value,
                 expansion: r.metadata?.expansion || "Midnight",
                 tier: r.metadata?.tier || "Temporada 1",
-                progress: `0/${bossCount} M`,
-                rank: "-",
-                status: "Próximamente"
+                progress: `${kills}/${bossCount} M`,
+                rank: rank ? `Rank ${rank}` : "-",
+                status: kills > 0 ? "En Progreso" : "Próximamente",
+                imageUrl: imageMap[normalizedKey] || "/assets/images/raids/all-raids.webp"
             };
         });
 
-        // Progreso histórico de The War Within (hardcodeado con datos oficiales de WarcraftLogs al finalizar la expansión)
-        const now = new Date();
-        const cutoffDate = new Date("2026-03-17T00:00:00Z");
-
-        if (now < cutoffDate) {
-            progression.push(
-                {
-                    name: "Palacio Nerub'ar",
-                    expansion: "The War Within",
-                    tier: "Temporada 1",
-                    progress: "6/8 M",
-                    rank: "Top 5 Dun Modr",
-                    status: "AotC (En Progreso)"
-                },
-                {
-                    name: "Liberación de Minahonda",
-                    expansion: "The War Within",
-                    tier: "Temporada 2",
-                    progress: "5/8 M",
-                    rank: "Top 9 Dun Modr",
-                    status: "AotC (En Progreso)"
-                },
-                {
-                    name: "Forja de Maná Omega",
-                    expansion: "The War Within",
-                    tier: "Temporada 3",
-                    progress: "8/8 M",
-                    rank: "Top 2 Dun Modr",
-                    status: "Cutting Edge"
-                }
-            );
-        }
-
+        // Remove the cutoff date check and TWW data for the landing page (clean start for Midnight)
         return NextResponse.json({ progression });
 
     } catch (e: any) {

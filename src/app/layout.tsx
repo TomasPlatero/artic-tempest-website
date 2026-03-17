@@ -151,6 +151,7 @@ export default async function RootLayout({
         <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID} />
       )}
       <head>
+        <title>Artic Tempest – Hermandad WoW</title>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -164,7 +165,7 @@ export default async function RootLayout({
                 "https://twitter.com/artictempest",
                 "https://www.warcraftlogs.com/guild/id/743623"
               ],
-              "description": "Hermandad competitiva de World of Warcraft en el reino Dun Modr (EU)."
+              "description": "Hermandad competitiva de World of Warcraft en el servidor Dun Modr (EU)."
             })
           }}
         />

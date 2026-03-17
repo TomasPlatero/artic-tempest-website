@@ -11,6 +11,7 @@ interface RaidProgression {
   progress: string
   rank: string
   status: string
+  imageUrl?: string
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -51,9 +52,9 @@ export default async function HomePage() {
 
   // --- Start Progression Data Fetching ---
   let progression: RaidProgression[] = [
-    { name: "La Aguja del Vacío", tier: "Temporada 1", progress: "0/5 M", rank: "-", status: "Próximamente", expansion: "Midnight" },
-    { name: "La Falla del Sueño", tier: "Temporada 1", progress: "0/1 M", rank: "-", status: "Próximamente", expansion: "Midnight" },
-    { name: "Marcha sobre Quel'Danas", tier: "Temporada 1", progress: "0/2 M", rank: "-", status: "Próximamente", expansion: "Midnight" }
+    { name: "La Aguja del Vacío", tier: "Temporada 1", progress: "0/5 M", rank: "-", status: "Próximamente", expansion: "Midnight", imageUrl: "/assets/images/raids/voidspire.webp" },
+    { name: "La Falla del Sueño", tier: "Temporada 1", progress: "0/1 M", rank: "-", status: "Próximamente", expansion: "Midnight", imageUrl: "/assets/images/raids/dreamrift.webp" },
+    { name: "Marcha sobre Quel'Danas", tier: "Temporada 1", progress: "0/2 M", rank: "-", status: "Próximamente", expansion: "Midnight", imageUrl: "/assets/images/raids/marchonqueldanas.webp" }
   ];
 
   try {
@@ -69,13 +70,26 @@ export default async function HomePage() {
         return keys.indexOf(a.key) - keys.indexOf(b.key);
       }).map((r: any) => {
         const bossCount = r.metadata?.boss_count || r.metadata?.bosses?.length || 0;
+        const normalizedKey = r.key.toLowerCase().trim()
+          .replace(/['"']/g, "")
+          .replace(/\s+/g, "");
+
+        const imageMap: Record<string, string> = {
+          "voidspire": "/assets/images/raids/voidspire.webp",
+          "dreamwell": "/assets/images/raids/dreamrift.webp",
+          "dreamrift": "/assets/images/raids/dreamrift.webp",
+          "sunwell": "/assets/images/raids/marchonqueldanas.webp",
+          "marchonqueldanas": "/assets/images/raids/marchonqueldanas.webp"
+        };
+
         return {
           name: r.value,
           expansion: r.metadata?.expansion || "Midnight",
           tier: r.metadata?.tier || "Temporada 1",
           progress: `0/${bossCount} M`,
           rank: "-",
-          status: "Próximamente"
+          status: "Próximamente",
+          imageUrl: imageMap[normalizedKey] || "/assets/images/raids/all-raids.webp"
         };
       });
     }
@@ -120,20 +134,7 @@ export default async function HomePage() {
   // const streamers = await getEnrichedStreamers();
 
   return (
-    <>
-      <OrganizationJsonLd
-        name={guildName}
-        url={baseUrl}
-        logo={guild?.icon_url || `${baseUrl}/favicon.ico`}
-        description={`Hermandad de World of Warcraft en el servidor Dun Modr. Progreso PvE Mítico, reclutamiento activo para Midnight.`}
-      />
-      <WebSiteJsonLd
-        name={guildName}
-        url={baseUrl}
-        description={`Sitio web oficial de ${guildName}. Dashboard de hermandad, roster, calendario y progresión de raids.`}
-      />
-      <HomePageClient initialProgression={progression} />
-    </>
+    <HomePageClient initialProgression={progression} />
   )
 }
 

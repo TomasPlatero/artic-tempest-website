@@ -24,12 +24,13 @@ export function AdBanner({ type, href, title, description, imageSrc }: AdBannerP
                     {/* Background Image */}
                     <div className="absolute inset-0 z-0">
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent z-10" />
-                        <Image
-                            src="https://community.restedxp.com/wp-content/uploads/2026/02/rxp-promo-panel-midnight-2.jpg"
-                            alt="RestedXP Midnight Promo"
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-700"
-                        />
+                            <Image
+                                src="https://community.restedxp.com/wp-content/uploads/2026/02/rxp-promo-panel-midnight-2.jpg"
+                                alt="RestedXP Midnight Promo"
+                                fill
+                                sizes="(max-width: 768px) 100vw, 400px"
+                                className="object-cover group-hover:scale-105 transition-transform duration-700"
+                            />
                     </div>
 
                     <div className="absolute inset-0 z-20 p-6 flex flex-col justify-end">
@@ -68,7 +69,13 @@ export function AdBanner({ type, href, title, description, imageSrc }: AdBannerP
             <Link href={href} className="block">
                 {imageSrc && (
                     <div className="relative aspect-video rounded-lg overflow-hidden mb-4">
-                        <Image src={imageSrc} alt={title || "Ad"} fill className="object-cover" />
+                        <Image 
+                            src={imageSrc} 
+                            alt={title || "Ad"} 
+                            fill 
+                            sizes="(max-width: 768px) 100vw, 400px"
+                            className="object-cover" 
+                        />
                     </div>
                 )}
                 <div className="flex items-center justify-between mb-2">
