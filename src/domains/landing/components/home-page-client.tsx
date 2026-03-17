@@ -1,14 +1,19 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import dynamic from "next/dynamic"
 import { LandingNavigation } from "@/domains/landing/components/navigation"
 import { LandingHero } from "@/domains/landing/components/hero"
 import { LandingNoticias } from "@/domains/landing/components/noticias"
 import { WantedClasses } from "@/domains/landing/components/wanted-classes"
 import { Separator } from "@/shared/ui/separator"
-import { LandingFooter } from "@/domains/landing/components/footer"
-import { LandingStreamers } from "@/domains/landing/components/streamers"
 import NextImage from "next/image"
+
+const LandingStreamers = dynamic(() => import("@/domains/landing/components/streamers").then(mod => mod.LandingStreamers), {
+    loading: () => <div className="h-96 animate-pulse bg-white/5 rounded-3xl" />
+})
+
+const LandingFooter = dynamic(() => import("@/domains/landing/components/footer").then(mod => mod.LandingFooter))
 
 interface RaidProgression {
     name: string
@@ -20,13 +25,25 @@ interface RaidProgression {
     imageUrl?: string
 }
 
-export function HomePageClient({ initialProgression, initialStreamers }: { initialProgression?: RaidProgression[], initialStreamers?: any[] }) {
+interface HomePageClientProps {
+    initialProgression?: RaidProgression[]
+    initialNews?: any[]
+    initialRecruitment?: any[]
+    initialStreamers?: any[]
+}
+
+export function HomePageClient({ 
+    initialProgression, 
+    initialNews, 
+    initialRecruitment, 
+    initialStreamers 
+}: HomePageClientProps) {
     const [progression, setProgression] = useState<RaidProgression[]>(initialProgression || [])
 
     useEffect(() => {
-        // Si ya tenemos datos iniciales, podemos mostrarlos inmediatamente pero
-        // seguimos haciendo el fetch para obtener el progreso live de WCL.
-        // if (initialProgression) return; 
+        // Optional: Re-fetch for live data if needed, but for sustainability, 
+        // we could trust the server data if it's fresh enough.
+        if (initialProgression && initialProgression.length > 0) return;
 
         fetch("/api/progression")
             .then(res => res.json())
@@ -41,10 +58,10 @@ export function HomePageClient({ initialProgression, initialStreamers }: { initi
             <LandingNavigation />
             <main id="main-content">
                 <LandingHero />
-                <LandingNoticias />
+                <LandingNoticias initialNews={initialNews} />
 
                 <div id="reclutamiento" className="relative z-10 bg-black">
-                    <WantedClasses />
+                    <WantedClasses initialClasses={initialRecruitment} />
                 </div>
 
                 <Separator className="bg-white/5 max-w-7xl mx-auto" />

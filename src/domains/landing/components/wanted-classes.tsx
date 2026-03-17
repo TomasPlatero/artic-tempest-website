@@ -24,15 +24,17 @@ type ClassData = {
     spots: Spot[]
 }
 
-export function WantedClasses() {
-    const [classesWithSpots, setClassesWithSpots] = useState<ClassData[]>([])
-    const [loading, setLoading] = useState(true)
+export function WantedClasses({ initialClasses }: { initialClasses?: ClassData[] }) {
+    const [classesWithSpots, setClassesWithSpots] = useState<ClassData[]>(initialClasses || [])
+    const [loading, setLoading] = useState(!initialClasses)
     const [hasApplied, setHasApplied] = useState(false)
 
     const { data: session } = useSession()
 
     useEffect(() => {
         async function fetchData() {
+            if (initialClasses && initialClasses.length > 0) return
+
             // Fetch only non-closed spots
             const { data: spotsData } = await supabase
                 .from("recruitment_spots")

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Montserrat } from "next/font/google";
+import { Geist } from "next/font/google";
 import { ThemeProvider } from "@/shared/layout/theme-provider"
 import { ThemedToaster } from "@/shared/ui/sonner"
 import { SessionProvider } from "@/shared/layout/session-provider"
@@ -22,13 +22,6 @@ import "./globals.css";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
-  display: "swap",
-});
-
-const montserrat = Montserrat({
-  weight: "900",
-  subsets: ["latin"],
-  variable: "--font-montserrat",
   display: "swap",
 });
 
@@ -173,7 +166,7 @@ export default async function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${montserrat.variable} antialiased`}
+        className={`${geistSans.variable} antialiased`}
       >
         <ThemeProvider
           attribute="class"

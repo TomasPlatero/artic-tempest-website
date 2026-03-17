@@ -21,11 +21,13 @@ interface NewsItem {
     created_at: string
 }
 
-export function LandingNoticias() {
-    const [news, setNews] = React.useState<NewsItem[]>([])
-    const [loading, setLoading] = React.useState(true)
+export function LandingNoticias({ initialNews }: { initialNews?: NewsItem[] }) {
+    const [news, setNews] = React.useState<NewsItem[]>(initialNews || [])
+    const [loading, setLoading] = React.useState(!initialNews)
 
     React.useEffect(() => {
+        if (initialNews && initialNews.length > 0) return;
+
         fetch("/api/guild/news")
             .then(res => res.json())
             .then(data => {
@@ -33,7 +35,7 @@ export function LandingNoticias() {
                 setLoading(false)
             })
             .catch(() => setLoading(false))
-    }, [])
+    }, [initialNews])
 
     if (loading) {
         return (

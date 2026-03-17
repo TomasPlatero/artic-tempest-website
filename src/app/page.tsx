@@ -131,10 +131,70 @@ export default async function HomePage() {
   }
   // --- End Progression Data Fetching ---
 
-  // const streamers = await getEnrichedStreamers();
+  // --- News Data Fetching ---
+  let news: any[] = [];
+  try {
+    const { data } = await supabaseAdmin
+      .from('news')
+      .select('*')
+      .eq('status', 'published')
+      .order('created_at', { ascending: false })
+      .limit(6);
+    news = data || [];
+  } catch (e) {
+    console.error("Error fetching news on server:", e);
+  }
+
+  // --- Recruitment Data Fetching ---
+  let recruitmentClasses: any[] = [];
+  try {
+    const { data: spotsData } = await supabaseAdmin
+      .from("recruitment_spots")
+      .select("*")
+      .neq("urgency", "closed")
+      .order("urgency", { ascending: false });
+
+    const { data: constants } = await supabaseAdmin
+      .from("game_constants")
+      .select("key, value, metadata")
+      .eq("category", "wow_class");
+
+    const classMap = new Map();
+    constants?.forEach(c => classMap.set(c.key, { name: c.value, color: c.metadata?.color, spots: [] }));
+
+    spotsData?.forEach(s => {
+      const classInfo = classMap.get(s.class_id);
+      if (classInfo) classInfo.spots.push(s);
+    });
+
+    recruitmentClasses = Array.from(classMap.entries())
+      .map(([id, info]) => ({
+        id,
+        name: info.name,
+        color: info.color,
+        spots: info.spots
+      }))
+      .filter(c => c.spots.length > 0)
+      .sort((a, b) => Number(a.id) - Number(b.id));
+  } catch (e) {
+    console.error("Error fetching recruitment on server:", e);
+  }
+
+  // --- Streamers Data Fetching ---
+  let streamers: any[] = [];
+  try {
+    streamers = await getEnrichedStreamers();
+  } catch (e) {
+    console.error("Error fetching streamers on server:", e);
+  }
 
   return (
-    <HomePageClient initialProgression={progression} />
+    <HomePageClient 
+      initialProgression={progression} 
+      initialNews={news}
+      initialRecruitment={recruitmentClasses}
+      initialStreamers={streamers}
+    />
   )
 }
 
