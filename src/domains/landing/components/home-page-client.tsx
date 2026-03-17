@@ -49,16 +49,16 @@ export function HomePageClient({ initialProgression, initialStreamers }: { initi
                 <h2 id="progreso-title" className="text-4xl font-black text-white mb-12 uppercase tracking-tight">Progreso en Midnight</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {progression.filter(r => r.expansion === 'Midnight').map((raid, idx) => (
-                        <div key={raid.name} className={`bg-zinc-900/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:border-blue-500/50 transition-all group overflow-hidden relative ${idx > 0 ? 'grayscale opacity-75 blur-[0.5px]' : ''}`}>
+                        <div key={raid.name} className={`bg-zinc-900/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:border-blue-500/50 transition-all group overflow-hidden relative ${idx > 0 ? 'grayscale opacity-85 blur-[0.5px]' : ''}`}>
                             {idx > 0 && (
                                 <div className="absolute top-4 right-4 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/5 z-20">
                                     <span className="text-[10px] font-black uppercase tracking-widest text-white/90">Próximamente</span>
                                 </div>
                             )}
-                            <p className="text-blue-400 font-bold mb-2 uppercase tracking-widest text-[10px]">{raid.tier || raid.expansion}</p>
+                            <p className="text-blue-300 font-bold mb-2 uppercase tracking-widest text-[10px]">{raid.tier || raid.expansion}</p>
                             <h3 className="text-xl font-bold text-white mb-4">{raid.name}</h3>
                             <div className="text-5xl font-black text-white tracking-tighter mb-2">{raid.progress}</div>
-                            <p className="text-white/70 text-sm font-medium">{raid.rank !== '-' ? raid.rank : raid.status}</p>
+                            <p className="text-white/90 text-sm font-medium">{raid.rank !== '-' ? raid.rank : raid.status}</p>
                         </div>
                     ))}
                 </div>
@@ -69,16 +69,16 @@ export function HomePageClient({ initialProgression, initialStreamers }: { initi
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             {progression.filter(r => r.expansion === 'The War Within').map((raid) => (
                                 <div key={raid.name} className="bg-white/5 border border-white/10 rounded-2xl p-8 hover:border-blue-500/30 transition-all">
-                                    <p className="text-blue-400 font-bold mb-2 uppercase tracking-widest text-[10px]">{raid.tier || raid.expansion}</p>
+                                    <p className="text-blue-300 font-bold mb-2 uppercase tracking-widest text-[10px]">{raid.tier || raid.expansion}</p>
                                     <h3 className="text-xl font-bold text-white mb-4">{raid.name}</h3>
                                     <div className="text-5xl font-black text-white tracking-tighter mb-2">{raid.progress}</div>
-                                    <p className="text-white/70 text-sm font-medium">{raid.rank !== '-' ? raid.rank : raid.status}</p>
+                                    <p className="text-white/90 text-sm font-medium">{raid.rank !== '-' ? raid.rank : raid.status}</p>
                                 </div>
                             ))}
                         </div>
                     </div>
                 )}
-                <p className="mt-12 text-zinc-400 text-xs uppercase tracking-[0.3em] font-bold flex items-center justify-center gap-2">
+                <p className="mt-12 text-zinc-300 text-xs uppercase tracking-[0.3em] font-bold flex items-center justify-center gap-2">
                     <span className="size-1.5 bg-red-500 rounded-full animate-pulse" />
                     Live Data from WarcraftLogs
                 </p>

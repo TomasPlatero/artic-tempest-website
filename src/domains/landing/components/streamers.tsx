@@ -85,7 +85,7 @@ export function LandingStreamers({ limit, initialStreamers }: { limit?: number, 
                             href={`https://twitch.tv/${s.twitch_username}`}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-purple-600/20 text-purple-400 font-bold hover:bg-purple-600 hover:text-white transition-colors relative overflow-hidden"
+                            className="inline-flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-purple-600/20 text-purple-300 font-bold hover:bg-purple-700 hover:text-white transition-colors relative overflow-hidden"
                         >
                             {s.is_live && (
                                 <span className="absolute left-4 flex h-2 w-2">

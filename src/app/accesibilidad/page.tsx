@@ -1,9 +1,10 @@
 import { LandingNavigation } from "@/domains/landing/components/navigation"
 import { LandingFooter } from "@/domains/landing/components/footer"
+import Link from "next/link"
 
 export const metadata = {
   title: "Declaración de Accesibilidad | Artic Tempest",
-  description: "Declaración de accesibilidad de Artic Tempest conforme a las pautas WCAG 2.1 y la normativa europea.",
+  description: "Información detallada sobre el compromiso de accesibilidad de Artic Tempest y cómo solicitar asistencia técnica.",
 }
 
 export default function AccessibilityPage() {
@@ -18,40 +19,46 @@ export default function AccessibilityPage() {
 
         <div className="space-y-8 text-blue-100/80 leading-relaxed text-lg">
           <section aria-labelledby="compromise-title">
-            <h2 id="compromise-title" className="text-2xl font-bold text-white mb-4 uppercase tracking-tight">Nuestro Compromiso</h2>
+            <h2 id="compromise-title" className="text-2xl font-bold text-white mb-4 uppercase tracking-tight">Compromiso con la Inclusión</h2>
             <p>
-              Artic Tempest se ha comprometido a hacer accesible su sitio web, de conformidad con el Real Decreto 1112/2018, de 7 de septiembre (transposición de la Directiva UE 2016/2102). 
-              Nuestro objetivo es que el sitio sea usable para el mayor número de personas posible, independientemente de su tecnología o capacidad.
+              En Artic Tempest nos esforzamos por garantizar que nuestra plataforma digital sea accesible para todos los miembros de la comunidad, independientemente de sus capacidades físicas o cognitivas. Seguimos las pautas del Real Decreto 1112/2018 para asegurar un entorno digital equitativo y sin barreras.
             </p>
           </section>
 
           <section aria-labelledby="situation-title">
-            <h2 id="situation-title" className="text-2xl font-bold text-white mb-4 uppercase tracking-tight">Situación de Cumplimiento</h2>
+            <h2 id="situation-title" className="text-2xl font-bold text-white mb-4 uppercase tracking-tight">Estado de Cumplimiento</h2>
             <p>
-              Este sitio web es **parcialmente conforme** con las pautas WCAG 2.1 nivel AA. Estamos trabajando activamente para alcanzar el nivel de cumplimiento total y preparándonos para la nueva normativa WCAG 2.2.
+              Nuestro sitio web se encuentra actualmente en un estado de **Conformidad Parcial** con las pautas WCAG 2.1 nivel AA. Estamos en un proceso de auditoría y mejora continua para alcanzar el cumplimiento total y adaptarnos de forma proactiva a las nuevas exigencias de la Directiva Europea.
             </p>
           </section>
 
           <section aria-labelledby="features-title">
-            <h2 id="features-title" className="text-2xl font-bold text-white mb-4 uppercase tracking-tight">Mejoras Implementadas</h2>
+            <h2 id="features-title" className="text-2xl font-bold text-white mb-4 uppercase tracking-tight">Funcionalidades de Apoyo</h2>
             <ul className="list-disc pl-6 space-y-2">
-              <li>**Navegación por teclado**: Inclusión de un enlace de "Saltar al contenido" y visibilidad clara del foco.</li>
-              <li>**Estructura Semántica**: Uso correcto de hitos (landings) y jerarquía de encabezados.</li>
-              <li>**Contraste de Color**: Optimización de colores para asegurar la legibilidad del texto sobre fondos oscuros.</li>
-              <li>**Diseño Responsive**: Adaptación fluida a diferentes tamaños de pantalla y dispositivos.</li>
+              <li>**Asistencia de Navegación**: Implementación de enlaces de salto para facilitar el acceso directo al contenido principal.</li>
+              <li>**Interactividad Clara**: Diferenciación visual de elementos interactivos y gestión activa del foco de teclado.</li>
+              <li>**Arquitectura de Información**: Organización jerárquica de contenidos para facilitar la lectura mediante tecnologías de asistencia.</li>
+              <li>**Optimización de Contraste**: Garantía de niveles de legibilidad adecuados bajo cualquier modo de visualización.</li>
             </ul>
           </section>
 
-          <section aria-labelledby="contact-title">
-            <h2 id="contact-title" className="text-2xl font-bold text-white mb-4 uppercase tracking-tight">Contacto y Sugerencias</h2>
-            <p>
-              Si encuentras alguna barrera de accesibilidad o tienes sugerencias para mejorar la experiencia, no dudes en contactar con nosotros a través de nuestro 
-              <a href="https://discord.gg/artictempest" className="text-blue-400 font-bold hover:underline ml-1">Discord Oficial</a>.
+          <section aria-labelledby="contact-title" className="bg-blue-500/5 border border-blue-500/10 p-8 rounded-3xl">
+            <h2 id="contact-title" className="text-2xl font-bold text-white mb-4 uppercase tracking-tight">¿Necesitas Ayuda o Reportar un Problema?</h2>
+            <p className="mb-6">
+              Si encuentras dificultades para acceder a cualquier parte de nuestro sitio o crees que algún contenido no cumple con los estándares de accesibilidad, estamos aquí para escucharte y ayudarte.
             </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link 
+                href="/ayuda" 
+                className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-50 text-white hover:text-blue-900 font-bold rounded-xl transition-all uppercase text-sm tracking-widest"
+              >
+                Ir al Centro de Ayuda
+              </Link>
+            </div>
           </section>
 
           <p className="text-sm italic pt-8 border-t border-white/10">
-            Última revisión: 17 de marzo de 2026.
+            Esta declaración fue redactada el 22 de febrero de 2026 y actualizada tras la última auditoría técnica el 17 de marzo de 2026.
           </p>
         </div>
       </div>

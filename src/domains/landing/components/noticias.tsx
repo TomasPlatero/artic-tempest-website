@@ -53,7 +53,7 @@ export function LandingNoticias() {
         <section id="noticias" className="py-24 px-6 max-w-7xl mx-auto scroll-mt-20">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 md:mb-12 gap-6">
                 <div className="text-center sm:text-left">
-                    <h2 className="text-[10px] md:text-sm font-black text-blue-400 uppercase tracking-[0.3em] mb-2">Actualidad</h2>
+                    <h2 className="text-[10px] md:text-sm font-black text-blue-300 uppercase tracking-[0.3em] mb-2">Actualidad</h2>
                     <h3 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tighter">
                         Últimas <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">Noticias</span>
                     </h3>
@@ -95,11 +95,11 @@ export function LandingNoticias() {
                                 <h4 className="text-xl md:text-4xl font-black text-white mb-3 md:mb-4 leading-tight group-hover:text-blue-400 transition-colors italic uppercase tracking-tighter">
                                     {featuredNews.title}
                                 </h4>
-                                <p className="text-zinc-200 text-xs md:text-lg max-w-2xl line-clamp-2 md:line-clamp-none mb-6 font-medium text-balance opacity-90 md:opacity-100">
+                                <p className="text-zinc-100 text-xs md:text-lg max-w-2xl line-clamp-2 md:line-clamp-none mb-6 font-medium text-balance opacity-100">
                                     {featuredNews.summary}
                                 </p>
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-t border-white/10 pt-6">
-                                    <div className="flex items-center gap-6 text-zinc-400 text-[10px] font-bold uppercase tracking-widest">
+                                    <div className="flex items-center gap-6 text-zinc-300 text-[10px] font-bold uppercase tracking-widest">
                                         <div className="flex items-center gap-2">
                                             <CharacterAvatar name={featuredNews.author} size={24} className="border-border/50 shadow-inner" />
                                             {featuredNews.author}
@@ -140,8 +140,8 @@ export function LandingNoticias() {
                                 </div>
                                 <div className="p-6 flex flex-col flex-1">
                                     <div className="flex items-center justify-between mb-4">
-                                        <span className="text-blue-400 text-[9px] font-black uppercase tracking-[0.2em]">{n.category}</span>
-                                        <span className="text-zinc-500 text-[9px] font-bold uppercase tracking-widest">{new Date(n.created_at).toLocaleDateString()}</span>
+                                        <span className="text-blue-300 text-[9px] font-black uppercase tracking-[0.2em]">{n.category}</span>
+                                        <span className="text-zinc-400 text-[9px] font-bold uppercase tracking-widest">{new Date(n.created_at).toLocaleDateString()}</span>
                                     </div>
                                     <h5 className="text-lg font-bold text-white group-hover:text-blue-400 transition-colors line-clamp-2 leading-tight">
                                         {n.title}
@@ -160,8 +160,8 @@ export function LandingNoticias() {
                     </div>
                 </div>
 
-                {/* Sidebar: 4/12 */}
-                <aside className="lg:col-span-4 space-y-8">
+                {/* Sidebar Column (Non-landmark to avoid nesting) */}
+                <div className="lg:col-span-4 space-y-8">
                     {/* Recruitment Widget */}
                     <div className="bg-gradient-to-br from-blue-600/20 to-indigo-600/20 border border-blue-500/20 rounded-3xl p-8 relative overflow-hidden group">
                         <div className="relative z-10">
@@ -169,12 +169,12 @@ export function LandingNoticias() {
                             <p className="text-2xl font-black text-white uppercase tracking-tight mb-4">
                                 Únete al Roster de Midnight
                             </p>
-                            <p className="text-sm text-blue-100/60 mb-8 leading-relaxed">
+                            <p className="text-sm text-blue-50 mb-8 leading-relaxed">
                                 Buscamos jugadores excepcionales para completar nuestro equipo mítico.
                             </p>
                             <Link
                                 href="/reclutamiento"
-                                className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-700 text-white font-black uppercase tracking-widest text-[10px] px-6 py-3 rounded-xl transition-all shadow-lg shadow-blue-500/20 hover:scale-105"
+                                className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-800 text-white font-black uppercase tracking-widest text-[10px] px-6 py-3 rounded-xl transition-all shadow-lg shadow-blue-500/20 hover:scale-105"
                             >
                                 Aplicar Ahora
                                 <IconArrowRight className="size-3" />
@@ -186,7 +186,7 @@ export function LandingNoticias() {
 
                     {/* Ads Banner */}
                     <div className="space-y-4">
-                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] px-2 flex items-center gap-2">
+                        <p className="text-[10px] font-black text-zinc-300 uppercase tracking-[0.3em] px-2 flex items-center gap-2">
                             Publicidad <span className="h-px bg-zinc-800 flex-1" />
                         </p>
                         <AdBanner
@@ -194,7 +194,7 @@ export function LandingNoticias() {
                             href="https://shop.restedxp.com/ref/artictempest/"
                         />
                     </div>
-                </aside>
+                </div>
             </div>
         </section>
     )
