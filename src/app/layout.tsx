@@ -101,9 +101,9 @@ export async function generateMetadata(): Promise<Metadata> {
       type: 'website',
       images: [
         {
-          url: icon,
-          width: 512,
-          height: 512,
+          url: '/assets/images/artic-tempest-og.webp',
+          width: 1200,
+          height: 630,
           alt: title,
         },
       ],
@@ -112,7 +112,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: 'summary_large_image',
       title,
       description: desc,
-      images: [icon],
+      images: ['/assets/images/artic-tempest-og.webp'],
     },
     robots: {
       index: true,

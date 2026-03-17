@@ -34,7 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title,
       description: desc,
       type: "website",
-      images: guild?.icon_url ? [guild.icon_url] : [],
+      images: ['/assets/images/artic-tempest-og.webp'],
     }
   }
 }
