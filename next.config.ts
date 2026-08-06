@@ -12,7 +12,6 @@ try {
 
 /** @type {import('next').NextConfig} */
 const nextConfig: NextConfig = {
-  output: "standalone",
   poweredByHeader: false,
   turbopack: {
     resolveAlias: {
