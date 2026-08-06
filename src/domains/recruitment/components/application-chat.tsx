@@ -204,6 +204,27 @@ const messageTimeFormatter = new Intl.DateTimeFormat("es-ES", {
 	minute: "2-digit",
 });
 
+const MESSAGE_ALLOWED_URL_PROTOCOLS = ["https:"] as const;
+
+/**
+ * Returns the URL if its protocol is safe for use in anchor href attributes.
+ * Returns "#" (inert fallback) for javascript:, data:, or other unsafe protocols.
+ */
+function safeAnchorUrl(url: string | undefined | null): string {
+	if (!url) return "#";
+	try {
+		const parsed = new URL(url);
+		return (MESSAGE_ALLOWED_URL_PROTOCOLS as readonly string[]).includes(
+			parsed.protocol,
+		)
+			? url
+			: "#";
+	} catch {
+		// If URL parsing fails (relative or malformed), return inert fallback
+		return "#";
+	}
+}
+
 function MessageTimestamp({ iso }: { iso: string }) {
 	return (
 		<span suppressHydrationWarning>
@@ -681,7 +702,7 @@ function ChatMessageList({
 													<a
 														// react-doctor-disable-line array-index-key
 														key={a.url || i} // react-doctor-disable-line no-array-index-as-key
-														href={a.url}
+														href={safeAnchorUrl(a.url)}
 														target="_blank"
 														rel="noopener noreferrer"
 													>
@@ -696,7 +717,7 @@ function ChatMessageList({
 												) : (
 													<a
 														key={a.url || i} // react-doctor-disable-line no-array-index-as-key
-														href={a.url}
+														href={safeAnchorUrl(a.url)}
 														target="_blank"
 														rel="noopener noreferrer"
 														className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-2 py-1 text-[11px] hover:bg-white/20 transition-colors"

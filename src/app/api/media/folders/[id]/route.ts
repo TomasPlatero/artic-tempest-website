@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from '@/shared/lib/supabase-admin';
+import { supabaseAdmin } from "@/shared/lib/supabase-admin";
 import { ensureAppPermission } from "@/shared/auth/permissions";
 import { handleRouteError, parseJsonBody } from "@/shared/api/errors";
 import { UpdateFolderSchema } from "@/domains/media/schemas";
 import { canDeleteFolder } from "@/domains/media/lib/folders";
+import { sanitizePath } from "@/domains/media/lib/storage";
 
 export async function PATCH(
 	req: Request,
@@ -97,7 +98,9 @@ export async function DELETE(
 
 		// Delete files from storage
 		if (files && files.length > 0) {
-			const paths = files.map((f: { storage_path: string }) => f.storage_path);
+			const paths = files.map((f: { storage_path: string }) =>
+				sanitizePath(f.storage_path),
+			);
 			const { error: removeError } = await supabaseAdmin.storage
 				.from(existing.bucket_name)
 				.remove(paths);

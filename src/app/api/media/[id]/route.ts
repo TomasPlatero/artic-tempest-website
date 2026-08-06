@@ -3,6 +3,7 @@ import { supabaseAdmin } from "@/shared/lib/supabase-admin";
 import { ensureAppPermission } from "@/shared/auth/permissions";
 import { handleRouteError, parseJsonBody } from "@/shared/api/errors";
 import { UpdateMetadataSchema } from "@/domains/media/schemas";
+import { sanitizePath } from "@/domains/media/lib/storage";
 
 export async function PATCH(
 	req: Request,
@@ -62,9 +63,10 @@ async function deleteOneMedia(deleteId: string) {
 		if (deleteId.startsWith("orphan::")) {
 			const [, bucket, storagePath] = deleteId.split("::");
 			if (bucket && storagePath) {
+				const safePath = sanitizePath(storagePath);
 				const { error: removeError } = await supabaseAdmin.storage
 					.from(bucket)
-					.remove([storagePath]);
+					.remove([safePath]);
 				if (removeError) {
 					console.error(
 						`[MEDIA_DELETE] Orphan storage remove error for ${storagePath}:`,
@@ -98,9 +100,10 @@ async function deleteOneMedia(deleteId: string) {
 		}
 
 		// Remove from storage
+		const safePath = sanitizePath(file.storage_path);
 		const { error: removeError } = await supabaseAdmin.storage
 			.from(file.bucket)
-			.remove([file.storage_path]);
+			.remove([safePath]);
 
 		if (removeError) {
 			console.error(
@@ -179,9 +182,10 @@ export async function DELETE(
 		if (id.startsWith("orphan::")) {
 			const [, bucket, storagePath] = id.split("::");
 			if (bucket && storagePath) {
+				const safePath = sanitizePath(storagePath);
 				const { error: removeError } = await supabaseAdmin.storage
 					.from(bucket)
-					.remove([storagePath]);
+					.remove([safePath]);
 				if (removeError) {
 					return NextResponse.json(
 						{ error: removeError.message },
@@ -210,9 +214,10 @@ export async function DELETE(
 		}
 
 		// Remove from storage
+		const safePath = sanitizePath(file.storage_path);
 		const { error: removeError } = await supabaseAdmin.storage
 			.from(file.bucket)
-			.remove([file.storage_path]);
+			.remove([safePath]);
 
 		if (removeError) {
 			console.error("[MEDIA_DELETE] Storage remove error:", removeError);

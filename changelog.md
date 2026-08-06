@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.10.2
+
+- security: fixed path traversal in Supabase Storage operations via sanitizePath helper
+- security: fixed sensitive data exposure — officer notes and discord refresh tokens now stripped for view-only users
+- security: fixed WoWAudit API key exposure — masked in server response, input uses type=password
+- security: fixed MASK handling bug in credentials endpoint (was deleting key instead of skipping)
+- security: fixed stored XSS in recruitment chat attachment URLs via URL protocol validation
+- security: suppressed X-Powered-By header (poweredByHeader: false)
+
 ## 1.10.1
 
 - security: fixed timing attack in cron-auth (=== → crypto.timingSafeEqual)

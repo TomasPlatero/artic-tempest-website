@@ -50,6 +50,10 @@ export default async function AccountDetailPage({
 
 	const profileSelect = `user_id, discord_username, discord_user_id, discord_avatar, role_level, battlenet_battletag, battlenet_id, main_character_id, discord_refresh_token, tokens_invalidated, created_at, last_verification_check, is_banned, ban_reason, ban_expires_at, officer_notes, verification_status`;
 
+	// Editors and admins can see officer_notes and discord_refresh_token;
+	// view-only users get these fields stripped before the data reaches the client.
+	const canAccessSensitive = permissions.canEdit || permissions.canManage;
+
 	let { data: profile } = await supabaseAdmin
 		.from("profiles")
 		.select(profileSelect)
@@ -206,6 +210,22 @@ export default async function AccountDetailPage({
 	}
 
 	const lastSeenTs = presenceMap[profileUserId] ?? null;
+
+	// Strip sensitive fields for view-only users before data reaches the client
+	if (!canAccessSensitive) {
+		const {
+			discord_refresh_token: _rt,
+			officer_notes: _on,
+			...safeProfile
+		} = profile as Record<string, unknown> & {
+			discord_refresh_token?: unknown;
+			officer_notes?: unknown;
+		};
+		void _rt;
+		void _on;
+		profile = safeProfile as typeof profile;
+	}
+
 	const enrichedProfile = {
 		...profile,
 		main_character_id:

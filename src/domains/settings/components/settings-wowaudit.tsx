@@ -419,6 +419,7 @@ export function SettingsWowauditClient({
 							</label>
 							<Input
 								id="wowaudit-api-key"
+								type="password"
 								placeholder="Tu WoWAudit API Key"
 								value={apiKey}
 								onChange={(e) => setApiKey(e.target.value)}
