@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.10.5
+
+- security: global CSP via middleware — all routes now include Content-Security-Policy header
+- refactor: extracted CSP builder to shared module (src/shared/security/csp.ts)
+
 ## 1.10.4
 
 - fix: removed output: standalone from Next.js config to fix Vercel deployment (ENOENT next-server.js.nft.json)
