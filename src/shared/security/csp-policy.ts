@@ -40,7 +40,7 @@ export function buildCsp(options?: { dev?: boolean }): string {
 			.filter(Boolean)
 			.join(" "),
 		[
-			"style-src 'self'",
+			"style-src 'self' 'unsafe-inline'",
 			"fonts.googleapis.com",
 			"wow.zamimg.com",
 			vercelStylesSrc,
