@@ -1,0 +1,21 @@
+{
+    "$schema": "https://openapi.vercel.sh/vercel.json",
+    "crons": [
+        {
+            "path": "/api/cron/cleanup-weekly-vault",
+            "schedule": "0 4 * * 3"
+        },
+        {
+            "path": "/api/cron/check-streams",
+            "schedule": "*/10 * * * *"
+        },
+        {
+            "path": "/api/cron/sync-roster",
+            "schedule": "*/30 * * * *"
+        },
+        {
+            "path": "/api/admin/system/cron/verify-members",
+            "schedule": "0 * * * *"
+        }
+    ]
+}

@@ -1,0 +1,152 @@
+# ========================
+# Node.js / NPM / PNPM
+# ========================
+node_modules/
+.pnp/
+.pnp.*
+
+# ========================
+# Next.js build output
+# ========================
+.next/
+out/
+build/
+.vercel/
+.next/cache/
+
+# ========================
+# TypeScript
+# ========================
+next-env.d.ts
+*.tsbuildinfo
+
+# ========================
+# Testing (Jest, Vitest, Playwright, coverage)
+# ========================
+coverage/
+.vitest/
+jest-report/
+test-results/
+playwright-report/
+vitest-mocks/
+
+# ========================
+# Lint Files
+# ========================
+lint_results.json
+lint_results_*v2.json
+    
+# ========================
+# Imágenes (se suben a bucket de Supabase, no al repo)
+# ========================
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+!public/assets/stream/*.png
+
+# ========================
+# Environment variables (todas las variantes comunes)
+# ========================
+.env*
+
+# ========================
+# Claves / certificados
+# ========================
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# ========================
+# IDE / Editor
+# ========================
+.vscode/
+.idea/
+*.code-workspace
+
+# ========================
+# Miscellaneous system files
+# ========================
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+.eslintcache
+
+# ========================
+# Build Outputs and Logs
+# ========================
+build_error.txt
+build_output.log
+build_output.txt
+push_error.txt
+push_error_log.txt
+temp_images.txt
+tsc_errors.log
+!public/llms.txt
+!src/app/ads.txt/
+!src/app/ads.txt/route.ts
+
+# ========================
+# Temporary Files
+# ========================
+$Temp/
+tmp_*.json
+temp_*.json
+*.bak
+*.bak2
+
+# ========================
+# Optional: build outputs adicionales
+# ========================
+dist/
+ 
+# ========================
+# SQL Scripts (solo migraciones se trackean)
+# ========================
+supabase/
+
+# ========================
+# Project internals (no publicar)
+# ========================
+.pi/
+docs/
+
+# Generated cache files
+public/assets/.webp-cache.json
+
+# ========================
+# Database (auto-generated + migration/seed scripts)
+# ========================
+supabase/
+supabase_types.d.ts
+scripts/run-migration.js
+scripts/run-migration.ts
+scripts/seed-navigation.ts
+scripts/seed-weekly-vault-permissions.ts
+scripts/create-storage-bucket.js
+scripts/upload-to-storage.js
+scripts/restore-from-json.mjs
+scripts/list-raids.js
+scripts/add-raid.js
+scripts/test-db.js
+scripts/replace.js
+scripts/test-db.js
+scripts/replace.js
+scripts/list-raids.js
+scripts/add-raid.js
+eslint.json
+.atl/
+.agents/
+
+# Sentry Config File
+.env.sentry-build-plugin
+AGENTS.md
+bun.lock
+.obsidian
+.codegraph/

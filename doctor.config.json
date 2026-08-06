@@ -1,0 +1,11 @@
+{
+  "$schema": "https://react.doctor/schema/config.json",
+  "ignore": {
+    "files": ["supabase/migrations/**", ".obsidian/**"],
+    "rules": [
+      "react-doctor/supabase-table-missing-rls",
+      "react-doctor/supabase-rls-policy-risk",
+      "react-doctor/no-transition-all"
+    ]
+  }
+}

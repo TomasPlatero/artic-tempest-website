@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" fill="none" role="img" aria-label="Raid review después del intento">
+  <defs>
+    <linearGradient id="bgFade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#04070f" stop-opacity="0.25" />
+      <stop offset="55%" stop-color="#04070f" stop-opacity="0.68" />
+      <stop offset="100%" stop-color="#04070f" stop-opacity="0.94" />
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1080 300) rotate(90) scale(420 520)">
+      <stop offset="0%" stop-color="#8bd6ff" stop-opacity="0.45" />
+      <stop offset="45%" stop-color="#6b77ff" stop-opacity="0.18" />
+      <stop offset="100%" stop-color="#6b77ff" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="portalGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(372 330) rotate(90) scale(210 250)">
+      <stop offset="0%" stop-color="#a987ff" stop-opacity="0.95" />
+      <stop offset="55%" stop-color="#5f63ff" stop-opacity="0.72" />
+      <stop offset="100%" stop-color="#060816" stop-opacity="0" />
+    </radialGradient>
+    <filter id="softBlur" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="16" />
+    </filter>
+    <filter id="tinyBlur" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" />
+    </filter>
+    <linearGradient id="table" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2b2140" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#121321" stop-opacity="0.95" />
+    </linearGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d7b6ff" stop-opacity="0.9" />
+      <stop offset="50%" stop-color="#6fe2ff" stop-opacity="0.6" />
+      <stop offset="100%" stop-color="#f0c46c" stop-opacity="0.85" />
+    </linearGradient>
+  </defs>
+
+  <image href="/assets/images/historia-cultura.webp" x="0" y="0" width="1600" height="900" preserveAspectRatio="xMidYMid slice" opacity="0.34" />
+
+  <rect width="1600" height="900" fill="url(#bgFade)" />
+  <ellipse cx="1080" cy="300" rx="410" ry="500" fill="url(#glow)" filter="url(#softBlur)" />
+
+  <g opacity="0.95">
+    <ellipse cx="378" cy="345" rx="164" ry="206" fill="url(#portalGlow)" filter="url(#softBlur)" />
+    <ellipse cx="378" cy="345" rx="126" ry="168" fill="none" stroke="#c6a2ff" stroke-opacity="0.78" stroke-width="10" />
+    <ellipse cx="378" cy="345" rx="94" ry="132" fill="none" stroke="#7f84ff" stroke-opacity="0.55" stroke-width="8" stroke-dasharray="10 14" />
+    <path d="M270 345c22-56 72-94 108-94s86 38 108 94c-22 56-72 94-108 94s-86-38-108-94Z" fill="#060816" fill-opacity="0.34" />
+    <path d="M378 185c18 12 24 24 24 24s-10 8-24 8-24-8-24-8 6-12 24-24Z" fill="#d7b6ff" fill-opacity="0.75" />
+  </g>
+
+  <g opacity="0.82" filter="url(#tinyBlur)">
+    <path d="M1240 170 1320 118" stroke="#d8baff" stroke-width="6" stroke-linecap="round" />
+    <path d="M1288 154 1378 104" stroke="#78ddff" stroke-width="5" stroke-linecap="round" />
+    <path d="M1204 220 1334 170" stroke="#ffcf7a" stroke-width="5" stroke-linecap="round" />
+  </g>
+
+  <g transform="translate(0 18)">
+    <path d="M424 638c120-58 264-78 424-78s300 20 424 78v150H424V638Z" fill="url(#table)" />
+    <path d="M454 646c114-50 248-68 394-68s280 18 394 68" stroke="url(#edge)" stroke-width="4" stroke-opacity="0.7" />
+    <path d="M474 694c96-34 212-48 346-48s250 14 346 48" stroke="#b9dfff" stroke-opacity="0.28" stroke-width="2" />
+    <circle cx="800" cy="726" r="40" fill="#6d77ff" fill-opacity="0.16" />
+    <circle cx="800" cy="726" r="18" fill="#9ae7ff" fill-opacity="0.65" />
+  </g>
+
+  <g opacity="0.88">
+    <path d="M665 620c34-82 58-130 135-130s106 48 140 130" stroke="#f4f0ff" stroke-opacity="0.12" stroke-width="18" stroke-linecap="round" />
+    <path d="M987 604c28-70 54-112 104-112 52 0 78 42 104 112" stroke="#f4f0ff" stroke-opacity="0.12" stroke-width="16" stroke-linecap="round" />
+    <path d="M689 632c22-38 40-66 64-88 19-17 48-28 71-28s52 11 70 28c24 22 42 50 64 88" stroke="#11131f" stroke-width="52" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M1012 620c18-30 33-52 51-69 16-15 40-25 59-25s43 10 58 25c18 17 33 39 51 69" stroke="#11131f" stroke-width="48" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M732 531c12-28 21-41 41-41 21 0 30 13 41 41" stroke="#e9d4b0" stroke-opacity="0.24" stroke-width="10" stroke-linecap="round" />
+    <path d="M1064 516c10-22 18-33 34-33s24 11 34 33" stroke="#e9d4b0" stroke-opacity="0.2" stroke-width="8" stroke-linecap="round" />
+  </g>
+
+  <rect x="0" y="0" width="1600" height="900" fill="url(#bgFade)" opacity="0.28" />
+</svg>

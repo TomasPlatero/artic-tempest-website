@@ -1,0 +1,34 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "react",
+    "nextjs",
+    "typescript",
+    "import",
+    "unicorn",
+    "jsx-a11y"
+  ],
+  "options": {
+    "typeAware": true
+  },
+  "rules": {
+    "typescript/no-floating-promises": "error",
+    "typescript/await-thenable": "error",
+    "typescript/no-misused-promises": "error",
+    "no-console": "off"
+  },
+  "overrides": [
+    {
+      "files": ["scripts/**"],
+      "rules": {
+        "typescript/no-floating-promises": "off"
+      }
+    }
+  ],
+  "ignorePatterns": [
+    ".obsidian/**",
+    ".agents/**",
+    ".next/**",
+    "node_modules/**"
+  ]
+}

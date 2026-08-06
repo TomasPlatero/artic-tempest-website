@@ -1,0 +1,50 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "ignoreFiles": [
+    "public/sw.js",
+    "scripts/**",
+    ".agents/skills/tailwind-v4-shadcn/templates/**",
+    "src/domains/docs/swagger-theme.css",
+    "src/domains/settings/components/settings-api.tsx",
+    "src/shared/auth/bis-access.ts",
+    "src/shared/constants/cd-planner.ts",
+    "src/shared/constants/raids.ts",
+    "src/shared/lib/rate-limit.ts",
+    "src/shared/navigation/nav-documents.tsx",
+    "src/shared/types/supabase.ts"
+  ],
+  "ignoreIssues": {
+    "src/app/zona-raider/camara-semanal/components/weekly-vault-uploader.tsx": [
+      "exports"
+    ],
+    "src/app/zona-raider/configuracion/aplicaciones/camara-semanal/components/weekly-vault-admin-client.tsx": [
+      "exports"
+    ],
+    "src/domains/zona-raider/raider-hub/raider-zona-raider.utils.ts": ["exports"],
+    "src/domains/docs/api-catalog.ts": ["exports", "types"],
+    "src/domains/professions/lib/server.ts": ["exports", "types"],
+    "src/domains/recruitment/lib/application-status.ts": ["exports"],
+    "src/shared/api/desktop-auth.ts": ["exports"],
+    "src/shared/auth/roles.ts": ["exports"],
+    "src/shared/components/roster-table.tsx": ["exports"],
+    "src/shared/components/sidebar.tsx": ["exports"],
+    "src/shared/integrations/bnet/bnet-client.ts": ["exports"],
+    "src/shared/integrations/bnet/client.ts": ["exports"],
+    "src/shared/lib/icon-utils.ts": ["exports"],
+    "src/shared/lib/presence.ts": ["exports"],
+    "src/shared/lib/raider-rules.ts": ["exports", "types"],
+    "src/shared/lib/supabase-admin.ts": ["exports"],
+    "src/shared/ui/badge.tsx": ["exports"],
+    "src/shared/ui/breadcrumb.tsx": ["exports"],
+    "src/shared/ui/card.tsx": ["exports"],
+    "src/shared/ui/dialog.tsx": ["exports"],
+    "src/shared/ui/dropdown-menu.tsx": ["exports"],
+    "src/shared/ui/popover.tsx": ["exports"],
+    "src/shared/ui/scroll-area.tsx": ["exports"],
+    "src/shared/ui/select.tsx": ["exports"],
+    "src/shared/ui/sheet.tsx": ["exports"],
+    "src/shared/ui/table.tsx": ["exports"],
+    "src/domains/zona-raider/raider-hub/raider-zona-raider.types.ts": ["types"],
+    "src/shared/integrations/bnet/realms.ts": ["types"]
+  }
+}

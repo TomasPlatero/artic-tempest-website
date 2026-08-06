@@ -1,0 +1,69 @@
+# Artic Tempest
+
+> Hermandad de World of Warcraft en el reino Dun Modr (EU). Sitio web oficial con zona de reclutamiento, progreso de banda, panel de herramientas para miembros, perfiles de personajes, noticias, y configuración de roles y permisos. Construido con Next.js 16 (App Router) + Supabase + TypeScript. Autenticación via Discord y Battle.net.
+
+Notas importantes:
+- Las rutas bajo `/zona-raider/` requieren sesión iniciada y membresía en la hermandad. No son accesibles sin autenticación.
+- La autenticación usa NextAuth con providers de Discord y Battle.net. No hay registro por email.
+- Los datos de personajes WoW se obtienen desde Raider.io API (server-side) y Warcraft Logs API (server-side).
+- Las noticias se almacenan en Supabase y se renderizan como server components con contenido sanitizado.
+- El banner de cookies y consentimiento se gestiona mediante Cookiebot CMP.
+- Las páginas de privacidad, aviso legal y cookies contienen la documentación legal completa conforme a RGPD/LOPD-GDD/LSSI-CE.
+
+## Páginas públicas principales
+
+- [Inicio](https://artictempest.es/): Landing page con reclutamiento destacado, noticias recientes, partners y footer con enlaces a Discord y redes sociales.
+- [Noticias](https://artictempest.es/noticias): Listado paginado de noticias de la hermandad. Cada noticia tiene detalle en `/noticias/[slug]`.
+- [Reclutamiento](https://artictempest.es/reclutamiento): Vacantes abiertas por clase y espec, requisitos, formulario de aplicación.
+- [Progreso](https://artictempest.es/progreso): Timeline de progreso de banda con jefes derrotados, porcentajes de avance, fechas de kill y live tracking desde Raider.io.
+- [Historia y cultura](https://artictempest.es/historia-y-cultura): Historia de la hermandad, pilares culturales, valores y qué se busca en un raider.
+- [Streamers](https://artictempest.es/streamers): Creadores de contenido de la hermandad con streams en vivo, recursos gráficos para descargar.
+- [Ayuda](https://artictempest.es/ayuda): Centro de ayuda, guías de primeros pasos, soporte técnico y buzón de sugerencias.
+
+## Páginas legales
+
+- [Aviso Legal](https://artictempest.es/aviso-legal): Identidad del responsable, propiedad intelectual, condiciones de uso, exclusiones de responsabilidad, ley aplicable.
+- [Política de Privacidad](https://artictempest.es/privacidad): RGPD y LOPD-GDD, responsable del tratamiento, finalidades, base legal, derechos ARCO, plazos de conservación, destinatarios de datos.
+- [Política de Cookies](https://artictempest.es/cookies): Declaración completa de cookies gestionada por Cookiebot CMP, categorías, gestión del consentimiento.
+- [Accesibilidad](https://artictempest.es/accesibilidad): Declaración de accesibilidad WCAG 2.1 AA, estado de cumplimiento, funcionalidades de apoyo.
+
+## Zona Raider (requiere autenticación)
+
+- [Panel principal](https://artictempest.es/zona-raider): Hub con roster, calendario de raids, enlaces rápidos a herramientas.
+- [Progreso](https://artictempest.es/zona-raider/progreso): Vista detallada del progreso de banda para miembros.
+- [Estadísticas](https://artictempest.es/zona-raider/estadisticas): Análisis de rendimiento con datos de Warcraft Logs y Raider.io para miembros.
+- [Cámara semanal](https://artictempest.es/zona-raider/camara-semanal): Upload y seguimiento del weekly vault de personajes.
+- [Configuración](https://artictempest.es/zona-raider/configuracion): Gestión de roles, permisos, reclutamiento, menú de navegación, cuentas vinculadas, SEO.
+
+## API endpoints
+
+- `/api/auth/[...nextauth]`: Autenticación NextAuth (Discord, Battle.net).
+- `/api/bnet/*`: Integración con API de Battle.net (auth, avatar, callback).
+- `/api/discord/*`: Integración con API de Discord (roles, canales, notificaciones).
+- `/api/guild/*`: Datos de la hermandad (info, roster, roles, news, permisos, settings).
+- `/api/media/*`: Gestión de archivos multimedia (upload, folders, confirmación).
+- `/api/raiderio/*`: Proxy server-side para Raider.io API (evita CORS en cliente).
+- `/api/recruitment/*`: Aplicaciones de reclutamiento (submit, cancel, list).
+- `/api/admin/*`: Operaciones de administración (usuarios, roles, sistema, navegación).
+- `/api/cron/*`: Tareas programadas (sync roster, cleanup vault, check streams).
+- `/api/desktop/*`: Endpoints para la desktop app companion.
+
+## Tecnologías y servicios
+
+- **Framework**: Next.js 16 (App Router, Server Components, Server Actions)
+- **Base de datos**: Supabase (PostgreSQL, RLS, auth)
+- **Autenticación**: NextAuth con Discord OAuth y Battle.net OAuth
+- **CSS/Tailwind**: Tailwind CSS v4, diseño dark mode
+- **Hosting**: Vercel (producción), con dominio artictempest.es
+- **Monitorización**: Sentry (errores y rendimiento)
+- **Analítica**: Google Analytics 4 via GTM, consentimiento gestionado con Cookiebot
+- **Monetización**: Google AdSense, partners (RestedXP, Proton VPN, Instant Gaming)
+- **APIs externas**: Raider.io, Warcraft Logs, Discord, Battle.net, Twitch
+
+## Optional
+
+- [docs/index.md](https://artictempest.es/docs/index.md): Hub de documentación del proyecto.
+- [docs/architecture.md](https://artictempest.es/docs/architecture.md): Arquitectura del código: boundaries, shared systems, dominios.
+- [docs/features-map.md](https://artictempest.es/docs/features-map.md): Mapa completo de rutas y áreas de producto.
+- [docs/shared-systems.md](https://artictempest.es/docs/shared-systems.md): Sistemas compartidos: auth, permisos, SEO, layout, indexing.
+- [docs/operations.md](https://artictempest.es/docs/operations.md): Operaciones: env vars, deploy, cron, sitemap, robots.
