@@ -26,36 +26,33 @@ export async function PATCH(request: Request) {
             return NextResponse.json({ error: "Solo el Guild Master puede nombrar a otro Guild Master." }, { status: 403 })
         }
 
-        // Prevent removing the last GM (safety check)
-        if (newRoleLevel !== "gm") {
-            const { count, error: countError } = await supabaseAdmin.from("profiles")
-                .select("user_id", { count: "exact", head: true })
-                .eq("role_level", "gm")
+        // Atomic role update via RPC — eliminates TOCTOU race condition
+        // where two concurrent demotions could both pass the last-GM check
+        const { data: result, error: rpcError } = await supabaseAdmin
+            .rpc("update_user_role", {
+                p_target_user_id: targetUserId,
+                p_new_role: newRoleLevel,
+            })
 
-            if (countError) {
-                console.error("Error checking GM count:", countError)
-                return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
-            }
-
-            // If this user is a GM and they are the ONLY GM left, block the demotion
-            const { data: targetUser } = await supabaseAdmin.from("profiles").select("role_level").eq("user_id", targetUserId).single()
-
-            if (targetUser?.role_level === "gm" && count === 1) {
-                return NextResponse.json({ error: "No puedes degradar al último Guild Master del sistema." }, { status: 400 })
-            }
+        if (rpcError) {
+            console.error("Error updating role:", rpcError)
+            return NextResponse.json({ error: rpcError.message }, { status: 400 })
         }
 
-        // Update the profile
-        const { error: updateError } = await supabaseAdmin.from("profiles")
-            .update({ role_level: newRoleLevel })
-            .eq("user_id", targetUserId)
+        const parsed = result as { success: boolean; error?: string; target_user_id?: string; new_role?: string }
 
-        if (updateError) {
-            console.error("Error updating sub role:", updateError)
-            return NextResponse.json({ error: updateError.message }, { status: 400 })
+        if (!parsed.success) {
+            return NextResponse.json(
+                { error: parsed.error || "Error al actualizar el rol" },
+                { status: 400 },
+            )
         }
 
-        return NextResponse.json({ success: true, targetUserId, newRoleLevel })
+        return NextResponse.json({
+            success: true,
+            targetUserId: parsed.target_user_id ?? targetUserId,
+            newRoleLevel: parsed.new_role ?? newRoleLevel,
+        })
     } catch (err: any) {
         console.error("PATCH /api/guild/users/role error:", err)
         return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
