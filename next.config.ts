@@ -97,6 +97,7 @@ const nextConfig: NextConfig = {
 };
 
 import withBundleAnalyzer from "@next/bundle-analyzer";
+import { buildCsp } from "@/shared/security/csp";
 
 const withAnalyzer = withBundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
@@ -104,39 +105,7 @@ const withAnalyzer = withBundleAnalyzer({
 
 const isDev = process.env.NODE_ENV === "development";
 
-const devToolbarConnectSrc = isDev
-  ? "http://localhost:* http://127.0.0.1:*"
-  : "";
-
-// Vercel Toolbar / Live domains — allowed in all environments
-const vercelLiveSrc = "vercel.live *.vercel.live";
-const vercelStylesSrc = "vercel.live";
-const vercelImgSrc = "vercel.live vercel.com";
-const vercelFontSrc = "vercel.live assets.vercel.com";
-const vercelFrameSrc = "vercel.live";
-
-const googleAdsSourceHosts =
-  "pagead2.googlesyndication.com *.googlesyndication.com *.google.com *.googleadservices.com *.doubleclick.net *.g.doubleclick.net googleads.g.doubleclick.net fundingchoicesmessages.google.com *.fundingchoicesmessages.google.com ep1.adtrafficquality.google ep2.adtrafficquality.google *.adtrafficquality.google";
-
-const devSecuritySrc = isDev ? "'unsafe-eval'" : "";
-
-const contentSecurityPolicy = [
-  "default-src 'self'",
-  `script-src 'self' ${devSecuritySrc} ${vercelLiveSrc} consent.cookiebot.com consentcdn.cookiebot.com *.cookiebot.com wow.zamimg.com *.wowhead.com *.googletagmanager.com *.google-analytics.com ${googleAdsSourceHosts} www.instant-gaming.com ${isDev ? "va.vercel-scripts.com" : ""}`,
-  `style-src 'self' fonts.googleapis.com wow.zamimg.com ${vercelStylesSrc} www.instant-gaming.com`,
-  "object-src 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  `img-src 'self' blob: data: authjs.dev *.authjs.dev cdn.discordapp.com render.worldofwarcraft.com wow.zamimg.com *.supabase.co *.google.com *.google.es ${googleAdsSourceHosts} *.akamaihd.net *.raider.io https://cdnassets.raider.io cdnassets.raider.io *.warcraftlogs.com bnetcmsus-a.akamaihd.net static-cdn.jtvnw.net *.googletagmanager.com *.google-analytics.com community.restedxp.com shop.restedxp.com media.restedxp.com artictempest.es ${vercelImgSrc} www.instant-gaming.com vpncdn.protonweb.com consent.cookiebot.com consentcdn.cookiebot.com *.cookiebot.com`,
-  `font-src 'self' data: fonts.gstatic.com ${vercelFontSrc} www.instant-gaming.com`,
-  `connect-src 'self' ${devToolbarConnectSrc} *.supabase.co wss://*.supabase.co discord.com *.discordapp.com vitals.vercel-insights.com ${vercelLiveSrc} wss://ws-us3.pusher.com consent.cookiebot.com consentcdn.cookiebot.com *.cookiebot.com stats.g.doubleclick.net raider.io *.raider.io warcraftlogs.com *.warcraftlogs.com *.supabase.in wss://*.supabase.in wow.zamimg.com *.wowhead.com *.google-analytics.com *.analytics.google.com *.googletagmanager.com ${googleAdsSourceHosts} fundingchoicesmessages.google.com *.fundingchoicesmessages.google.com *.ingest.de.sentry.io https://*.ingest.de.sentry.io wss://*.ingest.de.sentry.io api.websitecarbon.com`,
-  `frame-src 'self' player.twitch.tv ${vercelFrameSrc} www.youtube-nocookie.com www.youtube.com youtube.com m.youtube.com consent.cookiebot.com consentcdn.cookiebot.com *.cookiebot.com ${googleAdsSourceHosts}`,
-  "frame-ancestors 'none'",
-  "worker-src 'self'",
-  "upgrade-insecure-requests",
-]
-  .filter(Boolean)
-  .join("; ");
+const contentSecurityPolicy = buildCsp({ dev: isDev });
 
 // Only wrap with vercel toolbar on Vercel (preview/production), never in local dev
 const baseConfig =
