@@ -30,15 +30,20 @@ interface MediaApiResponse {
 	total: number;
 }
 
-const fetcher = (url: string): Promise<MediaApiResponse> =>
-	// Only allow same-origin requests (SSRF guard)
-	(url.startsWith("/")
-		? fetch(url)
-		: Promise.reject(new Error("Invalid URL"))
-	).then((res) => {
+const fetcher = (url: string): Promise<MediaApiResponse> => {
+	// Only allow same-origin relative API paths (SSRF prevention)
+	if (!url.startsWith("/api/media")) {
+		return Promise.reject(new Error("Invalid URL"));
+	}
+	// Reject URLs with fragments, credentials, or redirect attempts
+	if (/[@#]|\/\//.test(url)) {
+		return Promise.reject(new Error("Invalid URL"));
+	}
+	return fetch(url).then((res) => {
 		if (!res.ok) throw new Error(`Error del servidor (${res.status})`);
 		return res.json();
 	});
+};
 
 function buildUrl(
 	bucket: string,
