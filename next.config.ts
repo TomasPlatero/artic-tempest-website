@@ -97,15 +97,10 @@ const nextConfig: NextConfig = {
 };
 
 import withBundleAnalyzer from "@next/bundle-analyzer";
-import { buildCsp } from "@/shared/security/csp-policy";
 
 const withAnalyzer = withBundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
 });
-
-const isDev = process.env.NODE_ENV === "development";
-
-const contentSecurityPolicy = buildCsp({ dev: isDev });
 
 // Only wrap with vercel toolbar on Vercel (preview/production), never in local dev
 const baseConfig =
@@ -171,8 +166,6 @@ config.headers = async () => [
   {
     source: "/:path((?!_next|api|assets).*)",
     headers: [
-      { key: "Content-Security-Policy", value: contentSecurityPolicy },
-      { key: "X-Powered-By", value: "" },
       { key: "X-Frame-Options", value: "DENY" },
       { key: "X-Content-Type-Options", value: "nosniff" },
       { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
