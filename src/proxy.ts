@@ -5,7 +5,6 @@ import { isMaintenanceEnabled } from "@/flags";
 import { isPublicApiRoute } from "@/shared/api/proxy-route-access";
 import { sanitizeInternalCallbackUrl } from "@/shared/auth/callback-url";
 import { validateCsrfToken } from "@/shared/security/csrf";
-import { buildCsp } from "@/shared/security/csp-policy";
 import {
 	isZonaRaiderPath,
 	normalizeZonaRaiderPath,
@@ -329,7 +328,6 @@ export async function proxy(req: NextRequest) {
 	const response = NextResponse.next({ request: { headers: requestHeaders } });
 
 	const withSecurityHeaders = (response: NextResponse) => {
-		response.headers.set("Content-Security-Policy", buildCsp());
 		response.headers.set("X-Frame-Options", "DENY");
 		response.headers.set("X-Content-Type-Options", "nosniff");
 		response.headers.set("Referrer-Policy", "origin-when-cross-origin");
