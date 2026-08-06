@@ -45,7 +45,9 @@ function saveCache(processedFiles) {
 	try {
 		const cache = {
 			settingsHash: SETTINGS_HASH,
-			files: [...processedFiles].sort((a, b) => String(a).localeCompare(String(b))),
+			files: [...processedFiles].sort((a, b) =>
+				String(a).localeCompare(String(b)),
+			),
 		};
 		fs.writeFileSync(CACHE_FILE, JSON.stringify(cache, null, 2) + "\n");
 	} catch (err) {
