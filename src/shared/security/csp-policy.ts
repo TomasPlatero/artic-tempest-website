@@ -23,7 +23,7 @@ export function buildCsp(options?: { dev?: boolean }): string {
 	return [
 		"default-src 'self'",
 		[
-			"script-src 'self'",
+			"script-src 'self' 'unsafe-inline'",
 			devSecuritySrc,
 			vercelLiveSrc,
 			"consent.cookiebot.com",
