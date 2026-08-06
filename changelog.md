@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.10.4
+
+- fix: removed output: standalone from Next.js config to fix Vercel deployment (ENOENT next-server.js.nft.json)
+
+## 1.10.3
+
+- security: fixed GM demotion race condition — atomic role update via RPC with FOR UPDATE lock
+- db: added update_user_role RPC function (migration 00000000000002)
+
 ## 1.10.2
 
 - security: fixed path traversal in Supabase Storage operations via sanitizePath helper
