@@ -97,7 +97,7 @@ const nextConfig: NextConfig = {
 };
 
 import withBundleAnalyzer from "@next/bundle-analyzer";
-import { buildCsp } from "@/shared/security/csp";
+import { buildCsp } from "@/shared/security/csp-policy";
 
 const withAnalyzer = withBundleAnalyzer({
   enabled: process.env.ANALYZE === "true",

@@ -113,6 +113,7 @@ async function recompressWebPs(dir, cache) {
 	const entries = fs.readdirSync(dir, { withFileTypes: true });
 
 	for (const entry of entries) {
+		if (entry.name.includes("..")) continue; // path traversal guard
 		const fullPath = path.join(dir, entry.name);
 
 		if (entry.isDirectory()) {

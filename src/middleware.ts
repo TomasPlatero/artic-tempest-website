@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { buildCsp } from "@/shared/security/csp";
+import { buildCsp } from "@/shared/security/csp-policy";
 
 const cspValue = buildCsp();
 
