@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.10.8
+
+- feature: Discord poll/encuesta rendering in Zona Raider announcements card (ATW-1)
+- fix: CSP now includes `unsafe-eval` in development mode for React dev debugging
+
 ## 1.10.5
 
 - security: global CSP via middleware — all routes now include Content-Security-Policy header

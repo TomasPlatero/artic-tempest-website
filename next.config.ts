@@ -100,7 +100,9 @@ const nextConfig: NextConfig = {
 import withBundleAnalyzer from "@next/bundle-analyzer";
 import { buildCsp } from "@/shared/security/csp-policy";
 
-const contentSecurityPolicy = buildCsp();
+const contentSecurityPolicy = buildCsp({
+  dev: process.env.NODE_ENV === "development",
+});
 
 const withAnalyzer = withBundleAnalyzer({
   enabled: process.env.ANALYZE === "true",

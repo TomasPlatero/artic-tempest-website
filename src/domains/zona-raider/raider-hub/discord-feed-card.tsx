@@ -17,7 +17,10 @@ import {
 import { IconSpeakerphone } from "@tabler/icons-react";
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
-import type { DiscordChannelMessage } from "@/shared/discord/channel-messages";
+import type {
+	DiscordChannelMessage,
+	DiscordPoll,
+} from "@/shared/discord/channel-messages";
 import {
 	ZONA_RAIDER_SURFACE,
 	ZONA_RAIDER_SURFACE_INSET,
@@ -224,6 +227,63 @@ function DiscordMarkdownContent({ content }: { content: string }) {
 }
 
 // ===========================================================================
+// DiscordPollCard — renders a Discord poll inline.
+// ===========================================================================
+function DiscordPollCard({ poll }: { poll: DiscordPoll }) {
+	const maxVotes = Math.max(...poll.answers.map((a) => a.voteCount), 1);
+
+	return (
+		<div className="mt-3 rounded-xl border border-indigo-500/20 bg-indigo-500/5 p-4">
+			{/* Question */}
+			<p className="text-sm font-semibold text-white">{poll.question}</p>
+
+			{/* Answers */}
+			<div className="mt-3 flex flex-col gap-2">
+				{poll.answers.map((answer) => {
+					const pct =
+						poll.totalVotes > 0
+							? Math.round((answer.voteCount / poll.totalVotes) * 100)
+							: 0;
+					return (
+						<div
+							key={answer.answerId}
+							className="relative overflow-hidden rounded-lg border border-border/60 bg-background/40"
+						>
+							{/* Progress bar background */}
+							<div
+								className="absolute inset-0 bg-indigo-500/15 transition-all duration-500"
+								style={{ width: `${(answer.voteCount / maxVotes) * 100}%` }}
+							/>
+							{/* Content */}
+							<div className="relative flex items-center justify-between px-3 py-2.5">
+								<span className="text-sm text-white/90">{answer.text}</span>
+								<span className="ml-2 shrink-0 text-xs font-semibold tabular-nums text-white/60">
+									{answer.voteCount}
+									<span className="ml-0.5 text-white/40">({pct}%)</span>
+								</span>
+							</div>
+						</div>
+					);
+				})}
+			</div>
+
+			{/* Footer */}
+			<p className="mt-3 text-[10px] font-semibold uppercase tracking-widest text-white/40">
+				{poll.totalVotes} {poll.totalVotes === 1 ? "voto" : "votos"} totales
+				{poll.isFinalized && (
+					<span className="ml-2 rounded border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-amber-400">
+						Finalizada
+					</span>
+				)}
+				{poll.allowMultiselect && (
+					<span className="ml-2 text-white/30">· Multiple choice</span>
+				)}
+			</p>
+		</div>
+	);
+}
+
+// ===========================================================================
 // DiscordMessageRow — one message, expandable to reveal the full content.
 // ===========================================================================
 function DiscordMessageRow({ message }: { message: DiscordChannelMessage }) {
@@ -288,6 +348,9 @@ function DiscordMessageRow({ message }: { message: DiscordChannelMessage }) {
 							<DiscordContent content={message.content} />
 						</div>
 					)}
+
+					{/* Poll */}
+					{message.poll && <DiscordPollCard poll={message.poll} />}
 
 					{/* Media preview: label chip while collapsed */}
 					{!expanded && hasMedia && (
