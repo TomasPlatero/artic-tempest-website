@@ -24,6 +24,7 @@ const nextConfig: NextConfig = {
     "@radix-ui/react-context",
     "@radix-ui/react-direction",
     "@radix-ui/react-dismissable-layer",
+    "@aikidosec/firewall",
   ],
 
   allowedDevOrigins: [
