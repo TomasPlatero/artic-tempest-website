@@ -45,15 +45,15 @@ Todo construido con un sistema de roles y permisos granular que permite a cada m
 | <img src="https://cdn.simpleicons.org/tailwindcss/71717A" width="16" /> [Tailwind CSS 4](https://tailwindcss.com/) | Estilos utility-first |
 | <img src="https://cdn.simpleicons.org/radixui/71717A" width="16" /> [Radix UI](https://www.radix-ui.com/) | Primitivas de UI accesibles y sin estilos (Dialog, DropdownMenu, Select, Tabs, Avatar, Checkbox, Collapsible, Label, Separator, Slot) |
 | <img src="https://cdn.simpleicons.org/framer/71717A" width="16" /> [Framer Motion](https://www.framer.com/motion/) | Animaciones declarativas |
-| <img src="https://cdn.simpleicons.org/tiptap/71717A" width="16" /> [Tiptap](https://tiptap.dev/) | Editor de texto enriquecido extensible basado en ProseMirror |
-| <img src="https://cdn.simpleicons.org/recharts/71717A" width="16" /> [Recharts](https://recharts.org/) | Gráficos y visualización de datos |
+| [Tiptap](https://tiptap.dev/) | Editor de texto enriquecido extensible basado en ProseMirror |
+| [Recharts](https://recharts.org/) | Gráficos y visualización de datos |
 | [@dnd-kit](https://dndkit.com/) | Drag & drop accesible |
 | <img src="https://cdn.simpleicons.org/markdown/71717A" width="16" /> [react-markdown](https://github.com/remarkjs/react-markdown) + [remark-gfm](https://github.com/remarkjs/remark-gfm) | Renderizado de Markdown |
 | [react-arborist](https://github.com/brimdata/react-arborist) | Vista de árbol para jerarquías |
 | <img src="https://cdn.simpleicons.org/swr/71717A" width="16" /> [SWR](https://swr.vercel.app/) | Fetching de datos con caché y revalidación |
 | [next-themes](https://github.com/pacocoursey/next-themes) | Tema claro/oscuro |
-| <img src="https://cdn.simpleicons.org/sonner/71717A" width="16" /> [Sonner](https://sonner.emilkowal.ski/) | Notificaciones toast |
-| <img src="https://cdn.simpleicons.org/tablericons/71717A" width="16" /> [@tabler/icons-react](https://tabler.io/icons) | Iconografía |
+| [Sonner](https://sonner.emilkowal.ski/) | Notificaciones toast |
+| [@tabler/icons-react](https://tabler.io/icons) | Iconografía |
 | [tailwind-merge](https://github.com/dcastil/tailwind-merge) + [cva](https://cva.style/) | Utilidades de composición de clases |
 
 ### Backend & datos
@@ -62,9 +62,9 @@ Todo construido con un sistema de roles y permisos granular que permite a cada m
 | --- | --- |
 | <img src="https://cdn.simpleicons.org/nextdotjs/71717A" width="16" /> [Next.js Server Actions](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions) + API Routes | Lógica de servidor tipada, mutaciones y endpoints |
 | <img src="https://cdn.simpleicons.org/supabase/71717A" width="16" /> [Supabase](https://supabase.com/) | PostgreSQL gestionado, autenticación, Row Level Security |
-| <img src="https://cdn.simpleicons.org/nextauthdotjs/71717A" width="16" /> [next-auth](https://next-auth.js.org/) (NextAuth.js 4) | Capa de autenticación unificada |
+| [next-auth](https://next-auth.js.org/) (NextAuth.js 4) | Capa de autenticación unificada |
 | <img src="https://cdn.simpleicons.org/battledotnet/71717A" width="16" /> Battle.net OAuth | Inicio de sesión con cuenta de Blizzard |
-| <img src="https://cdn.simpleicons.org/jose/71717A" width="16" /> [jose](https://github.com/panva/jose) | Manejo de JWTs |
+| [jose](https://github.com/panva/jose) | Manejo de JWTs |
 | <img src="https://cdn.simpleicons.org/postgresql/71717A" width="16" /> [pg](https://node-postgres.com/) | Conexión directa a PostgreSQL para queries avanzadas |
 | WebSockets (`ws`, `bufferutil`, `utf-8-validate`) | Comunicación en tiempo real |
 
@@ -72,7 +72,7 @@ Todo construido con un sistema de roles y permisos granular que permite a cada m
 
 | Tecnología | Rol |
 | --- | --- |
-| <img src="https://cdn.simpleicons.org/aikido/71717A" width="16" /> [Aikido Firewall](https://www.aikido.dev/) | WAF en runtime — protección contra NoSQL injection, path traversal, SSRF y otras amenazas |
+| [Aikido Firewall](https://www.aikido.dev/) | WAF en runtime — protección contra NoSQL injection, path traversal, SSRF y otras amenazas |
 | <img src="https://cdn.simpleicons.org/cloudflare/71717A" width="16" /> [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/) | CAPTCHA invisible sin cookies de tracking |
 | [DOMPurify](https://github.com/cure53/DOMPurify) | Sanitización de HTML contra XSS |
 | Content Security Policy | Política de seguridad de contenido con nonces por request |
@@ -98,7 +98,7 @@ Todo construido con un sistema de roles y permisos granular que permite a cada m
 | Tecnología | Rol |
 | --- | --- |
 | <img src="https://cdn.simpleicons.org/vitest/71717A" width="16" /> [Vitest](https://vitest.dev/) | Tests unitarios y de integración |
-| <img src="https://cdn.simpleicons.org/playwright/71717A" width="16" /> [Playwright](https://playwright.dev/) | Tests end-to-end |
+| [Playwright](https://playwright.dev/) | Tests end-to-end |
 | <img src="https://cdn.simpleicons.org/testinglibrary/71717A" width="16" /> [Testing Library](https://testing-library.com/) | Tests centrados en el usuario |
 
 ### Tooling
