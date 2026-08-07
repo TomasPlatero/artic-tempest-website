@@ -11,6 +11,7 @@
 [![Sentry](https://img.shields.io/badge/Sentry-10-362D59?logo=sentry)](https://sentry.io/)
 [![Playwright](https://img.shields.io/badge/Playwright-1-2EAD33?logo=playwright)](https://playwright.dev/)
 [![Vitest](https://img.shields.io/badge/Vitest-4-6E9F18?logo=vitest)](https://vitest.dev/)
+[![React Doctor](https://img.shields.io/badge/React_Doctor-checked-6E9F18?logo=react)](https://github.com/doctors-of-react/react-doctor)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Plataforma web de **Artic Tempest**, una hermandad de World of Warcraft en el reino Dun Modr (EU-Spanish).
