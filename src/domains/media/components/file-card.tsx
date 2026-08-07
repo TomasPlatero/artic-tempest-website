@@ -110,16 +110,11 @@ export function FileCard({
 
 			{/* File info */}
 			<div className="flex items-start gap-2 px-3 pb-3 min-w-0">
-			<div
-				className="shrink-0 pt-0.5"
-				// oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
-				role="button"
-				tabIndex={0}
-				onClick={(e: React.MouseEvent) => e.stopPropagation()}
-				onKeyDown={(e) => {
-					if (e.key === "Enter" || e.key === " ") e.stopPropagation();
-				}}
-			>
+				<div
+					className="shrink-0 pt-0.5"
+					role="presentation"
+					onClick={(e: React.MouseEvent) => e.stopPropagation()}
+				>
 					<Checkbox
 						checked={isSelected}
 						onCheckedChange={handleCheckboxChange}

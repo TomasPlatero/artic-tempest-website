@@ -61,6 +61,7 @@ export default async function ZonaRaiderLayout({
 		{ data: tourSettings },
 		{ data: profile },
 		{ data: characters },
+		raiderRulesStatus,
 	] = await Promise.all([
 		Promise.all(
 			[
@@ -86,9 +87,8 @@ export default async function ZonaRaiderLayout({
 			.from("bnet_characters")
 			.select("id, name, realm_slug")
 			.eq("user_id", session.user.id),
+		getCachedRaiderRulesStatus(session.user.id),
 	]);
-
-	const raiderRulesStatus = await getCachedRaiderRulesStatus(session.user.id);
 
 	const raiderBotUnavailable =
 		!raiderRulesStatus.discordHasVerifiedRole &&

@@ -139,13 +139,8 @@ function RosterModal({
 		>
 			<div
 				className="relative"
-				// oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
-				role="button"
-				tabIndex={0}
+				role="presentation"
 				onClick={(event) => event.stopPropagation()}
-				onKeyDown={(e) => {
-					if (e.key === "Enter" || e.key === " ") e.stopPropagation();
-				}}
 			>
 				<button
 					type="button"

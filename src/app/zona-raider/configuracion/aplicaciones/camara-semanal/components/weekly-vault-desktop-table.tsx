@@ -47,11 +47,7 @@ export function WeeklyVaultDesktopTable({
 					<tr>
 						<th className="px-4 py-3 font-medium">Captura</th>
 						<th
-							className="px-4 py-3 font-medium cursor-pointer hover:bg-white/5 transition-colors group/sort"
-							// oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
-							role="button"
-							tabIndex={0}
-							// oxlint-disable-next-line jsx-a11y/role-supports-aria-props
+							className="px-4 py-3 font-medium"
 							aria-sort={
 								sortConfig?.key === "character"
 									? sortConfig.direction === "asc"
@@ -59,22 +55,17 @@ export function WeeklyVaultDesktopTable({
 										: "descending"
 									: "none"
 							}
-							onClick={() => onSort("character")}
-							onKeyDown={(e) =>
-								(e.key === "Enter" || e.key === " ") &&
-								(e.preventDefault(), onSort("character"))
-							}
 						>
-							<div className="flex items-center gap-2">
+							<button
+								type="button"
+								className="flex items-center gap-2 cursor-pointer hover:bg-white/5 transition-colors uppercase tracking-wider text-muted-foreground text-xs font-medium"
+								onClick={() => onSort("character")}
+							>
 								Personaje {getSortIcon(sortConfig, "character")}
-							</div>
+							</button>
 						</th>
 						<th
-							className="px-4 py-3 font-medium cursor-pointer hover:bg-white/5 transition-colors group/sort"
-							// oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
-							role="button"
-							tabIndex={0}
-							// oxlint-disable-next-line jsx-a11y/role-supports-aria-props
+							className="px-4 py-3 font-medium"
 							aria-sort={
 								sortConfig?.key === "player"
 									? sortConfig.direction === "asc"
@@ -82,15 +73,14 @@ export function WeeklyVaultDesktopTable({
 										: "descending"
 									: "none"
 							}
-							onClick={() => onSort("player")}
-							onKeyDown={(e) =>
-								(e.key === "Enter" || e.key === " ") &&
-								(e.preventDefault(), onSort("player"))
-							}
 						>
-							<div className="flex items-center gap-2">
+							<button
+								type="button"
+								className="flex items-center gap-2 cursor-pointer hover:bg-white/5 transition-colors uppercase tracking-wider text-muted-foreground text-xs font-medium"
+								onClick={() => onSort("player")}
+							>
 								Jugador {getSortIcon(sortConfig, "player")}
-							</div>
+							</button>
 						</th>
 						<th className="px-4 py-3 font-medium">Subida el</th>
 						<th className="px-4 py-3 font-medium text-right">Acciones</th>

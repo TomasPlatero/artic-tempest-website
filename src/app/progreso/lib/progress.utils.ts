@@ -1,31 +1,3 @@
-export const difficultyLabel: Record<string, string> = {
-	mythic: "Mítico",
-	heroic: "Heroico",
-	normal: "Normal",
-};
-
-export function bossDifficultyLabel(
-	bossDefeatedDifficulty: string | null,
-	timelineDifficulty: string,
-) {
-	return bossDefeatedDifficulty
-		? difficultyLabel[bossDefeatedDifficulty]
-		: difficultyLabel[timelineDifficulty];
-}
-
-export function formatKillDate(killDate?: string | null) {
-	if (!killDate) return "fecha desconocida";
-	const parsed = new Date(killDate);
-	if (Number.isNaN(parsed.getTime())) return "fecha desconocida";
-	return dateFormatter.format(parsed);
-}
-
-const dateFormatter = new Intl.DateTimeFormat("es-ES", {
-	day: "2-digit",
-	month: "short",
-	year: "numeric",
-});
-
 export function getLiveBossActivityScore(
 	bosses: Array<{
 		isDefeated?: boolean;

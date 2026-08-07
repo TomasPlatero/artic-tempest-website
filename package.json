@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "dev:debug": "cross-env NODE_OPTIONS=--inspect next dev --turbopack",
-    "build": "next build && node scripts/copy-firewall.cjs",
+    "build": "next build",
     "start": "next start",
     "test": "vitest run",
     "test:watch": "vitest",
