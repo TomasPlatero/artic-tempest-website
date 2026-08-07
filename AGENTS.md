@@ -35,30 +35,11 @@ Next.js 16 App Router site for raid coordination, recruitment, notifications, an
 - Use factual, repo-backed instructions only; if something is not in the repo, do not invent it.
 - Prefer the smallest safe change that solves the real problem.
 
-## Kanban board workflow (`docs/tasks.md`)
+## Atlassian workflow (Jira + Confluence)
 
-Use the Obsidian Kanban board at `docs/tasks.md` as the live task tracker for all work.
+All task tracking is done in Jira (project ATW). The agent MUST load skill `atlassian-workflow` (`.pi/skills/atlassian-workflow/SKILL.md`) before any implementation, fix, or change.
 
-### Columns
-
-| Column | Meaning |
-| --- | --- |
-| 💡 Ideas | Concepts and future features without commitment |
-| 📋 Backlog | Concrete tasks pending prioritization |
-| 🎯 Siguiente | Prioritized for the current/next cycle |
-| 🚧 En curso | Actively being worked on (max 2-3) |
-| 👀 Revisión | Done but pending review or testing |
-| ✅ Hecho | Completed work |
-
-### When to update
-
-1. **New task assigned** — create the card in 📋 Backlog (or 🎯 Siguiente if clearly prioritized).
-2. **Starting work** — move the card to 🚧 En curso.
-3. **Work completed** — move through 👀 Revisión (if applicable) then to ✅ Hecho.
-4. **Before every commit** — verify the board reflects current state; move done cards to ✅ Hecho.
-5. **Archive cada 15 días** — cada 15 días (o cuando se acumulen suficientes tarjetas), mover todas las ✅ Hecho a `docs/tasks-archive.md` bajo un heading con la fecha (ej. `## 2026-07-15`), luego limpiar la columna. Esto mantiene el board ligero sin perder el historial.
-
-Cards can contain checklists, links to code/docs, and free-form notes.
+See that skill for the full Jira workflow (To Do → In Progress → Done), Confluence documentation rules, and the per-change Jira task creation contract.
 
 ## Zona Raider: new page checklist
 
