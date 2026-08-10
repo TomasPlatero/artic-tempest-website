@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.10.9
+
+- fix: Sentry now ignores MetaMask browser extension errors (false positives on /login)
+
 ## 1.10.8
 
 - feature: Discord poll/encuesta rendering in Zona Raider announcements card (ATW-1)

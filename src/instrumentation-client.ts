@@ -2,23 +2,33 @@
 // The added config here will be used whenever a users loads a page in their browser.
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
-import * as Sentry from '@sentry/nextjs';
-import { captureRouterTransitionStart } from '@sentry/nextjs';
+import * as Sentry from "@sentry/nextjs";
+import { captureRouterTransitionStart } from "@sentry/nextjs";
 
 Sentry.init({
-  dsn: 'https://7bce00d97437d83b42c6c5acff72453c@o4511081980887040.ingest.de.sentry.io/4511081985212496',
+	dsn: "https://7bce00d97437d83b42c6c5acff72453c@o4511081980887040.ingest.de.sentry.io/4511081985212496",
 
-  // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
-  tracesSampleRate: 1,
-  // Enable logs to be sent to Sentry
-  enableLogs: true,
+	// Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
+	tracesSampleRate: 1,
+	// Enable logs to be sent to Sentry
+	enableLogs: true,
 
-  enabled: process.env.NODE_ENV === 'production',
-  environment: process.env.SENTRY_ENVIRONMENT || process.env.NODE_ENV,
+	enabled: process.env.NODE_ENV === "production",
+	environment: process.env.SENTRY_ENVIRONMENT || process.env.NODE_ENV,
 
-  // Enable sending user PII (Personally Identifiable Information)
-  // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#sendDefaultPii
-  sendDefaultPii: true,
+	// Enable sending user PII (Personally Identifiable Information)
+	// https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#sendDefaultPii
+	sendDefaultPii: true,
+
+	// Ignore errors from third-party browser extensions that inject scripts into the page.
+	// These are NOT application bugs — they are external code failures outside our control.
+	ignoreErrors: [
+		// MetaMask wallet extension
+		"MetaMask extension not found",
+		"Failed to connect to MetaMask",
+		// Generic browser extension script errors (extension://, chrome-extension://, moz-extension://, app://)
+		/^Extension context invalidated\./,
+	],
 });
 
 export const onRouterTransitionStart = captureRouterTransitionStart;
