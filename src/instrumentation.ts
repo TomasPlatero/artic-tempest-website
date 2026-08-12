@@ -1,6 +1,3 @@
-// Aikido Zen Firewall — must be imported before any other module
-import "@aikidosec/firewall";
-
 import * as Sentry from "@sentry/nextjs";
 
 export async function register() {

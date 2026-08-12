@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { auth } from '@/auth';
-import { supabaseAdmin } from '@/shared/lib/supabase-admin';
+import { auth } from "@/auth";
+import { supabaseAdmin } from "@/shared/lib/supabase-admin";
 import { getAuthzSnapshot } from "@/shared/auth/authz";
 import { apiErrorResponse } from "@/shared/api/errors";
 import { ACTIVE_RECRUITMENT_STATUSES } from "@/domains/recruitment/lib/application-status";
@@ -21,6 +21,7 @@ const recruitmentSubmitSchema = z.object({
 	}),
 	answers: z.record(z.string(), z.unknown()).default({}),
 	simulate: z.boolean().optional().default(false),
+	discord_channel_id: z.string().trim().optional(),
 });
 
 export async function POST(req: Request) {
@@ -35,7 +36,7 @@ export async function POST(req: Request) {
 			return apiErrorResponse(parsed.error);
 		}
 
-		const { selectedChar, answers, simulate } = parsed.data;
+		const { selectedChar, answers, simulate, discord_channel_id } = parsed.data;
 
 		const authz = await getAuthzSnapshot(session);
 
@@ -279,7 +280,10 @@ export async function POST(req: Request) {
 						"Content-Type": "application/json",
 						cookie: req.headers.get("cookie") || "",
 					},
-					body: JSON.stringify({ application_id: application.id }),
+					body: JSON.stringify({
+						application_id: application.id,
+						channel_id: discord_channel_id,
+					}),
 				},
 			);
 

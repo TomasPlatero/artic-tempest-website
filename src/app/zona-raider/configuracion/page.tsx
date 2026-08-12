@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import {
 	IconBell,
+	IconBug,
 	IconBuildingStore,
 	IconDeviceGamepad,
 	IconUsers,
@@ -88,6 +89,7 @@ export default async function SettingsHubPage() {
 		notificationsPermission,
 		streamersPermission,
 		mediaLibraryPermission,
+		testingPermission,
 	] = await Promise.all([
 		getAppPermission(roleLevel, "settings"),
 		getAppPermission(roleLevel, "settings-discord"),
@@ -100,6 +102,7 @@ export default async function SettingsHubPage() {
 		getAppPermission(roleLevel, "settings-notifications"),
 		getAppPermission(roleLevel, "settings-streamers"),
 		getAppPermission(roleLevel, "media-library"),
+		getAppPermission(roleLevel, "settings-testing"),
 	]);
 
 	const identitySettings = [
@@ -261,6 +264,16 @@ export default async function SettingsHubPage() {
 			color: "text-emerald-500",
 			bg: "bg-emerald-500/10",
 			visible: apiPermission.canView,
+		},
+		{
+			title: "Testing",
+			description:
+				"Autodiagnósticos y pruebas del sistema, incluido el self-test de reclutamiento.",
+			icon: IconBug,
+			href: "/zona-raider/configuracion/testing",
+			color: "text-rose-500",
+			bg: "bg-rose-500/10",
+			visible: testingPermission.canView,
 		},
 	];
 
