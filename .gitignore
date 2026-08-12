@@ -150,3 +150,5 @@ AGENTS.md
 bun.lock
 .obsidian
 .codegraph/
+.pi
+.audit

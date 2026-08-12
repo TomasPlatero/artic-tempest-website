@@ -72,7 +72,6 @@ Todo construido con un sistema de roles y permisos granular que permite a cada m
 
 | Tecnología | Rol |
 | --- | --- |
-| [Aikido Firewall](https://www.aikido.dev/) | WAF en runtime — protección contra NoSQL injection, path traversal, SSRF y otras amenazas |
 | <img src="https://cdn.simpleicons.org/cloudflare/71717A" width="16" /> [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/) | CAPTCHA invisible sin cookies de tracking |
 | [DOMPurify](https://github.com/cure53/DOMPurify) | Sanitización de HTML contra XSS |
 | Content Security Policy | Política de seguridad de contenido con nonces por request |
