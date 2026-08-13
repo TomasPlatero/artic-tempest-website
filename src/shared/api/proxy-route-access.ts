@@ -59,6 +59,7 @@ const PUBLIC_ROUTES = [
 	withPrefix("/api/auth"),
 	withExact("/api/guild/news"),
 	withPrefix("/api/app-icon"),
+	withPrefix("/api/images"),
 	withExact("/api/bnet/avatar"),
 	withExact("/api/raiderio"),
 	withPrefix("/api/streamers"),

@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '@/shared/lib/supabase-admin';
+import { toProxyImageUrl } from '@/shared/lib/storage-url';
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://artictempest.es';
 const feedUrl = `${siteUrl.replace(/\/$/, '')}/noticias/rss`;
 
@@ -67,7 +68,7 @@ export async function GET() {
       const description = stripHtml(item.summary || item.content || '');
       const content = item.content || item.summary || '';
       const pubDate = new Date(item.created_at).toUTCString();
-      const imageUrl = item.image_url;
+      const imageUrl = toProxyImageUrl(item.image_url);
       return `\n    <item>
       <title>${escapeXml(item.title || 'Actualización')}</title>
       <link>${url}</link>

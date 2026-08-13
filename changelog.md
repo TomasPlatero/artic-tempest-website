@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.10.11
+
+- security: hide Supabase Storage origin in RSS feed and sitemap via same-origin image proxy (ATW-5)
+
 ## 1.10.10
 
 - feature: Statuspage service monitoring — heartbeat crons for web, reclutamiento, progreso and streamers (ATW-4)

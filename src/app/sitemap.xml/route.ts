@@ -1,5 +1,6 @@
 import { unstable_cache } from "next/cache";
 import { supabaseAdmin } from '@/shared/lib/supabase-admin';
+import { toProxyImageUrl } from '@/shared/lib/storage-url';
 export const runtime = "nodejs";
 
 // ── Tipos ────────────────────────────────────────────────────────────────────
@@ -83,7 +84,7 @@ export async function GET() {
     lastmod: new Date(item.created_at).toISOString(),
     changefreq: "monthly",
     priority: "0.6",
-    image: item.image_url || null,
+    image: toProxyImageUrl(item.image_url),
   }));
 
   // ── Construir XML ─────────────────────────────────────────────────────
