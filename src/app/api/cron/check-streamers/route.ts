@@ -1,11 +1,8 @@
 import { NextResponse } from "next/server";
 import { requireCronAuth } from "@/shared/security/cron-auth";
 import { supabaseAdmin } from "@/shared/lib/supabase-admin";
-import {
-	getComponentId,
-	setComponentStatus,
-	type ComponentStatus,
-} from "@/shared/integrations/statuspage/statuspage-client";
+import { getComponentId } from "@/shared/integrations/statuspage/statuspage-client";
+import { reportHeartbeat } from "@/shared/integrations/statuspage/monitor";
 
 /**
  * CRON API Endpoint: verifies the /streamers page and the Twitch endpoints
@@ -118,15 +115,25 @@ export async function GET(req: Request) {
 	});
 
 	const ok = checks.every((c) => c.ok);
-	const status: ComponentStatus = ok ? "operational" : "major_outage";
-	const report = await setComponentStatus(pageId, apiKey, componentId, status);
+
+	const report = await reportHeartbeat({
+		checkKey: "streamers",
+		pageId,
+		apiKey,
+		componentId,
+		ok,
+		details: checks.map((c) => `${c.check}: ${c.detail}`),
+		incidentName: "Streamers degradado",
+	});
+
+	const status = report.status;
 
 	console.log(
 		`[check-streamers] ${ok ? "PASS" : "FAIL"} -> ${status} (test user: ${username})`,
 	);
 
 	return NextResponse.json(
-		{ ok, status, checks, testUser: username, statuspage: report },
-		{ status: report.ok ? 200 : 502 },
+		{ ok, status, checks, testUser: username, statuspage: report.statuspage },
+		{ status: report.statuspage.ok ? 200 : 502 },
 	);
 }

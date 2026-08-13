@@ -1,11 +1,8 @@
 import { NextResponse } from "next/server";
 import { requireCronAuth } from "@/shared/security/cron-auth";
 import { supabaseAdmin } from "@/shared/lib/supabase-admin";
-import {
-	getComponentId,
-	setComponentStatus,
-	type ComponentStatus,
-} from "@/shared/integrations/statuspage/statuspage-client";
+import { getComponentId } from "@/shared/integrations/statuspage/statuspage-client";
+import { reportHeartbeat } from "@/shared/integrations/statuspage/monitor";
 
 /**
  * CRON API Endpoint: verifies the /progreso page and the Raider.io endpoints
@@ -114,13 +111,23 @@ export async function GET(req: Request) {
 	});
 
 	const ok = checks.every((c) => c.ok);
-	const status: ComponentStatus = ok ? "operational" : "major_outage";
-	const report = await setComponentStatus(pageId, apiKey, componentId, status);
+
+	const report = await reportHeartbeat({
+		checkKey: "progreso",
+		pageId,
+		apiKey,
+		componentId,
+		ok,
+		details: checks.map((c) => `${c.check}: ${c.detail}`),
+		incidentName: "Progreso degradado",
+	});
+
+	const status = report.status;
 
 	console.log(`[check-progreso] ${ok ? "PASS" : "FAIL"} -> ${status}`);
 
 	return NextResponse.json(
-		{ ok, status, checks, statuspage: report },
-		{ status: report.ok ? 200 : 502 },
+		{ ok, status, checks, statuspage: report.statuspage },
+		{ status: report.statuspage.ok ? 200 : 502 },
 	);
 }

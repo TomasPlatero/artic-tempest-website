@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.11.1
+
+- feature: heartbeat crons now auto-create a Statuspage incident (investigating) and a Jira issue (Error, label "incident") on confirmed failure, with per-check dedup and automatic resolution on recovery
+- feature: new `monitor_incidents` table tracks incident state (Statuspage id, Jira key, failure counters) — service-role only
+- refactor: extracted shared `reportHeartbeat()` orchestrator in `src/shared/integrations/statuspage/monitor.ts`
+- chore: added `atlassian-workflow` skill documenting the ATW Jira workflow and Confluence rules
+
 ## 1.11.0
 
 - feature: feedback form (Centro de Ayuda) creates Jira issues directly in project ATW via OAuth 2.0 (3LO)

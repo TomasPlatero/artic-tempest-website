@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireCronAuth } from "@/shared/security/cron-auth";
-import {
-	getComponentId,
-	setComponentStatus,
-	type ComponentStatus,
-} from "@/shared/integrations/statuspage/statuspage-client";
+import { getComponentId } from "@/shared/integrations/statuspage/statuspage-client";
+import { reportHeartbeat } from "@/shared/integrations/statuspage/monitor";
 
 /**
  * CRON API Endpoint: pings the public website once a day and reports the
@@ -46,17 +43,30 @@ export async function GET(req: Request) {
 	}
 
 	const check = await pingSite(CHECK_URL);
-	const status: ComponentStatus = check.ok ? "operational" : "major_outage";
 
-	const report = await setComponentStatus(pageId, apiKey, componentId, status);
+	const report = await reportHeartbeat({
+		checkKey: "web",
+		pageId,
+		apiKey,
+		componentId,
+		ok: check.ok,
+		details: [
+			`URL: ${CHECK_URL}`,
+			`HTTP status: ${check.httpStatus ?? "n/a"}`,
+			`Attempts: ${check.attempts}/${MAX_ATTEMPTS}`,
+		],
+		incidentName: "Web no responde",
+	});
+
+	const status = report.status;
 
 	console.log(
 		`[check-web] ${CHECK_URL} -> ${status} (http ${check.httpStatus ?? "n/a"}, ${check.attempts} attempt(s))`,
 	);
 
 	return NextResponse.json(
-		{ check, status, statuspage: report },
-		{ status: report.ok ? 200 : 502 },
+		{ check, status, statuspage: report.statuspage },
+		{ status: report.statuspage.ok ? 200 : 502 },
 	);
 }
 

@@ -239,3 +239,161 @@ export async function createJiraIssue(input: {
 
 	return { key: body.key, attachmentErrors };
 }
+
+/**
+ * Creates a Jira "Error" (bug) issue for a failed heartbeat, tagged with the
+ * "incident" label so ops can filter active incidents.
+ */
+export async function createIncidentIssue(input: {
+	checkKey: string;
+	summary: string;
+	detailLines: string[];
+}): Promise<{ key: string }> {
+	const { accessToken, cloudId } = await getValidAccessToken();
+	const projectKey = process.env.JIRA_PROJECT_KEY || "ATW";
+
+	const issueTypes = await fetchProjectIssueTypes(
+		accessToken,
+		cloudId,
+		projectKey,
+	);
+	const issueTypeId = resolveIssueTypeId(issueTypes, "bug");
+	if (!issueTypeId) {
+		throw new Error(
+			`No se encontró un tipo de issue "Error" en el proyecto ${projectKey}`,
+		);
+	}
+
+	const summary = `[incident] ${input.summary}`;
+	const description = toAdfDoc([
+		...input.detailLines,
+		"",
+		`Check: ${input.checkKey}`,
+	]);
+
+	const res = await fetch(`${API_BASE}/ex/jira/${cloudId}/rest/api/3/issue`, {
+		method: "POST",
+		headers: {
+			Authorization: `Bearer ${accessToken}`,
+			"Content-Type": "application/json",
+			Accept: "application/json",
+		},
+		body: JSON.stringify({
+			fields: {
+				project: { key: projectKey },
+				summary,
+				issuetype: { id: issueTypeId },
+				description,
+				labels: ["web", "incident"],
+			},
+		}),
+	});
+
+	const text = await res.text();
+	let body: { key?: string } | null = null;
+	try {
+		body = JSON.parse(text) as { key?: string };
+	} catch {
+		body = null;
+	}
+
+	if (!res.ok) {
+		throw new Error(
+			`Jira create incident issue falló (${res.status}): ${text.slice(0, 500)}`,
+		);
+	}
+	if (!body?.key) {
+		throw new Error("Jira respondió sin clave de issue");
+	}
+
+	return { key: body.key };
+}
+
+async function transitionIssueToDone(
+	accessToken: string,
+	cloudId: string,
+	issueKey: string,
+): Promise<void> {
+	const res = await fetch(
+		`${API_BASE}/ex/jira/${cloudId}/rest/api/3/issue/${issueKey}/transitions`,
+		{
+			headers: {
+				Authorization: `Bearer ${accessToken}`,
+				Accept: "application/json",
+			},
+		},
+	);
+
+	const text = await res.text();
+	if (!res.ok) {
+		throw new Error(
+			`Jira transitions falló (${res.status}): ${text.slice(0, 300)}`,
+		);
+	}
+
+	const data = parseJson<{ transitions?: { id: string; name?: string }[] }>(
+		text,
+	);
+	const doneNames = new Set(["listo", "done", "finalizada", "completed"]);
+	const done = (data.transitions ?? []).find((t) =>
+		doneNames.has((t.name ?? "").toLowerCase()),
+	);
+	if (!done) return;
+
+	const transitionRes = await fetch(
+		`${API_BASE}/ex/jira/${cloudId}/rest/api/3/issue/${issueKey}/transitions`,
+		{
+			method: "POST",
+			headers: {
+				Authorization: `Bearer ${accessToken}`,
+				"Content-Type": "application/json",
+				Accept: "application/json",
+			},
+			body: JSON.stringify({ transition: { id: done.id } }),
+		},
+	);
+
+	if (!transitionRes.ok) {
+		const t = await transitionRes.text();
+		throw new Error(
+			`Jira transition falló (${transitionRes.status}): ${t.slice(0, 300)}`,
+		);
+	}
+}
+
+/**
+ * Marks a heartbeat incident Jira issue as resolved: adds a closing comment and
+ * best-effort transitions it to "done" (transition failures are logged, not
+ * thrown, so the recovery flow never breaks).
+ */
+export async function resolveIncidentIssue(issueKey: string): Promise<void> {
+	const { accessToken, cloudId } = await getValidAccessToken();
+
+	const commentRes = await fetch(
+		`${API_BASE}/ex/jira/${cloudId}/rest/api/3/issue/${issueKey}/comment`,
+		{
+			method: "POST",
+			headers: {
+				Authorization: `Bearer ${accessToken}`,
+				"Content-Type": "application/json",
+				Accept: "application/json",
+			},
+			body: JSON.stringify({
+				body: toAdfDoc([
+					"Resuelto automáticamente por el heartbeat al recuperar el servicio.",
+				]),
+			}),
+		},
+	);
+
+	if (!commentRes.ok) {
+		const text = await commentRes.text();
+		console.error(
+			`Jira comment falló (${commentRes.status}): ${text.slice(0, 300)}`,
+		);
+	}
+
+	await transitionIssueToDone(accessToken, cloudId, issueKey).catch((err) => {
+		console.error(`Jira transition to done falló para ${issueKey}:`, err);
+	});
+}

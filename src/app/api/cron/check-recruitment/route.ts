@@ -3,11 +3,8 @@ import { requireCronAuth } from "@/shared/security/cron-auth";
 import { supabaseAdmin } from "@/shared/lib/supabase-admin";
 import { getGuildCredentials } from "@/shared/auth/credentials";
 import { submitApplicationCore } from "@/shared/lib/recruitment/submit-core";
-import {
-	getComponentId,
-	setComponentStatus,
-	type ComponentStatus,
-} from "@/shared/integrations/statuspage/statuspage-client";
+import { getComponentId } from "@/shared/integrations/statuspage/statuspage-client";
+import { reportHeartbeat } from "@/shared/integrations/statuspage/monitor";
 
 /**
  * CRON API Endpoint: runs the recruitment self-test end-to-end (submit →
@@ -271,19 +268,24 @@ export async function GET(req: Request) {
 		}
 
 		const ok = steps.every((s) => s.ok);
-		const status: ComponentStatus = ok ? "operational" : "major_outage";
-		const report = await setComponentStatus(
+
+		const report = await reportHeartbeat({
+			checkKey: "reclutamiento",
 			pageId,
 			apiKey,
 			componentId,
-			status,
-		);
+			ok,
+			details: steps.map((s) => `${s.step}: ${s.detail ?? ""}`),
+			incidentName: "Reclutamiento degradado",
+		});
+
+		const status = report.status;
 
 		console.log(`[check-recruitment] ${ok ? "PASS" : "FAIL"} -> ${status}`);
 
 		return NextResponse.json(
-			{ ok, status, steps, statuspage: report },
-			{ status: report.ok ? 200 : 502 },
+			{ ok, status, steps, statuspage: report.statuspage },
+			{ status: report.statuspage.ok ? 200 : 502 },
 		);
 	} catch (err) {
 		console.error("[check-recruitment] error:", err);
@@ -314,9 +316,15 @@ export async function GET(req: Request) {
 			}
 		}
 
-		await setComponentStatus(pageId, apiKey, componentId, "major_outage").catch(
-			() => {},
-		);
+		await reportHeartbeat({
+			checkKey: "reclutamiento",
+			pageId,
+			apiKey,
+			componentId,
+			ok: false,
+			details: ["Internal server error"],
+			incidentName: "Reclutamiento degradado",
+		}).catch(() => {});
 
 		return NextResponse.json(
 			{ ok: false, error: "Internal server error" },
