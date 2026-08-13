@@ -16,6 +16,22 @@
         {
             "path": "/api/admin/system/cron/verify-members",
             "schedule": "0 * * * *"
+        },
+        {
+            "path": "/api/cron/check-web",
+            "schedule": "0 3 * * *"
+        },
+        {
+            "path": "/api/cron/check-recruitment",
+            "schedule": "10 3 * * *"
+        },
+        {
+            "path": "/api/cron/check-progreso",
+            "schedule": "20 3 * * *"
+        },
+        {
+            "path": "/api/cron/check-streamers",
+            "schedule": "30 3 * * *"
         }
     ]
 }

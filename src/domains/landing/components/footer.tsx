@@ -229,7 +229,7 @@ export function LandingFooter({
 							RSS Noticias
 						</Link>
 						<a
-							href="https://artictempest.openstatus.dev/"
+							href="https://artictempest.statuspage.io/"
 							target="_blank"
 							rel="noopener noreferrer"
 							className={footerTextLinkClass}

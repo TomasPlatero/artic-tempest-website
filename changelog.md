@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.10.10
+
+- feature: Statuspage service monitoring — heartbeat crons for web, reclutamiento, progreso and streamers (ATW-4)
+
 ## 1.10.9
 
 - fix: Sentry now ignores MetaMask browser extension errors (false positives on /login)

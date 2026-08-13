@@ -17,6 +17,7 @@ import {
 	IconChecks,
 	IconLoader2,
 } from "@/shared/ui/tabler-icons";
+import { SettingsHeartbeatClient } from "./settings-heartbeat";
 
 type CharacterOption = {
 	id: string;
@@ -111,6 +112,7 @@ export function SettingsTestingClient({
 	canEdit: boolean;
 	canManage: boolean;
 }) {
+	const [tab, setTab] = useState<"testing" | "heartbeat">("testing");
 	const [channelId, setChannelId] = useState(initialChannelId);
 	const [savingChannel, setSavingChannel] = useState(false);
 	const [selectedCharId, setSelectedCharId] = useState(characters[0]?.id ?? "");
@@ -148,114 +150,154 @@ export function SettingsTestingClient({
 		}
 	};
 
+	const tabClass = (active: boolean) =>
+		`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold italic uppercase tracking-tighter transition-colors ${
+			active
+				? "bg-blue-600 text-white"
+				: "bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white"
+		}`;
+
 	return (
 		<div className="flex flex-col gap-6">
-			{/* Canal de test */}
-			<Card className="bg-white/5 border-white/10">
-				<CardHeader>
-					<CardTitle className="text-xl font-semibold flex items-center gap-2">
-						<IconBrandDiscord className="size-5 text-[#5865F2]" />
-						Canal de Discord de test
-					</CardTitle>
-					<CardDescription>
-						ID del canal donde la prueba publica el mensaje de prueba. No toca
-						el canal real de reclutamiento.
-					</CardDescription>
-				</CardHeader>
-				<CardContent>
-					<div className="flex flex-col sm:flex-row gap-3">
-						<Input
-							value={channelId}
-							onChange={(e) => setChannelId(e.target.value)}
-							placeholder="Ej: 123456789012345678"
-							disabled={!canEdit}
-							className="bg-white/5 border-white/10 rounded-xl font-mono"
-						/>
-						<Button
-							onClick={() => void handleSaveChannel()}
-							disabled={!canEdit || savingChannel}
-							className="bg-blue-600 hover:bg-blue-500 rounded-xl font-semibold italic uppercase tracking-tighter"
-						>
-							{savingChannel ? "Guardando..." : "Guardar canal"}
-						</Button>
-					</div>
-				</CardContent>
-			</Card>
+			{/* Tabs */}
+			<div className="flex gap-2">
+				<button
+					type="button"
+					className={tabClass(tab === "testing")}
+					onClick={() => setTab("testing")}
+				>
+					<IconChecks className="size-4" />
+					Testing
+				</button>
+				<button
+					type="button"
+					className={tabClass(tab === "heartbeat")}
+					onClick={() => setTab("heartbeat")}
+				>
+					<IconActivity className="size-4" />
+					Heartbeating
+				</button>
+			</div>
 
-			{/* Self-test */}
-			<Card className="bg-white/5 border-white/10">
-				<CardHeader>
-					<CardTitle className="text-xl font-semibold flex items-center gap-2">
-						<IconChecks className="size-5 text-emerald-400" />
-						Prueba de reclutamiento
-					</CardTitle>
-					<CardDescription>
-						Corre el flujo real de solicitud con tu cuenta y un personaje
-						vinculado, publica al canal de test y revierte todo al final.
-					</CardDescription>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					{characters.length > 0 ? (
-						<div className="flex flex-col gap-2 max-w-md">
-							<label
-								htmlFor="self-test-char"
-								className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500"
-							>
-								Personaje de prueba
-							</label>
-							<select
-								id="self-test-char"
-								value={selectedCharId}
-								onChange={(e) => setSelectedCharId(e.target.value)}
-								disabled={running}
-								className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-blue-500"
-							>
-								{characters.map((c) => (
-									<option key={c.id} value={c.id} className="bg-zinc-900">
-										{c.name} — {c.realm} (nivel {c.level})
-									</option>
-								))}
-							</select>
-						</div>
-					) : (
-						<p className="text-sm text-amber-300">
-							No tenés personajes de Battle.net vinculados. Vinculá uno antes de
-							ejecutar la prueba.
-						</p>
-					)}
+			{tab === "testing" ? (
+				<>
+					{/* Canal de test */}
+					<Card className="bg-white/5 border-white/10">
+						<CardHeader>
+							<CardTitle className="text-xl font-semibold flex items-center gap-2">
+								<IconBrandDiscord className="size-5 text-[#5865F2]" />
+								Canal de Discord de test
+							</CardTitle>
+							<CardDescription>
+								ID del canal donde la prueba publica el mensaje de prueba. No
+								toca el canal real de reclutamiento.
+							</CardDescription>
+						</CardHeader>
+						<CardContent>
+							<div className="flex flex-col sm:flex-row gap-3">
+								<Input
+									value={channelId}
+									onChange={(e) => setChannelId(e.target.value)}
+									placeholder="Ej: 123456789012345678"
+									disabled={!canEdit}
+									className="bg-white/5 border-white/10 rounded-xl font-mono"
+								/>
+								<Button
+									onClick={() => void handleSaveChannel()}
+									disabled={!canEdit || savingChannel}
+									className="bg-blue-600 hover:bg-blue-500 rounded-xl font-semibold italic uppercase tracking-tighter"
+								>
+									{savingChannel ? "Guardando..." : "Guardar canal"}
+								</Button>
+							</div>
+						</CardContent>
+					</Card>
 
-					<Button
-						onClick={() => void handleRunSelfTest()}
-						disabled={!canManage || running || characters.length === 0}
-						className="bg-emerald-600 hover:bg-emerald-500 rounded-xl font-semibold italic uppercase tracking-tighter"
-					>
-						{running ? (
-							<IconLoader2 className="size-4 mr-2 animate-spin" />
-						) : (
-							<IconActivity className="size-4 mr-2" />
-						)}
-						Ejecutar prueba
-					</Button>
-
-					{overall !== "idle" && (
-						<div className="rounded-xl border border-white/10 bg-black/20 p-4 space-y-2">
-							{steps.map((s) => (
-								<div key={s.step} className="flex items-start gap-2 text-sm">
-									<span className={s.ok ? "text-emerald-400" : "text-rose-400"}>
-										{s.ok ? "✓" : "✗"}
-									</span>
-									<div>
-										<span className="font-semibold text-white">{s.step}</span>
-										{s.detail ? (
-											<span className="text-zinc-400"> — {s.detail}</span>
-										) : null}
-									</div>
+					{/* Self-test */}
+					<Card className="bg-white/5 border-white/10">
+						<CardHeader>
+							<CardTitle className="text-xl font-semibold flex items-center gap-2">
+								<IconChecks className="size-5 text-emerald-400" />
+								Prueba de reclutamiento
+							</CardTitle>
+							<CardDescription>
+								Corre el flujo real de solicitud con tu cuenta y un personaje
+								vinculado, publica al canal de test y revierte todo al final.
+							</CardDescription>
+						</CardHeader>
+						<CardContent className="space-y-4">
+							{characters.length > 0 ? (
+								<div className="flex flex-col gap-2 max-w-md">
+									<label
+										htmlFor="self-test-char"
+										className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500"
+									>
+										Personaje de prueba
+									</label>
+									<select
+										id="self-test-char"
+										value={selectedCharId}
+										onChange={(e) => setSelectedCharId(e.target.value)}
+										disabled={running}
+										className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-blue-500"
+									>
+										{characters.map((c) => (
+											<option key={c.id} value={c.id} className="bg-zinc-900">
+												{c.name} — {c.realm} (nivel {c.level})
+											</option>
+										))}
+									</select>
 								</div>
-							))}
-						</div>
-					)}
-				</CardContent>
-			</Card>
+							) : (
+								<p className="text-sm text-amber-300">
+									No tenés personajes de Battle.net vinculados. Vinculá uno
+									antes de ejecutar la prueba.
+								</p>
+							)}
+
+							<Button
+								onClick={() => void handleRunSelfTest()}
+								disabled={!canManage || running || characters.length === 0}
+								className="bg-emerald-600 hover:bg-emerald-500 rounded-xl font-semibold italic uppercase tracking-tighter"
+							>
+								{running ? (
+									<IconLoader2 className="size-4 mr-2 animate-spin" />
+								) : (
+									<IconActivity className="size-4 mr-2" />
+								)}
+								Ejecutar prueba
+							</Button>
+
+							{overall !== "idle" && (
+								<div className="rounded-xl border border-white/10 bg-black/20 p-4 space-y-2">
+									{steps.map((s) => (
+										<div
+											key={s.step}
+											className="flex items-start gap-2 text-sm"
+										>
+											<span
+												className={s.ok ? "text-emerald-400" : "text-rose-400"}
+											>
+												{s.ok ? "✓" : "✗"}
+											</span>
+											<div>
+												<span className="font-semibold text-white">
+													{s.step}
+												</span>
+												{s.detail ? (
+													<span className="text-zinc-400"> — {s.detail}</span>
+												) : null}
+											</div>
+										</div>
+									))}
+								</div>
+							)}
+						</CardContent>
+					</Card>
+				</>
+			) : (
+				<SettingsHeartbeatClient canEdit={canEdit} />
+			)}
 		</div>
 	);
 }
