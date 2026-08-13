@@ -3,15 +3,12 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-	IconArrowUp,
-	IconHelp,
-	IconRefresh,
-} from "@/shared/ui/tabler-icons";
+import { IconArrowUp, IconHelp, IconRefresh } from "@/shared/ui/tabler-icons";
 
 import { Button } from "@/shared/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 import { isZonaRaiderPath } from "@/shared/lib/zona-raider-path";
+import { useApiQuery } from "@/shared/hooks/use-api-query";
 import {
 	getScrollBehavior,
 	usePrefersReducedMotion,
@@ -20,8 +17,14 @@ import {
 export function FloatingActions() {
 	const pathname = usePathname();
 	const [showBackToTop, setShowBackToTop] = React.useState(false);
-	const showHelpButton = isZonaRaiderPath(pathname);
+	const isRaiderPath = isZonaRaiderPath(pathname);
 	const prefersReducedMotion = usePrefersReducedMotion();
+
+	const { data: onboardingData } = useApiQuery<{ tourEnabled?: boolean }>(
+		isRaiderPath ? "/api/zona-raider/onboarding-status" : null,
+	);
+	const tourEnabled = onboardingData?.tourEnabled ?? true;
+	const showHelpButton = isRaiderPath && tourEnabled;
 
 	React.useEffect(() => {
 		const updateVisibility = () => {
