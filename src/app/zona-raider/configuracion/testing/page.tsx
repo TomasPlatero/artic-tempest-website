@@ -7,6 +7,7 @@ import { getAppPermission } from "@/shared/auth/permissions";
 import { getCachedServerSession } from "@/shared/auth/get-cached-server-session";
 import { getAuthzSnapshot } from "@/shared/auth/authz";
 import { SettingsTestingClient } from "@/domains/settings/components/settings-testing";
+import { STATUSPAGE_COMPONENTS_SETTING_KEY } from "@/shared/integrations/statuspage/statuspage-client";
 
 export const runtime = "nodejs";
 
@@ -27,7 +28,11 @@ export default async function SettingsTestingPage() {
 		);
 	}
 
-	const [{ data: settings }, { data: characters }] = await Promise.all([
+	const [
+		{ data: settings },
+		{ data: characters },
+		{ data: statuspageSetting },
+	] = await Promise.all([
 		supabaseAdmin
 			.from("settings")
 			.select("recruitment_test_channel_id")
@@ -38,7 +43,21 @@ export default async function SettingsTestingPage() {
 			.select("id, name, realm, class_id, spec, level")
 			.eq("user_id", session.user.id)
 			.order("level", { ascending: false }),
+		supabaseAdmin
+			.from("app_settings")
+			.select("value")
+			.eq("key", STATUSPAGE_COMPONENTS_SETTING_KEY)
+			.maybeSingle(),
 	]);
+
+	let initialComponents: Record<string, string> = {};
+	if (statuspageSetting?.value) {
+		try {
+			initialComponents = JSON.parse(statuspageSetting.value);
+		} catch {
+			initialComponents = {};
+		}
+	}
 
 	return (
 		<div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6 lg:px-8">
@@ -67,6 +86,7 @@ export default async function SettingsTestingPage() {
 
 			<SettingsTestingClient
 				initialChannelId={settings?.recruitment_test_channel_id ?? ""}
+				initialComponents={initialComponents}
 				characters={
 					(characters ?? []) as {
 						id: string;

@@ -103,11 +103,13 @@ async function doRunSelfTest(
 
 export function SettingsTestingClient({
 	initialChannelId,
+	initialComponents,
 	characters,
 	canEdit,
 	canManage,
 }: {
 	initialChannelId: string;
+	initialComponents: Record<string, string>;
 	characters: CharacterOption[];
 	canEdit: boolean;
 	canManage: boolean;
@@ -296,7 +298,10 @@ export function SettingsTestingClient({
 					</Card>
 				</>
 			) : (
-				<SettingsHeartbeatClient canEdit={canEdit} />
+				<SettingsHeartbeatClient
+				canEdit={canEdit}
+				initialComponents={initialComponents}
+			/>
 			)}
 		</div>
 	);
