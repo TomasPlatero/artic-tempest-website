@@ -11,11 +11,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/shared/ui/card";
-import {
-	IconActivity,
-	IconPlus,
-	IconTrash,
-} from "@/shared/ui/tabler-icons";
+import { IconActivity, IconPlus, IconTrash } from "@/shared/ui/tabler-icons";
 
 type ComponentEntry = {
 	id: string;

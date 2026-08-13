@@ -299,9 +299,9 @@ export function SettingsTestingClient({
 				</>
 			) : (
 				<SettingsHeartbeatClient
-				canEdit={canEdit}
-				initialComponents={initialComponents}
-			/>
+					canEdit={canEdit}
+					initialComponents={initialComponents}
+				/>
 			)}
 		</div>
 	);
