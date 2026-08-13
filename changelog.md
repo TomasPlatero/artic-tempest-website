@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.11.0
+
+- feature: feedback form (Centro de Ayuda) creates Jira issues directly in project ATW via OAuth 2.0 (3LO)
+- feature: image/screenshot attachments on the feedback form, uploaded straight to the Jira issue
+- refactor: replaced the Jira Service Management help-center redirect with the native form → Jira Software integration
+- fix: CSP now allows challenges.cloudflare.com (Turnstile widget was blocked)
+- fix: Turnstile verification only active in production (dev works without captcha)
+- chore: removed legacy /ayuda guides (primeros-pasos, zona-raider)
+
 ## 1.10.11
 
 - security: hide Supabase Storage origin in RSS feed and sitemap via same-origin image proxy (ATW-5)

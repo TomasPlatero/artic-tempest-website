@@ -5,7 +5,8 @@
     "rules": [
       "react-doctor/supabase-table-missing-rls",
       "react-doctor/supabase-rls-policy-risk",
-      "react-doctor/no-transition-all"
+      "react-doctor/no-transition-all",
+      "react-doctor/no-create-object-url-without-revoke"
     ]
   }
 }

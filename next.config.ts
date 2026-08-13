@@ -42,6 +42,10 @@ const nextConfig: NextConfig = {
 
   // Optimización de imports
   experimental: {
+    serverActions: {
+      // Límite para el formulario de feedback con capturas adjuntas (default: 1mb)
+      bodySizeLimit: "12mb",
+    },
     optimizePackageImports: [
       "@tabler/icons-react",
       "date-fns",

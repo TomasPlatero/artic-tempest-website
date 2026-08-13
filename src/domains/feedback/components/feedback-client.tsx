@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
@@ -13,8 +13,9 @@ import {
 	IconUser,
 	IconMail,
 	IconBug,
-	IconMessageCircle,
 	IconBulb,
+	IconCamera,
+	IconX,
 } from "@/shared/ui/tabler-icons";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -26,30 +27,43 @@ import {
 } from "@/shared/components/turnstile-widget";
 
 const CATEGORIES = [
-	{
-		id: "general",
-		label: "General",
-		icon: IconMessageCircle,
-		color: "text-blue-400",
-	},
 	{ id: "bug", label: "Bug / Error", icon: IconBug, color: "text-rose-400" },
-	{ id: "idea", label: "Sugerencia", icon: IconBulb, color: "text-amber-400" },
+	{
+		id: "sugerencia",
+		label: "Sugerencia",
+		icon: IconBulb,
+		color: "text-amber-400",
+	},
 ];
 
-async function doSubmitFeedback(data: {
-	name: string;
-	email: string;
-	category: string;
-	message: string;
-	images: string[];
-	turnstileToken?: string;
-}): Promise<{ success: boolean; error?: string }> {
+const MAX_FILES = 5;
+const MAX_FILE_SIZE = 2 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = [
+	"image/png",
+	"image/jpeg",
+	"image/webp",
+	"image/gif",
+];
+
+type AttachmentFile = {
+	file: File;
+	previewUrl: string;
+};
+
+async function doSubmitFeedback(formData: FormData): Promise<{
+	success: boolean;
+	error?: string;
+	attachmentErrors?: string[];
+}> {
 	try {
-		const result = await submitFeedback(data);
+		const result = await submitFeedback(formData);
 		if (result.error) {
 			return { success: false, error: result.error };
 		}
-		return { success: true };
+		return {
+			success: true,
+			attachmentErrors: result.attachmentErrors ?? [],
+		};
 	} catch (err) {
 		console.error(err);
 		return {
@@ -68,13 +82,59 @@ function useFeedbackClient() {
 	const turnstileRef = useRef<TurnstileWidgetRef>(null);
 	const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 	const [captchaLoading, setCaptchaLoading] = useState(true);
+	const [captchaError, setCaptchaError] = useState(false);
 	const [announcement, setAnnouncement] = useState("");
+	const [files, setFiles] = useState<AttachmentFile[]>([]);
 
-	const hasTurnstile = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+	const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const incoming = Array.from(e.target.files ?? []);
+		const valid = incoming.filter(
+			(f) => ALLOWED_IMAGE_TYPES.includes(f.type) && f.size <= MAX_FILE_SIZE,
+		);
+		if (valid.length < incoming.length) {
+			toast.error("Solo imágenes PNG/JPG/WebP/GIF de hasta 2 MB");
+		}
+
+		const remaining = Math.max(0, MAX_FILES - files.length);
+		if (valid.length > remaining) {
+			toast.error(`Máximo ${MAX_FILES} imágenes`);
+		}
+		const toAdd = valid.slice(0, remaining).map((file) => ({
+			file,
+			previewUrl: URL.createObjectURL(file),
+		}));
+
+		setFiles((prev) => [...prev, ...toAdd]);
+		e.target.value = "";
+	};
+
+	const removeFile = (index: number) => {
+		const removed = files[index];
+		if (removed) {
+			URL.revokeObjectURL(removed.previewUrl);
+		}
+		setFiles((prev) => prev.filter((_, i) => i !== index));
+	};
+
+	const filesRef = useRef<AttachmentFile[]>([]);
+
+	useEffect(() => {
+		filesRef.current = files;
+	}, [files]);
+
+	useEffect(() => {
+		return () => {
+			filesRef.current.forEach((item) => URL.revokeObjectURL(item.previewUrl));
+		};
+	}, []);
+
+	const hasTurnstile =
+		process.env.NODE_ENV === "production" &&
+		!!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 	const [formState, setFormState] = useState({
 		loading: false,
 		success: false,
-		category: "general",
+		category: "sugerencia",
 		acceptedRGPD: false,
 	});
 	const { loading, success, category, acceptedRGPD } = formState;
@@ -97,7 +157,7 @@ function useFeedbackClient() {
 		const email = formData.get("email") as string;
 		const message = formData.get("message") as string;
 
-		if (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !turnstileToken) {
+		if (hasTurnstile && !turnstileToken) {
 			toast.error("Por favor, completa la verificación de seguridad");
 			setAnnouncement("Por favor, completa la verificación de seguridad.");
 			setFormState((prev) => ({ ...prev, loading: false }));
@@ -125,14 +185,13 @@ function useFeedbackClient() {
 			return;
 		}
 
-		const result = await doSubmitFeedback({
-			name,
-			email,
-			category,
-			message,
-			images: [],
-			turnstileToken: turnstileToken || undefined,
-		});
+		formData.set("category", category);
+		if (turnstileToken) {
+			formData.set("turnstileToken", turnstileToken);
+		}
+		files.forEach(({ file }) => formData.append("images", file, file.name));
+
+		const result = await doSubmitFeedback(formData);
 
 		setFormState((prev) => ({ ...prev, loading: false }));
 
@@ -140,9 +199,17 @@ function useFeedbackClient() {
 			turnstileRef.current?.reset();
 			setTurnstileToken(null);
 			setCaptchaLoading(true);
+			files.forEach((item) => URL.revokeObjectURL(item.previewUrl));
+			setFiles([]);
 			setFormState((prev) => ({ ...prev, success: true }));
 			setAnnouncement("Feedback enviado correctamente.");
-			toast.success("Feedback enviado correctamente. ¡Gracias!");
+			if (result.attachmentErrors && result.attachmentErrors.length > 0) {
+				toast.warning(
+					"Tu mensaje se creó en Jira, pero algunas capturas no se pudieron adjuntar.",
+				);
+			} else {
+				toast.success("Feedback enviado correctamente. ¡Gracias!");
+			}
 		} else {
 			setAnnouncement(result.error!);
 			toast.error(result.error!);
@@ -282,6 +349,54 @@ function useFeedbackClient() {
 				/>
 			</div>
 
+			{/* Adjuntos */}
+			<div className="space-y-3">
+				<span className="block text-xs uppercase tracking-widest text-white/40 font-semibold">
+					Capturas de pantalla (opcional)
+				</span>
+				<label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-white/15 bg-white/5 p-6 text-center transition-colors hover:border-blue-500/40 hover:bg-white/10">
+					<IconCamera className="size-6 text-white/30" />
+					<span className="text-sm font-semibold text-white/60">
+						Añadir capturas (máx. {MAX_FILES})
+					</span>
+					<span className="text-xs text-white/30">
+						PNG, JPG, WebP o GIF · máx. 2 MB cada una
+					</span>
+					<input
+						type="file"
+						accept="image/png,image/jpeg,image/webp,image/gif"
+						multiple
+						onChange={handleFilesChange}
+						className="sr-only"
+					/>
+				</label>
+				{files.length > 0 && (
+					<ul className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+						{files.map((item, i) => (
+							<li
+								key={item.previewUrl}
+								className="relative aspect-video overflow-hidden rounded-xl border border-white/10 bg-white/5"
+							>
+								{/* oxlint-disable-next-line next/no-img-element -- blob local */}
+								<img
+									src={item.previewUrl}
+									alt={item.file.name}
+									className="w-full h-full object-cover"
+								/>
+								<button
+									type="button"
+									onClick={() => removeFile(i)}
+									aria-label={`Quitar ${item.file.name}`}
+									className="absolute top-1.5 right-1.5 flex size-6 items-center justify-center rounded-full bg-black/60 text-white/80 transition-colors hover:bg-rose-600 hover:text-white"
+								>
+									<IconX className="size-3.5" />
+								</button>
+							</li>
+						))}
+					</ul>
+				)}
+			</div>
+
 			{/* RGPD */}
 			<div className="flex items-start gap-3 p-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-colors group relative overflow-hidden">
 				<div className="shrink-0 pt-0.5">
@@ -318,27 +433,41 @@ function useFeedbackClient() {
 
 			{hasTurnstile && (
 				<div className="space-y-2">
-					{captchaLoading && !turnstileToken && (
-						<div className="flex items-center gap-3 p-4 rounded-xl bg-amber-500/5 border border-amber-500/20">
-							<div className="size-4 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin" />
-							<p className="text-sm text-amber-200/80">
-								Verificación de seguridad en curso...
+					{captchaError ? (
+						<div className="flex items-center gap-3 p-4 rounded-xl bg-rose-500/5 border border-rose-500/20">
+							<IconAlertCircle className="size-4 text-rose-400 shrink-0" />
+							<p className="text-sm text-rose-200/80">
+								No se pudo cargar la verificación de seguridad. Recarga la
+								página o inténtalo de nuevo en unos minutos.
 							</p>
 						</div>
+					) : (
+						captchaLoading &&
+						!turnstileToken && (
+							<div className="flex items-center gap-3 p-4 rounded-xl bg-amber-500/5 border border-amber-500/20">
+								<div className="size-4 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin" />
+								<p className="text-sm text-amber-200/80">
+									Verificación de seguridad en curso...
+								</p>
+							</div>
+						)
 					)}
 					<TurnstileWidget
 						ref={turnstileRef}
 						onVerify={(token) => {
 							setTurnstileToken(token);
 							setCaptchaLoading(false);
+							setCaptchaError(false);
 						}}
 						onExpire={() => {
 							setTurnstileToken(null);
 							setCaptchaLoading(true);
+							setCaptchaError(false);
 						}}
 						onError={() => {
 							setTurnstileToken(null);
-							setCaptchaLoading(true);
+							setCaptchaLoading(false);
+							setCaptchaError(true);
 						}}
 					/>
 				</div>

@@ -24,6 +24,7 @@ export function buildCsp(options?: { dev?: boolean }): string {
 		"default-src 'self'",
 		[
 			"script-src 'self' 'unsafe-inline'",
+			"challenges.cloudflare.com",
 			devSecuritySrc,
 			vercelLiveSrc,
 			"consent.cookiebot.com",
@@ -88,6 +89,7 @@ export function buildCsp(options?: { dev?: boolean }): string {
 			.join(" "),
 		[
 			"connect-src 'self'",
+			"challenges.cloudflare.com",
 			devToolbarConnectSrc,
 			"*.supabase.co wss://*.supabase.co",
 			"discord.com *.discordapp.com",
@@ -110,6 +112,7 @@ export function buildCsp(options?: { dev?: boolean }): string {
 			.join(" "),
 		[
 			"frame-src 'self'",
+			"challenges.cloudflare.com",
 			"player.twitch.tv",
 			vercelFrameSrc,
 			"www.youtube-nocookie.com www.youtube.com youtube.com m.youtube.com",

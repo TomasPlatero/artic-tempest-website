@@ -43,7 +43,10 @@ interface TurnstileRenderOptions {
 const TURNSTILE_SCRIPT_URL =
 	"https://challenges.cloudflare.com/turnstile/v0/api.js";
 const WIDGET_CONTAINER_ID = "turnstile-widget";
-const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+const SITE_KEY =
+	process.env.NODE_ENV === "production"
+		? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+		: undefined;
 
 export const TurnstileWidget = forwardRef<
 	TurnstileWidgetRef,
