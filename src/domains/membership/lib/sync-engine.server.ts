@@ -120,6 +120,12 @@ export async function verifyUser(userId: string): Promise<SyncResult> {
       discordRoles = discordData.roles;
     } catch (e) {
       console.error(`Verification Discord fail for ${userId}:`, e);
+      // 400 = invalid_grant / invalid_client: el refresh token ya no es válido
+      // (revocado, expirado o rotado). Lo invalidamos para no reintentarlo
+      // infinitamente y para forzar el re-link de Discord.
+      if (e instanceof Error && /Discord Refresh Error: 400/.test(e.message)) {
+        newRefreshToken = null;
+      }
     }
   }
 
@@ -173,17 +179,21 @@ export async function verifyUser(userId: string): Promise<SyncResult> {
   }
 
   // --- ACTUALIZAR PERFIL ---
-  await supabaseAdmin
+  const { error: updateError } = await supabaseAdmin
     .from('profiles')
     .update({
       role_level: newRole,
       discord_refresh_token: newRefreshToken,
       last_verification_check: new Date().toISOString(),
-      vertex_sync_at: new Date().toISOString(), // Optional tracking field if exists
       verification_status: { discord: discordValid, bnet: bnetValid, discordRoles },
       tokens_invalidated: !newRefreshToken,
     })
     .eq('user_id', userId);
+
+  if (updateError) {
+    console.error(`Verification profile update fail for ${userId}:`, updateError);
+    throw updateError;
+  }
 
   // --- LOG ---
   await supabaseAdmin.from('verification_logs').insert({

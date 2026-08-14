@@ -115,6 +115,7 @@ supabase/
 # Project internals (no publicar)
 # ========================
 .pi/
+.pi-lens/
 docs/
 
 # Generated cache files

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.11.2
+
+- fix: cron verify-members no longer writes the non-existent `vertex_sync_at` column (was silently rejecting the profiles update → Discord refresh tokens not persisted and role sync broken); invalidates Discord tokens on 400 and surfaces update errors
+- chore: ignore `.pi-lens/` tooling directory
+
 ## 1.11.1
 
 - feature: heartbeat crons now auto-create a Statuspage incident (investigating) and a Jira issue (Error, label "incident") on confirmed failure, with per-check dedup and automatic resolution on recovery
