@@ -60,6 +60,11 @@ const coreRules = [
     text: "completa al menos 2 aperturas y sube la captura cada miércoles.",
     href: "https://discord.com/channels/1251201368467701791/1415696046918471731",
   },
+  {
+    label: "Grupo Viserio / WowUtils",
+    text: "únete obligatoriamente al grupo del equipo.",
+    href: "https://wowutils.com/viserio-cooldowns/groups/join?token=de90cc0edca13112d4ea168d882d10f7&utm_source=invite&utm_medium=app_share",
+  },
 ];
 
 const lootRules = [

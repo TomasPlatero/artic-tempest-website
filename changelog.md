@@ -2,7 +2,7 @@
 
 ## 1.11.3
 
-- feature: normativa raider — WowUtils addon added as mandatory (CurseForge link) and "Cámara semanal" now links to its Discord channel
+- feature: normativa raider — WowUtils addon added as mandatory (CurseForge link), "Cámara semanal" now links to its Discord channel, and joining the Viserio/WowUtils group is now mandatory
 
 ## 1.11.2
 
