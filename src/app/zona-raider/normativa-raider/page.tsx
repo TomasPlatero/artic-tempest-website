@@ -58,7 +58,7 @@ const coreRules = [
   {
     label: "Cámara semanal",
     text: "completa al menos 2 aperturas y sube la captura cada miércoles.",
-    href: "https://artictempest.es/zona-raider/camara-semanal",
+    href: "https://discord.com/channels/1251201368467701791/1415696046918471731",
   },
 ];
 
@@ -87,6 +87,11 @@ const requiredTools = [
     name: "RCLootCouncil",
     href: "https://www.curseforge.com/wow/addons/search?search=RCLootCouncil",
     modId: 39928,
+  },
+  {
+    name: "WowUtils",
+    href: "https://www.curseforge.com/wow/addons/wowutils",
+    modId: 1620704,
   },
 ];
 

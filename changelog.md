@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.3
+
+- feature: normativa raider — WowUtils addon added as mandatory (CurseForge link) and "Cámara semanal" now links to its Discord channel
+
 ## 1.11.2
 
 - fix: cron verify-members no longer writes the non-existent `vertex_sync_at` column (was silently rejecting the profiles update → Discord refresh tokens not persisted and role sync broken); invalidates Discord tokens on 400 and surfaces update errors
