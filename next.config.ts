@@ -228,4 +228,13 @@ config.headers = async () => [
   },
 ];
 
+config.redirects = async () => [
+  {
+    source: "/:path*",
+    has: [{ type: "host", value: "discord.artictempest.es" }],
+    destination: "https://discord.com/invite/hvYQtdK7UM",
+    permanent: true,
+  },
+];
+
 export default config;
