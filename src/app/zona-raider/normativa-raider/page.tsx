@@ -69,7 +69,7 @@ const coreRules = [
 	{
 		label: "Grupo Viserio / WowUtils",
 		text: "únete obligatoriamente al grupo del equipo.",
-		href: "https://wowutils.com/viserio-cooldowns/groups/join?token=de90cc0edca13112d4ea168d882d10f7&utm_source=invite&utm_medium=app_share",
+		href: "/zona-raider/viserio",
 	},
 ];
 
@@ -271,8 +271,9 @@ async function renderRaiderNormsPage() {
 													<Link
 														href={rule.href}
 														className="text-white underline decoration-white/30 underline-offset-2 hover:text-blue-300 hover:decoration-blue-300"
-														target="_blank"
-														rel="noreferrer"
+														{...(rule.href.startsWith("/")
+															? {}
+															: { target: "_blank", rel: "noreferrer" })}
 													>
 														{rule.text}
 													</Link>

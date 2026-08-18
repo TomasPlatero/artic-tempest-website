@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { toProxyImagePath } from "@/shared/lib/storage-url";
 import {
 	RAIDER_PAGE_FADE_IN_CLASSES,
 	RAIDER_CARD_REVEAL_CLASSES,
 	RAIDER_STAGGER_DELAY_CLASSES,
 } from "@/shared/components/raider-motion";
-import { IconUsers } from "@/shared/ui/tabler-icons";
+import { IconExternalLink, IconUsers } from "@/shared/ui/tabler-icons";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { ViserioJoinGuide } from "./viserio-join-guide";
@@ -66,27 +67,15 @@ export default function ViserioGuidePage() {
 						</p>
 					</div>
 
-					<div
-						className={`grid gap-3 md:grid-cols-3 ${RAIDER_STAGGER_DELAY_CLASSES[1]}`}
+					<Link
+						href="https://wowutils.com/viserio-cooldowns/groups/join?token=de90cc0edca13112d4ea168d882d10f7&utm_source=invite&utm_medium=app_share"
+						target="_blank"
+						rel="noreferrer"
+						className="inline-flex w-fit items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
 					>
-						{[
-							{ label: "Plataforma", value: "wowutils.com" },
-							{ label: "Acceso", value: "Battle.net" },
-							{ label: "Obligatorio", value: "Para raid" },
-						].map((item) => (
-							<div
-								key={item.label}
-								className="rounded-2xl border border-white/10 bg-zinc-950/20 px-4 py-3"
-							>
-								<p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-white/40">
-									{item.label}
-								</p>
-								<p className="mt-2 text-sm font-semibold text-white">
-									{item.value}
-								</p>
-							</div>
-						))}
-					</div>
+						Unirme al grupo
+						<IconExternalLink className="size-4" />
+					</Link>
 				</div>
 			</section>
 
