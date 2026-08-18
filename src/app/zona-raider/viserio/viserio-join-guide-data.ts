@@ -36,6 +36,10 @@ export const viserioGuideSteps: ViserioGuideStep[] = [
 				src: `${BUCKET_URL}/welcome_2.webp`,
 				alt: "Selección de personaje en WowUtils",
 			},
+			{
+				src: `${BUCKET_URL}/welcome_3.webp`,
+				alt: "Navegación a la Wishlist en el Group Hub",
+			},
 		],
 	},
 	{
@@ -44,10 +48,6 @@ export const viserioGuideSteps: ViserioGuideStep[] = [
 		description:
 			"En el menú ve a Group Hub → Loot → Wishlist. Marca los 3 iconos de dificultad y elige los objetos que son BiS para tu personaje.",
 		images: [
-			{
-				src: `${BUCKET_URL}/welcome_3.webp`,
-				alt: "Navegación a la Wishlist en el Group Hub",
-			},
 			{
 				src: `${BUCKET_URL}/welcome_4.webp`,
 				alt: "Selección de BiS por dificultad en la Wishlist",
