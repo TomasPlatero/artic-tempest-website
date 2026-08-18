@@ -17,6 +17,7 @@ export const PUBLIC_PROXY_BUCKETS = new Set([
 	"roster_ranks_images",
 	"weekly-vault",
 	"app_updates",
+	"viserio_guide",
 ]);
 
 const PUBLIC_STORAGE_PATH_RE = /\/storage\/v1\/object\/public\/([^/]+)\/(.+)$/;
@@ -50,6 +51,29 @@ export function parsePublicStorageUrl(value: string): ParsedStorageRef | null {
 	} catch {
 		return null;
 	}
+}
+
+/**
+ * Build a same-origin RELATIVE proxy path for an image rendered inside the
+ * app (e.g. `next/image`). Unlike `toProxyImageUrl`, this never emits an
+ * absolute site URL, so it resolves against the current origin in both dev
+ * and production. Returns `null` for non-allowlisted/non-storage URLs.
+ */
+export function toProxyImagePath(
+	imageUrl: string | null | undefined,
+): string | null {
+	if (!imageUrl) return null;
+	if (imageUrl.startsWith("/api/images/")) return imageUrl;
+
+	const parsed = parsePublicStorageUrl(imageUrl);
+	if (!parsed) return null;
+
+	const safePath = parsed.path
+		.split("/")
+		.map((segment) => encodeURIComponent(segment))
+		.join("/");
+
+	return `/api/images/${encodeURIComponent(parsed.bucket)}/${safePath}`;
 }
 
 /**

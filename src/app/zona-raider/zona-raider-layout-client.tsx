@@ -15,7 +15,6 @@ import { ZonaRaiderTourEngine } from "@/domains/zona-raider/components/zona-raid
 import { RaiderTourOnboarding } from "@/domains/zona-raider/components/raider-tour-onboarding";
 import { ZonaRaiderTourCharacterImage } from "@/domains/zona-raider/components/zona-raider-tour-character-image";
 import { RAIDER_PAGE_FADE_IN_CLASSES } from "@/shared/components/raider-motion";
-import { Season2Banner } from "@/domains/zona-raider/raider-hub/season-2-banner";
 
 type OnboardingStatus = {
 	isBnetLinked: boolean;
@@ -163,8 +162,6 @@ function ZonaRaiderLayoutClientContent({
 							</div>
 						</div>
 					)}
-					{!needsAccountSetup &&
-						!pathname.startsWith("/zona-raider/roster") && <Season2Banner />}
 					<main
 						id="main-content"
 						className={`flex-1 overflow-y-auto ${RAIDER_PAGE_FADE_IN_CLASSES}`}
