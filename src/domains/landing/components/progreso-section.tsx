@@ -108,10 +108,10 @@ export function ProgresoSection({
 	twwProgression,
 }: ProgresoSectionProps) {
 	const season2Raids = midnightProgression.filter(
-		(r) => r.progress === "Season 2",
+		(r) => r.tier === "Temporada 2",
 	);
 	const season1Raids = midnightProgression.filter(
-		(r) => r.progress !== "Season 2",
+		(r) => r.tier !== "Temporada 2",
 	);
 
 	return (

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.4
+
+- fix: check-progreso cron now retries each probe once with backoff and runs them in parallel, so a transient Raider.io timeout on the heavy guild-profile endpoint no longer triggers a false "Progreso degradado" incident (ATW-15)
+
 ## 1.11.3
 
 - feature: normativa raider — WowUtils addon added as mandatory (CurseForge link), "Cámara semanal" now links to its Discord channel, and joining the Viserio/WowUtils group is now mandatory

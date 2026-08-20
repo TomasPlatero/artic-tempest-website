@@ -26,15 +26,29 @@ type CheckResult = {
 async function probe(
 	url: string,
 ): Promise<{ ok: boolean; status: number | null }> {
-	try {
-		const res = await fetch(url, {
-			cache: "no-store",
-			signal: AbortSignal.timeout(TIMEOUT_MS),
-		});
-		return { ok: res.ok, status: res.status };
-	} catch {
-		return { ok: false, status: null };
+	const MAX_ATTEMPTS = 2;
+	const RETRY_DELAY_MS = 1_500;
+
+	for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+		try {
+			const res = await fetch(url, {
+				cache: "no-store",
+				signal: AbortSignal.timeout(TIMEOUT_MS),
+			});
+			return { ok: res.ok, status: res.status };
+		} catch (err) {
+			console.warn(
+				`[check-progreso] intento ${attempt}/${MAX_ATTEMPTS} fallido:`,
+				err instanceof Error ? err.message : err,
+			);
+		}
+
+		if (attempt < MAX_ATTEMPTS) {
+			await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+		}
 	}
+
+	return { ok: false, status: null };
 }
 
 export async function GET(req: Request) {
@@ -69,46 +83,45 @@ export async function GET(req: Request) {
 		.replace(/\s+/g, "-");
 	const guildName = guild?.name || "Artic Tempest";
 
-	const checks: CheckResult[] = [];
+	// Los 4 probes son independientes: se ejecutan en paralelo para mantenerse
+	// dentro del maxDuration del cron. Cada uno reintenta una vez ante un fallo
+	// transitorio (timeout/red) para no disparar incidentes falsos.
+	const [page, staticData, profile, live] = await Promise.all([
+		probe(`${SITE_URL}/progreso`),
+		probe("https://raider.io/api/v1/raiding/static-data?expansion_id=11"),
+		probe(
+			`https://raider.io/api/v1/guilds/profile?region=${region}&realm=${realmSlug}&name=${encodeURIComponent(guildName)}&fields=raid_progression`,
+		),
+		probe(
+			`https://raider.io/api/v1/live-tracking/guild/raid-progress?region=${region}&realm=${realmSlug}&guild=${encodeURIComponent(guildName)}&raid=${CURRENT_RAID_SLUG}&difficulty=mythic`,
+		),
+	]);
 
-	// 1. Página pública /progreso
-	const page = await probe(`${SITE_URL}/progreso`);
-	checks.push({
-		check: "pagina_progreso",
-		ok: page.ok,
-		detail: page.status ? `HTTP ${page.status}` : "sin respuesta",
-	});
-
-	// 2. Raider.io static-data (siempre disponible)
-	const staticData = await probe(
-		"https://raider.io/api/v1/raiding/static-data?expansion_id=11",
-	);
-	checks.push({
-		check: "raiderio_static_data",
-		ok: staticData.ok,
-		detail: staticData.status ? `HTTP ${staticData.status}` : "sin respuesta",
-	});
-
-	// 3. Raider.io guild profile (valida guild + endpoint principal)
-	const profile = await probe(
-		`https://raider.io/api/v1/guilds/profile?region=${region}&realm=${realmSlug}&name=${encodeURIComponent(guildName)}&fields=raid_progression`,
-	);
-	checks.push({
-		check: "raiderio_guild_profile",
-		ok: profile.ok,
-		detail: profile.status ? `HTTP ${profile.status}` : "sin respuesta",
-	});
-
-	// 4. Raider.io live tracking (404 = sin raid en vivo = OK)
-	const live = await probe(
-		`https://raider.io/api/v1/live-tracking/guild/raid-progress?region=${region}&realm=${realmSlug}&guild=${encodeURIComponent(guildName)}&raid=${CURRENT_RAID_SLUG}&difficulty=mythic`,
-	);
+	// Raider.io live tracking: 404 = sin raid en vivo = OK
 	const liveOk = live.ok || live.status === 404;
-	checks.push({
-		check: "raiderio_live_tracking",
-		ok: liveOk,
-		detail: live.status ? `HTTP ${live.status}` : "sin respuesta",
-	});
+
+	const checks: CheckResult[] = [
+		{
+			check: "pagina_progreso",
+			ok: page.ok,
+			detail: page.status ? `HTTP ${page.status}` : "sin respuesta",
+		},
+		{
+			check: "raiderio_static_data",
+			ok: staticData.ok,
+			detail: staticData.status ? `HTTP ${staticData.status}` : "sin respuesta",
+		},
+		{
+			check: "raiderio_guild_profile",
+			ok: profile.ok,
+			detail: profile.status ? `HTTP ${profile.status}` : "sin respuesta",
+		},
+		{
+			check: "raiderio_live_tracking",
+			ok: liveOk,
+			detail: live.status ? `HTTP ${live.status}` : "sin respuesta",
+		},
+	];
 
 	const ok = checks.every((c) => c.ok);
 

@@ -440,16 +440,36 @@ async function fetchRaidProgressionInternal() {
 
 		const result = [...visibleRaids, ...missingSyntheticRaids];
 
-		// Always include Season 2 "coming soon" card — no Raider.io data yet
+		// Season 2 "Abismo Venenoso" — real progression once Raider.io exposes it.
 		const hasSeason2 = result.some(
 			(r) => r.tier === "Temporada 2" || r.name === "The Venomous Abyss",
 		);
 		if (!hasSeason2) {
+			const season2Tier = rioData?.raid_progression?.[SEASON_2_RAID_SLUG];
+			const bossCount = season2Tier?.total_bosses || 8;
+			let displayKills = 0;
+			let diffLabel = "NM";
+
+			if (season2Tier) {
+				for (const diff of DIFFICULTIES) {
+					const profileKills =
+						season2Tier[`${diff.key}_bosses_killed` as const] ?? 0;
+					if (profileKills > 0) {
+						displayKills = Math.min(profileKills, bossCount);
+						diffLabel = diff.label;
+						break;
+					}
+				}
+			}
+
 			result.push({
 				name: "Abismo Venenoso",
 				expansion: "Midnight",
 				tier: "Temporada 2",
-				progress: "Season 2",
+				progress:
+					displayKills > 0
+						? `${displayKills}/${bossCount} ${diffLabel}`
+						: "Season 2",
 				status: "",
 				imageUrl: "/assets/images/raids/the-venomous-abyss.webp",
 				rank: "-",
