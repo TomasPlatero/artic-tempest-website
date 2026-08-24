@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.5
+
+- fix: check-streamers cron no longer treats a transient decapi.me avatar 400 as a full outage — the `decapi_avatar` check is now informational (non-blocking), so only the page and uptime checks can trigger a "Streamers degradado" incident (ATW-16)
+
 ## 1.11.4
 
 - fix: check-progreso cron now retries each probe once with backoff and runs them in parallel, so a transient Raider.io timeout on the heavy guild-profile endpoint no longer triggers a false "Progreso degradado" incident (ATW-15)

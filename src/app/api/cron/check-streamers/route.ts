@@ -22,6 +22,9 @@ type CheckResult = {
 	check: string;
 	ok: boolean;
 	detail: string;
+	// When false, the check is informational and does not contribute to the
+	// component status (it cannot trigger an incident). Blocking by default.
+	blocking?: boolean;
 };
 
 async function probe(
@@ -104,7 +107,7 @@ export async function GET(req: Request) {
 			: `sin respuesta (${username})`,
 	});
 
-	// 3. decapi.me avatar
+	// 3. decapi.me avatar (informational: decorative, does not block the incident)
 	const avatar = await probe(`https://decapi.me/twitch/avatar/${username}`);
 	checks.push({
 		check: "decapi_avatar",
@@ -112,9 +115,10 @@ export async function GET(req: Request) {
 		detail: avatar.status
 			? `HTTP ${avatar.status} (${username})`
 			: `sin respuesta (${username})`,
+		blocking: false,
 	});
 
-	const ok = checks.every((c) => c.ok);
+	const ok = checks.filter((c) => c.blocking !== false).every((c) => c.ok);
 
 	const report = await reportHeartbeat({
 		checkKey: "streamers",
