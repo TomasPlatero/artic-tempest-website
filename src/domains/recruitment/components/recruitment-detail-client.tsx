@@ -78,6 +78,9 @@ const EXPANSION_ORDER = [
 	"Otros",
 ];
 
+const SEASON_2_RAID_SLUG = "the-venomous-abyss";
+const SEASON_2_RAID_NAME = "El Abismo Venenoso";
+
 function getSeasonLabel(id: string) {
 	const s = id.toLowerCase();
 	if (s === "current") return "Midnight S1 (Actual)";
@@ -289,8 +292,7 @@ function useRecruitmentDetailClient({
 			const sid = s.season.toLowerCase();
 
 			// Expanded logic to handle 'current' and 'previous' slugs
-			if (sid.includes("mn") || sid.includes("midnight"))
-				expansion = "Midnight";
+			if (sid.includes("mn") || sid.includes("midnight")) expansion = "Midnight";
 			else if (sid.includes("tww") || sid.includes("war-within"))
 				expansion = "The War Within";
 			else if (sid.includes("dragonflight") || sid.includes("df-"))
@@ -315,6 +317,7 @@ function useRecruitmentDetailClient({
 		rioData?.raid_progression,
 		selectedSeason,
 	);
+	const season2Raid = rioData?.raid_progression?.[SEASON_2_RAID_SLUG];
 
 	return (
 		<div className="space-y-8 w-full pb-20 dark">
@@ -489,18 +492,10 @@ function useRecruitmentDetailClient({
 											Espec. Principal
 										</span>
 										<div className="flex items-center gap-1.5 text-white">
-											{application.character_spec
-												.toLowerCase()
-												.includes("tank") ||
-											application.character_spec
-												.toLowerCase()
-												.includes("protection") ||
-											application.character_spec
-												.toLowerCase()
-												.includes("blood") ||
-											application.character_spec
-												.toLowerCase()
-												.includes("guardian") ? (
+											{application.character_spec.toLowerCase().includes("tank") ||
+											application.character_spec.toLowerCase().includes("protection") ||
+											application.character_spec.toLowerCase().includes("blood") ||
+											application.character_spec.toLowerCase().includes("guardian") ? (
 												<IconShield className="size-4 text-blue-400" />
 											) : (
 												<IconSword className="size-4 text-rose-400" />
@@ -724,6 +719,94 @@ function useRecruitmentDetailClient({
 					)}
 				</CardContent>
 			</Card>
+
+			{/* SEASON 2 PANEL */}
+			{!loadingRio && (
+				<Card className="bg-card/20 border-border/20 overflow-hidden backdrop-blur-xl border-t-2 border-t-emerald-500/50">
+					<CardHeader className="py-4 px-6 border-b border-white/5 bg-white/[0.02]">
+						<CardTitle className="text-xs font-semibold tracking-[0.2em] text-emerald-400 flex items-center gap-2">
+							<IconSword className="size-4" /> Temporada 2 — {SEASON_2_RAID_NAME}
+						</CardTitle>
+					</CardHeader>
+					<CardContent className="p-6">
+						{season2Raid ? (
+							<div className="space-y-6">
+								<div className="flex items-center justify-between px-1">
+									<span className="text-[10px] uppercase font-bold text-zinc-500 tracking-[0.2em]">
+										Progreso
+									</span>
+									<span className="text-sm font-semibold text-emerald-400 tabular-nums">
+										{formatRecruitmentRaidSummary(season2Raid)}
+									</span>
+								</div>
+								<div className="space-y-1.5">
+									<div className="flex justify-between items-center">
+										<span className="text-[9px] font-semibold text-zinc-500 tracking-wider">
+											MÍTICO
+										</span>
+										<span className="text-[11px] font-semibold text-orange-400">
+											{season2Raid.mythic_bosses_killed}/{season2Raid.total_bosses}
+										</span>
+									</div>
+									<div className="h-1.5 w-full bg-white/[0.03] rounded-full">
+										<div
+											className="h-full bg-linear-to-r from-orange-600 to-orange-400 rounded-full shadow-[0_0_8px_rgba(251,146,60,0.3)]"
+											style={{
+												width: `${(season2Raid.mythic_bosses_killed / (season2Raid.total_bosses || 1)) * 100}%`,
+											}}
+										/>
+									</div>
+								</div>
+								<div className="space-y-1.5">
+									<div className="flex justify-between items-center">
+										<span className="text-[9px] font-semibold text-zinc-500 tracking-wider">
+											HEROICO
+										</span>
+										<span className="text-[11px] font-semibold text-purple-400">
+											{season2Raid.heroic_bosses_killed}/{season2Raid.total_bosses}
+										</span>
+									</div>
+									<div className="h-1.5 w-full bg-white/[0.03] rounded-full">
+										<div
+											className="h-full bg-linear-to-r from-purple-600 to-purple-400 rounded-full"
+											style={{
+												width: `${(season2Raid.heroic_bosses_killed / (season2Raid.total_bosses || 1)) * 100}%`,
+											}}
+										/>
+									</div>
+								</div>
+								<div className="space-y-1.5">
+									<div className="flex justify-between items-center">
+										<span className="text-[9px] font-semibold text-zinc-500 tracking-wider">
+											NORMAL
+										</span>
+										<span className="text-[11px] font-semibold text-blue-400">
+											{season2Raid.normal_bosses_killed}/{season2Raid.total_bosses}
+										</span>
+									</div>
+									<div className="h-1.5 w-full bg-white/[0.03] rounded-full">
+										<div
+											className="h-full bg-linear-to-r from-blue-600 to-blue-400 rounded-full"
+											style={{
+												width: `${(season2Raid.normal_bosses_killed / (season2Raid.total_bosses || 1)) * 100}%`,
+											}}
+										/>
+									</div>
+								</div>
+							</div>
+						) : (
+							<div className="py-12 text-center bg-white/[0.01] rounded-3xl border border-dashed border-white/10">
+								<div className="flex flex-col items-center gap-2">
+									<IconX className="size-6 text-zinc-700" />
+									<span className="text-[10px] font-semibold text-zinc-600 uppercase tracking-[0.3em]">
+										Sin registros de temporada 2
+									</span>
+								</div>
+							</div>
+						)}
+					</CardContent>
+				</Card>
+			)}
 
 			{/* 2. APPLICATION FORM ANSWERS (FULL WIDTH, COMPACT) */}
 			<div className="space-y-4">

@@ -1,4 +1,4 @@
-import type { RaidProgression } from '@/shared/integrations/raiderio/raiderio-client';
+import type { RaidProgression } from "@/shared/integrations/raiderio/raiderio-client";
 
 type RecruitmentRaidConfig = {
   name: string;
@@ -8,125 +8,125 @@ type RecruitmentRaidConfig = {
 };
 
 export const RECRUITMENT_RAID_CONFIG: Record<string, RecruitmentRaidConfig> = {
-  'tier-mn-1': {
-    name: 'Midnight',
-    seasonLabel: 'Midnight S1',
+  "tier-mn-1": {
+    name: "Midnight",
+    seasonLabel: "Midnight S1",
     sortOrder: 350,
-    groups: ['midnight'],
+    groups: ["midnight"],
   },
   sporefall: {
-    name: 'Sporefall',
-    seasonLabel: 'Midnight S1',
+    name: "Sporefall",
+    seasonLabel: "Midnight S1",
     sortOrder: 349,
-    groups: ['midnight'],
+    groups: ["midnight"],
   },
   voidspire: {
-    name: 'Voidspire',
-    seasonLabel: 'Midnight S2',
+    name: "Voidspire",
+    seasonLabel: "Midnight S2",
     sortOrder: 348,
-    groups: ['midnight'],
+    groups: ["midnight"],
   },
   dreamrift: {
-    name: 'Dreamrift',
-    seasonLabel: 'Midnight S3',
+    name: "Dreamrift",
+    seasonLabel: "Midnight S3",
     sortOrder: 347,
-    groups: ['midnight'],
+    groups: ["midnight"],
   },
-  'march-on-queldanas': {
+  "march-on-queldanas": {
     name: "March on Quel'Danas",
-    seasonLabel: 'Midnight S4',
+    seasonLabel: "Midnight S4",
     sortOrder: 346,
-    groups: ['midnight'],
+    groups: ["midnight"],
   },
-  'manaforge-omega': {
-    name: 'Manaforge Omega',
-    seasonLabel: 'The War Within S3',
+  "manaforge-omega": {
+    name: "Manaforge Omega",
+    seasonLabel: "The War Within S3",
     sortOrder: 340,
-    groups: ['tww'],
+    groups: ["tww"],
   },
-  'liberation-of-undermine': {
-    name: 'Liberation of Undermine',
-    seasonLabel: 'The War Within S2',
+  "liberation-of-undermine": {
+    name: "Liberation of Undermine",
+    seasonLabel: "The War Within S2",
     sortOrder: 330,
-    groups: ['tww'],
+    groups: ["tww"],
   },
-  'blackrock-depths': {
-    name: 'Blackrock Depths',
-    seasonLabel: 'The War Within S2',
+  "blackrock-depths": {
+    name: "Blackrock Depths",
+    seasonLabel: "The War Within S2",
     sortOrder: 329,
-    groups: ['tww'],
+    groups: ["tww"],
   },
-  'nerubar-palace': {
-    name: 'Nerub-ar Palace',
-    seasonLabel: 'The War Within S1',
+  "nerubar-palace": {
+    name: "Nerub-ar Palace",
+    seasonLabel: "The War Within S1",
     sortOrder: 320,
-    groups: ['tww'],
+    groups: ["tww"],
   },
-  'amirdrassil-the-dreams-hope': {
-    name: 'Amirdrassil',
-    seasonLabel: 'Dragonflight S3',
+  "amirdrassil-the-dreams-hope": {
+    name: "Amirdrassil",
+    seasonLabel: "Dragonflight S3",
     sortOrder: 310,
-    groups: ['dragonflight'],
+    groups: ["dragonflight"],
   },
-  'aberrus-the-shadowed-crucible': {
-    name: 'Aberrus',
-    seasonLabel: 'Dragonflight S2',
+  "aberrus-the-shadowed-crucible": {
+    name: "Aberrus",
+    seasonLabel: "Dragonflight S2",
     sortOrder: 300,
-    groups: ['dragonflight'],
+    groups: ["dragonflight"],
   },
-  'vault-of-the-incarnates': {
-    name: 'Vault of the Incarnates',
-    seasonLabel: 'Dragonflight S1',
+  "vault-of-the-incarnates": {
+    name: "Vault of the Incarnates",
+    seasonLabel: "Dragonflight S1",
     sortOrder: 290,
-    groups: ['dragonflight'],
+    groups: ["dragonflight"],
   },
-  'sepulcher-of-the-first-ones': {
-    name: 'Sepulcher of the First Ones',
-    seasonLabel: 'Shadowlands S3',
+  "sepulcher-of-the-first-ones": {
+    name: "Sepulcher of the First Ones",
+    seasonLabel: "Shadowlands S3",
     sortOrder: 280,
-    groups: ['shadowlands'],
+    groups: ["shadowlands"],
   },
-  'sanctum-of-domination': {
-    name: 'Sanctum of Domination',
-    seasonLabel: 'Shadowlands S2',
+  "sanctum-of-domination": {
+    name: "Sanctum of Domination",
+    seasonLabel: "Shadowlands S2",
     sortOrder: 270,
-    groups: ['shadowlands'],
+    groups: ["shadowlands"],
   },
-  'castle-nathria': {
-    name: 'Castle Nathria',
-    seasonLabel: 'Shadowlands S1',
+  "castle-nathria": {
+    name: "Castle Nathria",
+    seasonLabel: "Shadowlands S1",
     sortOrder: 260,
-    groups: ['shadowlands'],
+    groups: ["shadowlands"],
   },
-  'nyalotha-the-waking-city': {
+  "nyalotha-the-waking-city": {
     name: "Ny'alotha",
-    seasonLabel: 'Battle for Azeroth S4',
+    seasonLabel: "Battle for Azeroth S4",
     sortOrder: 250,
-    groups: ['bfa'],
+    groups: ["bfa"],
   },
-  'the-eternal-palace': {
-    name: 'The Eternal Palace',
-    seasonLabel: 'Battle for Azeroth S3',
+  "the-eternal-palace": {
+    name: "The Eternal Palace",
+    seasonLabel: "Battle for Azeroth S3",
     sortOrder: 240,
-    groups: ['bfa'],
+    groups: ["bfa"],
   },
-  'crucible-of-storms': {
-    name: 'Crucible of Storms',
-    seasonLabel: 'Battle for Azeroth S2',
+  "crucible-of-storms": {
+    name: "Crucible of Storms",
+    seasonLabel: "Battle for Azeroth S2",
     sortOrder: 230,
-    groups: ['bfa'],
+    groups: ["bfa"],
   },
-  'battle-of-dazaralor': {
-    name: 'Battle of Dazar\'alor',
-    seasonLabel: 'Battle for Azeroth S2',
+  "battle-of-dazaralor": {
+    name: "Battle of Dazar'alor",
+    seasonLabel: "Battle for Azeroth S2",
     sortOrder: 229,
-    groups: ['bfa'],
+    groups: ["bfa"],
   },
   uldir: {
-    name: 'Uldir',
-    seasonLabel: 'Battle for Azeroth S1',
+    name: "Uldir",
+    seasonLabel: "Battle for Azeroth S1",
     sortOrder: 220,
-    groups: ['bfa'],
+    groups: ["bfa"],
   },
 };
 
@@ -134,47 +134,47 @@ type RaidProgressionMap = Record<string, RaidProgression>;
 
 function humanizeRaidSlug(slug: string) {
   return slug
-    .split('-')
+    .split("-")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+    .join(" ");
 }
 
 function getSeasonGroup(seasonId: string) {
   const normalized = seasonId.toLowerCase();
 
   if (
-    normalized === 'current' ||
-    normalized === 'previous' ||
-    normalized.includes('mn') ||
-    normalized.includes('midnight')
+    normalized === "current" ||
+    normalized === "previous" ||
+    normalized.includes("mn") ||
+    normalized.includes("midnight")
   ) {
-    return 'midnight';
+    return "midnight";
   }
 
-  if (normalized.includes('tww') || normalized.includes('war-within')) {
-    return 'tww';
+  if (normalized.includes("tww") || normalized.includes("war-within")) {
+    return "tww";
   }
 
-  if (normalized.includes('df') || normalized.includes('dragonflight')) {
-    return 'dragonflight';
+  if (normalized.includes("df") || normalized.includes("dragonflight")) {
+    return "dragonflight";
   }
 
-  if (normalized.includes('sl') || normalized.includes('shadowlands')) {
-    return 'shadowlands';
+  if (normalized.includes("sl") || normalized.includes("shadowlands")) {
+    return "shadowlands";
   }
 
-  if (normalized.includes('bfa')) {
-    return 'bfa';
+  if (normalized.includes("bfa")) {
+    return "bfa";
   }
 
-  return 'other';
+  return "other";
 }
 
 function getRaidSeasonLabelFromSeasonId(seasonId: string) {
   const normalized = seasonId.toLowerCase();
 
-  if (normalized === 'current' || normalized === 'previous') {
-    return 'Midnight S1';
+  if (normalized === "current" || normalized === "previous") {
+    return "Midnight S1";
   }
 
   const match = normalized.match(/^season-([a-z]+)-(\d+)$/);
@@ -182,11 +182,11 @@ function getRaidSeasonLabelFromSeasonId(seasonId: string) {
 
   const [, expansion, seasonNumber] = match;
   const labels: Record<string, string> = {
-    mn: 'Midnight',
-    tww: 'The War Within',
-    df: 'Dragonflight',
-    sl: 'Shadowlands',
-    bfa: 'Battle for Azeroth',
+    mn: "Midnight",
+    tww: "The War Within",
+    df: "Dragonflight",
+    sl: "Shadowlands",
+    bfa: "Battle for Azeroth",
   };
 
   const expansionLabel = labels[expansion];
@@ -214,10 +214,12 @@ export function formatRecruitmentRaidSummary(raid: RaidProgression) {
 }
 
 function isMeaningfulRecruitmentRaid(raid: RaidProgression) {
-  return Boolean(raid.summary?.trim()) ||
+  return (
+    Boolean(raid.summary?.trim()) ||
     raid.mythic_bosses_killed > 0 ||
     raid.heroic_bosses_killed > 0 ||
-    raid.normal_bosses_killed > 0;
+    raid.normal_bosses_killed > 0
+  );
 }
 
 export function getRecruitmentDiscordRaidProgress(
@@ -227,14 +229,18 @@ export function getRecruitmentDiscordRaidProgress(
     [string, RaidProgression]
   >;
 
-  if (!entries.length) return 'N/A';
+  if (!entries.length) return "N/A";
 
   const meaningfulEntries = entries.filter(([, raid]) =>
     isMeaningfulRecruitmentRaid(raid),
   );
 
-  const sortedEntries = (meaningfulEntries.length ? meaningfulEntries : entries)
-    .sort(([leftSlug], [rightSlug]) => getRaidSortOrder(rightSlug) - getRaidSortOrder(leftSlug));
+  const sortedEntries = (
+    meaningfulEntries.length ? meaningfulEntries : entries
+  ).sort(
+    ([leftSlug], [rightSlug]) =>
+      getRaidSortOrder(rightSlug) - getRaidSortOrder(leftSlug),
+  );
 
   const latestSeasonLabel = sortedEntries[0]
     ? getRecruitmentRaidSeasonLabel(sortedEntries[0][0])
@@ -251,7 +257,7 @@ export function getRecruitmentDiscordRaidProgress(
       ([slug, raid]) =>
         `${getRecruitmentRaidSeasonLabel(slug)} • ${getRecruitmentRaidName(slug)}: ${formatRecruitmentRaidSummary(raid)}`,
     )
-    .join('\n');
+    .join("\n");
 }
 
 export function getRecruitmentRaidsForSeason(
@@ -286,5 +292,8 @@ export function getRecruitmentRaidsForSeason(
       const groupSet = new Set(config.groups);
       return groupSet.has(seasonGroup);
     })
-    .sort(([leftSlug], [rightSlug]) => getRaidSortOrder(rightSlug) - getRaidSortOrder(leftSlug));
+    .sort(
+      ([leftSlug], [rightSlug]) =>
+        getRaidSortOrder(rightSlug) - getRaidSortOrder(leftSlug),
+    );
 }
