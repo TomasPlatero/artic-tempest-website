@@ -27,13 +27,6 @@ import {
 	TERMINAL_RECRUITMENT_STATUSES,
 } from "@/domains/recruitment/lib/application-status";
 import {
-	formatRecruitmentRaidSummary,
-	getRecruitmentRaidName,
-	getRecruitmentRaidSeasonLabel,
-	getRecruitmentRaidsForSeason,
-} from "@/shared/lib/recruitment/raid-progression";
-
-import {
 	Select,
 	SelectContent,
 	SelectItem,
@@ -78,8 +71,47 @@ const EXPANSION_ORDER = [
 	"Otros",
 ];
 
-const SEASON_2_RAID_SLUG = "the-venomous-abyss";
-const SEASON_2_RAID_NAME = "El Abismo Venenoso";
+const SEASON_1_RAID_SLUGS = ["tier-mn-1", "sporefall"];
+const SEASON_2_RAID_SLUGS = ["the-venomous-abyss", "the-tidebound-grotto"];
+const SEASON_1_CARD_TITLE = "Temporada 1 - VS/DR/MQD/SPORE";
+const SEASON_2_CARD_TITLE = "Temporada 2 - Abismo Venenoso / Tidebound Grotto";
+
+type CombinedRaidProgress = {
+	mythic: number;
+	heroic: number;
+	normal: number;
+	total: number;
+};
+
+function combineRaidProgress(
+	raidProgression: any,
+	slugs: string[],
+): CombinedRaidProgress {
+	const combined: CombinedRaidProgress = {
+		mythic: 0,
+		heroic: 0,
+		normal: 0,
+		total: 0,
+	};
+
+	for (const slug of slugs) {
+		const raid = raidProgression?.[slug];
+		if (!raid) continue;
+		combined.mythic += raid.mythic_bosses_killed ?? 0;
+		combined.heroic += raid.heroic_bosses_killed ?? 0;
+		combined.normal += raid.normal_bosses_killed ?? 0;
+		combined.total += raid.total_bosses ?? 0;
+	}
+
+	return combined;
+}
+
+function formatCombinedRaidSummary(progress: CombinedRaidProgress) {
+	if (progress.mythic > 0) return `${progress.mythic}/${progress.total} M`;
+	if (progress.heroic > 0) return `${progress.heroic}/${progress.total} H`;
+	if (progress.normal > 0) return `${progress.normal}/${progress.total} N`;
+	return `0/${progress.total} N`;
+}
 
 function getSeasonLabel(id: string) {
 	const s = id.toLowerCase();
@@ -313,11 +345,16 @@ function useRecruitmentDetailClient({
 			return acc;
 		}, {}) || {};
 
-	const activeRaids = getRecruitmentRaidsForSeason(
+	const season1Progress = combineRaidProgress(
 		rioData?.raid_progression,
-		selectedSeason,
+		SEASON_1_RAID_SLUGS,
 	);
-	const season2Raid = rioData?.raid_progression?.[SEASON_2_RAID_SLUG];
+	const season2Progress = combineRaidProgress(
+		rioData?.raid_progression,
+		SEASON_2_RAID_SLUGS,
+	);
+	const hasAnyRaidProgress =
+		season1Progress.total > 0 || season2Progress.total > 0;
 
 	return (
 		<div className="space-y-8 w-full pb-20 dark">
@@ -568,82 +605,80 @@ function useRecruitmentDetailClient({
 										Progreso Banda
 									</h4>
 								</div>
-								<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-									{activeRaids.map(([key, data]: [string, any]) => (
-										<div
-											key={key}
-											className="bg-zinc-950/60 border border-white/5 rounded-2xl overflow-hidden hover:border-blue-500/30 transition-colors group shadow-xl"
-										>
-											<div className="p-4 bg-white/[0.03] border-b border-white/5 flex flex-col gap-1">
-												<Badge
-													variant="outline"
-													className="w-fit text-[8px] font-semibold border-blue-500/30 text-blue-400 uppercase tracking-tighter"
-												>
-													{getRecruitmentRaidSeasonLabel(key)}
-												</Badge>
-												<div className="flex justify-between items-center">
-													<span className="text-[11px] font-semibold uppercase text-zinc-100 group-hover:text-blue-400 transition-colors truncate pr-2">
-														{getRecruitmentRaidName(key)}
+								{hasAnyRaidProgress ? (
+									<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+										{[
+											{ key: "season-1", title: SEASON_1_CARD_TITLE, progress: season1Progress },
+											{ key: "season-2", title: SEASON_2_CARD_TITLE, progress: season2Progress },
+										].map(({ key, title, progress }) => (
+											<div
+												key={key}
+												className="bg-zinc-950/60 border border-white/5 rounded-2xl overflow-hidden hover:border-blue-500/30 transition-colors group shadow-xl"
+											>
+												<div className="p-4 bg-white/[0.03] border-b border-white/5 flex items-center justify-between gap-2">
+													<span className="text-xs font-semibold text-zinc-100 group-hover:text-blue-400 transition-colors truncate">
+														{title}
 													</span>
-													<span className="text-[10px] font-semibold text-rose-500">
-														{formatRecruitmentRaidSummary(data)}
+													<span className="text-[10px] font-semibold text-rose-500 shrink-0">
+														{formatCombinedRaidSummary(progress)}
 													</span>
 												</div>
-											</div>
-											<div className="p-4 space-y-4">
-												{/* Mythic */}
-												<div className="space-y-1.5">
-													<div className="flex justify-between items-center">
-														<span className="text-[9px] font-semibold text-zinc-500 tracking-wider">
-															MÍTICO
-														</span>
-														<span className="text-[11px] font-semibold text-orange-400">
-															{data.mythic_bosses_killed}/{data.total_bosses}
-														</span>
+												<div className="p-4 space-y-4">
+													{/* Mythic */}
+													<div className="space-y-1.5">
+														<div className="flex justify-between items-center">
+															<span className="text-[9px] font-semibold text-zinc-500 tracking-wider">MÍTICO</span>
+															<span className="text-[11px] font-semibold text-orange-400">{progress.mythic}/{progress.total}</span>
+														</div>
+														<div className="h-1.5 w-full bg-white/[0.03] rounded-full">
+															<div
+																className="h-full bg-linear-to-r from-orange-600 to-orange-400 rounded-full shadow-[0_0_8px_rgba(251,146,60,0.3)]"
+																style={{ width: `${progress.total > 0 ? (progress.mythic / progress.total) * 100 : 0}%` }}
+															/>
+														</div>
 													</div>
-													<div className="h-1.5 w-full bg-white/[0.03] rounded-full">
-														<div
-															className="h-full bg-linear-to-r from-orange-600 to-orange-400 rounded-full shadow-[0_0_8px_rgba(251,146,60,0.3)]"
-															style={{
-																width: `${(data.mythic_bosses_killed / data.total_bosses) * 100}%`,
-															}}
-														/>
-													</div>
-												</div>
 
-												{/* Heroic */}
-												<div className="space-y-1.5">
-													<div className="flex justify-between items-center">
-														<span className="text-[9px] font-semibold text-zinc-500 tracking-wider">
-															HEROICO
-														</span>
-														<span className="text-[11px] font-semibold text-purple-400">
-															{data.heroic_bosses_killed}/{data.total_bosses}
-														</span>
+													{/* Heroic */}
+													<div className="space-y-1.5">
+														<div className="flex justify-between items-center">
+															<span className="text-[9px] font-semibold text-zinc-500 tracking-wider">HEROICO</span>
+															<span className="text-[11px] font-semibold text-purple-400">{progress.heroic}/{progress.total}</span>
+														</div>
+														<div className="h-1.5 w-full bg-white/[0.03] rounded-full">
+															<div
+																className="h-full bg-linear-to-r from-purple-600 to-purple-400 rounded-full"
+																style={{ width: `${progress.total > 0 ? (progress.heroic / progress.total) * 100 : 0}%` }}
+															/>
+														</div>
 													</div>
-													<div className="h-1.5 w-full bg-white/[0.03] rounded-full">
-														<div
-															className="h-full bg-linear-to-r from-purple-600 to-purple-400 rounded-full"
-															style={{
-																width: `${(data.heroic_bosses_killed / data.total_bosses) * 100}%`,
-															}}
-														/>
+
+													{/* Normal */}
+													<div className="space-y-1.5">
+														<div className="flex justify-between items-center">
+															<span className="text-[9px] font-semibold text-zinc-500 tracking-wider">NORMAL</span>
+															<span className="text-[11px] font-semibold text-blue-400">{progress.normal}/{progress.total}</span>
+														</div>
+														<div className="h-1.5 w-full bg-white/[0.03] rounded-full">
+															<div
+																className="h-full bg-linear-to-r from-blue-600 to-blue-400 rounded-full"
+																style={{ width: `${progress.total > 0 ? (progress.normal / progress.total) * 100 : 0}%` }}
+															/>
+														</div>
 													</div>
 												</div>
 											</div>
+										))}
+									</div>
+								) : (
+									<div className="py-12 text-center bg-white/[0.01] rounded-3xl border border-dashed border-white/10">
+										<div className="flex flex-col items-center gap-2">
+											<IconX className="size-6 text-zinc-700" />
+											<span className="text-[10px] font-semibold text-zinc-600 uppercase tracking-[0.3em]">
+												Sin registros de banda en esta temporada
+											</span>
 										</div>
-									))}
-									{activeRaids.length === 0 && (
-										<div className="col-span-full py-12 text-center bg-white/[0.01] rounded-3xl border border-dashed border-white/10">
-											<div className="flex flex-col items-center gap-2">
-												<IconX className="size-6 text-zinc-700" />
-												<span className="text-[10px] font-semibold text-zinc-600 uppercase tracking-[0.3em]">
-													Sin registros de banda en esta temporada
-												</span>
-											</div>
-										</div>
-									)}
-								</div>
+									</div>
+								)}
 							</div>
 
 							{/* Service Buttons */}
@@ -719,94 +754,6 @@ function useRecruitmentDetailClient({
 					)}
 				</CardContent>
 			</Card>
-
-			{/* SEASON 2 PANEL */}
-			{!loadingRio && (
-				<Card className="bg-card/20 border-border/20 overflow-hidden backdrop-blur-xl border-t-2 border-t-emerald-500/50">
-					<CardHeader className="py-4 px-6 border-b border-white/5 bg-white/[0.02]">
-						<CardTitle className="text-xs font-semibold tracking-[0.2em] text-emerald-400 flex items-center gap-2">
-							<IconSword className="size-4" /> Temporada 2 — {SEASON_2_RAID_NAME}
-						</CardTitle>
-					</CardHeader>
-					<CardContent className="p-6">
-						{season2Raid ? (
-							<div className="space-y-6">
-								<div className="flex items-center justify-between px-1">
-									<span className="text-[10px] uppercase font-bold text-zinc-500 tracking-[0.2em]">
-										Progreso
-									</span>
-									<span className="text-sm font-semibold text-emerald-400 tabular-nums">
-										{formatRecruitmentRaidSummary(season2Raid)}
-									</span>
-								</div>
-								<div className="space-y-1.5">
-									<div className="flex justify-between items-center">
-										<span className="text-[9px] font-semibold text-zinc-500 tracking-wider">
-											MÍTICO
-										</span>
-										<span className="text-[11px] font-semibold text-orange-400">
-											{season2Raid.mythic_bosses_killed}/{season2Raid.total_bosses}
-										</span>
-									</div>
-									<div className="h-1.5 w-full bg-white/[0.03] rounded-full">
-										<div
-											className="h-full bg-linear-to-r from-orange-600 to-orange-400 rounded-full shadow-[0_0_8px_rgba(251,146,60,0.3)]"
-											style={{
-												width: `${(season2Raid.mythic_bosses_killed / (season2Raid.total_bosses || 1)) * 100}%`,
-											}}
-										/>
-									</div>
-								</div>
-								<div className="space-y-1.5">
-									<div className="flex justify-between items-center">
-										<span className="text-[9px] font-semibold text-zinc-500 tracking-wider">
-											HEROICO
-										</span>
-										<span className="text-[11px] font-semibold text-purple-400">
-											{season2Raid.heroic_bosses_killed}/{season2Raid.total_bosses}
-										</span>
-									</div>
-									<div className="h-1.5 w-full bg-white/[0.03] rounded-full">
-										<div
-											className="h-full bg-linear-to-r from-purple-600 to-purple-400 rounded-full"
-											style={{
-												width: `${(season2Raid.heroic_bosses_killed / (season2Raid.total_bosses || 1)) * 100}%`,
-											}}
-										/>
-									</div>
-								</div>
-								<div className="space-y-1.5">
-									<div className="flex justify-between items-center">
-										<span className="text-[9px] font-semibold text-zinc-500 tracking-wider">
-											NORMAL
-										</span>
-										<span className="text-[11px] font-semibold text-blue-400">
-											{season2Raid.normal_bosses_killed}/{season2Raid.total_bosses}
-										</span>
-									</div>
-									<div className="h-1.5 w-full bg-white/[0.03] rounded-full">
-										<div
-											className="h-full bg-linear-to-r from-blue-600 to-blue-400 rounded-full"
-											style={{
-												width: `${(season2Raid.normal_bosses_killed / (season2Raid.total_bosses || 1)) * 100}%`,
-											}}
-										/>
-									</div>
-								</div>
-							</div>
-						) : (
-							<div className="py-12 text-center bg-white/[0.01] rounded-3xl border border-dashed border-white/10">
-								<div className="flex flex-col items-center gap-2">
-									<IconX className="size-6 text-zinc-700" />
-									<span className="text-[10px] font-semibold text-zinc-600 uppercase tracking-[0.3em]">
-										Sin registros de temporada 2
-									</span>
-								</div>
-							</div>
-						)}
-					</CardContent>
-				</Card>
-			)}
 
 			{/* 2. APPLICATION FORM ANSWERS (FULL WIDTH, COMPACT) */}
 			<div className="space-y-4">

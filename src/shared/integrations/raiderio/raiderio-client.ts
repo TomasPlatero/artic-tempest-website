@@ -289,7 +289,7 @@ export async function fetchCharacterRIO(
 		"season-sl-4",
 	];
 	const raidField =
-		"raid_progression:sporefall:tier-mn-1:the-venomous-abyss:manaforge-omega:liberation-of-undermine:nerubar-palace:amirdrassil-the-dreams-hope:aberrus-the-shadowed-crucible:vault-of-the-incarnates:sepulcher-of-the-first-ones:sanctum-of-domination:castle-nathria";
+		"raid_progression:sporefall:tier-mn-1:the-venomous-abyss:the-tidebound-grotto:manaforge-omega:liberation-of-undermine:nerubar-palace:amirdrassil-the-dreams-hope:aberrus-the-shadowed-crucible:vault-of-the-incarnates:sepulcher-of-the-first-ones:sanctum-of-domination:castle-nathria";
 	const seasonField = `mythic_plus_scores_by_season:${seasons.join(":")}`;
 	const url = `https://raider.io/api/v1/characters/profile?region=${region}&realm=${realmSlug}&name=${encodeURIComponent(name)}&fields=guild,${seasonField},${raidField},active_spec_name,gear`;
 
