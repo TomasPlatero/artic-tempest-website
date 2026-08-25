@@ -59,6 +59,7 @@ type Profile = {
 	main_character_id?: string | null;
 	discord_refresh_token: string | null;
 	tokens_invalidated: boolean;
+	can_access_bot_dashboard: boolean;
 	created_at: string;
 	last_verification_check: string | null;
 	is_banned: boolean;
@@ -990,6 +991,37 @@ function renderAccountDetailView(params: AccountDetailViewParams) {
 								})()}
 							</div>
 						</div>
+					</CardContent>
+				</Card>
+
+				<Card className="bg-zinc-950/40 border-white/5">
+					<CardHeader>
+						<CardTitle className="text-sm font-semibold uppercase tracking-[0.3em] text-white/50">
+							Accesos
+						</CardTitle>
+					</CardHeader>
+					<CardContent className="space-y-4">
+						<label className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-zinc-950/30 p-4">
+							<div className="space-y-1">
+								<span className="text-sm font-medium text-white">
+									Acceder al Dashboard del bot
+								</span>
+								<p className="text-xs text-white/50">
+									Permite iniciar sesión en el panel de control del bot
+									(bot.artictempest.es).
+								</p>
+							</div>
+							<Checkbox
+								checked={Boolean(profile.can_access_bot_dashboard)}
+								disabled={!canManage}
+								onCheckedChange={(nextValue) =>
+									saveProfile(
+										{ can_access_bot_dashboard: Boolean(nextValue) },
+										"Acceso al dashboard del bot actualizado",
+									)
+								}
+							/>
+						</label>
 					</CardContent>
 				</Card>
 

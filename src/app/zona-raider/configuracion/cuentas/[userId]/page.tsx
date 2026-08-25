@@ -48,7 +48,7 @@ export default async function AccountDetailPage({
 	const cookieMainCharacterId =
 		cookieStore.get("artic-tempest-main-character-id")?.value ?? null;
 
-	const profileSelect = `user_id, discord_username, discord_user_id, discord_avatar, role_level, battlenet_battletag, battlenet_id, main_character_id, discord_refresh_token, tokens_invalidated, created_at, last_verification_check, is_banned, ban_reason, ban_expires_at, officer_notes, verification_status`;
+	const profileSelect = `user_id, discord_username, discord_user_id, discord_avatar, role_level, battlenet_battletag, battlenet_id, main_character_id, discord_refresh_token, tokens_invalidated, can_access_bot_dashboard, created_at, last_verification_check, is_banned, ban_reason, ban_expires_at, officer_notes, verification_status`;
 
 	// Editors and admins can see officer_notes and discord_refresh_token;
 	// view-only users get these fields stripped before the data reaches the client.

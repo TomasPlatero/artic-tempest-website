@@ -19,6 +19,7 @@ const patchSchema = z.object({
   battlenet_battletag: z.string().max(20).regex(btagRe, 'Formato BattleTag inválido').optional().nullable(),
   officer_notes: z.string().max(5000).optional().nullable(),
   tokens_invalidated: z.boolean().optional(),
+  can_access_bot_dashboard: z.boolean().optional(),
   main_character_id: z.uuid().optional().nullable(),
   force_raider_rules_accepted: z.boolean().optional(),
 });
@@ -48,6 +49,7 @@ export async function PATCH(
         battlenet_battletag,
         officer_notes,
         tokens_invalidated,
+        can_access_bot_dashboard,
         main_character_id,
         force_raider_rules_accepted,
       } = parsed.data;
@@ -61,6 +63,9 @@ export async function PATCH(
     }
     if (typeof tokens_invalidated === 'boolean') {
       updates.tokens_invalidated = tokens_invalidated;
+    }
+    if (typeof can_access_bot_dashboard === 'boolean') {
+      updates.can_access_bot_dashboard = can_access_bot_dashboard;
     }
 
     if (main_character_id !== undefined) {
