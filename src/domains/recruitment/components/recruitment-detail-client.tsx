@@ -544,7 +544,7 @@ function useRecruitmentDetailClient({
 											</span>
 										</div>
 									</div>
-									<div className="bg-white/5 border border-white/5 rounded-2xl p-4 flex flex-col items-center justify-center hover:bg-white/10 transition-colors">
+									{/* <div className="bg-white/5 border border-white/5 rounded-2xl p-4 flex flex-col items-center justify-center hover:bg-white/10 transition-colors">
 										<span className="text-[10px] uppercase font-bold text-zinc-500 mb-1">
 											Expansión
 										</span>
@@ -557,15 +557,7 @@ function useRecruitmentDetailClient({
 														? "Midnight"
 														: "Otros"}
 										</span>
-									</div>
-									<div className="bg-white/5 border border-white/5 rounded-2xl p-4 flex flex-col items-center justify-center hover:bg-emerald-500/5 transition-colors">
-										<span className="text-[10px] uppercase font-bold text-zinc-500 mb-1">
-											Status
-										</span>
-										<span className="text-xs font-semibold text-emerald-400 uppercase">
-											Activo
-										</span>
-									</div>
+									</div> */}
 									<div className="bg-white/5 border border-white/5 rounded-2xl p-4 flex flex-col items-center justify-center hover:bg-white/10 transition-colors">
 										<span className="text-[10px] uppercase font-bold text-zinc-500 mb-1">
 											iLvl
