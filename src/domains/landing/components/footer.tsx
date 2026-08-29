@@ -65,6 +65,21 @@ export function LandingFooter({
 					<p className="text-white/80 text-[10px] font-bold leading-normal uppercase tracking-widest mt-2">
 						© {COPYRIGHT_YEAR} Artic Tempest. Todos los derechos reservados.
 					</p>
+					<p className="text-white/70 text-xs font-medium leading-relaxed">
+						Creado con{" "}
+						<span className="text-rose-400" aria-hidden="true">
+							❤
+						</span>
+						<span className="sr-only">amor</span> por{" "}
+						<a
+							href="https://TomasPlatero.com"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="text-blue-300 underline underline-offset-2 hover:text-white transition-colors"
+						>
+							TomasPlatero.com
+						</a>
+					</p>
 					<p className="text-[9px] text-white/80 font-medium leading-relaxed max-w-xs mt-2 italic">
 						World of Warcraft® y Blizzard Entertainment® son marcas registradas
 						de Blizzard Entertainment, Inc. Artic Tempest es un sitio web de

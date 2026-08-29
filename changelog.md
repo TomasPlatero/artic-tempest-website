@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.6
+
+- feature: footer now credits the site build — "Creado con ❤ por TomasPlatero.com", linking to https://TomasPlatero.com
+
 ## 1.11.5
 
 - fix: check-streamers cron no longer treats a transient decapi.me avatar 400 as a full outage — the `decapi_avatar` check is now informational (non-blocking), so only the page and uptime checks can trigger a "Streamers degradado" incident (ATW-16)
