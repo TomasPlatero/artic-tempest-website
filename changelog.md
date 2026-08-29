@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.7
+
+- fix: /progreso "Mejor progreso" no longer shows 100% always — non-kill pulls where Raider.io reports 0% remaining (phase-reset/special wipes) are ignored, so real best progress is shown; "Último pull" label renamed to "En progreso"
+
 ## 1.11.6
 
 - feature: footer now credits the site build — "Creado con ❤ por TomasPlatero.com", linking to https://TomasPlatero.com

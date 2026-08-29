@@ -282,7 +282,7 @@ function TimelineItem({
 				<p
 					className={`text-[10px] uppercase tracking-[0.35em] ${boss.isDefeated ? "text-emerald-300/90" : "text-blue-200/80"}`}
 				>
-					{boss.isDefeated ? "Kill" : "Último pull"}
+					{boss.isDefeated ? "Kill" : "En progreso"}
 				</p>
 			</div>
 
@@ -395,7 +395,7 @@ function SporefallItem({
 				<p
 					className={`text-[10px] uppercase tracking-[0.35em] ${sporefall.isDefeated ? "text-emerald-300/90" : "text-blue-200/80"}`}
 				>
-					{sporefall.isDefeated ? "Kill" : "Último pull"}
+					{sporefall.isDefeated ? "Kill" : "En progreso"}
 				</p>
 			</div>
 

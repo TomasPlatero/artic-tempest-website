@@ -515,7 +515,15 @@ function getBestRemainingPercentFromPulls(
 	pulls: RaiderIoGuildBossPull[],
 	includeKills = false,
 ) {
-	const relevantPulls = pulls.filter((pull) => includeKills || !pull.isKill);
+	const relevantPulls = pulls.filter(
+		(pull) =>
+			(includeKills || !pull.isKill) &&
+			// A non-kill pull can never legitimately end with the boss at 0% HP.
+			// Raider.io sometimes reports boss_percent 0 on non-kill pulls (phase
+			// resets, special encounter wipes), which would otherwise make the
+			// timeline show a permanent "Mejor progreso: 100%".
+			(pull.isKill || normalizePullPercent(pull.percent) !== 0),
+	);
 	if (relevantPulls.length === 0) return null;
 
 	return relevantPulls.reduce((best, pull) => {
