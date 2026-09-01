@@ -1,6 +1,6 @@
 {
   "name": "artic-tempest-website",
-  "version": "1.11.7",
+  "version": "1.11.8",
   "author": "Zatoshi",
   "description": "Artictempest Project Website",
   "private": true,
@@ -68,7 +68,7 @@
     "dompurify": "^3.4.13",
     "framer-motion": "^12.43.0",
     "jose": "^6.2.8",
-    "next": "^16.3.0",
+    "next": "^16.3.4",
     "next-auth": "^4.24.15",
     "next-themes": "^0.4.6",
     "pg": "^8.22.0",
@@ -123,5 +123,8 @@
   "trustedDependencies": [
     "@sentry/cli",
     "unrs-resolver"
-  ]
+  ],
+  "overrides": {
+    "fast-uri": "^3.1.6"
+  }
 }

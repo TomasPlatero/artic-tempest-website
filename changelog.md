@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.8
+
+- chore: security dependency upgrades — next 16.3.0 → 16.3.4 (CVE-2026-32740 AVIF/libheif) and fast-uri 3.1.5 → 3.1.6 via overrides (SSRF/validation CVEs)
+
 ## 1.11.7
 
 - fix: /progreso "Mejor progreso" no longer shows 100% always — non-kill pulls where Raider.io reports 0% remaining (phase-reset/special wipes) are ignored, so real best progress is shown; "Último pull" label renamed to "En progreso"
