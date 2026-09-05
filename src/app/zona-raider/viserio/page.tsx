@@ -68,7 +68,7 @@ export default function ViserioGuidePage() {
 					</div>
 
 					<Link
-						href="https://wowutils.com/viserio-cooldowns/groups/join?token=de90cc0edca13112d4ea168d882d10f7&utm_source=invite&utm_medium=app_share"
+						href="https://wowutils.com/viserio-cooldowns/groups/join?token=2c346870642fd9b18ce4766651796136&utm_source=invite&utm_medium=app_share"
 						target="_blank"
 						rel="noreferrer"
 						className="inline-flex w-fit items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
