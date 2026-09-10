@@ -9,6 +9,10 @@
 
 import { describe, it, expect, beforeAll } from "vitest";
 import { assertSecurityHeaders } from "./test-utils";
+import {
+	applySecurityHeaders,
+	PROXY_SECURITY_HEADERS,
+} from "./response-headers";
 
 // Import the default config from next.config.ts to access the headers() function.
 // Note: next.config.ts might have side effects (Sentry config checks) at import time.
@@ -32,7 +36,7 @@ describe("next.config.ts security headers", () => {
 		}
 	});
 
-	it("has all 8 mandated security headers via assertSecurityHeaders", () => {
+	it("has all mandated static security headers via assertSecurityHeaders", () => {
 		expect(staticHeaders.length).toBeGreaterThanOrEqual(8);
 		const headers = new Headers();
 		for (const { key, value } of staticHeaders) {
@@ -41,9 +45,12 @@ describe("next.config.ts security headers", () => {
 		assertSecurityHeaders(headers);
 	});
 
-	it("sets X-Frame-Options to DENY", () => {
-		const header = staticHeaders.find((h) => h.key === "X-Frame-Options");
-		expect(header?.value).toBe("DENY");
+	it("does not carry X-Frame-Options, which the proxy applies instead", () => {
+		// 8e55a18a (v1.10.9) moved X-Frame-Options out of next.config.ts into the
+		// proxy, so redirects and maintenance responses carry it too.
+		expect(
+			staticHeaders.find((h) => h.key === "X-Frame-Options"),
+		).toBeUndefined();
 	});
 
 	it("sets X-Content-Type-Options to nosniff", () => {
@@ -139,23 +146,46 @@ describe("Content-Security-Policy specifics", () => {
 	});
 });
 
-describe("proxy.ts withSecurityHeaders", () => {
-	it("sets security headers via config.headers() pattern", async () => {
-		// The proxy's withSecurityHeaders closure sets the same header keys as config.
-		// Since the function is a closure inside proxy(), we verify the pattern
-		// by checking that the config.headers() function produces all required headers.
+/** Headers that must reach the browser, set by either layer. */
+const MANDATED_HEADER_KEYS = [
+	"Content-Security-Policy",
+	"X-Frame-Options",
+	"X-Content-Type-Options",
+	"Referrer-Policy",
+	"Strict-Transport-Security",
+	"Permissions-Policy",
+	"Cross-Origin-Opener-Policy",
+	"Cross-Origin-Resource-Policy",
+] as const;
+
+describe("proxy runtime security headers", () => {
+	it("sets every runtime header on a response", () => {
+		const headers = applySecurityHeaders(new Headers());
+
+		expect(headers.get("X-Frame-Options")).toBe("DENY");
+		expect(headers.get("X-Content-Type-Options")).toBe("nosniff");
+		expect(headers.get("Referrer-Policy")).toBe("origin-when-cross-origin");
+		expect(headers.get("Strict-Transport-Security")).toBe(
+			"max-age=31536000; includeSubDomains; preload",
+		);
+	});
+
+	it("covers, with next.config.ts, all 8 mandated headers", async () => {
+		// The mandated headers are split across two layers: the static list in
+		// next.config.ts and the runtime list the proxy applies to every response.
 		const configModule = await import("@/../next.config");
 		const config = configModule.default;
 		const headerConfigs = await config.headers!();
 		const catchAll = headerConfigs.find(
 			(h: { source: string }) => h.source === "/:path((?!_next|api|assets).*)",
 		);
-		const headerKeys = catchAll!.headers.map((h: { key: string }) => h.key);
+		const staticKeys = (catchAll?.headers ?? []).map(
+			(h: { key: string }) => h.key,
+		);
+		const covered = [...staticKeys, ...Object.keys(PROXY_SECURITY_HEADERS)];
 
-		// These are the headers set by both config and withSecurityHeaders
-		expect(headerKeys).toContain("X-Frame-Options");
-		expect(headerKeys).toContain("X-Content-Type-Options");
-		expect(headerKeys).toContain("Referrer-Policy");
-		expect(headerKeys).toContain("Strict-Transport-Security");
+		for (const key of MANDATED_HEADER_KEYS) {
+			expect(covered, `${key} missing from config and proxy`).toContain(key);
+		}
 	});
 });

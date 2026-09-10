@@ -1,6 +1,13 @@
 import { expect } from 'vitest';
 
-/** Asserts all 8 mandated security headers are present with expected values */
+/**
+ * Asserts the security headers that next.config.ts applies at build time.
+ *
+ * X-Frame-Options is intentionally NOT checked here: since 8e55a18a (v1.10.9) it
+ * is set by the proxy (see response-headers.ts) on every response, redirects
+ * included. Clickjacking stays covered here through the CSP frame-ancestors
+ * directive asserted below.
+ */
 export function assertSecurityHeaders(headers: Headers) {
   // Content-Security-Policy
   const csp = headers.get('Content-Security-Policy');
@@ -16,12 +23,6 @@ export function assertSecurityHeaders(headers: Headers) {
   if (process.env.NODE_ENV === 'production') {
     expect(csp).not.toContain("'unsafe-eval'");
   }
-
-  // X-Frame-Options
-  expect(
-    headers.get('X-Frame-Options'),
-    'X-Frame-Options header missing',
-  ).toBe('DENY');
 
   // X-Content-Type-Options
   expect(
