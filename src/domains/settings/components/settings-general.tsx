@@ -224,6 +224,50 @@ function GeneralHeader({ title, description }: GeneralHeaderProps) {
 	);
 }
 
+function toastSaveResult(
+	result: { success: boolean; error?: string | null },
+	successTitle: string,
+	successDescription: string,
+	errorTitle = "Error",
+) {
+	if (result.success) {
+		toast.success(successTitle, { description: successDescription });
+	} else {
+		toast.error(errorTitle, { description: result.error });
+	}
+}
+
+function buildLogoImageBody(
+	pickerType: "main" | "mobile" | "public",
+	fileUrl: string,
+): Record<string, string> {
+	if (pickerType === "mobile") return { mobile_icon_url: fileUrl };
+	if (pickerType === "public") return { public_logo_url: fileUrl };
+	return { icon_url: fileUrl };
+}
+
+function pickLogoSuccessDescription(
+	pickerType: "main" | "mobile" | "public",
+) {
+	if (pickerType === "mobile")
+		return "El icono para dispositivos móviles se ha guardado correctamente.";
+	if (pickerType === "public")
+		return "El logotipo de portada se ha guardado correctamente.";
+	return "El logotipo principal de la hermandad se ha guardado correctamente.";
+}
+
+function pickTourSuccessDescription(tourEnabled: boolean) {
+	return tourEnabled
+		? "El tour guiado se ha activado para los nuevos usuarios."
+		: "El tour guiado se ha desactivado.";
+}
+
+function pickMediaPickerTitle(pickerType: string | null) {
+	if (pickerType === "mobile") return "Seleccionar icono para móvil";
+	if (pickerType === "public") return "Seleccionar logotipo de portada";
+	return "Seleccionar logotipo principal";
+}
+
 export function SettingsGeneralClient({
 	guild,
 	credentials: _initialCredentials,
@@ -258,15 +302,11 @@ export function SettingsGeneralClient({
 	const saveGuildInfo = async () => {
 		dispatch({ type: "set-saving", target: "guild", value: true });
 		const result = await doSaveGuildInfo(state.guildInfo);
-		if (result.success) {
-			toast.success("Información actualizada", {
-				description: "Los datos de la hermandad se han guardado correctamente.",
-			});
-		} else {
-			toast.error("Error", {
-				description: result.error,
-			});
-		}
+		toastSaveResult(
+			result,
+			"Información actualizada",
+			"Los datos de la hermandad se han guardado correctamente.",
+		);
 		dispatch({ type: "set-saving", target: "guild", value: false });
 	};
 
@@ -278,28 +318,18 @@ export function SettingsGeneralClient({
 		const pickerType = state.activePicker;
 		if (!pickerType) return;
 
-		const isMobile = pickerType === "mobile";
-		const isPublic = pickerType === "public";
-
 		dispatch({
 			type: "set-uploading",
 			target: pickerType,
 			value: true,
 		});
 
-		const body: Record<string, string> = {};
-		if (isMobile) body.mobile_icon_url = file.url;
-		else if (isPublic) body.public_logo_url = file.url;
-		else body.icon_url = file.url;
+		const body = buildLogoImageBody(pickerType, file.url);
 
 		const result = await doSaveLogoImage(body);
 		if (result.success) {
 			toast.success("Logotipo actualizado", {
-				description: isMobile
-					? "El icono para dispositivos móviles se ha guardado correctamente."
-					: isPublic
-						? "El logotipo de portada se ha guardado correctamente."
-						: "El logotipo principal de la hermandad se ha guardado correctamente.",
+				description: pickLogoSuccessDescription(pickerType),
 			});
 			window.location.reload();
 		} else {
@@ -323,32 +353,22 @@ export function SettingsGeneralClient({
 	const saveVersion = async () => {
 		dispatch({ type: "set-saving", target: "version", value: true });
 		const result = await doSaveVersion(state.version);
-		if (result.success) {
-			toast.success("Versión actualizada", {
-				description: "El cambio se aplicará al recargar o navegar.",
-			});
-		} else {
-			toast.error("Error", {
-				description: result.error,
-			});
-		}
+		toastSaveResult(
+			result,
+			"Versión actualizada",
+			"El cambio se aplicará al recargar o navegar.",
+		);
 		dispatch({ type: "set-saving", target: "version", value: false });
 	};
 
 	const saveTour = async () => {
 		dispatch({ type: "set-saving", target: "tour", value: true });
 		const result = await doSaveTour(state.tourEnabled);
-		if (result.success) {
-			toast.success("Tour actualizado", {
-				description: state.tourEnabled
-					? "El tour guiado se ha activado para los nuevos usuarios."
-					: "El tour guiado se ha desactivado.",
-			});
-		} else {
-			toast.error("Error", {
-				description: result.error,
-			});
-		}
+		toastSaveResult(
+			result,
+			"Tour actualizado",
+			pickTourSuccessDescription(state.tourEnabled),
+		);
 		dispatch({ type: "set-saving", target: "tour", value: false });
 	};
 
@@ -378,13 +398,7 @@ export function SettingsGeneralClient({
 						open={state.activePicker !== null}
 						onSelect={(file) => void handlePickerSelect(file)}
 						onClose={handlePickerClose}
-						title={
-							state.activePicker === "mobile"
-								? "Seleccionar icono para móvil"
-								: state.activePicker === "public"
-									? "Seleccionar logotipo de portada"
-									: "Seleccionar logotipo principal"
-						}
+						title={pickMediaPickerTitle(state.activePicker)}
 						showUpload={true}
 					/>
 				</>

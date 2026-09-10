@@ -69,6 +69,79 @@ function SortHeader({
 // Main component
 // ──────────────────────────────────────────────
 
+function resolveMyCharactersHint({
+	entryCount,
+	hasBnetChars,
+}: {
+	entryCount: number;
+	hasBnetChars: boolean;
+}) {
+	if (entryCount > 0) {
+		const plural = entryCount !== 1 ? "s" : "";
+		return `Tienes ${entryCount} personaje${plural} registrado${plural}. Edítalos abajo o añade hasta ${3 - entryCount} más.`;
+	}
+	return hasBnetChars
+		? "Selecciona tus personajes para Season 2"
+		: "Vincula tu cuenta de Battle.net en Mis Personajes para poder registrarte";
+}
+
+// Sort helpers
+function sortRosterEntries(
+	entries: PageProps["entries"],
+	sortColumn: SortColumn,
+	sortDirection: "asc" | "desc",
+	classNames: PageProps["classNames"],
+	specsByClass: PageProps["specsByClass"],
+) {
+	if (!sortColumn) return entries;
+
+	return [...entries].sort((a, b) => {
+		let aVal: string, bVal: string;
+
+		switch (sortColumn) {
+			case "character_name":
+				aVal = a.character_name.toLowerCase();
+				bVal = b.character_name.toLowerCase();
+				break;
+			case "class_name":
+				aVal = (classNames[a.class_id] ?? "").toLowerCase();
+				bVal = (classNames[b.class_id] ?? "").toLowerCase();
+				break;
+			case "main_spec":
+				aVal = a.main_spec.toLowerCase();
+				bVal = b.main_spec.toLowerCase();
+				break;
+			case "role": {
+				const aRole = getRolePriority(
+					getSpecRole(a.class_id, a.main_spec, specsByClass),
+				);
+				const bRole = getRolePriority(
+					getSpecRole(b.class_id, b.main_spec, specsByClass),
+				);
+				const cmp = bRole - aRole; // descending: Tank first
+				return sortDirection === "asc" ? -cmp : cmp;
+			}
+			case "off_spec":
+				aVal = (a.off_spec ?? "").toLowerCase();
+				bVal = (b.off_spec ?? "").toLowerCase();
+				break;
+			case "profession_1":
+				aVal = (a.profession_1 ?? "").toLowerCase();
+				bVal = (b.profession_1 ?? "").toLowerCase();
+				break;
+			case "profession_2":
+				aVal = (a.profession_2 ?? "").toLowerCase();
+				bVal = (b.profession_2 ?? "").toLowerCase();
+				break;
+			default:
+				return 0;
+		}
+
+		const cmp = aVal.localeCompare(bVal, "es");
+		return sortDirection === "asc" ? cmp : -cmp;
+	});
+}
+
 export function SeasonRosterClient({
 	entries,
 	classNames,
@@ -91,55 +164,13 @@ export function SeasonRosterClient({
 
 	const stats = computeStats(entries, classNames, specsByClass);
 
-	const sortedEntries = (() => {
-		if (!sortColumn) return entries;
-
-		return [...entries].sort((a, b) => {
-			let aVal: string, bVal: string;
-
-			switch (sortColumn) {
-				case "character_name":
-					aVal = a.character_name.toLowerCase();
-					bVal = b.character_name.toLowerCase();
-					break;
-				case "class_name":
-					aVal = (classNames[a.class_id] ?? "").toLowerCase();
-					bVal = (classNames[b.class_id] ?? "").toLowerCase();
-					break;
-				case "main_spec":
-					aVal = a.main_spec.toLowerCase();
-					bVal = b.main_spec.toLowerCase();
-					break;
-				case "role": {
-					const aRole = getRolePriority(
-						getSpecRole(a.class_id, a.main_spec, specsByClass),
-					);
-					const bRole = getRolePriority(
-						getSpecRole(b.class_id, b.main_spec, specsByClass),
-					);
-					const cmp = bRole - aRole; // descending: Tank first
-					return sortDirection === "asc" ? -cmp : cmp;
-				}
-				case "off_spec":
-					aVal = (a.off_spec ?? "").toLowerCase();
-					bVal = (b.off_spec ?? "").toLowerCase();
-					break;
-				case "profession_1":
-					aVal = (a.profession_1 ?? "").toLowerCase();
-					bVal = (b.profession_1 ?? "").toLowerCase();
-					break;
-				case "profession_2":
-					aVal = (a.profession_2 ?? "").toLowerCase();
-					bVal = (b.profession_2 ?? "").toLowerCase();
-					break;
-				default:
-					return 0;
-			}
-
-			const cmp = aVal.localeCompare(bVal, "es");
-			return sortDirection === "asc" ? cmp : -cmp;
-		});
-	})();
+	const sortedEntries = sortRosterEntries(
+		entries,
+		sortColumn,
+		sortDirection,
+		classNames,
+		specsByClass,
+	);
 
 	const handleSort = (column: SortColumn) => {
 		if (sortColumn === column) {
@@ -165,11 +196,7 @@ export function SeasonRosterClient({
 							Tus personajes ({entryCount}/3)
 						</h2>
 						<p className="text-xs text-zinc-400 mt-0.5">
-							{entryCount > 0
-								? `Tienes ${entryCount} personaje${entryCount !== 1 ? "s" : ""} registrado${entryCount !== 1 ? "s" : ""}. Edítalos abajo o añade hasta ${3 - entryCount} más.`
-								: hasBnetChars
-									? "Selecciona tus personajes para Season 2"
-									: "Vincula tu cuenta de Battle.net en Mis Personajes para poder registrarte"}
+							{resolveMyCharactersHint({ entryCount, hasBnetChars })}
 						</p>
 					</div>
 

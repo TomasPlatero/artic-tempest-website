@@ -314,9 +314,7 @@ function DesktopNavigation({
 						)
 							return true;
 					}
-					return (
-						navItem.children?.some((child: any) => checkActive(child)) || false
-					);
+					return navItem.children?.some((child: any) => checkActive(child)) || false;
 				};
 				const isActive = checkActive(item);
 
@@ -335,12 +333,10 @@ function DesktopNavigation({
 
 					const renderDropdownCard = (child: any) => {
 						const hasUrl = Boolean(child.url);
-						const childHasChildren =
-							child.children && child.children.length > 0;
+						const childHasChildren = child.children && child.children.length > 0;
 						const isChildActive =
 							hasUrl &&
-							normalizeZonaRaiderPath(pathname) ===
-								normalizeZonaRaiderPath(child.url);
+							normalizeZonaRaiderPath(pathname) === normalizeZonaRaiderPath(child.url);
 
 						return (
 							<NavDropdownCard
@@ -380,10 +376,7 @@ function DesktopNavigation({
 								>
 									<IconResolver
 										name={item.icon_name}
-										className={cn(
-											"size-4",
-											isActive ? "text-blue-400" : "text-zinc-500",
-										)}
+										className={cn("size-4", isActive ? "text-blue-400" : "text-zinc-500")}
 									/>
 									{item.name}
 									<IconChevronDown className="size-3 opacity-40 ml-1" />
@@ -427,8 +420,7 @@ function DesktopNavigation({
 														{activeCategory.name}
 													</h3>
 													<p className="text-[11px] text-zinc-400 font-medium leading-relaxed uppercase tracking-widest opacity-60">
-														{activeCategory.description ||
-															"Subcategorías disponibles."}
+														{activeCategory.description || "Subcategorías disponibles."}
 													</p>
 												</>
 											) : (
@@ -437,8 +429,7 @@ function DesktopNavigation({
 														{item.name}
 													</h3>
 													<p className="text-[11px] text-zinc-400 font-medium leading-relaxed uppercase tracking-widest opacity-60">
-														{item.description ||
-															"Gestión y herramientas avanzadas."}
+														{item.description || "Gestión y herramientas avanzadas."}
 													</p>
 												</>
 											)}
@@ -447,9 +438,7 @@ function DesktopNavigation({
 									<div className="flex-1 bg-white/[0.01] flex flex-col">
 										<div className="px-4 pb-2 pt-3">
 											<span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-[0.2em]">
-												{activeCategory
-													? activeCategory.name
-													: "Enlaces Rápidos"}
+												{activeCategory ? activeCategory.name : "Enlaces Rápidos"}
 											</span>
 										</div>
 										<div className="flex-1 px-3 pb-3 grid grid-cols-1 md:grid-cols-2 gap-2 auto-rows-[minmax(110px,auto)] content-start">
@@ -481,9 +470,7 @@ function DesktopNavigation({
 								name={item.icon_name}
 								className={cn(
 									"size-4 transition-transform group-hover:scale-110",
-									isActive
-										? "text-blue-400"
-										: "text-white/60 group-hover:text-blue-400",
+									isActive ? "text-blue-400" : "text-white/60 group-hover:text-blue-400",
 								)}
 							/>
 							{item.name}
@@ -547,13 +534,13 @@ export function ZonaRaiderTopNav({
 	);
 
 	const navItems = navData ?? [];
-	const [hoveredChildIconByParent, setHoveredChildIconByParent] =
-		React.useState<Record<string, string | undefined>>({});
+	const [hoveredChildIconByParent, setHoveredChildIconByParent] = React.useState<
+		Record<string, string | undefined>
+	>({});
 	const mobileIconUrl = guildInfo?.mobile_icon_url ?? null;
 	const version = guildInfo?.version ?? "Zona Raider";
 	const recruitmentCount = recruitmentData?.count ?? 0;
-	const hasApplicantMessages =
-		(recruitmentData?.applicantMessageCount ?? 0) > 0;
+	const hasApplicantMessages = (recruitmentData?.applicantMessageCount ?? 0) > 0;
 
 	return (
 		<header className="sticky top-0 z-50 w-full border-b border-white/[0.05] bg-zinc-950/80 backdrop-blur-3xl">

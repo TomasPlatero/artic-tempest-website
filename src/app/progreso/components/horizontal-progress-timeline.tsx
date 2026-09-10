@@ -90,6 +90,28 @@ function getSporefallSortDate(sporefall: SporefallLike) {
 		: sporefall.lastPullAt || sporefall.firstSeenAt;
 }
 
+function resolveBossTimelineVisuals(boss: TimelineBoss, index: number) {
+	const topSide = index % 2 === 0;
+	return {
+		stamp: boss.isDefeated
+			? boss.killDate
+			: boss.lastPullAt || boss.firstSeenAt,
+		metaPlacement: topSide
+			? "top-[calc(50%+1.35rem)]"
+			: "bottom-[calc(50%+1.35rem)]",
+		cardPlacement: topSide ? "top-0" : "bottom-0",
+		dotClass: boss.isDefeated
+			? "bg-emerald-400 shadow-[0_0_18px_rgba(52,211,153,0.75)]"
+			: "bg-blue-400 shadow-[0_0_18px_rgba(96,165,250,0.6)]",
+		statusClass: boss.isDefeated
+			? "text-emerald-300/90"
+			: "text-blue-200/80",
+		statusLabel: boss.isDefeated ? "Kill" : "En progreso",
+		hasKillModal:
+			boss.killRoster.length > 0 || Boolean(boss.killImageUrl),
+	};
+}
+
 function TimelineItem({
 	boss,
 	index,
@@ -101,23 +123,23 @@ function TimelineItem({
 	pinnedSlug: string | null;
 	setPinnedSlug: (slug: string | null) => void;
 }) {
-	const stamp = boss.isDefeated
-		? boss.killDate
-		: boss.lastPullAt || boss.firstSeenAt;
-	const topSide = index % 2 === 0;
-	const metaPlacement = topSide
-		? "top-[calc(50%+1.35rem)]"
-		: "bottom-[calc(50%+1.35rem)]";
-	const cardPlacement = topSide ? "top-0" : "bottom-0";
 	const isPinned = pinnedSlug === boss.slug;
 	const togglePinned = () => setPinnedSlug(isPinned ? null : boss.slug);
-	const hasKillModal = boss.killRoster.length > 0 || Boolean(boss.killImageUrl);
+	const {
+		stamp,
+		metaPlacement,
+		cardPlacement,
+		dotClass,
+		statusClass,
+		statusLabel,
+		hasKillModal,
+	} = resolveBossTimelineVisuals(boss, index);
 
 	return (
 		<li className="group relative list-none h-[20rem] w-[17rem] shrink-0 first:ml-4 sm:first:ml-6 lg:first:ml-8 last:mr-4 sm:last:mr-6 lg:last:mr-8">
 			<div className="pointer-events-none absolute left-1/2 top-[calc(50%-0.5rem)] z-30 size-5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/20 bg-[#060b17] shadow-[0_0_0_4px_rgba(6,11,23,1)]">
 				<span
-					className={`absolute inset-1 rounded-full ${boss.isDefeated ? "bg-emerald-400 shadow-[0_0_18px_rgba(52,211,153,0.75)]" : "bg-blue-400 shadow-[0_0_18px_rgba(96,165,250,0.6)]"}`}
+					className={`absolute inset-1 rounded-full ${dotClass}`}
 				/>
 			</div>
 
@@ -129,9 +151,9 @@ function TimelineItem({
 					{boss.pullCount} pulls
 				</p>
 				<p
-					className={`text-[10px] uppercase tracking-[0.35em] ${boss.isDefeated ? "text-emerald-300/90" : "text-blue-200/80"}`}
+					className={`text-[10px] uppercase tracking-[0.35em] ${statusClass}`}
 				>
-					{boss.isDefeated ? "Kill" : "En progreso"}
+					{statusLabel}
 				</p>
 			</div>
 
