@@ -15,7 +15,15 @@ import {
 	TooltipProvider,
 } from "@/shared/ui/tooltip";
 
-import { IconUser, IconHome2, IconFileSearch, IconArticle, IconChartBar, IconBrandTwitch, IconBook } from "@/shared/ui/tabler-icons";
+import {
+	IconUser,
+	IconHome2,
+	IconFileSearch,
+	IconArticle,
+	IconChartBar,
+	IconBrandTwitch,
+	IconBook,
+} from "@/shared/ui/tabler-icons";
 
 import { useApiQuery } from "@/shared/hooks/use-api-query";
 
@@ -30,7 +38,10 @@ import {
 } from "@/shared/lib/role-color-styles";
 import { DEFAULT_PUBLIC_LOGO } from "@/shared/guild/guild-constants";
 import { LandingNavActions } from "./landing-nav-actions";
-import { resolveApplyCta, resolveRoleRingStyle } from "./landing-nav-view-state";
+import {
+	resolveApplyCta,
+	resolveRoleRingStyle,
+} from "./landing-nav-view-state";
 import type { ApplyCta } from "./landing-nav-view-state";
 import { LandingNavMainSection } from "./landing-nav-main-section";
 import { NAV_LINKS, SessionData } from "./landing-nav-view-state";
@@ -40,8 +51,9 @@ type MePayload = {
 	roleColor?: string | null;
 };
 
-
-function resolveInitialApplyStatus(initialApplyStatus: string | null | undefined) {
+function resolveInitialApplyStatus(
+	initialApplyStatus: string | null | undefined,
+) {
 	return initialApplyStatus ?? null;
 }
 
@@ -60,7 +72,10 @@ function resolveCanSeeZonaRaider(session: SessionData | null) {
 	return session?.user?.roleFlags?.canAccessZonaRaider ?? false;
 }
 
-type RecruitmentData = { count: number; applicantMessageCount: number } | null | undefined;
+type RecruitmentData =
+	| { count: number; applicantMessageCount: number }
+	| null
+	| undefined;
 
 function resolveRecruitmentCountKey(canSeeRecruitmentBadge: boolean) {
 	return canSeeRecruitmentBadge ? "/api/recruitment/count" : null;
@@ -77,10 +92,14 @@ function resolveHasApplicantMessages(
 	canSeeRecruitmentBadge: boolean,
 	recruitmentData: RecruitmentData,
 ) {
-	return canSeeRecruitmentBadge && (recruitmentData?.applicantMessageCount ?? 0) > 0;
+	return (
+		canSeeRecruitmentBadge && (recruitmentData?.applicantMessageCount ?? 0) > 0
+	);
 }
 
-function resolveHasLiveStreamer(streamers: { is_live: boolean }[] | null | undefined) {
+function resolveHasLiveStreamer(
+	streamers: { is_live: boolean }[] | null | undefined,
+) {
 	return Array.isArray(streamers) && streamers.some((s) => s.is_live);
 }
 
@@ -91,10 +110,6 @@ function resolveEffectiveSectionId(activeSectionId: string | null | undefined) {
 function resolveApplyIcon(applyCta: ApplyCta) {
 	return applyCta?.icon ?? IconFileSearch;
 }
-
-
-
-
 
 function LandingNavigation(props: {
 	showApplyReminder?: boolean;
@@ -128,8 +143,8 @@ function useLandingNavigation({
 	const pathname = usePathname();
 	const router = useRouter();
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-	const [applyStatus, _setApplyStatus] = useState<string | null>(
-		() => resolveInitialApplyStatus(initialApplyStatus),
+	const [applyStatus, _setApplyStatus] = useState<string | null>(() =>
+		resolveInitialApplyStatus(initialApplyStatus),
 	);
 	const userRole = resolveUserRole(session);
 	const { data: meData } = useApiQuery<MePayload>(
@@ -156,8 +171,14 @@ function useLandingNavigation({
 		refreshInterval: 2 * 60 * 1000,
 	});
 
-	const recruitmentCount = resolveRecruitmentCount(canSeeRecruitmentBadge, recruitmentData);
-	const hasApplicantMessages = resolveHasApplicantMessages(canSeeRecruitmentBadge, recruitmentData);
+	const recruitmentCount = resolveRecruitmentCount(
+		canSeeRecruitmentBadge,
+		recruitmentData,
+	);
+	const hasApplicantMessages = resolveHasApplicantMessages(
+		canSeeRecruitmentBadge,
+		recruitmentData,
+	);
 	const hasLiveStreamer = resolveHasLiveStreamer(streamers);
 
 	const clampedHeroProgress = Math.min(Math.max(heroScrollProgress, 0), 1);
@@ -313,12 +334,8 @@ function useLandingNavigation({
 														? { "aria-current": "page" as const }
 														: {})}
 												>
-													{link.label === "Inicio" && (
-														<IconHome2 className="size-3.5" />
-													)}
-													{link.label === "Noticias" && (
-														<IconArticle className="size-3.5" />
-													)}
+													{link.label === "Inicio" && <IconHome2 className="size-3.5" />}
+													{link.label === "Noticias" && <IconArticle className="size-3.5" />}
 													{link.label === "Progreso" && (
 														<IconChartBar className="size-3.5" />
 													)}
@@ -369,12 +386,8 @@ function useLandingNavigation({
 														? { "aria-current": "page" as const }
 														: {})}
 												>
-													{link.label === "Inicio" && (
-														<IconHome2 className="size-3.5" />
-													)}
-													{link.label === "Noticias" && (
-														<IconArticle className="size-3.5" />
-													)}
+													{link.label === "Inicio" && <IconHome2 className="size-3.5" />}
+													{link.label === "Noticias" && <IconArticle className="size-3.5" />}
 													{link.label === "Progreso" && (
 														<IconChartBar className="size-3.5" />
 													)}
@@ -397,10 +410,7 @@ function useLandingNavigation({
 									</Tooltip>
 								</TooltipProvider>
 								{index < NAV_LINKS.length - 1 && (
-									<span
-										aria-hidden="true"
-										className="size-1 rounded-full bg-white/20"
-									/>
+									<span aria-hidden="true" className="size-1 rounded-full bg-white/20" />
 								)}
 							</div>
 						))}

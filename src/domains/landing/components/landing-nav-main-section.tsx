@@ -4,9 +4,26 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/shared/ui/button";
 import { DEFAULT_PUBLIC_LOGO } from "@/shared/guild/guild-constants";
-import { IconUser, IconMenu2, IconChevronRight, IconFileSearch, IconShieldCheck } from "@/shared/ui/tabler-icons";
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/shared/ui/sheet";
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/shared/ui/tooltip";
+import {
+	IconUser,
+	IconMenu2,
+	IconChevronRight,
+	IconFileSearch,
+	IconShieldCheck,
+} from "@/shared/ui/tabler-icons";
+import {
+	Sheet,
+	SheetContent,
+	SheetTrigger,
+	SheetHeader,
+	SheetTitle,
+} from "@/shared/ui/sheet";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+	TooltipProvider,
+} from "@/shared/ui/tooltip";
 import { cn } from "@/shared/tailwind/tailwind-utils";
 import { NAV_LINKS } from "./landing-nav-view-state";
 import type { ApplyCta, SessionData } from "./landing-nav-view-state";
@@ -58,9 +75,7 @@ export function LandingNavMainSection({
 			<div
 				className={cn(
 					"hidden items-center gap-2  ease-out lg:flex",
-					heroVisible
-						? "opacity-70 translate-y-1"
-						: "opacity-100 translate-y-0",
+					heroVisible ? "opacity-70 translate-y-1" : "opacity-100 translate-y-0",
 				)}
 			>
 				<TooltipProvider delayDuration={300}>
@@ -159,9 +174,7 @@ function NavMobileSheet({
 						applyCta && "lg:flex xl:hidden",
 					)}
 					aria-label={
-						mobileMenuOpen
-							? "Cerrar menú de navegación"
-							: "Abrir menú de navegación"
+						mobileMenuOpen ? "Cerrar menú de navegación" : "Abrir menú de navegación"
 					}
 				>
 					<IconMenu2 className="size-6" />
@@ -196,9 +209,7 @@ function NavMobileSheet({
 									{link.sectionId ? (
 										<button
 											type="button"
-											onClick={() =>
-												handleSectionClick(link.sectionId!)
-											}
+											onClick={() => handleSectionClick(link.sectionId!)}
 											className={cn(
 												"group flex items-center justify-between p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5  active:scale-[0.98] text-left motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-300 motion-reduce:animate-none",
 												index < 3
@@ -207,16 +218,13 @@ function NavMobileSheet({
 											)}
 										>
 											<div className="flex items-center gap-2">
-												<span className="font-bold tracking-tight">
-													{link.label}
-												</span>
-												{link.label === "Streamers" &&
-													hasLiveStreamer && (
-														<span className="flex size-2 relative">
-															<span className="animate-ping absolute inline-flex size-full rounded-full bg-red-400 opacity-75"></span>
-															<span className="relative inline-flex rounded-full size-2 bg-red-500"></span>
-														</span>
-													)}
+												<span className="font-bold tracking-tight">{link.label}</span>
+												{link.label === "Streamers" && hasLiveStreamer && (
+													<span className="flex size-2 relative">
+														<span className="animate-ping absolute inline-flex size-full rounded-full bg-red-400 opacity-75"></span>
+														<span className="relative inline-flex rounded-full size-2 bg-red-500"></span>
+													</span>
+												)}
 											</div>
 											<IconChevronRight className="size-4 text-white/30 group-hover:text-white/70 transition-colors" />
 										</button>
@@ -232,9 +240,7 @@ function NavMobileSheet({
 											)}
 										>
 											<div className="flex items-center gap-2">
-												<span className="font-bold tracking-tight">
-													{link.label}
-												</span>
+												<span className="font-bold tracking-tight">{link.label}</span>
 											</div>
 											<IconChevronRight className="size-4 text-white/30 group-hover:text-white/70 transition-colors" />
 										</button>
@@ -250,9 +256,7 @@ function NavMobileSheet({
 											)}
 										>
 											<div className="flex items-center gap-2">
-												<span className="font-bold tracking-tight">
-													{link.label}
-												</span>
+												<span className="font-bold tracking-tight">{link.label}</span>
 											</div>
 											<IconChevronRight className="size-4 text-white/30 group-hover:text-white/70 transition-colors" />
 										</Link>
@@ -274,9 +278,7 @@ function NavMobileSheet({
 								<span className="text-[10px] font-semibold uppercase text-blue-400 tracking-widest leading-none">
 									Acceso Raider
 								</span>
-								<span className="font-bold tracking-tight text-white">
-									Zona Raider
-								</span>
+								<span className="font-bold tracking-tight text-white">Zona Raider</span>
 							</div>
 							<IconShieldCheck className="size-5 text-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.3)]" />
 						</Link>

@@ -1,7 +1,12 @@
 // Extracted from navigation.tsx (ATW-20): keeps each component in its own file.
 
 import { IconUserPlus } from "@/shared/ui/tabler-icons";
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/shared/ui/tooltip";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+	TooltipProvider,
+} from "@/shared/ui/tooltip";
 import { cn } from "@/shared/tailwind/tailwind-utils";
 
 export function RecruitmentBadge({
@@ -49,4 +54,3 @@ export function RecruitmentBadge({
 
 	return badge;
 }
-

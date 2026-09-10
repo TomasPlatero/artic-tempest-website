@@ -72,15 +72,13 @@ export function resolveApplyCta({
 				}
 			: applyStatus === "reviewing"
 				? {
-						accent:
-							"from-purple-500/22 to-purple-600/10 border-purple-400/25",
+						accent: "from-purple-500/22 to-purple-600/10 border-purple-400/25",
 						chip: "bg-purple-400/10 text-purple-100 border-purple-300/20",
 						label: "text-purple-300",
 					}
 				: applyStatus === "interview"
 					? {
-							accent:
-								"from-orange-500/22 to-orange-600/10 border-orange-400/25",
+							accent: "from-orange-500/22 to-orange-600/10 border-orange-400/25",
 							chip: "bg-orange-400/10 text-orange-100 border-orange-300/20",
 							label: "text-orange-300",
 						}
@@ -122,7 +120,9 @@ export type ApplyCta = ReturnType<typeof resolveApplyCta>;
 export type RoleRingStyle = ReturnType<typeof resolveRoleRingStyle>;
 
 /** Ring style for the avatar, derived from the role colour. */
-export function resolveRoleRingStyle(roleColor: ReturnType<typeof resolveRoleColorFromMe>) {
+export function resolveRoleRingStyle(
+	roleColor: ReturnType<typeof resolveRoleColorFromMe>,
+) {
 	return roleColor
 		? { backgroundColor: roleColor, boxShadow: `0 0 10px ${roleColor}66` }
 		: undefined;

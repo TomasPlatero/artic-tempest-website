@@ -3,12 +3,26 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/shared/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/shared/ui/dropdown-menu";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+	DropdownMenuSeparator,
+} from "@/shared/ui/dropdown-menu";
 import { IconUser, IconLogout, IconLogin2 } from "@/shared/ui/tabler-icons";
 import { NotificationBell } from "@/domains/notifications/components/notification-bell";
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/shared/ui/tooltip";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+	TooltipProvider,
+} from "@/shared/ui/tooltip";
 import { cn } from "@/shared/tailwind/tailwind-utils";
-import { getRoleBadgeStyle, getRoleRingStyle } from "@/shared/lib/role-color-styles";
+import {
+	getRoleBadgeStyle,
+	getRoleRingStyle,
+} from "@/shared/lib/role-color-styles";
 import { signOut } from "next-auth/react";
 import { RecruitmentBadge } from "./landing-nav-recruitment-badge";
 import type { RoleRingStyle, SessionData } from "./landing-nav-view-state";
@@ -71,9 +85,7 @@ function NavUserMenu({
 						className="w-64 bg-zinc-950 border-white/10 text-white p-2 animate-in fade-in zoom-in-95 duration-200"
 					>
 						<div className="px-2 py-3 flex items-center justify-between gap-4">
-							<p className="text-sm font-bold truncate">
-								{session.user.username}
-							</p>
+							<p className="text-sm font-bold truncate">{session.user.username}</p>
 							{displayRole && (
 								<span
 									className="text-[9px] font-semibold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20 uppercase tracking-widest whitespace-nowrap"
@@ -88,10 +100,7 @@ function NavUserMenu({
 							asChild
 							className="focus:bg-white/5 cursor-pointer rounded-lg h-10 mb-0.5"
 						>
-							<Link
-								href="/mis-personajes"
-								className="flex items-center gap-2"
-							>
+							<Link href="/mis-personajes" className="flex items-center gap-2">
 								<IconUser className="size-4" />
 								<span>Mis Personajes</span>
 							</Link>
@@ -135,25 +144,23 @@ function NavUserMenu({
 		)
 	) : (
 		<>
-				<Button
-					asChild
-					variant="landingTinted"
-					size="sm"
-					className="group relative h-9 min-w-0 -mr-1 overflow-hidden rounded-full px-3.5 text-[10px] font-semibold tracking-[0.12em] text-white shadow-[0_10px_26px_rgba(8,47,73,0.18)]"
-				>
-					<Link href="/login" className="flex items-center gap-2">
-						<div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:animate-shimmer" />
-						<span className="relative z-10 flex items-center gap-2">
-							<IconLogin2 className="size-4 text-blue-400 group-hover:scale-110 transition-transform duration-300" />
-							<span className="hidden xs:inline font-bold tracking-tight">
-								Acceso Miembros
-							</span>
-							<span className="xs:hidden font-bold tracking-tight">
-								Entrar
-							</span>
+			<Button
+				asChild
+				variant="landingTinted"
+				size="sm"
+				className="group relative h-9 min-w-0 -mr-1 overflow-hidden rounded-full px-3.5 text-[10px] font-semibold tracking-[0.12em] text-white shadow-[0_10px_26px_rgba(8,47,73,0.18)]"
+			>
+				<Link href="/login" className="flex items-center gap-2">
+					<div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:animate-shimmer" />
+					<span className="relative z-10 flex items-center gap-2">
+						<IconLogin2 className="size-4 text-blue-400 group-hover:scale-110 transition-transform duration-300" />
+						<span className="hidden xs:inline font-bold tracking-tight">
+							Acceso Miembros
 						</span>
-					</Link>
-				</Button>
+						<span className="xs:hidden font-bold tracking-tight">Entrar</span>
+					</span>
+				</Link>
+			</Button>
 		</>
 	);
 }
