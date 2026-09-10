@@ -114,8 +114,7 @@ async function doFetchRaiderIoProfile(
 		if (!res.ok) {
 			let errMsg = "Error desconocido";
 			if (res.status === 404)
-				errMsg =
-					"Personaje no encontrado (puede que no haya pisado ninguna M+)";
+				errMsg = "Personaje no encontrado (puede que no haya pisado ninguna M+)";
 			else if (res.status === 400 || res.status === 429) {
 				const errData = await res.json().catch(() => ({}));
 				errMsg = errData.message || "Error al conectar con la API de Raider.IO";
@@ -366,8 +365,7 @@ function useStatsClientContent({
 										</CardTitle>
 									</div>
 									<CardDescription className="text-[10px] md:text-xs max-w-[280px] md:max-w-none">
-										Accede a los últimos reportes y análisis de combate de la
-										hermandad.
+										Accede a los últimos reportes y análisis de combate de la hermandad.
 									</CardDescription>
 								</div>
 								<WclFilterControls
@@ -376,9 +374,7 @@ function useStatsClientContent({
 									onZoneChange={(v) =>
 										dispatchWcl({ type: "SET_ZONE_FILTER", filter: v })
 									}
-									onTagChange={(v) =>
-										dispatchWcl({ type: "SET_TAG_FILTER", filter: v })
-									}
+									onTagChange={(v) => dispatchWcl({ type: "SET_TAG_FILTER", filter: v })}
 									onSearchChange={(v) =>
 										dispatchWcl({ type: "SET_SEARCH_QUERY", query: v })
 									}
@@ -527,9 +523,7 @@ function useStatsClientContent({
 							<div className="flex border-b border-border/10 px-6">
 								<button
 									type="button"
-									onClick={() =>
-										dispatchWcl({ type: "SET_MODAL_TAB", tab: "sumario" })
-									}
+									onClick={() => dispatchWcl({ type: "SET_MODAL_TAB", tab: "sumario" })}
 									className={cn(
 										"px-4 py-2.5 text-xs font-semibold uppercase tracking-widest  border-b-2 -mb-px",
 										wcl.modalTab === "sumario"
@@ -541,9 +535,7 @@ function useStatsClientContent({
 								</button>
 								<button
 									type="button"
-									onClick={() =>
-										dispatchWcl({ type: "SET_MODAL_TAB", tab: "intentos" })
-									}
+									onClick={() => dispatchWcl({ type: "SET_MODAL_TAB", tab: "intentos" })}
 									className={cn(
 										"px-4 py-2.5 text-xs font-semibold uppercase tracking-widest  border-b-2 -mb-px",
 										wcl.modalTab === "intentos"
@@ -570,9 +562,7 @@ function useStatsClientContent({
 												{/* GROUP COMPOSITION */}
 												{wcl.reportDetails.playerDetails?.data?.playerDetails &&
 													(() => {
-														const pd =
-															wcl.reportDetails.playerDetails.data
-																.playerDetails;
+														const pd = wcl.reportDetails.playerDetails.data.playerDetails;
 														const tanks = pd.tanks || [];
 														const healersList = pd.healers || [];
 														const dpsList = pd.dps || [];
@@ -642,10 +632,8 @@ function useStatsClientContent({
 													})()}
 
 												{/* DAMAGE & HEALING TABLES */}
-												{(wcl.reportDetails.damageDone?.data?.entries?.length >
-													0 ||
-													wcl.reportDetails.healingDone?.data?.entries?.length >
-														0) &&
+												{(wcl.reportDetails.damageDone?.data?.entries?.length > 0 ||
+													wcl.reportDetails.healingDone?.data?.entries?.length > 0) &&
 													(() => {
 														const fmt = (n: number) =>
 															n >= 1000000
@@ -655,10 +643,8 @@ function useStatsClientContent({
 																	: n.toFixed(0);
 														const duration =
 															(wcl.reportDetails.damageDone?.data?.totalTime ||
-																wcl.reportDetails.healingDone?.data
-																	?.totalTime ||
-																wcl.reportDetails.endTime -
-																	wcl.reportDetails.startTime) / 1000;
+																wcl.reportDetails.healingDone?.data?.totalTime ||
+																wcl.reportDetails.endTime - wcl.reportDetails.startTime) / 1000;
 														const dmgSorted = (
 															wcl.reportDetails.damageDone?.data?.entries || []
 														).toSorted((a: any, b: any) => b.total - a.total);
@@ -680,14 +666,9 @@ function useStatsClientContent({
 															Warlock: "#8788EE",
 															Warrior: "#C69B6D",
 														};
-														const getColor = (
-															type?: string,
-															fallbackClassId?: number,
-														) =>
+														const getColor = (type?: string, fallbackClassId?: number) =>
 															(type ? wclClassColors[type] : undefined) ||
-															(fallbackClassId
-																? classColors[fallbackClassId]
-																: undefined) ||
+															(fallbackClassId ? classColors[fallbackClassId] : undefined) ||
 															"#888888";
 
 														const mergeRosterRows = (entries: any[]) => {
@@ -741,9 +722,7 @@ function useStatsClientContent({
 																	<div className="grid grid-cols-[1fr_90px_80px] text-[9px] font-semibold uppercase tracking-widest text-muted-foreground/40 px-3 py-1.5 border-b border-border/10 bg-muted/5">
 																		<span>Nombre</span>
 																		<span className="text-right">Cantidad</span>
-																		<span className="text-right">
-																			{metricLabel}
-																		</span>
+																		<span className="text-right">{metricLabel}</span>
 																	</div>
 																	{entries.map((entry: any) => {
 																		const maxTotal = entries[0]?.total || 1;
@@ -803,8 +782,7 @@ function useStatsClientContent({
 
 										{wcl.modalTab === "intentos" && (
 											<div className="grid grid-cols-1 gap-2">
-												{wcl.reportDetails.fights &&
-												wcl.reportDetails.fights.length > 0 ? (
+												{wcl.reportDetails.fights && wcl.reportDetails.fights.length > 0 ? (
 													wcl.reportDetails.fights.map((fight: any) => (
 														<a
 															href={`https://www.warcraftlogs.com/reports/${wcl.selectedReport?.code}#fight=${fight.id}`}
@@ -854,8 +832,7 @@ function useStatsClientContent({
 																			Mejor Intento
 																		</span>
 																		<span className="text-xs font-semibold text-red-400/80">
-																			{(fight.fightPercentage / 100).toFixed(1)}
-																			%
+																			{(fight.fightPercentage / 100).toFixed(1)}%
 																		</span>
 																	</div>
 																)}
@@ -900,9 +877,7 @@ function useStatsClientContent({
 					<div className="grid gap-6 md:grid-cols-12 items-start">
 						<InspectorRosterCard
 							filteredMembers={filteredMembers}
-							selectedMemberName={
-								inspector.selectedMember?.character_name ?? null
-							}
+							selectedMemberName={inspector.selectedMember?.character_name ?? null}
 							searchQuery={searchQuery}
 							classColors={classColors}
 							onSearchChange={setSearchQuery}
