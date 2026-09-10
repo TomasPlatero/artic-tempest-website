@@ -152,9 +152,7 @@ async function applyRateLimit(req: NextRequest): Promise<NextResponse | null> {
 		maxRequests = 20;
 		windowSeconds = 60;
 		prefix = "ratelimit:artictempest:desktop:session";
-		const discordAccessToken = req.headers
-			.get("x-discord-access-token")
-			?.trim();
+		const discordAccessToken = req.headers.get("x-discord-access-token")?.trim();
 		if (discordAccessToken) {
 			identifier = `discord:${await sha256(discordAccessToken)}`;
 		}
@@ -219,10 +217,7 @@ async function applyRateLimit(req: NextRequest): Promise<NextResponse | null> {
 	);
 
 	if (!result.allowed) {
-		const retryAfter = Math.max(
-			1,
-			Math.ceil((result.reset - Date.now()) / 1000),
-		);
+		const retryAfter = Math.max(1, Math.ceil((result.reset - Date.now()) / 1000));
 		return NextResponse.json(
 			{ error: "Too many requests. Please try again later." },
 			{
@@ -321,8 +316,7 @@ function isMaintenanceAllowedPath(pathname: string) {
 
 export async function proxy(req: NextRequest) {
 	const pathname = req.nextUrl.pathname;
-	const forceNormativaRequested =
-		req.nextUrl.searchParams.get("forceNormativa");
+	const forceNormativaRequested = req.nextUrl.searchParams.get("forceNormativa");
 	const requestHeaders = new Headers(req.headers);
 	requestHeaders.set("x-pathname", pathname);
 	requestHeaders.set("x-public-page", isZonaRaiderPath(pathname) ? "0" : "1");

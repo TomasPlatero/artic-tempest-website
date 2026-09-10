@@ -9,10 +9,10 @@
  * them directly assertable — see response-headers.test.ts.
  */
 export const PROXY_SECURITY_HEADERS = {
-	"X-Frame-Options": "DENY",
-	"X-Content-Type-Options": "nosniff",
-	"Referrer-Policy": "origin-when-cross-origin",
-	"Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
+ "X-Frame-Options": "DENY",
+ "X-Content-Type-Options": "nosniff",
+ "Referrer-Policy": "origin-when-cross-origin",
+ "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
 } as const;
 
 type ProxySecurityHeaderName = keyof typeof PROXY_SECURITY_HEADERS;
@@ -22,11 +22,11 @@ type ProxySecurityHeaderName = keyof typeof PROXY_SECURITY_HEADERS;
  * Returns the same instance so it can be used inline.
  */
 export function applySecurityHeaders(headers: Headers): Headers {
-	const names = Object.keys(PROXY_SECURITY_HEADERS) as ProxySecurityHeaderName[];
+ const names = Object.keys(PROXY_SECURITY_HEADERS) as ProxySecurityHeaderName[];
 
-	for (const name of names) {
-		headers.set(name, PROXY_SECURITY_HEADERS[name]);
-	}
+ for (const name of names) {
+  headers.set(name, PROXY_SECURITY_HEADERS[name]);
+ }
 
-	return headers;
+ return headers;
 }

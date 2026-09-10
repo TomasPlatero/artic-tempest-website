@@ -27,8 +27,7 @@ describe("next.config.ts security headers", () => {
 			const headerConfigs = await config.headers();
 			// Find the catch-all route pattern that carries security headers
 			const catchAll = headerConfigs.find(
-				(h: { source: string }) =>
-					h.source === "/:path((?!_next|api|assets).*)",
+				(h: { source: string }) => h.source === "/:path((?!_next|api|assets).*)",
 			);
 			if (catchAll?.headers) {
 				staticHeaders = catchAll.headers;
@@ -54,9 +53,7 @@ describe("next.config.ts security headers", () => {
 	});
 
 	it("sets X-Content-Type-Options to nosniff", () => {
-		const header = staticHeaders.find(
-			(h) => h.key === "X-Content-Type-Options",
-		);
+		const header = staticHeaders.find((h) => h.key === "X-Content-Type-Options");
 		expect(header?.value).toBe("nosniff");
 	});
 
@@ -103,13 +100,11 @@ describe("Content-Security-Policy specifics", () => {
 		if (typeof config?.headers === "function") {
 			const headerConfigs = await config.headers();
 			const catchAll = headerConfigs.find(
-				(h: { source: string }) =>
-					h.source === "/:path((?!_next|api|assets).*)",
+				(h: { source: string }) => h.source === "/:path((?!_next|api|assets).*)",
 			);
 			if (catchAll?.headers) {
 				const cspHeader = catchAll.headers.find(
-					(h: { key: string; value: string }) =>
-						h.key === "Content-Security-Policy",
+					(h: { key: string; value: string }) => h.key === "Content-Security-Policy",
 				);
 				if (cspHeader) cspValue = cspHeader.value;
 			}
