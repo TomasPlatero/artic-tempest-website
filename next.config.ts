@@ -102,6 +102,7 @@ const nextConfig: NextConfig = {
 
 import withBundleAnalyzer from "@next/bundle-analyzer";
 import { buildCsp } from "@/shared/security/csp-policy";
+import { SECURITY_HEADER_VALUES } from "@/shared/security/response-headers";
 
 const contentSecurityPolicy = buildCsp({
   dev: process.env.NODE_ENV === "development",
@@ -176,11 +177,17 @@ config.headers = async () => [
     source: "/:path((?!_next|api|assets).*)",
     headers: [
       { key: "Content-Security-Policy", value: contentSecurityPolicy },
-      { key: "X-Content-Type-Options", value: "nosniff" },
-      { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+      {
+        key: "X-Content-Type-Options",
+        value: SECURITY_HEADER_VALUES["X-Content-Type-Options"],
+      },
+      {
+        key: "Referrer-Policy",
+        value: SECURITY_HEADER_VALUES["Referrer-Policy"],
+      },
       {
         key: "Strict-Transport-Security",
-        value: "max-age=31536000; includeSubDomains; preload",
+        value: SECURITY_HEADER_VALUES["Strict-Transport-Security"],
       },
       {
         key: "Permissions-Policy",

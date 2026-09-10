@@ -11,7 +11,7 @@ import { describe, it, expect, beforeAll } from "vitest";
 import { assertSecurityHeaders } from "./test-utils";
 import {
 	applySecurityHeaders,
-	PROXY_SECURITY_HEADERS,
+	SECURITY_HEADER_VALUES,
 } from "./response-headers";
 
 // Note: next.config.ts is expensive to import (Sentry config checks) and may have
@@ -38,13 +38,11 @@ beforeAll(async () => {
 	staticHeaders = catchAll.headers;
 	cspValue =
 		catchAll.headers.find(
-			(h: { key: string; value: string }) =>
-				h.key === "Content-Security-Policy",
+			(h: { key: string; value: string }) => h.key === "Content-Security-Policy",
 		)?.value ?? "";
 }, 30_000);
 
 describe("next.config.ts security headers", () => {
-
 	it("has all mandated static security headers via assertSecurityHeaders", () => {
 		expect(staticHeaders.length).toBeGreaterThanOrEqual(8);
 		const headers = new Headers();
@@ -102,7 +100,6 @@ describe("next.config.ts security headers", () => {
 });
 
 describe("Content-Security-Policy specifics", () => {
-
 	it("contains object-src 'none'", () => {
 		expect(cspValue).toContain("object-src 'none'");
 	});
@@ -151,17 +148,27 @@ describe("proxy runtime security headers", () => {
 
 		expect(headers.get("X-Frame-Options")).toBe("DENY");
 		expect(headers.get("X-Content-Type-Options")).toBe("nosniff");
-		expect(headers.get("Referrer-Policy")).toBe("origin-when-cross-origin");
+		expect(headers.get("Referrer-Policy")).toBe(
+			SECURITY_HEADER_VALUES["Referrer-Policy"],
+		);
 		expect(headers.get("Strict-Transport-Security")).toBe(
 			"max-age=31536000; includeSubDomains; preload",
 		);
+	});
+
+	it("advertises the same Referrer-Policy as the static config", () => {
+		// Both layers must agree: next.config.ts and the proxy used to send
+		// different values, and whichever one won was undeclared (ATW-23).
+		const referrer = staticHeaders.find((h) => h.key === "Referrer-Policy");
+
+		expect(referrer?.value).toBe(SECURITY_HEADER_VALUES["Referrer-Policy"]);
 	});
 
 	it("covers, with next.config.ts, all 8 mandated headers", () => {
 		// The mandated headers are split across two layers: the static list in
 		// next.config.ts and the runtime list the proxy applies to every response.
 		const staticKeys = staticHeaders.map((h) => h.key);
-		const covered = [...staticKeys, ...Object.keys(PROXY_SECURITY_HEADERS)];
+		const covered = [...staticKeys, ...Object.keys(SECURITY_HEADER_VALUES)];
 
 		for (const key of MANDATED_HEADER_KEYS) {
 			expect(covered, `${key} missing from config and proxy`).toContain(key);

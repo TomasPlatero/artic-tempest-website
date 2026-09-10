@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/shared/layout/theme-provider";
 import { SessionProvider } from "@/shared/layout/session-provider";
 import { SkipLink } from "@/shared/components/skip-link";
 import { getSynchronousNonce } from "@/shared/security/csp-nonce";
+import { SECURITY_HEADER_VALUES } from "@/shared/security/response-headers";
 import { JsonLdHead } from "@/shared/seo/json-ld-head";
 import { LayoutH1 } from "@/shared/seo/layout-h1";
 import {
@@ -53,7 +54,7 @@ export async function generateMetadata(): Promise<Metadata> {
 	return {
 		title,
 		description: desc,
-		referrer: "strict-origin-when-cross-origin",
+		referrer: SECURITY_HEADER_VALUES["Referrer-Policy"],
 		keywords: [
 			"World of Warcraft",
 			"WoW",
