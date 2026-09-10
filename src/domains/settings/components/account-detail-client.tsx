@@ -470,7 +470,10 @@ function useAccountDetailClient({
 		effectivePage * charactersPerPage,
 	);
 
-	const saveProfile = async (payload: Record<string, unknown>, message: string) => {
+	const saveProfile = async (
+		payload: Record<string, unknown>,
+		message: string,
+	) => {
 		updateUi({ type: "merge", value: { savingProfile: true } });
 		const result = await doSaveProfile(profile.user_id, payload);
 		if (result.success) {
@@ -576,8 +579,7 @@ function useAccountDetailClient({
 		) || profile.raider_rules_discord_role_status === "assigned",
 	);
 	const raiderRulesAccepted =
-		Boolean(profile.raider_rules_accepted_at) ||
-		raiderRulesHasLegacyDiscordRole;
+		Boolean(profile.raider_rules_accepted_at) || raiderRulesHasLegacyDiscordRole;
 	const quickActionsDisabled = !(canEdit || canManage);
 	const createdAtLabel = dateFormatter.format(new Date(profile.created_at));
 	const lastVerificationLabel = profile.last_verification_check
@@ -782,10 +784,7 @@ function renderAccountDetailView(params: AccountDetailViewParams) {
 										disabled={action === "verify" || quickActionsDisabled}
 									>
 										<IconRotate
-											className={cn(
-												"size-4",
-												action === "verify" && "animate-spin",
-											)}
+											className={cn("size-4", action === "verify" && "animate-spin")}
 										/>
 										Forzar verificación
 									</Button>
@@ -793,14 +792,10 @@ function renderAccountDetailView(params: AccountDetailViewParams) {
 										variant={profile.is_banned ? "default" : "destructive"}
 										className="w-full justify-start gap-2"
 										onClick={() =>
-											profile.is_banned
-												? handleUnban()
-												: setIsBanModalOpen(true)
+											profile.is_banned ? handleUnban() : setIsBanModalOpen(true)
 										}
 										disabled={
-											action === "ban" ||
-											action === "unban" ||
-											quickActionsDisabled
+											action === "ban" || action === "unban" || quickActionsDisabled
 										}
 									>
 										{profile.is_banned ? (
@@ -920,9 +915,7 @@ function renderAccountDetailView(params: AccountDetailViewParams) {
 						</div>
 						{profile.is_banned && (
 							<div className="text-rose-400 bg-rose-500/10 rounded-xl border border-rose-500/20 p-3 text-xs">
-								<p className="font-semibold uppercase tracking-[0.3em] mb-1">
-									Baneado
-								</p>
+								<p className="font-semibold uppercase tracking-[0.3em] mb-1">Baneado</p>
 								<p>{profile.ban_reason || "Acceso bloqueado"}</p>
 							</div>
 						)}
@@ -952,8 +945,7 @@ function renderAccountDetailView(params: AccountDetailViewParams) {
 								</div>
 							) : null}
 
-							{!draft.discordRoleError &&
-							initialDiscordRoleOptions.length === 0 ? (
+							{!draft.discordRoleError && initialDiscordRoleOptions.length === 0 ? (
 								<p className="text-xs text-white/50">
 									No hay roles asignables disponibles en el servidor.
 								</p>
@@ -964,8 +956,7 @@ function renderAccountDetailView(params: AccountDetailViewParams) {
 									const memberRoleIdSet = new Set(draft.memberDiscordRoleIds);
 									return initialDiscordRoleOptions.map((role: any) => {
 										const checked = memberRoleIdSet.has(role.id);
-										const disabled =
-											!canManage || discordRoleAction === role.id;
+										const disabled = !canManage || discordRoleAction === role.id;
 										return (
 											<label
 												key={role.id}
@@ -1001,7 +992,10 @@ function renderAccountDetailView(params: AccountDetailViewParams) {
 						</CardTitle>
 					</CardHeader>
 					<CardContent className="space-y-4">
-						<label htmlFor="bot-dashboard-access" className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-zinc-950/30 p-4">
+						<label
+							htmlFor="bot-dashboard-access"
+							className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-zinc-950/30 p-4"
+						>
 							<div className="space-y-1">
 								<span className="text-sm font-medium text-white">
 									Acceder al Dashboard del bot
@@ -1012,7 +1006,7 @@ function renderAccountDetailView(params: AccountDetailViewParams) {
 								</p>
 							</div>
 							<Checkbox
-																id="bot-dashboard-access"
+								id="bot-dashboard-access"
 								checked={Boolean(profile.can_access_bot_dashboard)}
 								disabled={!canManage}
 								onCheckedChange={(nextValue) =>
@@ -1152,14 +1146,10 @@ function renderAccountDetailView(params: AccountDetailViewParams) {
 														size="sm"
 														variant="outline"
 														className="h-8"
-														disabled={
-															!canManage || savingMainCharacterId === char.id
-														}
+														disabled={!canManage || savingMainCharacterId === char.id}
 														onClick={() => handleSetMainCharacter(char.id)}
 													>
-														{savingMainCharacterId === char.id
-															? "Guardando..."
-															: "Marcar"}
+														{savingMainCharacterId === char.id ? "Guardando..." : "Marcar"}
 													</Button>
 												)}
 											</TableCell>
@@ -1223,9 +1213,7 @@ function renderAccountDetailView(params: AccountDetailViewParams) {
 									<Badge variant="outline">{app.status}</Badge>
 								</div>
 								<p className="text-white/60 text-xs mt-1">
-									{app.character_spec ||
-										app.character_class ||
-										"Sin especialización"}
+									{app.character_spec || app.character_class || "Sin especialización"}
 								</p>
 								<p className="text-white/40 text-xs mt-2">
 									Creada {applicationCreatedAtLabel(app.created_at)}

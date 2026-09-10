@@ -17,12 +17,105 @@ declare global {
 	}
 }
 
+type SlotState = "ad-request-enabled" | "adblock-warning" | "reserved-only";
+
+type SlotVisibility = {
+	visible: boolean;
+	canRender: boolean;
+	showAdblockWarning: boolean;
+	slotState: SlotState;
+};
+
 function resolveZone(
 	pathname: string,
 	zoneId: AdsenseZoneId,
 ): AdsenseRouteZone | null {
 	const zones = getAdsenseZonesForRoute(pathname);
 	return zones.find((zone) => zone.id === zoneId) ?? null;
+}
+
+function resolveSlotVisibility({
+	adsenseEnabled,
+	hasZone,
+	routeEligible,
+	hasAdSlot,
+	consentGranted,
+	adblockDetected,
+}: {
+	adsenseEnabled: boolean;
+	hasZone: boolean;
+	routeEligible: boolean;
+	hasAdSlot: boolean;
+	consentGranted: boolean;
+	adblockDetected: boolean;
+}): SlotVisibility {
+	if (!adsenseEnabled || !hasZone || !routeEligible) {
+		return {
+			visible: false,
+			canRender: false,
+			showAdblockWarning: false,
+			slotState: "reserved-only",
+		};
+	}
+
+	const canRender = hasAdSlot && consentGranted && !adblockDetected;
+	const showAdblockWarning = !canRender && consentGranted && adblockDetected;
+	const slotState: SlotState = canRender
+		? "ad-request-enabled"
+		: showAdblockWarning
+			? "adblock-warning"
+			: "reserved-only";
+
+	return { visible: true, canRender, showAdblockWarning, slotState };
+}
+
+function AdblockWarning() {
+	return (
+		<div
+			aria-live="polite"
+			aria-atomic="true"
+			className="flex h-full min-h-[inherit] flex-col items-center justify-center rounded-xl border border-amber-400/20 bg-amber-400/5 px-4 py-6 text-center"
+		>
+			<div className="text-sm font-semibold text-amber-200">
+				Bloqueador de anuncios detectado
+			</div>
+			<p className="mt-2 max-w-md text-xs leading-5 text-zinc-300">
+				Si quieres apoyar el sitio, desactiva el bloqueador para Artic Tempest o
+				añade la web a tu lista blanca.
+			</p>
+		</div>
+	);
+}
+
+function AdsenseUnit({
+	adClient,
+	adSlot,
+	minHeightPx,
+}: {
+	adClient?: string;
+	adSlot?: string;
+	minHeightPx: number;
+}) {
+	return (
+		<ins
+			className="adsbygoogle block w-full overflow-hidden"
+			style={{ minHeight: `${minHeightPx}px` }}
+			data-ad-client={adClient}
+			data-ad-format="auto"
+			data-full-width-responsive="true"
+			data-ad-slot={adSlot}
+		/>
+	);
+}
+
+function ReservedAdSlot({ minHeightPx }: { minHeightPx: number }) {
+	return (
+		<div
+			aria-hidden="true"
+			className="w-full rounded-xl border border-dashed border-white/10"
+			style={{ minHeight: `${minHeightPx}px` }}
+		/>
+	);
 }
 
 export function RouteScopedAdsenseSlot({
@@ -57,21 +150,15 @@ export function RouteScopedAdsenseSlot({
 	);
 
 	const zone = resolveZone(pathname, zoneId);
-	const routeEligible = isAdsenseEligibleRoute(pathname);
-	const adsenseEnabled = isAdsenseEnabled();
-	const canRender =
-		adsenseEnabled &&
-		Boolean(zone) &&
-		routeEligible &&
-		Boolean(adSlot) &&
-		consentGranted &&
-		!adblockDetected;
-	const showAdblockWarning =
-		adsenseEnabled &&
-		Boolean(zone) &&
-		routeEligible &&
-		consentGranted &&
-		adblockDetected;
+	const { visible, canRender, showAdblockWarning, slotState } =
+		resolveSlotVisibility({
+			adsenseEnabled: isAdsenseEnabled(),
+			hasZone: Boolean(zone),
+			routeEligible: isAdsenseEligibleRoute(pathname),
+			hasAdSlot: Boolean(adSlot),
+			consentGranted,
+			adblockDetected,
+		});
 
 	const pushAd = React.useEffectEvent(() => {
 		try {
@@ -92,7 +179,7 @@ export function RouteScopedAdsenseSlot({
 		pushAd();
 	}, [canRender]);
 
-	if (!adsenseEnabled || !zone || !routeEligible) return null;
+	if (!visible || !zone) return null;
 
 	const reservedStyle = {
 		minHeight: `${zone.mobileMinHeightPx}px`,
@@ -105,13 +192,7 @@ export function RouteScopedAdsenseSlot({
 			data-adsense-pathname={pathname}
 			data-adsense-consent={consentGranted ? "granted" : "denied"}
 			data-adsense-adblock={adblockDetected ? "detected" : "clear"}
-			data-adsense-slot-state={
-				canRender
-					? "ad-request-enabled"
-					: showAdblockWarning
-						? "adblock-warning"
-						: "reserved-only"
-			}
+			data-adsense-slot-state={slotState}
 			className={className}
 		>
 			<div
@@ -123,34 +204,15 @@ export function RouteScopedAdsenseSlot({
 				</div>
 
 				{showAdblockWarning ? (
-					<div
-						aria-live="polite"
-						aria-atomic="true"
-						className="flex h-full min-h-[inherit] flex-col items-center justify-center rounded-xl border border-amber-400/20 bg-amber-400/5 px-4 py-6 text-center"
-					>
-						<div className="text-sm font-semibold text-amber-200">
-							Bloqueador de anuncios detectado
-						</div>
-						<p className="mt-2 max-w-md text-xs leading-5 text-zinc-300">
-							Si quieres apoyar el sitio, desactiva el bloqueador para Artic
-							Tempest o añade la web a tu lista blanca.
-						</p>
-					</div>
+					<AdblockWarning />
 				) : canRender ? (
-					<ins
-						className="adsbygoogle block w-full overflow-hidden"
-						style={{ minHeight: `${zone.minHeightPx}px` }}
-						data-ad-client={adClient}
-						data-ad-format="auto"
-						data-full-width-responsive="true"
-						data-ad-slot={adSlot}
+					<AdsenseUnit
+						adClient={adClient}
+						adSlot={adSlot}
+						minHeightPx={zone.minHeightPx}
 					/>
 				) : (
-					<div
-						aria-hidden="true"
-						className="w-full rounded-xl border border-dashed border-white/10"
-						style={{ minHeight: `${zone.minHeightPx}px` }}
-					/>
+					<ReservedAdSlot minHeightPx={zone.minHeightPx} />
 				)}
 			</div>
 		</section>

@@ -23,6 +23,106 @@ type OnboardingStatus = {
 	isBattleNetReady: boolean;
 };
 
+function AccountSetupGate() {
+	return (
+		<div className="fixed inset-0 z-[90] flex items-center justify-center bg-zinc-950/75 px-4 backdrop-blur-[2px]">
+			<div className="w-full max-w-2xl rounded-3xl border border-rose-500/20 bg-[#0d1220] p-6 text-white shadow-2xl shadow-black/60">
+				<div className="space-y-4">
+					<div>
+						<p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-rose-300/80">
+							Obligatorio
+						</p>
+						<h2 className="mt-2 text-2xl font-semibold uppercase tracking-tight">
+							Vincula Battle.net
+						</h2>
+						<p className="mt-3 text-sm leading-relaxed text-white/65">
+							Debes vincular tu cuenta de Battle.net antes de seguir navegando por la
+							Zona Raider.
+						</p>
+					</div>
+
+					<div className="grid gap-4 sm:grid-cols-[160px_1fr] sm:items-center rounded-3xl border border-white/10 bg-white/[0.03] p-3">
+						<ZonaRaiderTourCharacterImage
+							src="/assets/images/tour/gnome-talking.webp"
+							alt="Gnomito del tour"
+							className="h-[160px]"
+						/>
+						<div className="space-y-2">
+							<p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-cyan-300/70">
+								Zona Raider
+							</p>
+							<p className="text-sm leading-relaxed text-white/70">
+								Sin Battle.net vinculado no podrás seguir.
+							</p>
+						</div>
+					</div>
+
+					<div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm leading-relaxed text-white/70">
+						Ve a tu cuenta y completa la vinculación antes de volver aquí.
+					</div>
+
+					<div className="flex flex-wrap gap-3 justify-end">
+						<Link
+							href="/zona-raider/cuenta"
+							className="inline-flex items-center justify-center rounded-xl bg-white px-4 py-2 text-sm font-semibold uppercase tracking-widest text-black transition-colors hover:bg-white/90"
+						>
+							Ir a Cuenta
+						</Link>
+					</div>
+				</div>
+			</div>
+		</div>
+	);
+}
+
+function AccountSetupReminder() {
+	return (
+		<div className="mx-auto mb-4 max-w-[1600px] px-4 md:px-6">
+			<div className="rounded-3xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm leading-relaxed text-rose-100 shadow-lg shadow-black/20">
+				<strong className="uppercase tracking-wide">Obligatorio:</strong> revisa que
+				tu Battle.net esté vinculado. Si ya lo tienes, entra en la cuenta y marca tu
+				personaje principal si todavía no lo has hecho.
+			</div>
+		</div>
+	);
+}
+
+function resolveGuildIdentity(
+	guildInfo?: { name?: string | null; icon_url?: string | null } | null,
+) {
+	return {
+		name: guildInfo?.name || "Artic Tempest",
+		iconUrl: guildInfo?.icon_url || null,
+	};
+}
+
+function resolveLayoutFlags({
+	onboardingStatus,
+	pathname,
+	isMobile,
+	showTourPrompt,
+	tourEnabledFromDB,
+}: {
+	onboardingStatus: OnboardingStatus;
+	pathname: string;
+	isMobile: boolean;
+	showTourPrompt: boolean;
+	tourEnabledFromDB: boolean;
+}) {
+	const needsAccountSetup =
+		!onboardingStatus.isBnetLinked || onboardingStatus.charactersCount === 0;
+	const isAccountPage = pathname === "/zona-raider/cuenta";
+
+	return {
+		needsAccountSetup,
+		showAccountSetupGate: needsAccountSetup && !isAccountPage,
+		showAccountSetupReminder: needsAccountSetup && isAccountPage,
+		showTourEngine: !needsAccountSetup,
+		tourEngineEnabled: !isMobile && tourEnabledFromDB,
+		allowTourAutoStart: !showTourPrompt,
+	};
+}
+
 function ZonaRaiderLayoutClientContent({
 	children,
 	onboardingStatus: serverOnboardingStatus,
@@ -58,12 +158,21 @@ function ZonaRaiderLayoutClientContent({
 	// Datos resueltos en servidor — no hay flash
 	const onboardingStatus = serverOnboardingStatus;
 	const tourViewableAppIds = serverTourViewableAppIds ?? [];
-	const tourEnabledFromDB = serverTourEnabled ?? true;
 
-	const needsBattleNetLink = !onboardingStatus.isBnetLinked;
-	const needsCharacters = onboardingStatus.charactersCount === 0;
-	const needsAccountSetup = needsBattleNetLink || needsCharacters;
-	const isAccountPage = pathname === "/zona-raider/cuenta";
+	const {
+		showAccountSetupGate,
+		showAccountSetupReminder,
+		showTourEngine,
+		tourEngineEnabled,
+		allowTourAutoStart,
+	} = resolveLayoutFlags({
+		onboardingStatus,
+		pathname,
+		isMobile,
+		showTourPrompt,
+		tourEnabledFromDB: serverTourEnabled ?? true,
+	});
+	const guildIdentity = resolveGuildIdentity(guildInfo);
 
 	if (status === "loading") return null;
 	if (status === "unauthenticated") {
@@ -88,80 +197,20 @@ function ZonaRaiderLayoutClientContent({
 				<div className="relative z-10 flex flex-1 flex-col overflow-hidden">
 					{session?.user?.id && <PresenceHeartbeat userId={session.user.id} />}
 					<ZonaRaiderTopNav
-						guildName={guildInfo?.name || "Artic Tempest"}
-						iconUrl={guildInfo?.icon_url || null}
+						guildName={guildIdentity.name}
+						iconUrl={guildIdentity.iconUrl}
 					/>
-					{!needsAccountSetup && (
+					{showTourEngine && (
 						<ZonaRaiderTourEngine
-							enabled={!isMobile && tourEnabledFromDB}
+							enabled={tourEngineEnabled}
 							roleLevel={roleLevel}
-							allowAutoStart={!showTourPrompt}
+							allowAutoStart={allowTourAutoStart}
 							viewableAppIds={tourViewableAppIds}
 						/>
 					)}
-					{!needsAccountSetup && <RaiderTourOnboarding enabled={!isMobile} />}
-					{needsAccountSetup && !isAccountPage && (
-						<div className="fixed inset-0 z-[90] flex items-center justify-center bg-zinc-950/75 px-4 backdrop-blur-[2px]">
-							<div className="w-full max-w-2xl rounded-3xl border border-rose-500/20 bg-[#0d1220] p-6 text-white shadow-2xl shadow-black/60">
-								<div className="space-y-4">
-									<div>
-										<p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-rose-300/80">
-											Obligatorio
-										</p>
-										<h2 className="mt-2 text-2xl font-semibold uppercase tracking-tight">
-											Vincula Battle.net
-										</h2>
-										<p className="mt-3 text-sm leading-relaxed text-white/65">
-											Debes vincular tu cuenta de Battle.net antes de seguir
-											navegando por la Zona Raider.
-										</p>
-									</div>
-
-									<div className="grid gap-4 sm:grid-cols-[160px_1fr] sm:items-center rounded-3xl border border-white/10 bg-white/[0.03] p-3">
-										<ZonaRaiderTourCharacterImage
-											src="/assets/images/tour/gnome-talking.webp"
-											alt="Gnomito del tour"
-											className="h-[160px]"
-										/>
-										<div className="space-y-2">
-											<p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-cyan-300/70">
-												Zona Raider
-											</p>
-											<p className="text-sm leading-relaxed text-white/70">
-												Sin Battle.net vinculado no podrás seguir.
-											</p>
-										</div>
-									</div>
-
-									<div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm leading-relaxed text-white/70">
-										Ve a tu cuenta y completa la vinculación antes de volver
-										aquí.
-									</div>
-
-									<div className="flex flex-wrap gap-3 justify-end">
-										<Link
-											href="/zona-raider/cuenta"
-											className="inline-flex items-center justify-center rounded-xl bg-white px-4 py-2 text-sm font-semibold uppercase tracking-widest text-black transition-colors hover:bg-white/90"
-										>
-											Ir a Cuenta
-										</Link>
-									</div>
-								</div>
-							</div>
-						</div>
-					)}
-					{needsAccountSetup && isAccountPage && (
-						<div className="mx-auto mb-4 max-w-[1600px] px-4 md:px-6">
-							<div className="rounded-3xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm leading-relaxed text-rose-100 shadow-lg shadow-black/20">
-								<strong className="uppercase tracking-wide">
-									Obligatorio:
-								</strong>{" "}
-								revisa que tu Battle.net esté vinculado. Si ya lo tienes, entra
-								en la cuenta y marca tu personaje principal si todavía no lo has
-								hecho.
-							</div>
-						</div>
-					)}
+					{showTourEngine && <RaiderTourOnboarding enabled={!isMobile} />}
+					{showAccountSetupGate && <AccountSetupGate />}
+					{showAccountSetupReminder && <AccountSetupReminder />}
 					<main
 						id="main-content"
 						className={`flex-1 overflow-y-auto ${RAIDER_PAGE_FADE_IN_CLASSES}`}

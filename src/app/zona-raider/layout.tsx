@@ -23,6 +23,63 @@ export const metadata: Metadata = {
 	},
 };
 
+type RaiderRulesStatus = Awaited<ReturnType<typeof getRaiderRulesStatus>>;
+
+function isRaiderBotUnavailable(status: RaiderRulesStatus) {
+	return (
+		!status.discordHasVerifiedRole &&
+		(!status.discordIntegrationReady ||
+			Boolean(status.discordRoleError) ||
+			Boolean(status.discordVerificationError) ||
+			Boolean(status.acceptedAt && status.discordRoleStatus !== "assigned"))
+	);
+}
+
+function needsNormativeAcceptance(status: RaiderRulesStatus) {
+	return status.discordRoleError === "debug" || !status.discordHasVerifiedRole;
+}
+
+async function resolveTourViewableAppIds(roleLevel: string): Promise<string[]> {
+	const appIds = [
+		...new Set(
+			desktopZonaRaiderTourSteps.flatMap((s) => (s.appId ? [s.appId] : [])),
+		),
+	];
+
+	const permissions = await Promise.all(
+		appIds.map(async (appId) => {
+			const { canView } = await getAppPermission(roleLevel, appId);
+			return canView ? appId : null;
+		}),
+	);
+
+	return permissions.filter((appId): appId is string => appId !== null);
+}
+
+function resolveOnboardingStatus({
+	profile,
+	charactersCount,
+	resolvedMainCharacterId,
+}: {
+	profile: {
+		battlenet_battletag?: string | null;
+		battlenet_id?: string | null;
+	} | null;
+	charactersCount: number;
+	resolvedMainCharacterId: string | null;
+}) {
+	const isBnetLinked = Boolean(
+		profile?.battlenet_id || profile?.battlenet_battletag,
+	);
+
+	return {
+		isBnetLinked,
+		charactersCount,
+		hasMainCharacter: Boolean(resolvedMainCharacterId),
+		isBattleNetReady: isBnetLinked,
+	};
+}
+
 export default async function ZonaRaiderLayout({
 	children,
 }: {
@@ -57,22 +114,13 @@ export default async function ZonaRaiderLayout({
 
 	// ── Queries rápidas (Supabase, ~10-20ms) que corren en paralelo con Discord ──
 	const [
-		tourGatedAppIds,
+		tourViewableAppIds,
 		{ data: tourSettings },
 		{ data: profile },
 		{ data: characters },
 		raiderRulesStatus,
 	] = await Promise.all([
-		Promise.all(
-			[
-				...new Set(
-					desktopZonaRaiderTourSteps.flatMap((s) => (s.appId ? [s.appId] : [])),
-				),
-			].map(async (appId) => {
-				const { canView } = await getAppPermission(roleLevel, appId);
-				return canView ? appId : null;
-			}),
-		),
+		resolveTourViewableAppIds(roleLevel),
 		supabaseAdmin
 			.from("settings")
 			.select("tour_enabled")
@@ -90,24 +138,13 @@ export default async function ZonaRaiderLayout({
 		getCachedRaiderRulesStatus(session.user.id),
 	]);
 
-	const raiderBotUnavailable =
-		!raiderRulesStatus.discordHasVerifiedRole &&
-		(!raiderRulesStatus.discordIntegrationReady ||
-			Boolean(raiderRulesStatus.discordRoleError) ||
-			Boolean(raiderRulesStatus.discordVerificationError) ||
-			Boolean(
-				raiderRulesStatus.acceptedAt &&
-					raiderRulesStatus.discordRoleStatus !== "assigned",
-			));
+	const raiderBotUnavailable = isRaiderBotUnavailable(raiderRulesStatus);
 
 	if (raiderBotUnavailable) {
 		redirect("/zona-raider/error");
 	}
 
-	if (
-		raiderRulesStatus.discordRoleError === "debug" ||
-		!raiderRulesStatus.discordHasVerifiedRole
-	) {
+	if (needsNormativeAcceptance(raiderRulesStatus)) {
 		return (
 			<div className="min-h-dvh w-full bg-[#020203] py-6 md:py-8">
 				<div className="mx-auto w-full max-w-7xl px-4 md:px-6 lg:px-8">
@@ -117,9 +154,6 @@ export default async function ZonaRaiderLayout({
 		);
 	}
 
-	const tourViewableAppIds: string[] = tourGatedAppIds.filter(
-		Boolean,
-	) as string[];
 	const tourEnabled = tourSettings?.tour_enabled ?? true;
 
 	const cookieStore = await cookies();
@@ -128,16 +162,11 @@ export default async function ZonaRaiderLayout({
 	const resolvedMainCharacterId =
 		profile?.main_character_id || cookieMainCharacterId || null;
 
-	const onboardingStatus = {
-		isBnetLinked: Boolean(
-			profile?.battlenet_id || profile?.battlenet_battletag,
-		),
+	const onboardingStatus = resolveOnboardingStatus({
+		profile,
 		charactersCount: characters?.length ?? 0,
-		hasMainCharacter: Boolean(resolvedMainCharacterId),
-		isBattleNetReady: Boolean(
-			profile?.battlenet_id || profile?.battlenet_battletag,
-		),
-	};
+		resolvedMainCharacterId,
+	});
 
 	return (
 		<Suspense fallback={<PageFallback />}>

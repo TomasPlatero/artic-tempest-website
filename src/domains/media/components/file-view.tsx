@@ -43,17 +43,22 @@ export function FileView({
 	const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
 	// Internal fallback selection state (for tests or standalone usage)
-	const [internalSelectedIds, setInternalSelectedIds] = useState<Set<string>>(new Set());
+	const [internalSelectedIds, setInternalSelectedIds] = useState<Set<string>>(
+		new Set(),
+	);
 	const effectiveSelectedIds = selectedIds ?? internalSelectedIds;
-	const effectiveOnSelect = onSelectFile ?? ((id: string, sel: boolean) => {
-		setInternalSelectedIds((prev) => {
-			const next = new Set(prev);
-			if (sel) next.add(id);
-			else next.delete(id);
-			return next;
+	const effectiveOnSelect =
+		onSelectFile ??
+		((id: string, sel: boolean) => {
+			setInternalSelectedIds((prev) => {
+				const next = new Set(prev);
+				if (sel) next.add(id);
+				else next.delete(id);
+				return next;
+			});
 		});
-	});
-	const effectiveOnDeselect = onDeselectAll ?? (() => setInternalSelectedIds(new Set()));
+	const effectiveOnDeselect =
+		onDeselectAll ?? (() => setInternalSelectedIds(new Set()));
 
 	// ── Loading ──────────────────────────────
 	if (isLoading && files.length === 0) {

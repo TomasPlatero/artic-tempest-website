@@ -63,6 +63,56 @@ function buildUrl(
 	return `/api/media?${params.toString()}`;
 }
 
+function resolveMediaPageKey({
+	bucket,
+	type,
+	search,
+	limit,
+	prefix,
+	pageIndex,
+	previousPageData,
+}: {
+	bucket: string;
+	type: string;
+	search: string | undefined;
+	limit: number;
+	prefix: string;
+	pageIndex: number;
+	previousPageData: MediaApiResponse | null;
+}): string | null {
+	if (!bucket) return null;
+	if (previousPageData && !previousPageData.nextCursor) return null;
+
+	const cursor = pageIndex === 0 ? null : (previousPageData?.nextCursor ?? null);
+	return buildUrl(bucket, type, search, limit, prefix, cursor);
+}
+
+function flattenMediaPages(pages: MediaApiResponse[] | undefined): {
+	files: MediaFile[];
+	subfolders: MediaSubfolder[];
+	total: number;
+	hasMore: boolean;
+} {
+	const files: MediaFile[] = [];
+	const subfolders: MediaSubfolder[] = [];
+	let total = 0;
+	let hasMore = false;
+
+	for (const page of pages ?? []) {
+		if (page.files) files.push(...page.files);
+		if (page.subfolders) subfolders.push(...page.subfolders);
+		if (page.total) total = page.total;
+		hasMore = page.nextCursor != null;
+	}
+
+	return { files, subfolders, total, hasMore };
+}
+
+function resolveMediaErrorMessage(error: unknown): string | null {
+	if (!error) return null;
+	return error instanceof Error ? error.message : "Error al cargar archivos";
+}
+
 /**
  * Hook to fetch media files and subfolders with cursor-based pagination via SWR.
  */
@@ -74,13 +124,16 @@ export function useMediaFiles(
 	const getKey = (
 		pageIndex: number,
 		previousPageData: MediaApiResponse | null,
-	) => {
-		if (!bucket) return null;
-		if (previousPageData && !previousPageData.nextCursor) return null;
-		const cursor =
-			pageIndex === 0 ? null : (previousPageData?.nextCursor ?? null);
-		return buildUrl(bucket, type, search, limit, prefix, cursor);
-	};
+	) =>
+		resolveMediaPageKey({
+			bucket,
+			type,
+			search,
+			limit,
+			prefix,
+			pageIndex,
+			previousPageData,
+		});
 
 	const { data, error, size, setSize, isValidating, mutate } =
 		useSWRInfinite<MediaApiResponse>(getKey, fetcher, {
@@ -91,19 +144,12 @@ export function useMediaFiles(
 
 	const loadingRef = useRef(false);
 
-	const files: MediaFile[] = [];
-	const subfoldersList: MediaSubfolder[] = [];
-	let total = 0;
-	let hasMore = false;
-
-	if (data) {
-		for (const page of data) {
-			if (page.files) files.push(...page.files);
-			if (page.subfolders) subfoldersList.push(...page.subfolders);
-			if (page.total) total = page.total;
-			hasMore = page.nextCursor != null;
-		}
-	}
+	const {
+		files,
+		subfolders: subfoldersList,
+		total,
+		hasMore,
+	} = flattenMediaPages(data);
 
 	const isLoading = !data && !error;
 
@@ -123,11 +169,7 @@ export function useMediaFiles(
 		files,
 		subfolders: subfoldersList,
 		isLoading,
-		error: error
-			? error instanceof Error
-				? error.message
-				: "Error al cargar archivos"
-			: null,
+		error: resolveMediaErrorMessage(error),
 		hasMore,
 		total,
 		loadMore,

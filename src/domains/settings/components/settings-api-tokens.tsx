@@ -225,6 +225,143 @@ function GeneratedTokenCard({
 // Token row (active or revoked)
 // ──────────────────────────────────────────────
 
+function TokenLabelEditor({
+	editLabel,
+	saving,
+	onEditLabelChange,
+	onSave,
+	onCancel,
+}: {
+	editLabel: string;
+	saving: boolean;
+	onEditLabelChange: (value: string) => void;
+	onSave: () => void;
+	onCancel: () => void;
+}) {
+	return (
+		<div className="flex items-center gap-2">
+			<Input
+				value={editLabel}
+				onChange={(e) => onEditLabelChange(e.target.value)}
+				onKeyDown={(e) => {
+					if (e.key === "Enter") onSave();
+					if (e.key === "Escape") onCancel();
+				}}
+				className="h-8 bg-zinc-950/40 text-sm"
+				placeholder="Sin etiqueta"
+			/>
+			<Button
+				size="icon"
+				aria-label="Guardar etiqueta"
+				variant="ghost"
+				className="size-7 shrink-0"
+				disabled={saving}
+				onClick={onSave}
+			>
+				{saving ? (
+					<IconLoader2 className="size-3.5 animate-spin" />
+				) : (
+					<IconCheck className="size-3.5 text-green-500" />
+				)}
+			</Button>
+			<Button
+				size="icon"
+				aria-label="Cancelar edición de etiqueta"
+				variant="ghost"
+				className="size-7 shrink-0"
+				onClick={onCancel}
+			>
+				<IconX className="size-3.5 text-muted-foreground" />
+			</Button>
+		</div>
+	);
+}
+
+function TokenMeta({ token, isRevoked }: { token: TokenRow; isRevoked: boolean }) {
+	const lastUsed = isRevoked ? (
+		<span>Revocado: {formatDate(token.revoked_at)}</span>
+	) : token.last_used_at ? (
+		<span className="flex items-center gap-1">
+			<IconClock className="size-3" />
+			Último uso: {formatDate(token.last_used_at)}
+		</span>
+	) : (
+		<span className="flex items-center gap-1">
+			<IconClock className="size-3" />
+			Sin uso
+		</span>
+	);
+
+	return (
+		<>
+			<p className="font-bold text-sm tracking-tight truncate flex items-center gap-2">
+				{token.label ?? "Sin etiqueta"}
+				{isRevoked ? (
+					<Badge
+						variant="outline"
+						className="text-[10px] py-0 h-4 border-red-500/30 text-red-400"
+					>
+						Revocado
+					</Badge>
+				) : null}
+			</p>
+			<div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground mt-0.5">
+				<span>Creado: {formatDate(token.created_at)}</span>
+				{lastUsed}
+				<span className="flex items-center gap-1 font-mono text-[10px] opacity-50">
+					<IconEye className="size-3" />
+					{shortId(token.id)}
+				</span>
+			</div>
+		</>
+	);
+}
+
+function TokenActions({
+	token,
+	revoking,
+	editing,
+	onStartEdit,
+	onRevoke,
+}: {
+	token: TokenRow;
+	revoking: boolean;
+	editing: boolean;
+	onStartEdit: (token: TokenRow) => void;
+	onRevoke: (id: string, label: string | null) => void;
+}) {
+	return (
+		<div className="flex items-center gap-1 shrink-0 ml-3">
+			{editing ? null : (
+				<Button
+					size="sm"
+					variant="ghost"
+					className="text-muted-foreground hover:text-white hover:bg-white/10"
+					onClick={() => onStartEdit(token)}
+				>
+					<IconPencil className="size-4" />
+					<span className="ml-1.5 hidden sm:inline">Editar</span>
+				</Button>
+			)}
+			<Button
+				size="sm"
+				variant="ghost"
+				disabled={revoking}
+				className="text-muted-foreground hover:text-red-400 hover:bg-red-400/10"
+				onClick={() => onRevoke(token.id, token.label)}
+			>
+				{revoking ? (
+					<IconLoader2 className="size-4 animate-spin" />
+				) : (
+					<IconTrash className="size-4" />
+				)}
+				<span className="ml-1.5 hidden sm:inline">Revocar</span>
+			</Button>
+		</div>
+	);
+}
+
+
 function TokenRow({
 	token,
 	isRevoked,
@@ -250,6 +387,10 @@ function TokenRow({
 	onRevoke: (id: string, label: string | null) => void;
 	onEditLabelChange: (value: string) => void;
 }) {
+	const isEditing = !isRevoked && editingId === token.id;
+	const isSaving = savingLabel === token.id;
+	const isRevoking = revoking === token.id;
+
 	return (
 		<div
 			className={`flex items-center gap-3 p-3 rounded-lg border ${
@@ -268,107 +409,27 @@ function TokenRow({
 				<IconKey className="size-4" />
 			</div>
 			<div className="min-w-0 flex-1">
-				{!isRevoked && editingId === token.id ? (
-					<div className="flex items-center gap-2">
-						<Input
-							value={editLabel}
-							onChange={(e) => onEditLabelChange(e.target.value)}
-							onKeyDown={(e) => {
-								if (e.key === "Enter") onSaveLabel(token.id);
-								if (e.key === "Escape") onCancelEdit();
-							}}
-							className="h-8 bg-zinc-950/40 text-sm"
-							placeholder="Sin etiqueta"
-						/>
-						<Button
-							size="icon"
-							aria-label="Guardar etiqueta"
-							variant="ghost"
-							className="size-7 shrink-0"
-							disabled={savingLabel === token.id}
-							onClick={() => onSaveLabel(token.id)}
-						>
-							{savingLabel === token.id ? (
-								<IconLoader2 className="size-3.5 animate-spin" />
-							) : (
-								<IconCheck className="size-3.5 text-green-500" />
-							)}
-						</Button>
-						<Button
-							size="icon"
-							aria-label="Cancelar edición de etiqueta"
-							variant="ghost"
-							className="size-7 shrink-0"
-							onClick={onCancelEdit}
-						>
-							<IconX className="size-3.5 text-muted-foreground" />
-						</Button>
-					</div>
+				{isEditing ? (
+					<TokenLabelEditor
+						editLabel={editLabel}
+						saving={isSaving}
+						onEditLabelChange={onEditLabelChange}
+						onSave={() => onSaveLabel(token.id)}
+						onCancel={onCancelEdit}
+					/>
 				) : (
-					<>
-						<p className="font-bold text-sm tracking-tight truncate flex items-center gap-2">
-							{token.label ?? "Sin etiqueta"}
-							{isRevoked ? (
-								<Badge
-									variant="outline"
-									className="text-[10px] py-0 h-4 border-red-500/30 text-red-400"
-								>
-									Revocado
-								</Badge>
-							) : null}
-						</p>
-						<div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground mt-0.5">
-							<span>Creado: {formatDate(token.created_at)}</span>
-							{isRevoked ? (
-								<span>Revocado: {formatDate(token.revoked_at)}</span>
-							) : token.last_used_at ? (
-								<span className="flex items-center gap-1">
-									<IconClock className="size-3" />
-									Último uso: {formatDate(token.last_used_at)}
-								</span>
-							) : (
-								<span className="flex items-center gap-1">
-									<IconClock className="size-3" />
-									Sin uso
-								</span>
-							)}
-							<span className="flex items-center gap-1 font-mono text-[10px] opacity-50">
-								<IconEye className="size-3" />
-								{shortId(token.id)}
-							</span>
-						</div>
-					</>
+					<TokenMeta token={token} isRevoked={isRevoked} />
 				)}
 			</div>
-			{!isRevoked ? (
-				<div className="flex items-center gap-1 shrink-0 ml-3">
-					{editingId !== token.id ? (
-						<Button
-							size="sm"
-							variant="ghost"
-							className="text-muted-foreground hover:text-white hover:bg-white/10"
-							onClick={() => onStartEdit(token)}
-						>
-							<IconPencil className="size-4" />
-							<span className="ml-1.5 hidden sm:inline">Editar</span>
-						</Button>
-					) : null}
-					<Button
-						size="sm"
-						variant="ghost"
-						disabled={revoking === token.id}
-						className="text-muted-foreground hover:text-red-400 hover:bg-red-400/10"
-						onClick={() => onRevoke(token.id, token.label)}
-					>
-						{revoking === token.id ? (
-							<IconLoader2 className="size-4 animate-spin" />
-						) : (
-							<IconTrash className="size-4" />
-						)}
-						<span className="ml-1.5 hidden sm:inline">Revocar</span>
-					</Button>
-				</div>
-			) : null}
+			{isRevoked ? null : (
+				<TokenActions
+					token={token}
+					revoking={isRevoking}
+					editing={editingId === token.id}
+					onStartEdit={onStartEdit}
+					onRevoke={onRevoke}
+				/>
+			)}
 		</div>
 	);
 }
