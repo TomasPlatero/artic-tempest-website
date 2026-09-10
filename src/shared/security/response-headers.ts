@@ -7,10 +7,10 @@
  * is how Referrer-Policy ended up advertised with two different values (ATW-23).
  */
 export const SECURITY_HEADER_VALUES = {
-	"X-Frame-Options": "DENY",
-	"X-Content-Type-Options": "nosniff",
-	"Referrer-Policy": "strict-origin-when-cross-origin",
-	"Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
+ "X-Frame-Options": "DENY",
+ "X-Content-Type-Options": "nosniff",
+ "Referrer-Policy": "strict-origin-when-cross-origin",
+ "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
 } as const;
 
 type SecurityHeaderName = keyof typeof SECURITY_HEADER_VALUES;
@@ -20,11 +20,11 @@ type SecurityHeaderName = keyof typeof SECURITY_HEADER_VALUES;
  * Returns the same instance so it can be used inline.
  */
 export function applySecurityHeaders(headers: Headers): Headers {
-	const names = Object.keys(SECURITY_HEADER_VALUES) as SecurityHeaderName[];
+ const names = Object.keys(SECURITY_HEADER_VALUES) as SecurityHeaderName[];
 
-	for (const name of names) {
-		headers.set(name, SECURITY_HEADER_VALUES[name]);
-	}
+ for (const name of names) {
+  headers.set(name, SECURITY_HEADER_VALUES[name]);
+ }
 
-	return headers;
+ return headers;
 }
