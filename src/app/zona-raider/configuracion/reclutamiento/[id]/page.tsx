@@ -78,6 +78,7 @@ export default async function ApplicationDetailPage({
 					<Button
 						variant="outline"
 						size="icon"
+						aria-label="Volver a reclutamiento"
 						className="size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10  shadow-xl"
 					>
 						<IconArrowLeft className="size-6" />

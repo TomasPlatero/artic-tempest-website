@@ -74,7 +74,7 @@ export default async function RecruitmentSettingsPage() {
         <div className="flex flex-col gap-6 p-4 md:p-6 lg:px-8">
             <div className="flex items-center gap-4">
                 <Link href="/zona-raider/configuracion">
-                    <Button variant="outline" size="icon" className="size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10  shadow-xl">
+                    <Button variant="outline" size="icon" aria-label="Volver a configuración" className="size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10  shadow-xl">
                         <IconArrowLeft className="size-6" />
                     </Button>
                 </Link>

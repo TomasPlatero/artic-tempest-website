@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.11.9
+
+- fix: repaired the broken install (ATW-18) — Dependabot bumped only `@tiptap/core` to 3.30.5 while the rest of the family stayed on 3.30.0, leaving incompatible `@tiptap/pm` peers; `npm ci` failed with ERESOLVE (Lint CI job red) and local `node_modules` did not match `package.json`. The whole `@tiptap/*` family is now aligned on 3.31.3
+- chore: security dependency upgrades — `vitest` / `@vitest/mocker` 4.1.10 → 4.1.11 (GHSA-82fw-gwwq-j7x9, path traversal in redirect mocks) and `@tiptap/*` 3.30.x → 3.31.3 (GHSA-j95f-988m-3j2f ReDoS, GHSA-cp6q-959q-f8rh prototype pollution); `npm audit` goes from 23 vulnerabilities (1 high, 22 moderate) to 0
+- fix: react-doctor cleanup (ATW-19) — accessible names for the 53 icon-only buttons, and the duplicated JSX trees extracted into shared components (`news-card-body`, `roster-modal`, `admin-section-header`); react-doctor goes from 84 to 28 diagnostics, score 88 → 92 (the remaining 28 are component-complexity refactors, tracked in ATW-20)
+- chore: every external link opened from the UI now goes through `openExternalUrl()`, which only opens validated absolute `http(s)` URLs (blocks `javascript:`/`data:` from database or configuration values)
+
 ## 1.11.8
 
 - chore: security dependency upgrades — next 16.3.0 → 16.3.4 (CVE-2026-32740 AVIF/libheif) and fast-uri 3.1.5 → 3.1.6 via overrides (SSRF/validation CVEs)
@@ -10,7 +17,7 @@
 
 ## 1.11.6
 
-- feature: footer now credits the site build — "Creado con ❤ por TomasPlatero.com", linking to https://TomasPlatero.com
+- feature: footer now credits the site build — "Creado con ❤ por TomasPlatero.com", linking to <https://TomasPlatero.com>
 
 ## 1.11.5
 

@@ -213,6 +213,7 @@ export function ArboristNodeRenderer({
 					<Button
 						variant="ghost"
 						size="icon"
+						aria-label="Abrir menú de opciones"
 						className="size-8 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
 					>
 						<IconEdit className="size-4" />

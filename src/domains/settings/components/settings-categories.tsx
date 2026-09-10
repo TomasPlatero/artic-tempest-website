@@ -204,7 +204,7 @@ export function SettingsCategories({
 			<div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
 				<div className="flex items-center gap-4">
 					<Link href="/zona-raider/configuracion/noticias">
-						<Button variant="ghost" size="icon" className="rounded-full">
+						<Button variant="ghost" size="icon" aria-label="Volver a noticias" className="rounded-full">
 							<IconArrowLeft className="size-5" />
 						</Button>
 					</Link>
@@ -268,6 +268,7 @@ export function SettingsCategories({
 										<Button
 											variant="ghost"
 											size="icon"
+											aria-label="Editar categoría"
 											onClick={() => handleOpenDialog(category)}
 											className="size-8 rounded-lg hover:bg-blue-500/10 hover:text-blue-500"
 										>
@@ -276,6 +277,7 @@ export function SettingsCategories({
 										<Button
 											variant="ghost"
 											size="icon"
+											aria-label="Eliminar categoría"
 											onClick={() => void handleDelete(category.id)}
 											className="size-8 rounded-lg hover:bg-red-500/10 hover:text-red-500"
 										>

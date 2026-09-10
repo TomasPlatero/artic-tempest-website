@@ -85,8 +85,7 @@ async function doGenerateToken(
 	} catch (err) {
 		return {
 			success: false,
-			error:
-				err instanceof Error ? err.message : "No se pudo generar el token.",
+			error: err instanceof Error ? err.message : "No se pudo generar el token.",
 		};
 	}
 }
@@ -124,8 +123,7 @@ async function doRevokeToken(
 	} catch (err) {
 		return {
 			success: false,
-			error:
-				err instanceof Error ? err.message : "No se pudo revocar el token.",
+			error: err instanceof Error ? err.message : "No se pudo revocar el token.",
 		};
 	}
 }
@@ -154,9 +152,7 @@ async function doSaveTokenLabel(
 		return {
 			success: false,
 			error:
-				err instanceof Error
-					? err.message
-					: "No se pudo actualizar la etiqueta.",
+				err instanceof Error ? err.message : "No se pudo actualizar la etiqueta.",
 		};
 	}
 }
@@ -195,8 +191,8 @@ function GeneratedTokenCard({
 							Etiqueta: <strong>{generatedLabel}</strong> —{" "}
 						</>
 					) : null}
-					Copia este valor ahora. No se volverá a mostrar y queda registrado
-					como hash en la base de datos.
+					Copia este valor ahora. No se volverá a mostrar y queda registrado como
+					hash en la base de datos.
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
@@ -286,10 +282,11 @@ function TokenRow({
 						/>
 						<Button
 							size="icon"
+							aria-label="Guardar etiqueta"
 							variant="ghost"
 							className="size-7 shrink-0"
 							disabled={savingLabel === token.id}
-							onClick={() =>  onSaveLabel(token.id)}
+							onClick={() => onSaveLabel(token.id)}
 						>
 							{savingLabel === token.id ? (
 								<IconLoader2 className="size-3.5 animate-spin" />
@@ -299,6 +296,7 @@ function TokenRow({
 						</Button>
 						<Button
 							size="icon"
+							aria-label="Cancelar edición de etiqueta"
 							variant="ghost"
 							className="size-7 shrink-0"
 							onClick={onCancelEdit}
@@ -360,7 +358,7 @@ function TokenRow({
 						variant="ghost"
 						disabled={revoking === token.id}
 						className="text-muted-foreground hover:text-red-400 hover:bg-red-400/10"
-						onClick={() =>  onRevoke(token.id, token.label)}
+						onClick={() => onRevoke(token.id, token.label)}
 					>
 						{revoking === token.id ? (
 							<IconLoader2 className="size-4 animate-spin" />
@@ -394,8 +392,7 @@ export function ApiTokensSettings() {
 	const rawTokens = data?.tokens ?? [];
 
 	const tokens = [...rawTokens].sort(
-		(a, b) =>
-			new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+		(a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
 	);
 
 	const handleGenerate = async (e: React.FormEvent) => {
@@ -505,8 +502,8 @@ export function ApiTokensSettings() {
 					<CardTitle>Generar Nuevo Token</CardTitle>
 					<CardDescription>
 						Asigna una etiqueta para identificar el uso de este token (ej: Bot
-						Recruitment Relay, Dashboard App). El valor del token solo se
-						muestra una vez al generarlo.
+						Recruitment Relay, Dashboard App). El valor del token solo se muestra una
+						vez al generarlo.
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
@@ -549,8 +546,8 @@ export function ApiTokensSettings() {
 				<CardHeader>
 					<CardTitle>Tokens Activos ({activeTokens.length})</CardTitle>
 					<CardDescription>
-						Tokens que pueden usarse para autenticar peticiones a la API
-						pública. Ordenados del más reciente al más antiguo.
+						Tokens que pueden usarse para autenticar peticiones a la API pública.
+						Ordenados del más reciente al más antiguo.
 					</CardDescription>
 				</CardHeader>
 				<CardContent>

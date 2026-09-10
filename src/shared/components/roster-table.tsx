@@ -23,6 +23,7 @@ import {
 } from "@/shared/ui/tabler-icons";
 import { cn } from "@/shared/tailwind/tailwind-utils";
 import { normalizeRosterRole } from "@/shared/lib/roster-role";
+import { openExternalUrl } from "@/shared/lib/external-url";
 import { toast } from "sonner";
 import {
 	updateMemberRole,
@@ -401,6 +402,7 @@ export function RosterTable({
 															<Button
 																variant="ghost"
 																size="icon"
+																aria-label="Ajustes del miembro"
 																className="size-6 text-muted-foreground hover:text-white hover:bg-muted"
 															>
 																<IconSettings className="size-3.5" />
@@ -502,6 +504,7 @@ function NoteCell({
 			<Button
 				variant="ghost"
 				size="icon"
+				aria-label="Guardar nota"
 				className="size-8 text-emerald-500 hover:bg-emerald-500/10"
 				onClick={() => void handleSave()}
 				disabled={isSaving}
@@ -511,6 +514,7 @@ function NoteCell({
 			<Button
 				variant="ghost"
 				size="icon"
+				aria-label="Cancelar edición de nota"
 				className="size-8 text-red-500 hover:bg-red-500/10"
 				onClick={cancelEditing}
 				disabled={isSaving}
@@ -526,6 +530,7 @@ function NoteCell({
 			<Button
 				variant="ghost"
 				size="icon"
+				aria-label="Editar nota"
 				className="size-6 opacity-0 group-hover/note:opacity-100 transition-opacity"
 				onClick={startEditing}
 			>
@@ -565,7 +570,7 @@ function RosterExternalLinks({ member }: { member: GuildMember }) {
 					key={link.href}
 					type="button"
 					onClick={() =>
-						window.open(link.href, "_blank", "noopener,noreferrer")
+						openExternalUrl(link.href)
 					}
 					className="p-1 hover:bg-muted rounded transition-colors"
 					title={link.title}

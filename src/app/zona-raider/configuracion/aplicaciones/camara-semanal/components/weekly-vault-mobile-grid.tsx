@@ -2,6 +2,7 @@ import Image from "next/image";
 import { IconExternalLink, IconTrash } from "@/shared/ui/tabler-icons";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
+import { openExternalUrl } from "@/shared/lib/external-url";
 import { getWowColorClass, type Upload } from "./weekly-vault-shared";
 
 interface WeeklyVaultMobileGridProps {
@@ -81,7 +82,7 @@ export function WeeklyVaultMobileGrid({
 								size="sm"
 								variant="outline"
 								onClick={() =>
-									window.open(upload.image_url, "_blank", "noopener,noreferrer")
+									openExternalUrl(upload.image_url)
 								}
 							>
 								Ver
@@ -89,6 +90,7 @@ export function WeeklyVaultMobileGrid({
 							<Button
 								size="icon"
 								variant="destructive"
+								aria-label="Eliminar captura"
 								className="size-10 shrink-0 rounded-xl"
 								onClick={() => onDelete(upload.id)}
 								disabled={isDeleting === upload.id}

@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import {
 	IconBrandDiscord,
-	IconArrowLeft,
 	IconDeviceFloppy,
 	IconTrash,
 	IconSettings,
@@ -17,6 +16,7 @@ import {
 	IconUser,
 } from "@/shared/ui/tabler-icons";
 import { Button } from "@/shared/ui/button";
+import { AdminSectionHeader } from "@/shared/components/admin-section-header";
 import { Input } from "@/shared/ui/input";
 import {
 	Card,
@@ -76,8 +76,14 @@ interface SettingsDiscordProps {
 	initialRoles: DiscordRoleConfig[];
 }
 
+type RoleDisplayConfig = {
+	label: string;
+	badge: string;
+	icon: ReactNode;
+};
+
 const getRoleDisplay = (role: RoleLevel) => {
-	const configs: Record<RoleLevel, any> = {
+	const configs: Record<RoleLevel, RoleDisplayConfig> = {
 		gm: {
 			label: "Maestro de Hermandad",
 			badge: "bg-amber-500/10 text-amber-500 border-amber-500/20",
@@ -234,8 +240,7 @@ function useSettingsDiscordClient({
 				initialCredentials.discord_streams_channel_id || "",
 			discord_recruitment_channel_id:
 				initialCredentials.discord_recruitment_channel_id || "",
-			discord_requested_scopes:
-				initialCredentials.discord_requested_scopes || "",
+			discord_requested_scopes: initialCredentials.discord_requested_scopes || "",
 		},
 	}));
 	const { ui, discordRoles, roleForm, form } = state;
@@ -364,25 +369,13 @@ function useSettingsDiscordClient({
 	return (
 		<div className="flex flex-col gap-8 py-6 px-4 lg:px-6 w-full animate-in fade-in duration-500">
 			<div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-				<div className="flex items-center gap-6">
-					<Link href="/zona-raider/configuracion">
-						<Button
-							variant="outline"
-							size="icon"
-							className="size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10  shadow-xl"
-						>
-							<IconArrowLeft className="size-6" />
-						</Button>
-					</Link>
-					<div>
-						<h1 className="text-3xl font-semibold font-heading italic tracking-tight flex items-center gap-3">
-							BOT DE DISCORD
-						</h1>
-						<p className="text-sm font-medium text-white/40 mt-2 tracking-widest leading-relaxed">
-							Control centralizado de la integración con Discord.
-						</p>
-					</div>
-				</div>
+				<AdminSectionHeader
+					backHref="/zona-raider/configuracion/"
+					backLabel="Volver a configuración"
+					title="BOT DE DISCORD"
+					description="Control centralizado de la integración con Discord."
+					titleClassName="flex"
+				/>
 				<div className="flex gap-2">
 					<Button
 						variant="glow"
@@ -402,9 +395,7 @@ function useSettingsDiscordClient({
 
 			<Tabs
 				value={ui.activeTab}
-				onValueChange={(value) =>
-					setUi((prev) => ({ ...prev, activeTab: value }))
-				}
+				onValueChange={(value) => setUi((prev) => ({ ...prev, activeTab: value }))}
 				className="w-full"
 			>
 				<div className="flex justify-start mb-8 overflow-x-auto no-scrollbar pb-2">
@@ -689,33 +680,29 @@ function useSettingsDiscordClient({
 										type="button"
 										variant="outline"
 										className="w-full rounded-xl font-semibold text-[10px] tracking-widest gap-2"
-								onClick={() => {
-									void (async () => {
-										setSyncingMetadata(true);
-										const result = await doSyncRolesMetadata();
-										if (result.success) {
-											toast.success(
-												"Metadata de roles vinculados actualizada",
-											);
-										} else {
-											toast.error(result.error);
-										}
-										setSyncingMetadata(false);
-									})();
-								}}
+										onClick={() => {
+											void (async () => {
+												setSyncingMetadata(true);
+												const result = await doSyncRolesMetadata();
+												if (result.success) {
+													toast.success("Metadata de roles vinculados actualizada");
+												} else {
+													toast.error(result.error);
+												}
+												setSyncingMetadata(false);
+											})();
+										}}
 										disabled={syncingMetadata}
 									>
-										{syncingMetadata
-											? "Sincronizando..."
-											: "Sincronizar metadata"}
+										{syncingMetadata ? "Sincronizando..." : "Sincronizar metadata"}
 									</Button>
 								</div>
 
 								<div className="flex items-start gap-4 p-5 rounded-2xl bg-[#5865F2]/5 border border-[#5865F2]/10 text-[#5865F2]/70 shadow-inner">
 									<IconShieldLock className="size-6 shrink-0" />
 									<p className="text-[10px] font-bold tracking-widest leading-relaxed italic">
-										RECUERDA: Las credenciales se guardan encriptadas en la base
-										de datos y solo son accesibles por el Guild Master.
+										RECUERDA: Las credenciales se guardan encriptadas en la base de datos
+										y solo son accesibles por el Guild Master.
 									</p>
 								</div>
 							</CardContent>
@@ -753,9 +740,7 @@ function useSettingsDiscordClient({
 							<div className="rounded-2xl overflow-hidden bg-zinc-950/20 border border-white/5 shadow-inner">
 								<div className="hidden lg:grid grid-cols-12 bg-white/[0.03] p-6 font-semibold text-white/30 text-[10px] tracking-[0.3em] border-b border-white/[0.05]">
 									<div className="col-span-12 lg:col-span-5">Rol Discord</div>
-									<div className="col-span-12 lg:col-span-4">
-										Rango Asignado
-									</div>
+									<div className="col-span-12 lg:col-span-4">Rango Asignado</div>
 									<div className="col-span-12 lg:col-span-3"></div>
 								</div>
 
@@ -776,9 +761,7 @@ function useSettingsDiscordClient({
 												member: 2,
 												invitado: 1,
 											};
-											return (
-												(priority[b.level] || 0) - (priority[a.level] || 0)
-											);
+											return (priority[b.level] || 0) - (priority[a.level] || 0);
 										})
 										.map((role) => (
 											<div
@@ -807,6 +790,7 @@ function useSettingsDiscordClient({
 													<Button
 														variant="outline"
 														size="icon"
+														aria-label="Editar mapeo"
 														className="size-10 rounded-xl border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 shadow-xl "
 														onClick={() => startEditDiscordMapping(role)}
 													>
@@ -815,10 +799,9 @@ function useSettingsDiscordClient({
 													<Button
 														variant="outline"
 														size="icon"
+														aria-label="Eliminar mapeo"
 														className="size-10 rounded-xl border-rose-500/10 bg-rose-500/5 text-rose-400 hover:text-rose-500 hover:bg-rose-500/10 hover:border-rose-500/20 shadow-xl "
-														onClick={() =>
-															void handleDeleteDiscordMapping(role.role_id)
-														}
+														onClick={() => void handleDeleteDiscordMapping(role.role_id)}
 													>
 														<IconTrash className="size-4.5" />
 													</Button>
@@ -880,9 +863,7 @@ function useSettingsDiscordClient({
 								>
 									<SelectValue
 										placeholder={
-											isLoadingRoles
-												? "Cargando roles…"
-												: "Elige un rol de tu server"
+											isLoadingRoles ? "Cargando roles…" : "Elige un rol de tu server"
 										}
 									/>
 								</SelectTrigger>
@@ -950,28 +931,16 @@ function useSettingsDiscordClient({
 									<SelectValue placeholder="Selecciona un nivel" />
 								</SelectTrigger>
 								<SelectContent className="bg-zinc-900 border-white/10 text-white rounded-xl">
-									<SelectItem
-										value="gm"
-										className="text-[11px] font-semibold py-3"
-									>
+									<SelectItem value="gm" className="text-[11px] font-semibold py-3">
 										Maestro de Hermandad
 									</SelectItem>
-									<SelectItem
-										value="officer"
-										className="text-[11px] font-semibold py-3"
-									>
+									<SelectItem value="officer" className="text-[11px] font-semibold py-3">
 										Oficial
 									</SelectItem>
-									<SelectItem
-										value="raider"
-										className="text-[11px] font-semibold py-3"
-									>
+									<SelectItem value="raider" className="text-[11px] font-semibold py-3">
 										Raider
 									</SelectItem>
-									<SelectItem
-										value="member"
-										className="text-[11px] font-semibold py-3"
-									>
+									<SelectItem value="member" className="text-[11px] font-semibold py-3">
 										Miembro
 									</SelectItem>
 									<SelectItem

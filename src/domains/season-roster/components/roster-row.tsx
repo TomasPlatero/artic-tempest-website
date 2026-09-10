@@ -161,6 +161,7 @@ function RosterRowActions({
 					<Button
 						variant="ghost"
 						size="icon"
+						aria-label="Editar personaje"
 						className="size-7 sm:size-8 text-zinc-300 hover:text-white"
 						onClick={onStartEdit}
 						disabled={saving}
@@ -174,6 +175,7 @@ function RosterRowActions({
 						<Button
 							variant="ghost"
 							size="icon"
+							aria-label="Guardar cambios"
 							className="size-7 sm:size-8 text-blue-500 hover:text-blue-400"
 							onClick={onSave}
 							disabled={saving || !changed}
@@ -183,6 +185,7 @@ function RosterRowActions({
 						<Button
 							variant="ghost"
 							size="icon"
+							aria-label="Cancelar edición"
 							className="size-7 sm:size-8 text-zinc-300 hover:text-zinc-200"
 							onClick={onCancelEdit}
 							disabled={saving}
@@ -196,6 +199,7 @@ function RosterRowActions({
 					<Button
 						variant="ghost"
 						size="icon"
+						aria-label="Eliminar personaje"
 						className="size-7 sm:size-8 text-red-500 hover:text-red-400 opacity-60 hover:opacity-100"
 						onClick={onDelete}
 						disabled={saving}

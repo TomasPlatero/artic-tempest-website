@@ -102,6 +102,7 @@ export default async function ProgresoKillsSettingsPage() {
           <Button
             variant="outline"
             size="icon"
+            aria-label="Volver a aplicaciones"
             className="size-10 md:size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10  shadow-xl shrink-0"
           >
             <IconArrowLeft className="size-5 md:size-6" />

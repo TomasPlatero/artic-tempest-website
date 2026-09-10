@@ -151,6 +151,7 @@ function QuestionRow({
 				<Button
 					variant="ghost"
 					size="icon"
+					aria-label="Editar pregunta"
 					className="size-10 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 text-white/60 hover:text-white  shadow-xl active:scale-95"
 					onClick={() => onEdit(question)}
 				>
@@ -159,6 +160,7 @@ function QuestionRow({
 				<Button
 					variant="ghost"
 					size="icon"
+					aria-label="Eliminar pregunta"
 					className="size-10 rounded-xl bg-rose-500/5 border border-rose-500/10 hover:bg-rose-500/20 hover:border-rose-500/20 text-rose-500/60 hover:text-rose-500  shadow-xl active:scale-95"
 					onClick={() => onRemove(question.id)}
 				>

@@ -6,6 +6,7 @@ import { LandingNavigation } from "@/domains/landing/components/navigation";
 import { LandingFooter } from "@/domains/landing/components/footer";
 import { CharacterAvatar } from "@/shared/components/character-avatar";
 import { getSeoSettings } from "@/shared/seo/seo-settings";
+import { NewsCardBody } from "@/domains/news/components/news-card-body";
 import { RouteScopedAdsenseSlot } from "@/shared/components/route-scoped-adsense-slot";
 import { Button } from "@/shared/ui/button";
 import {
@@ -285,32 +286,12 @@ export default async function NewsPage({
 														className="absolute inset-0 size-full object-cover group-hover:scale-110 motion-reduce:group-hover:scale-100 transition-transform duration-500 motion-reduce:transition-none"
 													/>
 												</div>
-												<div className="p-6 flex flex-col flex-1">
-													<div className="flex items-center justify-between mb-4">
-														<span className="text-blue-300 text-[9px] font-semibold uppercase tracking-[0.2em]">
-															{item.category}
-														</span>
-														<span className="text-zinc-400 text-[9px] font-bold uppercase tracking-widest">
-															{formatNewsDate(item.created_at)}
-														</span>
-													</div>
-													<h3 className="text-lg font-semibold text-white group-hover:text-blue-400 transition-colors motion-reduce:transition-none line-clamp-2 leading-relaxed">
-														{item.title}
-													</h3>
-													<div className="mt-auto pt-6 flex items-center justify-between">
-														<div className="flex items-center gap-2">
-															<CharacterAvatar
-																name={item.author}
-																size={24}
-																className="border-border/50 shadow-inner"
-															/>
-															<span className="text-[10px] font-bold text-zinc-300">
-																{item.author}
-															</span>
-														</div>
-														<IconArrowRight className="size-4 text-zinc-700 group-hover:text-blue-400 group-hover:translate-x-1  motion-reduce:transition-none" />
-													</div>
-												</div>
+												<NewsCardBody
+													category={item.category}
+													formattedDate={formatNewsDate(item.created_at)}
+													title={item.title}
+													author={item.author}
+												/>
 												<Link
 													href={`/noticias/${item.slug || item.id}`}
 													className="absolute inset-0 z-20"

@@ -77,6 +77,7 @@ export default async function AccountDetailPage({
 						<Button
 							variant="outline"
 							size="icon"
+							aria-label="Volver al listado"
 							className="size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10  shadow-xl"
 						>
 							<IconArrowLeft className="size-6" />
@@ -95,13 +96,11 @@ export default async function AccountDetailPage({
 				<div className="flex flex-col items-center gap-3 rounded-3xl border border-white/10 bg-zinc-950/30 p-10 text-white">
 					<IconAlertTriangle className="size-10 text-amber-400" />
 					<p className="text-center text-sm text-white/70 max-w-lg">
-						No hemos encontrado ningún perfil con ese identificador. Revisa el
-						listado o selecciona otro usuario.
+						No hemos encontrado ningún perfil con ese identificador. Revisa el listado
+						o selecciona otro usuario.
 					</p>
 					<Button asChild>
-						<Link href="/zona-raider/configuracion/cuentas">
-							Volver al listado
-						</Link>
+						<Link href="/zona-raider/configuracion/cuentas">Volver al listado</Link>
 					</Button>
 				</div>
 			</div>
@@ -262,6 +261,7 @@ export default async function AccountDetailPage({
 					<Button
 						variant="outline"
 						size="icon"
+						aria-label="Volver a cuentas"
 						className="size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10  shadow-xl"
 					>
 						<IconArrowLeft className="size-6" />

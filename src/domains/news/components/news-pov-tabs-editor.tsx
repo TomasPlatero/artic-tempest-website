@@ -132,6 +132,7 @@ function MemberPicker({ tab, onChange }: { tab: PovTab; onChange: (next: PovTab)
               type="button"
               variant="ghost"
               size="icon"
+              aria-label="Cerrar búsqueda"
               className="absolute right-1 top-1 size-8 rounded-lg text-white/30 hover:bg-white/5 hover:text-white/70"
               onClick={() => {
                 setOpen(false);
@@ -273,6 +274,7 @@ export function NewsPovTabsEditor({
                     type="button"
                     variant="ghost"
                     size="icon"
+                    aria-label="Eliminar pestaña"
                     onClick={() => removeTab(index)}
                     className="size-8 rounded-lg text-white/30 hover:bg-red-500/10 hover:text-red-300"
                   >

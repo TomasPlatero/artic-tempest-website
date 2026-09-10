@@ -150,6 +150,7 @@ function SortableStreamerItem({
 				</Button>
 				<Button
 					size="icon"
+					aria-label="Eliminar streamer"
 					variant="ghost"
 					className="size-8 text-muted-foreground hover:text-red-400 hover:bg-red-400/10"
 					onClick={() => onDelete(streamer.id, streamer.twitch_username)}

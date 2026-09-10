@@ -18,6 +18,7 @@ export function SeoSettingsHeader({ canEdit, saving, onSave }: SeoSettingsHeader
           <Button
             variant="outline"
             size="icon"
+            aria-label="Volver a configuración"
             className="size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10"
           >
             <IconArrowLeft className="size-6" />

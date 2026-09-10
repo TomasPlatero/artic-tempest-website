@@ -14,6 +14,7 @@ const AdBanner = dynamic(
 );
 import React from "react";
 import { CharacterAvatar } from "@/shared/components/character-avatar";
+import { NewsCardBody } from "@/domains/news/components/news-card-body";
 import { useApiQuery } from "@/shared/hooks/use-api-query";
 import { RouteScopedAdsenseSlot } from "@/shared/components/route-scoped-adsense-slot";
 import { Button } from "@/shared/ui/button";
@@ -232,32 +233,12 @@ export function LandingNoticias({
 											sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
 										/>
 									</div>
-									<div className="p-6 flex flex-col flex-1">
-										<div className="flex items-center justify-between mb-4">
-											<span className="text-blue-300 text-[9px] font-semibold uppercase tracking-[0.2em]">
-												{n.category}
-											</span>
-											<span className="text-zinc-400 text-[9px] font-bold uppercase tracking-widest">
-												{formatNewsDate(n.created_at)}
-											</span>
-										</div>
-										<h3 className="text-lg font-semibold text-white group-hover:text-blue-400 transition-colors motion-reduce:transition-none line-clamp-2 leading-relaxed">
-											{n.title}
-										</h3>
-										<div className="mt-auto pt-6 flex items-center justify-between">
-											<div className="flex items-center gap-2">
-												<CharacterAvatar
-													name={n.author}
-													size={24}
-													className="border-border/50 shadow-inner"
-												/>
-												<span className="text-[10px] font-bold text-zinc-300">
-													{n.author}
-												</span>
-											</div>
-											<IconArrowRight className="size-4 text-zinc-700 group-hover:text-blue-400 group-hover:translate-x-1  motion-reduce:transition-none" />
-										</div>
-									</div>
+									<NewsCardBody
+										category={n.category}
+										formattedDate={formatNewsDate(n.created_at)}
+										title={n.title}
+										author={n.author}
+									/>
 									<Link
 										href={`/noticias/${n.slug || n.id}`}
 										className="absolute inset-0 z-20"

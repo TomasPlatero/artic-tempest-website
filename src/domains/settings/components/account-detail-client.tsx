@@ -184,7 +184,7 @@ const formatRelative = (iso?: string | null) => {
 
 async function doSaveProfile(
 	userId: string,
-	payload: Record<string, any>,
+	payload: Record<string, unknown>,
 ): Promise<{ success: boolean; error?: string }> {
 	try {
 		const res = await fetch(`/api/admin/accounts/${userId}`, {
@@ -470,7 +470,7 @@ function useAccountDetailClient({
 		effectivePage * charactersPerPage,
 	);
 
-	const saveProfile = async (payload: Record<string, any>, message: string) => {
+	const saveProfile = async (payload: Record<string, unknown>, message: string) => {
 		updateUi({ type: "merge", value: { savingProfile: true } });
 		const result = await doSaveProfile(profile.user_id, payload);
 		if (result.success) {
@@ -1001,7 +1001,7 @@ function renderAccountDetailView(params: AccountDetailViewParams) {
 						</CardTitle>
 					</CardHeader>
 					<CardContent className="space-y-4">
-						<label className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-zinc-950/30 p-4">
+						<label htmlFor="bot-dashboard-access" className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-zinc-950/30 p-4">
 							<div className="space-y-1">
 								<span className="text-sm font-medium text-white">
 									Acceder al Dashboard del bot
@@ -1012,6 +1012,7 @@ function renderAccountDetailView(params: AccountDetailViewParams) {
 								</p>
 							</div>
 							<Checkbox
+																id="bot-dashboard-access"
 								checked={Boolean(profile.can_access_bot_dashboard)}
 								disabled={!canManage}
 								onCheckedChange={(nextValue) =>

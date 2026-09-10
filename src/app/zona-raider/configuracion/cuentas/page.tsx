@@ -1,13 +1,11 @@
 // src/app/zona-raider/configuracion/cuentas/page.tsx
 import { supabaseAdmin } from "@/shared/lib/supabase-admin";
 import { AccountsClient } from "@/domains/settings/components/accounts-client";
-import { IconArrowLeft } from "@/shared/ui/tabler-icons";
-import Link from "next/link";
-import { Button } from "@/shared/ui/button";
 import { getCachedServerSession } from "@/shared/auth/get-cached-server-session";
 
 import { getAppPermission } from "@/shared/auth/permissions";
 import { Forbidden } from "@/shared/components/forbidden";
+import { AdminSectionHeader } from "@/shared/components/admin-section-header";
 import { getPresenceMap, isUserOnline } from "@/shared/lib/presence";
 
 export const dynamic = "force-dynamic";
@@ -63,25 +61,13 @@ export default async function AccountsSettingsPage() {
 
 	return (
 		<div className="flex flex-col gap-6 p-6 lg:px-8 w-full max-w-full">
-			<div className="flex items-center gap-6">
-				<Link href="/zona-raider/configuracion">
-					<Button
-						variant="outline"
-						size="icon"
-						className="size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10  shadow-xl"
-					>
-						<IconArrowLeft className="size-6" />
-					</Button>
-				</Link>
-				<div>
-					<h1 className="text-3xl font-semibold font-heading italic tracking-tight flex items-center gap-3">
-						GESTIÓN DE CUENTAS
-					</h1>
-					<p className="text-sm font-medium text-white/40 mt-2 tracking-widest leading-relaxed">
-						Gestión de cuentas de la web.
-					</p>
-				</div>
-			</div>
+			<AdminSectionHeader
+				backHref="/zona-raider/configuracion/"
+				backLabel="Volver a configuración"
+				title="GESTIÓN DE CUENTAS"
+				description="Gestión de cuentas de la web."
+				titleClassName="flex items-center gap-3"
+			/>
 			<AccountsClient initialProfiles={enrichedProfiles} roles={roles ?? []} />
 		</div>
 	);

@@ -674,6 +674,7 @@ function useSettingsNewsClient({
 															>
 																<Button
 																	size="icon"
+																	aria-label="Ver noticia"
 																	variant="ghost"
 																	className="size-8 hover:text-primary hover:bg-primary/10"
 																>
@@ -682,6 +683,7 @@ function useSettingsNewsClient({
 															</Link>
 															<Button
 																size="icon"
+																aria-label="Editar noticia"
 																variant="ghost"
 																onClick={() => startEdit(item)}
 																className="size-8 hover:text-blue-400 hover:bg-blue-400/10"
@@ -690,6 +692,7 @@ function useSettingsNewsClient({
 															</Button>
 															<Button
 																size="icon"
+																aria-label="Eliminar noticia"
 																variant="ghost"
 																className="size-8 text-destructive hover:bg-destructive/10"
 																onClick={() => void deleteNews(item.id)}
@@ -793,6 +796,7 @@ function useSettingsNewsClient({
 														>
 															<Button
 																size="icon"
+																aria-label="Ver noticia"
 																variant="ghost"
 																className="size-8 hover:text-primary hover:bg-primary/10"
 															>
@@ -801,6 +805,7 @@ function useSettingsNewsClient({
 														</Link>
 														<Button
 															size="icon"
+															aria-label="Editar noticia"
 															variant="ghost"
 															onClick={() => startEdit(item)}
 															className="size-8 hover:text-blue-400 hover:bg-blue-400/10"
@@ -809,6 +814,7 @@ function useSettingsNewsClient({
 														</Button>
 														<Button
 															size="icon"
+															aria-label="Eliminar noticia"
 															variant="ghost"
 															className="size-8 text-destructive hover:bg-destructive/10"
 															onClick={() => void deleteNews(item.id)}

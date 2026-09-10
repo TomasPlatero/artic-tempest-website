@@ -397,6 +397,7 @@ function NotificationCard({
 							<Button
 								variant="ghost"
 								size="icon"
+								aria-label="Editar notificación"
 								onClick={() => onEdit(notification)}
 								className="size-10 rounded-xl text-muted-foreground hover:text-blue-400 hover:bg-blue-400/10"
 							>
@@ -405,6 +406,7 @@ function NotificationCard({
 							<Button
 								variant="ghost"
 								size="icon"
+								aria-label="Eliminar notificación"
 								onClick={() => onDelete(notification.id)}
 								disabled={deletingId === notification.id}
 								className="size-10 rounded-xl text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10"
@@ -732,6 +734,7 @@ export function SettingsNotificationsClient() {
 					<Button
 						variant="outline"
 						size="icon"
+						aria-label="Volver a configuración"
 						className="size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10  shadow-xl"
 					>
 						<IconArrowLeft className="size-6" />

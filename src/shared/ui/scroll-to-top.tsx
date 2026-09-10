@@ -41,6 +41,7 @@ export function ScrollToTop() {
         >
             <Button
                 size="icon"
+                aria-label="Volver arriba"
                 onClick={scrollToTop}
                 className="size-12 rounded-full bg-zinc-950/80 backdrop-blur-xl border border-white/10 text-white shadow-[0_10px_30px_rgba(0,0,0,0.5)] hover:bg-zinc-900  active:scale-90"
             >
