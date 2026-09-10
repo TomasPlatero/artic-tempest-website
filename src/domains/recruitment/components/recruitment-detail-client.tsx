@@ -3,24 +3,20 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
-import Link from "next/link";
+
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
-import {
-	IconX,
-	IconExternalLink,
-	IconTrendingUp,
-	IconSword,
-	IconShield,
-	IconHeartHandshake,
-	IconLoader2,
-	IconMessageCircle,
-} from "@/shared/ui/tabler-icons";
+
+import { IconX, IconTrendingUp, IconSword, IconShield, IconHeartHandshake, IconLoader2 } from "@/shared/ui/tabler-icons";
 import { toast } from "sonner";
 import { Label } from "@/shared/ui/label";
 import { fetchCharacterRIO } from "@/shared/integrations/raiderio/raiderio-client";
+import { RecruitmentDetailServiceButtons } from "./recruitment-detail-footer";
+import {
+	RecruitmentDetailChatHistory,
+	RecruitmentDetailItemLevel,
+} from "./recruitment-detail-sections";
 import {
 	RECRUITMENT_STATUS_COLORS,
 	RECRUITMENT_STATUS_LABELS,
@@ -182,6 +178,69 @@ export function RecruitmentDetailClient(props: Props) {
 	return useRecruitmentDetailClient(props);
 }
 
+/** The stored Raider.IO payload only counts when it belongs to this character. */
+function resolveInitialRioMatchesApplication(initialRioData: any, application: any) {
+	return Boolean(
+		initialRioData &&
+			initialRioData.name?.toLowerCase() ===
+				application.character_name.toLowerCase() &&
+			initialRioData.realm?.toLowerCase().replace(/\s+/g, "-") ===
+				application.character_realm.toLowerCase().replace(/\s+/g, "-"),
+	);
+}
+
+function resolveRioData(initialRioMatchesApplication: boolean, initialRioData: any, externalRio: any) {
+	return initialRioMatchesApplication
+		? initialRioData
+		: (externalRio ?? initialRioData ?? null);
+}
+
+function resolveLoadingRio(isFetchingRio: boolean, initialRioData: any, rioData: any) {
+	return isFetchingRio || (!initialRioData && !rioData);
+}
+
+function resolveMPlusScore(currentSeasonData: any) {
+	return currentSeasonData?.scores?.all || 0;
+}
+
+function resolveRawSeasons(rioData: any) {
+	return rioData?.mythic_plus_scores_by_season || [];
+}
+
+function resolveHasAnyRaidProgress(season1Progress: any, season2Progress: any) {
+	return season1Progress.total > 0 || season2Progress.total > 0;
+}
+
+/** Spec label shown next to the character name. */
+function resolveSpecLabel(application: any, rioData: any) {
+	return application.character_spec === "Unknown"
+		? rioData?.active_spec_name || "Unknown"
+		: application.character_spec;
+}
+
+function resolveSpecFallback(application: any, rioData: any) {
+	return application.character_spec !== "Unknown"
+		? application.character_spec
+		: rioData?.active_spec_name || "PENDIENTE";
+}
+
+function resolveGuildRealm(rioData: any, application: any) {
+	return rioData.guild.realm || application.character_realm;
+}
+
+function resolveStatusLocked(isUpdating: boolean, isTerminalStatus: boolean) {
+	return isUpdating || isTerminalStatus;
+}
+
+function resolveCanShowScores(loadingRio: boolean, rioData: any) {
+	return !loadingRio && Boolean(rioData?.mythic_plus_scores_by_season);
+}
+
+/** Protection / Blood / Guardian are the tank specialisations. */
+function resolveIsTankSpec(spec: string) {
+	const value = spec.toLowerCase();
+	return ["tank", "protection", "blood", "guardian"].some((keyword) => value.includes(keyword));
+}
 function useRecruitmentDetailClient({
 	application,
 	answers,
@@ -191,12 +250,9 @@ function useRecruitmentDetailClient({
 }: Props) {
 	const router = useRouter();
 
-	const initialRioMatchesApplication = Boolean(
-		initialRioData &&
-			initialRioData.name?.toLowerCase() ===
-				application.character_name.toLowerCase() &&
-			initialRioData.realm?.toLowerCase().replace(/\s+/g, "-") ===
-				application.character_realm.toLowerCase().replace(/\s+/g, "-"),
+	const initialRioMatchesApplication = resolveInitialRioMatchesApplication(
+		initialRioData,
+		application,
 	);
 
 	const [viewState, setViewState] = useState({
@@ -239,10 +295,12 @@ function useRecruitmentDetailClient({
 		},
 	);
 
-	const rioData = initialRioMatchesApplication
-		? initialRioData
-		: (externalData?.rio ?? initialRioData ?? null);
-	const loadingRio = isFetchingRio || (!initialRioData && !rioData);
+	const rioData = resolveRioData(
+		initialRioMatchesApplication,
+		initialRioData,
+		externalData?.rio,
+	);
+	const loadingRio = resolveLoadingRio(isFetchingRio, initialRioData, rioData);
 
 	const classMap = (() => {
 		const map = new Map<number, { name: string; color: string }>();
@@ -290,7 +348,7 @@ function useRecruitmentDetailClient({
 	const currentSeasonData = rioData?.mythic_plus_scores_by_season?.find(
 		(s: any) => s.season === selectedSeason,
 	);
-	const mPlusScore = currentSeasonData?.scores?.all || 0;
+	const mPlusScore = resolveMPlusScore(currentSeasonData);
 	const canViewChatHistory = [
 		"paused",
 		"interview",
@@ -312,7 +370,7 @@ function useRecruitmentDetailClient({
 	}
 
 	// Season Grouping Logic
-	const rawSeasons = rioData?.mythic_plus_scores_by_season || [];
+	const rawSeasons = resolveRawSeasons(rioData);
 	// Remove duplicates if RIO returns the same season for 'current' and 'season-xxx'
 	const uniqueSeasons = Array.from(
 		new Set(rawSeasons.map((s: any) => s.season)),
@@ -353,12 +411,154 @@ function useRecruitmentDetailClient({
 		rioData?.raid_progression,
 		SEASON_2_RAID_SLUGS,
 	);
-	const hasAnyRaidProgress =
-		season1Progress.total > 0 || season2Progress.total > 0;
+	const statusLocked = resolveStatusLocked(isUpdating, isTerminalStatus);
+	const hasAnyRaidProgress = resolveHasAnyRaidProgress(
+		season1Progress,
+		season2Progress,
+	);
 
 	return (
 		<div className="space-y-8 w-full pb-20 dark">
 			{/* CLEAN HEADER SECTION */}
+			<RecruitmentDetailContent
+				application={application}
+				canViewChatHistory={canViewChatHistory}
+				cls={cls}
+				currentStatus={currentStatus}
+				groupedSeasons={groupedSeasons}
+				handleUpdateStatus={handleUpdateStatus}
+				hasAnyRaidProgress={hasAnyRaidProgress}
+				initialBnetData={initialBnetData}
+				statusLocked={statusLocked}
+				loadingRio={loadingRio}
+				mPlusScore={mPlusScore}
+				rioData={rioData}
+				season1Progress={season1Progress}
+				season2Progress={season2Progress}
+				selectedSeason={selectedSeason}
+				setViewState={setViewState}
+			/>
+
+			{/* 2. APPLICATION FORM ANSWERS (FULL WIDTH, COMPACT) */}
+			<div className="space-y-4">
+				<div className="flex items-center gap-3 px-2">
+					<IconHeartHandshake className="size-5 text-blue-500" />
+					<h3 className="text-lg font-semibold text-white uppercase tracking-wider">
+						Respuestas del Formulario
+					</h3>
+					<div className="h-px flex-1 bg-linear-to-r from-white/10 to-transparent" />
+				</div>
+
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+					{answers
+						.slice()
+						.sort(
+							(a, b) =>
+								a.recruitment_questions.order_index -
+								b.recruitment_questions.order_index,
+						)
+						.map((ans: any) => (
+							<Card
+								key={
+									ans.id ||
+									ans.recruitment_question_id ||
+									ans.recruitment_questions?.label
+								}
+								className="bg-card/20 border-border/10 overflow-hidden hover:bg-card/30 transition-colors"
+							>
+								<CardContent className="p-4">
+									<Label className="text-blue-400/80 font-semibold mb-1.5 block text-[10px] uppercase tracking-[0.2em]">
+										{ans.recruitment_questions.label}
+									</Label>
+									<div className="text-sm text-zinc-200 leading-snug whitespace-pre-wrap">
+										{ans.answer_text}
+									</div>
+								</CardContent>
+							</Card>
+						))}
+					{answers.length === 0 && (
+						<div className="col-span-full p-10 text-center text-muted-foreground border border-dashed border-border/20 rounded-2xl">
+							No hay respuestas registradas.
+						</div>
+					)}
+				</div>
+			</div>
+
+			{/* 3. INTERNAL NOTES (AT THE VERY BOTTOM) */}
+			<div className="space-y-4 border-t border-white/5 pt-8">
+				<div className="flex items-center gap-3 px-2">
+					<IconShield className="size-5 text-purple-500" />
+					<h3 className="text-lg font-semibold text-white uppercase tracking-wider">
+						Notas Internas de Oficiales
+					</h3>
+				</div>
+				<Card className="bg-purple-500/5 border-purple-500/10 overflow-hidden">
+					<CardContent className="p-0">
+						<textarea
+							aria-label="Notas internas de oficiales"
+							className="w-full h-32 bg-transparent border-none p-4 text-sm text-white resize-none outline-none placeholder:text-zinc-600 focus:ring-1 focus:ring-purple-500/30"
+							placeholder="Escribe notas privadas para el resto de oficiales sobre este aplicante..."
+							defaultValue={application.internal_notes || ""}
+							onBlur={(e) => {
+								void (async () => {
+									const result = await doSaveInternalNote(
+										application.id,
+										e.target.value,
+									);
+									if (result.success) {
+										toast.success("Nota guardada");
+									} else {
+										toast.error("Error al guardar nota");
+									}
+								})();
+							}}
+						/>
+					</CardContent>
+				</Card>
+			</div>
+		</div>
+	);
+}
+
+type RecruitmentDetailContentProps = {
+	application: any;
+	canViewChatHistory: boolean;
+	cls: any;
+	currentStatus: any;
+	groupedSeasons: any;
+	handleUpdateStatus: any;
+	hasAnyRaidProgress: boolean;
+	initialBnetData: any;
+	statusLocked: boolean;
+	loadingRio: boolean;
+	mPlusScore: number;
+	rioData: any;
+	season1Progress: any;
+	season2Progress: any;
+	selectedSeason: string;
+	setViewState: any;
+};
+
+function RecruitmentDetailContent({
+	application,
+	canViewChatHistory,
+	cls,
+	currentStatus,
+	groupedSeasons,
+	handleUpdateStatus,
+	hasAnyRaidProgress,
+	initialBnetData,
+	loadingRio,
+	mPlusScore,
+	rioData,
+	season1Progress,
+	season2Progress,
+	selectedSeason,
+	setViewState,
+	statusLocked,
+}: RecruitmentDetailContentProps) {
+	return (
+		<>
 			<div className="flex flex-col md:flex-row justify-between items-start gap-4">
 				<div className="flex items-center gap-6">
 					<div className="relative size-20 md:size-24 rounded-2xl overflow-hidden border-2 border-white/10 shadow-2xl shadow-blue-500/10 bg-zinc-900">
@@ -380,9 +580,7 @@ function useRecruitmentDetailClient({
 							</h2>
 						</div>
 						<p className="text-lg font-medium" style={{ color: cls?.color }}>
-							{application.character_spec === "Unknown"
-								? rioData?.active_spec_name || "Unknown"
-								: application.character_spec}{" "}
+							{resolveSpecLabel(application, rioData)}{" "}
 							{cls?.name}
 						</p>
 						<p
@@ -396,7 +594,7 @@ function useRecruitmentDetailClient({
 							<p className="text-sm text-blue-400/80 font-medium flex items-center gap-1.5 mt-1">
 								<IconShield className="size-3.5" />
 								&lt;{rioData.guild.name}&gt; ·{" "}
-								{rioData.guild.realm || application.character_realm}
+								{resolveGuildRealm(rioData, application)}
 							</p>
 						)}
 					</div>
@@ -409,7 +607,7 @@ function useRecruitmentDetailClient({
 					<Select
 						value={currentStatus}
 						onValueChange={(val) => void handleUpdateStatus(val)}
-						disabled={isUpdating || isTerminalStatus}
+						disabled={statusLocked}
 					>
 						<SelectTrigger className="bg-zinc-950/50 border-white/10 h-10 rounded-xl focus:ring-blue-500/50">
 							<SelectValue placeholder="Seleccionar estado" />
@@ -432,26 +630,11 @@ function useRecruitmentDetailClient({
 						</SelectContent>
 					</Select>
 
-					{canViewChatHistory && (
-						<div className="pt-3 animate-in fade-in slide-in-from-top-2 duration-500">
-							<Button
-								className="w-full rounded-xl h-12 bg-linear-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-semibold uppercase text-[10px] tracking-[0.15em] shadow-xl shadow-blue-500/20 border-t border-white/20 group justify-center gap-2 px-4 ring-1 ring-white/5"
-								asChild
-							>
-								<Link
-									href={`/zona-raider/configuracion/reclutamiento/${application.id}/chat`}
-								>
-									<IconMessageCircle className="size-4 group-hover:translate-x-[-2px] group-hover:rotate-[-10deg] transition-colors duration-300" />
-									<span className="truncate">
-										{currentStatus === "interview"
-											? "Chat con Aspirante"
-											: "Ver histórico de chat"}
-									</span>
-									<IconExternalLink className="size-3 opacity-30 group-hover:opacity-100 group-hover:translate-x-1 transition-colors shrink-0" />
-								</Link>
-							</Button>
-						</div>
-					)}
+					<RecruitmentDetailChatHistory
+						application={application}
+						canViewChatHistory={canViewChatHistory}
+						currentStatus={currentStatus}
+					/>
 				</div>
 			</div>
 
@@ -462,11 +645,11 @@ function useRecruitmentDetailClient({
 						<IconTrendingUp className="size-4" /> Progreso Banda
 					</CardTitle>
 
-					{!loadingRio && rioData?.mythic_plus_scores_by_season && (
+					{resolveCanShowScores(loadingRio, rioData) && (
 						<Select
 							value={selectedSeason}
 							onValueChange={(value) =>
-								setViewState((prev) => ({ ...prev, selectedSeason: value }))
+								setViewState((prev: any) => ({ ...prev, selectedSeason: value }))
 							}
 						>
 							<SelectTrigger className="w-full sm:w-72 h-9 bg-zinc-900/80 border-white/10 text-[10px] uppercase font-semibold tracking-widest hover:border-blue-500/30 transition-colors">
@@ -529,18 +712,13 @@ function useRecruitmentDetailClient({
 											Espec. Principal
 										</span>
 										<div className="flex items-center gap-1.5 text-white">
-											{application.character_spec.toLowerCase().includes("tank") ||
-											application.character_spec.toLowerCase().includes("protection") ||
-											application.character_spec.toLowerCase().includes("blood") ||
-											application.character_spec.toLowerCase().includes("guardian") ? (
+											{resolveIsTankSpec(application.character_spec) ? (
 												<IconShield className="size-4 text-blue-400" />
 											) : (
 												<IconSword className="size-4 text-rose-400" />
 											)}
 											<span className="text-sm font-semibold uppercase">
-												{application.character_spec !== "Unknown"
-													? application.character_spec
-													: rioData?.active_spec_name || "PENDIENTE"}
+												{resolveSpecFallback(application, rioData)}
 											</span>
 										</div>
 									</div>
@@ -558,34 +736,10 @@ function useRecruitmentDetailClient({
 														: "Otros"}
 										</span>
 									</div> */}
-									<div className="bg-white/5 border border-white/5 rounded-2xl p-4 flex flex-col items-center justify-center hover:bg-white/10 transition-colors">
-										<span className="text-[10px] uppercase font-bold text-zinc-500 mb-1">
-											iLvl
-										</span>
-										<span className="text-xs font-semibold text-white">
-											{initialBnetData?.equipped ? (
-												<>
-													{initialBnetData.equipped}
-													{initialBnetData.average > 0 && (
-														<span className="text-zinc-500 ml-1">
-															/ {initialBnetData.average}
-														</span>
-													)}
-												</>
-											) : rioData?.gear?.item_level_equipped ? (
-												<>
-													{rioData.gear.item_level_equipped}
-													{rioData.gear.item_level_total > 0 && (
-														<span className="text-zinc-500 ml-1">
-															/ {rioData.gear.item_level_total}
-														</span>
-													)}
-												</>
-											) : (
-												"Próx. Sinc."
-											)}
-										</span>
-									</div>
+									<RecruitmentDetailItemLevel
+										initialBnetData={initialBnetData}
+										rioData={rioData}
+									/>
 								</div>
 							</div>
 
@@ -674,156 +828,11 @@ function useRecruitmentDetailClient({
 							</div>
 
 							{/* Service Buttons */}
-							<div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-6 border-t border-white/5">
-								<a
-									href={`https://raider.io/characters/eu/${application.character_realm}/${application.character_name}`}
-									target="_blank"
-									rel="noreferrer"
-									className="flex items-center justify-center gap-3 p-4 rounded-2xl bg-orange-500/5 border border-orange-500/10 hover:bg-orange-500/10 hover:border-orange-500/30 transition-colors group"
-								>
-									<Image
-										src="/assets/images/icons/raiderio.webp"
-										alt="RIO"
-										width={28}
-										height={28}
-										className="object-contain group-hover:scale-110 transition-transform"
-									/>
-									<div className="flex flex-col">
-										<span className="text-[10px] font-semibold text-white uppercase tracking-widest">
-											Raider.io
-										</span>
-										<span className="text-[8px] font-bold text-orange-400/70 uppercase">
-											Perfil Completo
-										</span>
-									</div>
-								</a>
-								<a
-									href={`https://www.warcraftlogs.com/character/eu/${application.character_realm}/${application.character_name}`}
-									target="_blank"
-									rel="noreferrer"
-									className="flex items-center justify-center gap-3 p-4 rounded-2xl bg-blue-500/5 border border-blue-500/10 hover:bg-blue-500/10 hover:border-blue-500/30 transition-colors group"
-								>
-									<Image
-										src="/assets/images/icons/wcl.webp"
-										alt="WCL"
-										width={28}
-										height={28}
-										className="object-contain group-hover:scale-110 transition-transform"
-									/>
-									<div className="flex flex-col">
-										<span className="text-[10px] font-semibold text-white uppercase tracking-widest">
-											WarcraftLogs
-										</span>
-										<span className="text-[8px] font-bold text-blue-400/70 uppercase">
-											Logs y Rankings
-										</span>
-									</div>
-								</a>
-								<a
-									href={`https://worldofwarcraft.blizzard.com/es-es/character/eu/${application.character_realm}/${application.character_name}`}
-									target="_blank"
-									rel="noreferrer"
-									className="flex items-center justify-center gap-3 p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/20 transition-colors group"
-								>
-									<Image
-										src="/assets/images/icons/armory.webp"
-										alt="Armory"
-										width={28}
-										height={28}
-										className="object-contain invert opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-colors"
-									/>
-									<div className="flex flex-col">
-										<span className="text-[10px] font-semibold text-white uppercase tracking-widest">
-											Armory
-										</span>
-										<span className="text-[8px] font-bold text-zinc-500 uppercase">
-											Perfil Oficial
-										</span>
-									</div>
-								</a>
-							</div>
+								<RecruitmentDetailServiceButtons application={application} />
 						</div>
 					)}
 				</CardContent>
 			</Card>
-
-			{/* 2. APPLICATION FORM ANSWERS (FULL WIDTH, COMPACT) */}
-			<div className="space-y-4">
-				<div className="flex items-center gap-3 px-2">
-					<IconHeartHandshake className="size-5 text-blue-500" />
-					<h3 className="text-lg font-semibold text-white uppercase tracking-wider">
-						Respuestas del Formulario
-					</h3>
-					<div className="h-px flex-1 bg-linear-to-r from-white/10 to-transparent" />
-				</div>
-
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-					{answers
-						.slice()
-						.sort(
-							(a, b) =>
-								a.recruitment_questions.order_index -
-								b.recruitment_questions.order_index,
-						)
-						.map((ans: any) => (
-							<Card
-								key={
-									ans.id ||
-									ans.recruitment_question_id ||
-									ans.recruitment_questions?.label
-								}
-								className="bg-card/20 border-border/10 overflow-hidden hover:bg-card/30 transition-colors"
-							>
-								<CardContent className="p-4">
-									<Label className="text-blue-400/80 font-semibold mb-1.5 block text-[10px] uppercase tracking-[0.2em]">
-										{ans.recruitment_questions.label}
-									</Label>
-									<div className="text-sm text-zinc-200 leading-snug whitespace-pre-wrap">
-										{ans.answer_text}
-									</div>
-								</CardContent>
-							</Card>
-						))}
-					{answers.length === 0 && (
-						<div className="col-span-full p-10 text-center text-muted-foreground border border-dashed border-border/20 rounded-2xl">
-							No hay respuestas registradas.
-						</div>
-					)}
-				</div>
-			</div>
-
-			{/* 3. INTERNAL NOTES (AT THE VERY BOTTOM) */}
-			<div className="space-y-4 border-t border-white/5 pt-8">
-				<div className="flex items-center gap-3 px-2">
-					<IconShield className="size-5 text-purple-500" />
-					<h3 className="text-lg font-semibold text-white uppercase tracking-wider">
-						Notas Internas de Oficiales
-					</h3>
-				</div>
-				<Card className="bg-purple-500/5 border-purple-500/10 overflow-hidden">
-					<CardContent className="p-0">
-						<textarea
-							aria-label="Notas internas de oficiales"
-							className="w-full h-32 bg-transparent border-none p-4 text-sm text-white resize-none outline-none placeholder:text-zinc-600 focus:ring-1 focus:ring-purple-500/30"
-							placeholder="Escribe notas privadas para el resto de oficiales sobre este aplicante..."
-							defaultValue={application.internal_notes || ""}
-							onBlur={(e) => {
-								void (async () => {
-									const result = await doSaveInternalNote(
-										application.id,
-										e.target.value,
-									);
-									if (result.success) {
-										toast.success("Nota guardada");
-									} else {
-										toast.error("Error al guardar nota");
-									}
-								})();
-							}}
-						/>
-					</CardContent>
-				</Card>
-			</div>
-		</div>
+		</>
 	);
 }
