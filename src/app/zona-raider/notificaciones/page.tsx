@@ -42,6 +42,25 @@ export default function NotificationsPage() {
 	return useNotificationsPage();
 }
 
+function resolveEmptyNotificationsCopy(activeFilter: string) {
+	if (activeFilter === "unread" || activeFilter === "all") {
+		return {
+			title: "¡Todo al día!",
+			message: "No tienes mensajes nuevos por revisar en esta sección.",
+		};
+	}
+	if (activeFilter === "read") {
+		return {
+			title: "No hay leídos",
+			message: "Todavía no has marcado ninguna notificación como leída.",
+		};
+	}
+	return {
+		title: "Sin resultados",
+		message: "No se han encontrado mensajes sin leer en esta categoría.",
+	};
+}
+
 function useNotificationsPage() {
 	const { data: _session } = useSession();
 	const [expandedIds, setExpandedIds] = React.useState<Set<string>>(new Set());
@@ -262,18 +281,10 @@ function useNotificationsPage() {
 									<IconBell className="size-8 text-muted-foreground" />
 								</div>
 								<h3 className="text-xl font-semibold uppercase tracking-tight">
-									{activeFilter === "unread" || activeFilter === "all"
-										? "¡Todo al día!"
-										: activeFilter === "read"
-											? "No hay leídos"
-											: "Sin resultados"}
+									{resolveEmptyNotificationsCopy(activeFilter).title}
 								</h3>
 								<p className="text-sm text-muted-foreground max-w-xs mt-2 italic font-medium">
-									{activeFilter === "unread" || activeFilter === "all"
-										? "No tienes mensajes nuevos por revisar en esta sección."
-										: activeFilter === "read"
-											? "Todavía no has marcado ninguna notificación como leída."
-											: "No se han encontrado mensajes sin leer en esta categoría."}
+									{resolveEmptyNotificationsCopy(activeFilter).message}
 								</p>
 							</CardContent>
 						</Card>

@@ -120,6 +120,7 @@ async function loadNewsPageData(page: string | undefined) {
 	return {
 		seoSettings,
 		newsItems,
+		count,
 		currentPage,
 		totalPages,
 		featuredNews,
@@ -137,6 +138,7 @@ export default async function NewsPage({
 	const {
 		seoSettings,
 		newsItems,
+		count,
 		currentPage,
 		totalPages,
 		featuredNews,

@@ -49,6 +49,52 @@ type ArboristNode = {
 	children?: ArboristNode[];
 };
 
+function resolveHasChildren(node: { children?: unknown[] | null }) {
+	return Boolean(node.children && node.children.length > 0);
+}
+
+function resolveChildCount(node: { children?: unknown[] | null }) {
+	return node.children?.length || 0;
+}
+
+function resolveNodeChipBackgroundClass(
+	itemDepth: number,
+	isCategory: boolean,
+) {
+	if (itemDepth === 0) return isCategory ? "bg-blue-500/10" : "bg-white/5";
+	if (itemDepth === 1) return "bg-blue-500/10";
+	return "bg-amber-500/10";
+}
+
+function resolveNodeIconColorClass(itemDepth: number, isCategory: boolean) {
+	if (itemDepth === 0) return isCategory ? "text-blue-400" : "text-white/50";
+	if (itemDepth === 1) return "text-blue-400";
+	return "text-amber-400";
+}
+
+function resolveExpandToggleLabel(isExpanded: boolean) {
+	return isExpanded ? "Contraer" : "Expandir";
+}
+
+function resolveActivateToggleLabel(isActive: boolean) {
+	return isActive ? "Desactivar" : "Activar";
+}
+
+function DepthSpacer({
+	visible,
+	className,
+}: {
+	visible: boolean;
+	className: string;
+}) {
+	if (!visible) return null;
+	return <div className={className} />;
+}
+
+function resolveInactiveItemClass(isActive: boolean) {
+	return isActive ? "" : "text-white/30 line-through";
+}
+
 export function ArboristNodeRenderer({
 	node,
 	style,
@@ -75,7 +121,7 @@ export function ArboristNodeRenderer({
 	const item = node.data as ArboristNode;
 	const isCategory = !item.url;
 	const isExpanded = node.isOpen;
-	const hasChildren = node.children && node.children.length > 0;
+	const hasChildren = resolveHasChildren(node);
 	const itemDepth = depth ?? node.level ?? 0;
 	const isActive = item.is_active !== false;
 	const Icon = getIconByName(item.icon_name);
@@ -94,7 +140,7 @@ export function ArboristNodeRenderer({
 				<IconGripVertical className="size-4" />
 			</div>
 
-			{itemDepth > 0 && <div className="w-2 shrink-0" />}
+			<DepthSpacer visible={itemDepth > 0} className="w-2 shrink-0" />
 
 			{isCategory && (
 				<button
@@ -108,7 +154,7 @@ export function ArboristNodeRenderer({
 							node.open();
 						}
 					}}
-					aria-label={isExpanded ? "Contraer" : "Expandir"}
+					aria-label={resolveExpandToggleLabel(isExpanded)}
 					className="p-1 rounded hover:bg-white/10 text-white/30 transition-colors shrink-0"
 				>
 					{isExpanded ? (
@@ -118,31 +164,19 @@ export function ArboristNodeRenderer({
 					)}
 				</button>
 			)}
-			{!isCategory && <div className="w-6 shrink-0" />}
+			<DepthSpacer visible={!isCategory} className="w-6 shrink-0" />
 
 			<div
 				className={cn(
 					"p-1.5 rounded-md shrink-0",
-					itemDepth === 0
-						? isCategory
-							? "bg-blue-500/10"
-							: "bg-white/5"
-						: itemDepth === 1
-							? "bg-blue-500/10"
-							: "bg-amber-500/10",
+					resolveNodeChipBackgroundClass(itemDepth, isCategory),
 				)}
 			>
 				{Icon &&
 					React.createElement(Icon, {
 						className: cn(
 							"size-4",
-							itemDepth === 0
-								? isCategory
-									? "text-blue-400"
-									: "text-white/50"
-								: itemDepth === 1
-									? "text-blue-400"
-									: "text-amber-400",
+							resolveNodeIconColorClass(itemDepth, isCategory),
 						),
 					})}
 			</div>
@@ -152,7 +186,7 @@ export function ArboristNodeRenderer({
 					<span
 						className={cn(
 							"text-sm font-medium truncate",
-							!isActive && "text-white/30 line-through",
+							resolveInactiveItemClass(isActive),
 						)}
 					>
 						{item.name}
@@ -186,7 +220,7 @@ export function ArboristNodeRenderer({
 							variant="outline"
 							className="text-[9px] px-1.5 h-4 text-white/40"
 						>
-							{node.children?.length || 0}
+							{resolveChildCount(node)}
 						</Badge>
 					)}
 				</div>
@@ -199,7 +233,7 @@ export function ArboristNodeRenderer({
 				type="button"
 				onClick={() => onToggleActive(item)}
 				className="p-1.5 rounded-md hover:bg-white/10 text-white/30 hover:text-white/60 transition-colors shrink-0 opacity-0 group-hover:opacity-100"
-				title={isActive ? "Desactivar" : "Activar"}
+				title={resolveActivateToggleLabel(isActive)}
 			>
 				{isActive ? (
 					<IconEye className="size-4" />

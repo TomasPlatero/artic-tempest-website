@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
+import { openExternalUrl } from "@/shared/lib/external-url";
 import { parseISO } from "date-fns";
 import { cn } from "@/shared/tailwind/tailwind-utils";
 import {
@@ -138,6 +139,39 @@ async function doUpload(
 
 export function WeeklyVaultUploader(props: Props) {
 	return useWeeklyVaultUploader(props);
+}
+
+function resolveCharacterLabelSuffix(
+	characterId: string,
+	mainCharacterId: string | null | undefined,
+	activeCharacterId: string | null | undefined,
+) {
+	if (characterId === mainCharacterId) return " (Principal)";
+	if (characterId === activeCharacterId) return " (Roster)";
+	return null;
+}
+
+function resolveDropZoneAppearance({
+	isDragging,
+	previewUrl,
+}: {
+	isDragging: boolean;
+	previewUrl: string | null;
+}) {
+	return {
+		className: cn(
+			"relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed transition-colors duration-200 cursor-pointer group px-6 py-10 overflow-hidden",
+			isDragging
+				? "border-blue-500 bg-blue-500/10 shadow-[0_0_20px_rgba(59,130,246,0.2)]"
+				: "border-border/40 hover:border-blue-500/40 hover:bg-white/[0.02]",
+			previewUrl ? "border-solid" : "border-dashed",
+		),
+		style: {
+			backgroundImage: previewUrl ? `url(${previewUrl})` : "none",
+			backgroundSize: "cover",
+			backgroundPosition: "center",
+		},
+	};
 }
 
 function useWeeklyVaultUploader({
@@ -316,11 +350,11 @@ function useWeeklyVaultUploader({
 												{char.name}
 											</span>{" "}
 											- {char.realm_slug}
-											{mainCharacterId === char.id
-												? " (Principal)"
-												: activeCharacterId === char.id
-													? " (Roster)"
-													: null}
+											{resolveCharacterLabelSuffix(
+												char.id,
+												mainCharacterId,
+												activeCharacterId,
+											)}
 										</SelectItem>
 									))}
 								</SelectContent>
@@ -352,18 +386,14 @@ function useWeeklyVaultUploader({
 								onDragOver={handleDragOver}
 								onDragLeave={handleDragLeave}
 								onDrop={handleDrop}
-								className={cn(
-									"relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed transition-colors duration-200 cursor-pointer group px-6 py-10 overflow-hidden",
-									isDragging
-										? "border-blue-500 bg-blue-500/10 shadow-[0_0_20px_rgba(59,130,246,0.2)]"
-										: "border-border/40 hover:border-blue-500/40 hover:bg-white/[0.02]",
-									previewUrl ? "border-solid" : "border-dashed",
-								)}
-								style={{
-									backgroundImage: previewUrl ? `url(${previewUrl})` : "none",
-									backgroundSize: "cover",
-									backgroundPosition: "center",
-								}}
+								className={
+									resolveDropZoneAppearance({ isDragging, previewUrl })
+										.className
+								}
+								style={
+									resolveDropZoneAppearance({ isDragging, previewUrl })
+										.style
+								}
 							>
 								{previewUrl && (
 									<div className="absolute inset-0 bg-zinc-950/60 group-hover:bg-zinc-950/40 transition-colors" />
@@ -489,11 +519,7 @@ function useWeeklyVaultUploader({
 										variant="outline"
 										size="sm"
 										onClick={() =>
-											window.open(
-												upload.image_url,
-												"_blank",
-												"noopener,noreferrer",
-											)
+											openExternalUrl(upload.image_url)
 										}
 									>
 										Ver grande
