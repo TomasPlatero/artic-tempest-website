@@ -17,6 +17,52 @@ export const metadata: Metadata = {
   description: "Formulario para unirte al proceso de reclutamiento de Artic Tempest.",
 };
 
+function firstOrNull<T>(items: T[] | null | undefined): T | null {
+	return items && items.length > 0 ? (items[0] ?? null) : null;
+}
+
+function resolveList<T>(items: T[] | null | undefined): T[] {
+	return items ?? [];
+}
+
+function resolveHasGuildCharacter({
+	profileMatchCount,
+	characterIdMatchCount,
+	nameMatches,
+	characterKeys,
+}: {
+	profileMatchCount?: number;
+	characterIdMatchCount?: number;
+	nameMatches?: Array<{
+		character_name?: string | null;
+		realm_slug?: string | null;
+	}> | null;
+	characterKeys: Set<string>;
+}) {
+	return (
+		Boolean(profileMatchCount) ||
+		Boolean(characterIdMatchCount) ||
+		Boolean(
+			nameMatches?.some((member) => {
+				const key = `${member.character_name?.trim().toLowerCase()}::${member.realm_slug?.trim().toLowerCase()}`;
+				return characterKeys.has(key);
+			}),
+		)
+	);
+}
+
+function resolveIsMember({
+	hasGuildCharacter,
+	canSimulate,
+	simulate,
+}: {
+	hasGuildCharacter: boolean;
+	canSimulate: boolean;
+	simulate?: string;
+}) {
+	return hasGuildCharacter && !(canSimulate && simulate === "true");
+}
+
 export default async function ApplyPage({
   searchParams,
 }: {
@@ -60,8 +106,7 @@ export default async function ApplyPage({
       .eq("category", "wow_class"),
   ]);
 
-  const existingApp =
-    existingApps && existingApps.length > 0 ? existingApps[0] : null;
+  const existingApp = firstOrNull(existingApps);
 
   const authz = await getAuthzSnapshot(session);
 
@@ -113,18 +158,19 @@ export default async function ApplyPage({
         : Promise.resolve({ data: null }),
     ]);
 
-  const hasGuildCharacter =
-    Boolean(guildProfileMatch.data?.length) ||
-    Boolean(guildCharacterIdMatch.data?.length) ||
-    Boolean(
-      guildNameMatch.data?.some((member) => {
-        const key = `${member.character_name?.trim().toLowerCase()}::${member.realm_slug?.trim().toLowerCase()}`;
-        return characterKeys.has(key);
-      }),
-    );
+  const hasGuildCharacter = resolveHasGuildCharacter({
+    profileMatchCount: guildProfileMatch.data?.length,
+    characterIdMatchCount: guildCharacterIdMatch.data?.length,
+    nameMatches: guildNameMatch.data,
+    characterKeys,
+  });
 
   // Permitir saltar la comprobación solo si tiene permiso para simular Y viene con ?simulate=true
-  const isMember = hasGuildCharacter && !(canSimulate && simulate === "true");
+  const isMember = resolveIsMember({
+    hasGuildCharacter,
+    canSimulate,
+    simulate,
+  });
 
   return (
     <div className="min-h-dvh bg-zinc-950 flex flex-col animate-fade-in animate-duration-slow motion-reduce:animate-none">
@@ -180,9 +226,9 @@ export default async function ApplyPage({
           ) : (
             <ApplyClient
               user={session.user}
-              characters={bnetCharacters || []}
-              questions={questions || []}
-              classConstants={classConstants || []}
+              characters={resolveList(bnetCharacters)}
+              questions={resolveList(questions)}
+              classConstants={resolveList(classConstants)}
             />
           )}
         </div>
