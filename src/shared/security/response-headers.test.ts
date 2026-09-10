@@ -14,26 +14,36 @@ import {
 	PROXY_SECURITY_HEADERS,
 } from "./response-headers";
 
-// Import the default config from next.config.ts to access the headers() function.
-// Note: next.config.ts might have side effects (Sentry config checks) at import time.
-describe("next.config.ts security headers", () => {
-	let staticHeaders: Array<{ key: string; value: string }> = [];
+// Note: next.config.ts is expensive to import (Sentry config checks) and may have
+// side effects at import time, so it is loaded once for the whole file.
+const CATCH_ALL_SOURCE = "/:path((?!_next|api|assets).*)";
 
-	beforeAll(async () => {
-		// Dynamically import the config to avoid polluting the module scope with side effects
-		const configModule = await import("@/../next.config");
-		const config = configModule.default;
-		if (typeof config?.headers === "function") {
-			const headerConfigs = await config.headers();
-			// Find the catch-all route pattern that carries security headers
-			const catchAll = headerConfigs.find(
-				(h: { source: string }) => h.source === "/:path((?!_next|api|assets).*)",
-			);
-			if (catchAll?.headers) {
-				staticHeaders = catchAll.headers;
-			}
-		}
-	});
+let staticHeaders: Array<{ key: string; value: string }> = [];
+let cspValue = "";
+
+beforeAll(async () => {
+	const configModule = await import("@/../next.config");
+	const config = configModule.default;
+
+	if (typeof config?.headers !== "function") return;
+
+	const headerConfigs = await config.headers();
+	// Find the catch-all route pattern that carries security headers
+	const catchAll = headerConfigs.find(
+		(h: { source: string }) => h.source === CATCH_ALL_SOURCE,
+	);
+
+	if (!catchAll?.headers) return;
+
+	staticHeaders = catchAll.headers;
+	cspValue =
+		catchAll.headers.find(
+			(h: { key: string; value: string }) =>
+				h.key === "Content-Security-Policy",
+		)?.value ?? "";
+}, 30_000);
+
+describe("next.config.ts security headers", () => {
 
 	it("has all mandated static security headers via assertSecurityHeaders", () => {
 		expect(staticHeaders.length).toBeGreaterThanOrEqual(8);
@@ -92,24 +102,6 @@ describe("next.config.ts security headers", () => {
 });
 
 describe("Content-Security-Policy specifics", () => {
-	let cspValue: string = "";
-
-	beforeAll(async () => {
-		const configModule = await import("@/../next.config");
-		const config = configModule.default;
-		if (typeof config?.headers === "function") {
-			const headerConfigs = await config.headers();
-			const catchAll = headerConfigs.find(
-				(h: { source: string }) => h.source === "/:path((?!_next|api|assets).*)",
-			);
-			if (catchAll?.headers) {
-				const cspHeader = catchAll.headers.find(
-					(h: { key: string; value: string }) => h.key === "Content-Security-Policy",
-				);
-				if (cspHeader) cspValue = cspHeader.value;
-			}
-		}
-	});
 
 	it("contains object-src 'none'", () => {
 		expect(cspValue).toContain("object-src 'none'");
@@ -165,18 +157,10 @@ describe("proxy runtime security headers", () => {
 		);
 	});
 
-	it("covers, with next.config.ts, all 8 mandated headers", async () => {
+	it("covers, with next.config.ts, all 8 mandated headers", () => {
 		// The mandated headers are split across two layers: the static list in
 		// next.config.ts and the runtime list the proxy applies to every response.
-		const configModule = await import("@/../next.config");
-		const config = configModule.default;
-		const headerConfigs = await config.headers!();
-		const catchAll = headerConfigs.find(
-			(h: { source: string }) => h.source === "/:path((?!_next|api|assets).*)",
-		);
-		const staticKeys = (catchAll?.headers ?? []).map(
-			(h: { key: string }) => h.key,
-		);
+		const staticKeys = staticHeaders.map((h) => h.key);
 		const covered = [...staticKeys, ...Object.keys(PROXY_SECURITY_HEADERS)];
 
 		for (const key of MANDATED_HEADER_KEYS) {
