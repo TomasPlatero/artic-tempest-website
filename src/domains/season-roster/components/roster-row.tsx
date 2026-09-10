@@ -231,9 +231,7 @@ function resolveOffSpecView(entry: RosterEntry) {
 			? (getSpecIconUrl(entry.class_id, entry.off_spec) ?? "")
 			: "",
 		label: entry.off_spec ?? "",
-		displayName: entry.off_spec
-			? getSpecDisplayName(entry.off_spec)
-			: "—",
+		displayName: entry.off_spec ? getSpecDisplayName(entry.off_spec) : "—",
 	};
 }
 
@@ -361,9 +359,7 @@ function RosterRow({
 			{/* Role */}
 			<td className="hidden sm:table-cell p-3 md:p-4">
 				<span className="text-sm text-zinc-300">
-					{getRoleLabel(
-						getSpecRole(entry.class_id, entry.main_spec, specsByClass),
-					)}
+					{getRoleLabel(getSpecRole(entry.class_id, entry.main_spec, specsByClass))}
 				</span>
 			</td>
 
@@ -453,13 +449,11 @@ function RosterRow({
 						<div className="relative size-5 shrink-0 overflow-hidden rounded border border-white/10 bg-zinc-800">
 							<Img
 								src={offSpecView.iconUrl}
-									alt={offSpecView.label}
+								alt={offSpecView.label}
 								className="size-full"
 							/>
 						</div>
-						<span className="text-sm text-zinc-200">
-							{offSpecView.displayName}
-						</span>
+						<span className="text-sm text-zinc-200">{offSpecView.displayName}</span>
 					</div>
 				)}
 			</td>

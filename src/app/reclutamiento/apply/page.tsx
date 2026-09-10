@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { auth } from '@/auth';
-import { supabaseAdmin } from '@/shared/lib/supabase-admin';
+import { auth } from "@/auth";
+import { supabaseAdmin } from "@/shared/lib/supabase-admin";
 import { redirect } from "next/navigation";
 import { LandingNavigation } from "@/domains/landing/components/navigation";
 import { LandingFooter } from "@/domains/landing/components/footer";
@@ -14,53 +14,54 @@ import { getAuthzSnapshot } from "@/shared/auth/authz";
 
 export const metadata: Metadata = {
   title: "Solicitar ingreso | Artic Tempest",
-  description: "Formulario para unirte al proceso de reclutamiento de Artic Tempest.",
+  description:
+    "Formulario para unirte al proceso de reclutamiento de Artic Tempest.",
 };
 
 function firstOrNull<T>(items: T[] | null | undefined): T | null {
-	return items && items.length > 0 ? (items[0] ?? null) : null;
+  return items && items.length > 0 ? (items[0] ?? null) : null;
 }
 
 function resolveList<T>(items: T[] | null | undefined): T[] {
-	return items ?? [];
+  return items ?? [];
 }
 
 function resolveHasGuildCharacter({
-	profileMatchCount,
-	characterIdMatchCount,
-	nameMatches,
-	characterKeys,
+  profileMatchCount,
+  characterIdMatchCount,
+  nameMatches,
+  characterKeys,
 }: {
-	profileMatchCount?: number;
-	characterIdMatchCount?: number;
-	nameMatches?: Array<{
-		character_name?: string | null;
-		realm_slug?: string | null;
-	}> | null;
-	characterKeys: Set<string>;
+  profileMatchCount?: number;
+  characterIdMatchCount?: number;
+  nameMatches?: Array<{
+    character_name?: string | null;
+    realm_slug?: string | null;
+  }> | null;
+  characterKeys: Set<string>;
 }) {
-	return (
-		Boolean(profileMatchCount) ||
-		Boolean(characterIdMatchCount) ||
-		Boolean(
-			nameMatches?.some((member) => {
-				const key = `${member.character_name?.trim().toLowerCase()}::${member.realm_slug?.trim().toLowerCase()}`;
-				return characterKeys.has(key);
-			}),
-		)
-	);
+  return (
+    Boolean(profileMatchCount) ||
+    Boolean(characterIdMatchCount) ||
+    Boolean(
+      nameMatches?.some((member) => {
+        const key = `${member.character_name?.trim().toLowerCase()}::${member.realm_slug?.trim().toLowerCase()}`;
+        return characterKeys.has(key);
+      }),
+    )
+  );
 }
 
 function resolveIsMember({
-	hasGuildCharacter,
-	canSimulate,
-	simulate,
+  hasGuildCharacter,
+  canSimulate,
+  simulate,
 }: {
-	hasGuildCharacter: boolean;
-	canSimulate: boolean;
-	simulate?: string;
+  hasGuildCharacter: boolean;
+  canSimulate: boolean;
+  simulate?: string;
 }) {
-	return hasGuildCharacter && !(canSimulate && simulate === "true");
+  return hasGuildCharacter && !(canSimulate && simulate === "true");
 }
 
 export default async function ApplyPage({
@@ -68,10 +69,7 @@ export default async function ApplyPage({
 }: {
   searchParams: Promise<{ simulate?: string }>;
 }) {
-  const [{ simulate }, session] = await Promise.all([
-    searchParams,
-    auth(),
-  ]);
+  const [{ simulate }, session] = await Promise.all([searchParams, auth()]);
 
   if (!session) {
     redirect(

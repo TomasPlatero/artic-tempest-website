@@ -104,8 +104,7 @@ const settingsGeneralReducer = (
 		case "set-picker":
 			return { ...state, activePicker: action.target };
 		case "set-uploading":
-			if (action.target === "main")
-				return { ...state, uploading: action.value };
+			if (action.target === "main") return { ...state, uploading: action.value };
 			if (action.target === "mobile")
 				return { ...state, uploadingMobile: action.value };
 			return { ...state, uploadingPublic: action.value };
@@ -114,8 +113,7 @@ const settingsGeneralReducer = (
 				...state,
 				savingVersion:
 					action.target === "version" ? action.value : state.savingVersion,
-				savingGuild:
-					action.target === "guild" ? action.value : state.savingGuild,
+				savingGuild: action.target === "guild" ? action.value : state.savingGuild,
 				savingTour: action.target === "tour" ? action.value : state.savingTour,
 			};
 		default:
@@ -246,9 +244,7 @@ function buildLogoImageBody(
 	return { icon_url: fileUrl };
 }
 
-function pickLogoSuccessDescription(
-	pickerType: "main" | "mobile" | "public",
-) {
+function pickLogoSuccessDescription(pickerType: "main" | "mobile" | "public") {
 	if (pickerType === "mobile")
 		return "El icono para dispositivos móviles se ha guardado correctamente.";
 	if (pickerType === "public")
@@ -405,8 +401,7 @@ export function SettingsGeneralClient({
 			) : permissions.general.canView ? (
 				<p className="text-sm text-muted-foreground">
 					No hay configuración general. Añade una fila en la tabla
-					<code className="mx-1 rounded bg-muted px-1">settings</code> en
-					Supabase.
+					<code className="mx-1 rounded bg-muted px-1">settings</code> en Supabase.
 				</p>
 			) : null}
 
@@ -422,8 +417,8 @@ export function SettingsGeneralClient({
 							Tour guiado
 						</CardTitle>
 						<CardDescription>
-							Controla si el tour interactivo de Zona Raider se muestra a los
-							nuevos usuarios en escritorio.
+							Controla si el tour interactivo de Zona Raider se muestra a los nuevos
+							usuarios en escritorio.
 						</CardDescription>
 					</CardHeader>
 					<CardContent>

@@ -217,8 +217,7 @@ function useSettingsNewsClient({
 			const method = editingId ? "PATCH" : "POST";
 			const cleanPovTabs = ((form as any).pov_tabs || []).map((tab: any) => ({
 				...tab,
-				youtube_url:
-					toSafeYouTubeEmbed(tab.youtube_url) || tab.youtube_url || "",
+				youtube_url: toSafeYouTubeEmbed(tab.youtube_url) || tab.youtube_url || "",
 			}));
 			const body = editingId
 				? { id: editingId, ...form, pov_tabs: cleanPovTabs }
@@ -237,9 +236,7 @@ function useSettingsNewsClient({
 			const savedItem = await res.json();
 
 			if (editingId) {
-				setNews((prev) =>
-					prev.map((n) => (n.id === editingId ? savedItem : n)),
-				);
+				setNews((prev) => prev.map((n) => (n.id === editingId ? savedItem : n)));
 				toast.success("Noticia actualizada");
 			} else {
 				setNews((prev) => [savedItem, ...prev]);
@@ -360,9 +357,7 @@ function useSettingsNewsClient({
 								</Label>
 								<RichTextEditor
 									value={resolveText(form.content)}
-									onChange={(content) =>
-										setForm((prev) => ({ ...prev, content }))
-									}
+									onChange={(content) => setForm((prev) => ({ ...prev, content }))}
 								/>
 							</div>
 
@@ -397,8 +392,7 @@ function useSettingsNewsClient({
 											className="rounded-xl h-9 bg-primary text-black font-semibold uppercase tracking-widest text-[10px] px-4 shadow-xl shadow-primary/20 hover:scale-105  disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
 											onClick={() => void save()}
 										>
-											<IconCheck className="size-4 mr-1" />{" "}
-											{resolveSubmitLabel(editingId)}
+											<IconCheck className="size-4 mr-1" /> {resolveSubmitLabel(editingId)}
 										</Button>
 									</div>
 								</div>
@@ -484,9 +478,7 @@ function useSettingsNewsClient({
 										</Label>
 										<Select
 											value={form.category}
-											onValueChange={(v) =>
-												setForm((prev) => ({ ...prev, category: v }))
-											}
+											onValueChange={(v) => setForm((prev) => ({ ...prev, category: v }))}
 										>
 											<SelectTrigger className="w-full bg-white/5 border-white/10 rounded-xl h-11">
 												<SelectValue placeholder="Seleccionar categoría" />

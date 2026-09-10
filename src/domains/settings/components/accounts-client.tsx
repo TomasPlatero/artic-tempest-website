@@ -302,9 +302,7 @@ function useAccountsClient({
 					disabled={syncing}
 					className="border-cyan-500/30 bg-cyan-500/5 text-cyan-100 hover:bg-cyan-500/10 w-full lg:w-auto"
 				>
-					<IconRefresh
-						className={cn("mr-2 size-4", syncing && "animate-spin")}
-					/>
+					<IconRefresh className={cn("mr-2 size-4", syncing && "animate-spin")} />
 					Sincronizar Discord
 				</Button>
 			</div>
@@ -375,9 +373,7 @@ function useAccountsClient({
 							</span>
 						</div>
 						<Button asChild variant="outline" className="w-full">
-							<Link
-								href={`/zona-raider/configuracion/cuentas/${profile.user_id}`}
-							>
+							<Link href={`/zona-raider/configuracion/cuentas/${profile.user_id}`}>
 								Ver ficha
 							</Link>
 						</Button>
@@ -442,11 +438,7 @@ function useAccountsClient({
 							</TableHead>
 							<TableHead
 								className="uppercase tracking-[0.2em] text-[10px] font-semibold text-white/40 text-left"
-								aria-sort={resolveAriaSort(
-									sortColumn,
-									"role_level",
-									sortDirection,
-								)}
+								aria-sort={resolveAriaSort(sortColumn, "role_level", sortDirection)}
 							>
 								<button
 									type="button"
@@ -458,11 +450,7 @@ function useAccountsClient({
 							</TableHead>
 							<TableHead
 								className="uppercase tracking-[0.2em] text-[10px] font-semibold text-white/40 text-left"
-								aria-sort={resolveAriaSort(
-									sortColumn,
-									"created_at",
-									sortDirection,
-								)}
+								aria-sort={resolveAriaSort(sortColumn, "created_at", sortDirection)}
 							>
 								<button
 									type="button"
@@ -528,9 +516,7 @@ function useAccountsClient({
 										variant="outline"
 										className="rounded-xl h-10 px-4 border-white/10 bg-white/5"
 									>
-										<Link
-											href={`/zona-raider/configuracion/cuentas/${profile.user_id}`}
-										>
+										<Link href={`/zona-raider/configuracion/cuentas/${profile.user_id}`}>
 											<IconExternalLink className="size-4 mr-2" /> Ver ficha
 										</Link>
 									</Button>

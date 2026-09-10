@@ -174,10 +174,7 @@ export function ArboristNodeRenderer({
 			>
 				{Icon &&
 					React.createElement(Icon, {
-						className: cn(
-							"size-4",
-							resolveNodeIconColorClass(itemDepth, isCategory),
-						),
+						className: cn("size-4", resolveNodeIconColorClass(itemDepth, isCategory)),
 					})}
 			</div>
 
@@ -192,10 +189,7 @@ export function ArboristNodeRenderer({
 						{item.name}
 					</span>
 					{itemDepth === 0 && isCategory && (
-						<Badge
-							variant="outline"
-							className="text-[9px] px-1.5 h-4 text-white/40"
-						>
+						<Badge variant="outline" className="text-[9px] px-1.5 h-4 text-white/40">
 							L1
 						</Badge>
 					)}
@@ -216,10 +210,7 @@ export function ArboristNodeRenderer({
 						</Badge>
 					)}
 					{isCategory && hasChildren && (
-						<Badge
-							variant="outline"
-							className="text-[9px] px-1.5 h-4 text-white/40"
-						>
+						<Badge variant="outline" className="text-[9px] px-1.5 h-4 text-white/40">
 							{resolveChildCount(node)}
 						</Badge>
 					)}
@@ -262,8 +253,8 @@ export function ArboristNodeRenderer({
 					</DropdownMenuItem>
 					<DropdownMenuSeparator />
 					<DropdownMenuItem onClick={() => onAddChild(item.id)}>
-						<IconLinkPlus className="size-4 mr-2 text-emerald-500" /> Añadir
-						enlace hijo
+						<IconLinkPlus className="size-4 mr-2 text-emerald-500" /> Añadir enlace
+						hijo
 					</DropdownMenuItem>
 					<DropdownMenuItem onClick={() => onAddCategory(item.id)}>
 						<IconFolderPlus className="size-4 mr-2 text-blue-500" /> Añadir

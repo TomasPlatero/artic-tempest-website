@@ -323,12 +323,17 @@ function useWeeklyVaultUploader({
 				<CardHeader>
 					<CardTitle>Subir Captura</CardTitle>
 					<CardDescription>
-						Sube la imagen completa de lo que te ha salido en la Gran Cámara
-						para el personaje seleccionado.
+						Sube la imagen completa de lo que te ha salido en la Gran Cámara para el
+						personaje seleccionado.
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-6">
+					<form
+						onSubmit={(e) => {
+							void handleSubmit(e);
+						}}
+						className="space-y-6"
+					>
 						<div className="space-y-2" data-tour-step="weekly-vault-character">
 							<Label htmlFor="character">Personaje</Label>
 							<Select
@@ -387,13 +392,9 @@ function useWeeklyVaultUploader({
 								onDragLeave={handleDragLeave}
 								onDrop={handleDrop}
 								className={
-									resolveDropZoneAppearance({ isDragging, previewUrl })
-										.className
+									resolveDropZoneAppearance({ isDragging, previewUrl }).className
 								}
-								style={
-									resolveDropZoneAppearance({ isDragging, previewUrl })
-										.style
-								}
+								style={resolveDropZoneAppearance({ isDragging, previewUrl }).style}
 							>
 								{previewUrl && (
 									<div className="absolute inset-0 bg-zinc-950/60 group-hover:bg-zinc-950/40 transition-colors" />
@@ -455,11 +456,7 @@ function useWeeklyVaultUploader({
 							/>
 						</div>
 
-						<Button
-							type="submit"
-							disabled={isUploading || !file}
-							className="w-full"
-						>
+						<Button type="submit" disabled={isUploading || !file} className="w-full">
 							{isUploading ? (
 								<>
 									<IconLoader2 className="mr-2 size-4 animate-spin" /> Subiendo…
@@ -518,9 +515,7 @@ function useWeeklyVaultUploader({
 									<Button
 										variant="outline"
 										size="sm"
-										onClick={() =>
-											openExternalUrl(upload.image_url)
-										}
+										onClick={() => openExternalUrl(upload.image_url)}
 									>
 										Ver grande
 									</Button>

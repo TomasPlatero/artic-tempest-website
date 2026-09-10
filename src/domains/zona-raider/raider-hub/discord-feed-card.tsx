@@ -64,9 +64,7 @@ function convertRoleMentions(content: string): string {
 }
 
 const DISCORD_MARKDOWN_COMPONENTS: Components = {
-	p: ({ children }) => (
-		<p className="my-1.5 first:mt-0 last:mb-0">{children}</p>
-	),
+	p: ({ children }) => <p className="my-1.5 first:mt-0 last:mb-0">{children}</p>,
 	a: ({ href, children, ...props }) => {
 		if (typeof href === "string" && href.startsWith("#mention:")) {
 			const name = href.slice(9);
@@ -109,9 +107,7 @@ const DISCORD_MARKDOWN_COMPONENTS: Components = {
 		<strong className="font-semibold text-white">{children}</strong>
 	),
 	em: ({ children }) => <em>{children}</em>,
-	del: ({ children }) => (
-		<del className="text-muted-foreground">{children}</del>
-	),
+	del: ({ children }) => <del className="text-muted-foreground">{children}</del>,
 	code: ({ className, children }) =>
 		className ? (
 			<code className="font-mono text-[0.9em]">{children}</code>
@@ -286,9 +282,7 @@ function DiscordPollCard({ poll }: { poll: DiscordPoll }) {
 // ===========================================================================
 // DiscordMessageRow — one message, expandable to reveal the full content.
 // ===========================================================================
-function isImageAttachment(
-	att: DiscordChannelMessage["attachments"][number],
-) {
+function isImageAttachment(att: DiscordChannelMessage["attachments"][number]) {
 	return (
 		Boolean(att.contentType?.startsWith("image/")) ||
 		/[.](png|jpe?g|gif|webp)([?]|$)/i.test(att.url)
@@ -311,9 +305,7 @@ function resolveMessageMedia(
 }
 
 function resolveContentClassName(expanded: boolean) {
-	return `mt-1 break-words text-sm text-white ${
-		expanded ? "" : "line-clamp-1"
-	}`;
+	return `mt-1 break-words text-sm text-white ${expanded ? "" : "line-clamp-1"}`;
 }
 
 function ExpandToggleLabel({ expanded }: { expanded: boolean }) {
@@ -381,10 +373,7 @@ function DiscordMessageRow({ message }: { message: DiscordChannelMessage }) {
 
 					{/* Content */}
 					{message.content && (
-						<div
-							ref={contentRef}
-							className={resolveContentClassName(expanded)}
-						>
+						<div ref={contentRef} className={resolveContentClassName(expanded)}>
 							<DiscordContent content={message.content} />
 						</div>
 					)}
@@ -451,8 +440,7 @@ function DiscordMessageRow({ message }: { message: DiscordChannelMessage }) {
 										height={96}
 										className="size-20 object-cover"
 										unoptimized={
-											att.contentType === "image/gif" ||
-											/[.]gif([?]|$)/i.test(att.url)
+											att.contentType === "image/gif" || /[.]gif([?]|$)/i.test(att.url)
 										}
 									/>
 								</a>

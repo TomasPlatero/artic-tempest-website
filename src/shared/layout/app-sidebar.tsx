@@ -51,9 +51,7 @@ function GuildSidebarHeader({
 							<IconInnerShadowTop className="size-5 shrink-0" />
 						)}
 						<div className="flex flex-col truncate">
-							<span className="text-base font-semibold leading-none">
-								{guildName}
-							</span>
+							<span className="text-base font-semibold leading-none">{guildName}</span>
 							<div className="flex items-center gap-1.5 mt-0.5">
 								<Badge
 									variant="outline"
@@ -78,9 +76,7 @@ function resolveRecruitmentApiPath(
 	hasSession: boolean,
 	canSeeRecruitmentBadge: boolean,
 ) {
-	return hasSession && canSeeRecruitmentBadge
-		? "/api/recruitment/count"
-		: null;
+	return hasSession && canSeeRecruitmentBadge ? "/api/recruitment/count" : null;
 }
 
 function resolveSidebarBadges({
@@ -297,9 +293,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 							<SidebarMenuButton
 								onClick={() => toggleSidebar()}
 								tooltip={
-									sidebarState === "collapsed"
-										? "Expandir menú"
-										: "Colapsar menú"
+									sidebarState === "collapsed" ? "Expandir menú" : "Colapsar menú"
 								}
 							>
 								{sidebarState === "collapsed" ? (

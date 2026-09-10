@@ -126,10 +126,7 @@ function SelectedMemberBadge({
 }) {
 	if (!member) return null;
 	return (
-		<Badge
-			variant="outline"
-			className="text-xs ml-2 opacity-70 border-border/50"
-		>
+		<Badge variant="outline" className="text-xs ml-2 opacity-70 border-border/50">
 			{member.character_realm}
 		</Badge>
 	);
@@ -202,13 +199,13 @@ export function InspectorDetailsCard({
 									className="text-3xl font-semibold"
 									style={{
 										color:
-											inspector.characterData.mythic_plus_scores_by_season[0]
-												?.segments?.all?.color || "inherit",
+											inspector.characterData.mythic_plus_scores_by_season[0]?.segments
+												?.all?.color || "inherit",
 									}}
 								>
 									{Math.round(
-										inspector.characterData.mythic_plus_scores_by_season[0]
-											?.scores?.all || 0,
+										inspector.characterData.mythic_plus_scores_by_season[0]?.scores
+											?.all || 0,
 									)}
 								</span>
 							</div>
@@ -244,36 +241,32 @@ export function InspectorDetailsCard({
 										Mejores Míticas Completadas
 									</h3>
 									<div className="grid md:grid-cols-2 gap-3">
-										{inspector.characterData.mythic_plus_best_runs.map(
-											(run: any) => (
-												<a
-													key={`${run.short_name}-${run.completed_at}`}
-													href={run.url}
-													target="_blank"
-													rel="noreferrer"
-													aria-label={`Mítica +${run.mythic_level}: ${run.short_name}`}
-													className="flex items-center justify-between p-3 rounded-lg border border-border/40 bg-card hover:bg-muted/30 transition-colors"
-												>
-													<div className="flex flex-col">
-														<span className="font-semibold text-sm">
-															{run.short_name}
-														</span>
-														<span className="text-xs text-muted-foreground">
-															{fmtDateFromUnknown(run.completed_at)}
-														</span>
-													</div>
-													<div className="flex items-center gap-3">
-														<span
-															className={`text-sm font-semibold ${run.num_keystone_upgrades > 0 ? "text-green-500" : "text-muted-foreground"}`}
-														>
-															+{run.mythic_level}{" "}
-															{run.num_keystone_upgrades > 0 &&
-																`(+${run.num_keystone_upgrades})`}
-														</span>
-													</div>
-												</a>
-											),
-										)}
+										{inspector.characterData.mythic_plus_best_runs.map((run: any) => (
+											<a
+												key={`${run.short_name}-${run.completed_at}`}
+												href={run.url}
+												target="_blank"
+												rel="noreferrer"
+												aria-label={`Mítica +${run.mythic_level}: ${run.short_name}`}
+												className="flex items-center justify-between p-3 rounded-lg border border-border/40 bg-card hover:bg-muted/30 transition-colors"
+											>
+												<div className="flex flex-col">
+													<span className="font-semibold text-sm">{run.short_name}</span>
+													<span className="text-xs text-muted-foreground">
+														{fmtDateFromUnknown(run.completed_at)}
+													</span>
+												</div>
+												<div className="flex items-center gap-3">
+													<span
+														className={`text-sm font-semibold ${run.num_keystone_upgrades > 0 ? "text-green-500" : "text-muted-foreground"}`}
+													>
+														+{run.mythic_level}{" "}
+														{run.num_keystone_upgrades > 0 &&
+															`(+${run.num_keystone_upgrades})`}
+													</span>
+												</div>
+											</a>
+										))}
 									</div>
 								</div>
 							)}

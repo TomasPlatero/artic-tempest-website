@@ -4,7 +4,11 @@ import Script from "next/script";
 import { getCachedServerSession } from "@/shared/auth/get-cached-server-session";
 import { supabaseAdmin } from "@/shared/lib/supabase-admin";
 import { getAuthzSnapshot } from "@/shared/auth/authz";
-import { IconCalendar, IconUserEdit, IconArrowLeft } from "@/shared/ui/tabler-icons";
+import {
+	IconCalendar,
+	IconUserEdit,
+	IconArrowLeft,
+} from "@/shared/ui/tabler-icons";
 import Link from "next/link";
 import Image from "next/image";
 import React from "react";
@@ -69,10 +73,7 @@ function renderSanitizedHtml(html: string): React.ReactNode[] {
 		if (["html", "head", "body"].includes(node.name)) {
 			return (node.children ?? [])
 				.map((child: AnyNode, index: number) =>
-					renderNode(
-						child,
-						`${key}-${(child as CheerioNode).startIndex ?? index}`,
-					),
+					renderNode(child, `${key}-${(child as CheerioNode).startIndex ?? index}`),
 				)
 				.flat()
 				.filter(
@@ -128,10 +129,7 @@ function renderSanitizedHtml(html: string): React.ReactNode[] {
 
 		const children = (node.children ?? [])
 			.map((child: AnyNode, index: number) =>
-				renderNode(
-					child,
-					`${key}-${(child as CheerioNode).startIndex ?? index}`,
-				),
+				renderNode(child, `${key}-${(child as CheerioNode).startIndex ?? index}`),
 			)
 			.flat()
 			.filter(
@@ -291,8 +289,8 @@ export async function generateMetadata({
 	const rawTitle = item.title;
 	const truncatedTitle =
 		rawTitle.length > MAX_TITLE_LENGTH
-		? `${rawTitle.slice(0, MAX_TITLE_LENGTH).trim()}…`
-		: rawTitle;
+			? `${rawTitle.slice(0, MAX_TITLE_LENGTH).trim()}…`
+			: rawTitle;
 
 	const description = item.summary?.trim()
 		? item.summary
@@ -349,14 +347,15 @@ export default async function NewsDetailPage({
 	params: Promise<{ slug: string }>;
 	searchParams: Promise<{ preview?: string }>;
 }) {
-	const [{ slug }, { preview }, nonce, session, seoSettings] =
-		await Promise.all([
+	const [{ slug }, { preview }, nonce, session, seoSettings] = await Promise.all(
+		[
 			params,
 			searchParams,
 			getCspNonce(),
 			getCachedServerSession(),
 			getSeoSettings(),
-		]);
+		],
+	);
 	const isPreview = preview === "true";
 	const authz = session ? await getAuthzSnapshot(session) : null;
 
@@ -524,12 +523,10 @@ export default async function NewsDetailPage({
 							pathname="/noticias/slug"
 							zoneId="news-article-inline-1"
 							adSlot={
-								seoSettings.monetization.googleAdsenseSlots
-									.newsArticleInline1 || undefined
+								seoSettings.monetization.googleAdsenseSlots.newsArticleInline1 ||
+								undefined
 							}
-							adClient={
-								seoSettings.monetization.googleAdsenseClientId || undefined
-							}
+							adClient={seoSettings.monetization.googleAdsenseClientId || undefined}
 							className="mx-auto mt-10 max-w-4xl"
 						/>
 
@@ -540,8 +537,8 @@ export default async function NewsDetailPage({
 									¿Buscas una hermandad competitiva?
 								</h2>
 								<p className="text-zinc-400 mb-8 max-w-xl mx-auto">
-									Artic Tempest está reclutando jugadores excepcionales para
-									nuestros rosters de World of Warcraft: Midnight.
+									Artic Tempest está reclutando jugadores excepcionales para nuestros
+									rosters de World of Warcraft: Midnight.
 								</p>
 								<Button
 									asChild

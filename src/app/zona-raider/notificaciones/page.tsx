@@ -189,14 +189,12 @@ function useNotificationsPage() {
 		{
 			id: "update",
 			label: "Actualización",
-			count: notifications.filter((n) => n.type === "update" && !n.isRead)
-				.length,
+			count: notifications.filter((n) => n.type === "update" && !n.isRead).length,
 		},
 		{
 			id: "warning",
 			label: "Aviso",
-			count: notifications.filter((n) => n.type === "warning" && !n.isRead)
-				.length,
+			count: notifications.filter((n) => n.type === "warning" && !n.isRead).length,
 		},
 		{
 			id: "important",
@@ -221,8 +219,7 @@ function useNotificationsPage() {
 							Bandeja de Entrada
 						</h1>
 						<p className="text-sm text-muted-foreground mt-1 font-medium">
-							Comunicados oficiales y actualizaciones del equipo de Artic
-							Tempest.
+							Comunicados oficiales y actualizaciones del equipo de Artic Tempest.
 						</p>
 					</div>
 					<button
@@ -301,8 +298,7 @@ function useNotificationsPage() {
 											!n.isRead
 												? "bg-blue-500/[0.03] border-blue-500/20"
 												: "bg-card/20 opacity-70",
-											isExpanded &&
-												"hover:border-blue-500/30 shadow-xl shadow-blue-500/5",
+											isExpanded && "hover:border-blue-500/30 shadow-xl shadow-blue-500/5",
 										)}
 									>
 										{!n.isRead && (
@@ -383,9 +379,7 @@ function useNotificationsPage() {
 										<div
 											className={cn(
 												" ease-in-out overflow-hidden",
-												isExpanded
-													? "max-h-[2000px] opacity-100"
-													: "max-h-0 opacity-0",
+												isExpanded ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0",
 											)}
 										>
 											<CardContent className="pt-0 pb-6">

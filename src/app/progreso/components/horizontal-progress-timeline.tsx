@@ -93,9 +93,7 @@ function getSporefallSortDate(sporefall: SporefallLike) {
 function resolveBossTimelineVisuals(boss: TimelineBoss, index: number) {
 	const topSide = index % 2 === 0;
 	return {
-		stamp: boss.isDefeated
-			? boss.killDate
-			: boss.lastPullAt || boss.firstSeenAt,
+		stamp: boss.isDefeated ? boss.killDate : boss.lastPullAt || boss.firstSeenAt,
 		metaPlacement: topSide
 			? "top-[calc(50%+1.35rem)]"
 			: "bottom-[calc(50%+1.35rem)]",
@@ -103,12 +101,9 @@ function resolveBossTimelineVisuals(boss: TimelineBoss, index: number) {
 		dotClass: boss.isDefeated
 			? "bg-emerald-400 shadow-[0_0_18px_rgba(52,211,153,0.75)]"
 			: "bg-blue-400 shadow-[0_0_18px_rgba(96,165,250,0.6)]",
-		statusClass: boss.isDefeated
-			? "text-emerald-300/90"
-			: "text-blue-200/80",
+		statusClass: boss.isDefeated ? "text-emerald-300/90" : "text-blue-200/80",
 		statusLabel: boss.isDefeated ? "Kill" : "En progreso",
-		hasKillModal:
-			boss.killRoster.length > 0 || Boolean(boss.killImageUrl),
+		hasKillModal: boss.killRoster.length > 0 || Boolean(boss.killImageUrl),
 	};
 }
 
@@ -138,9 +133,7 @@ function TimelineItem({
 	return (
 		<li className="group relative list-none h-[20rem] w-[17rem] shrink-0 first:ml-4 sm:first:ml-6 lg:first:ml-8 last:mr-4 sm:last:mr-6 lg:last:mr-8">
 			<div className="pointer-events-none absolute left-1/2 top-[calc(50%-0.5rem)] z-30 size-5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/20 bg-[#060b17] shadow-[0_0_0_4px_rgba(6,11,23,1)]">
-				<span
-					className={`absolute inset-1 rounded-full ${dotClass}`}
-				/>
+				<span className={`absolute inset-1 rounded-full ${dotClass}`} />
 			</div>
 
 			<div className={`absolute left-0 right-0 ${metaPlacement} text-center`}>
@@ -150,9 +143,7 @@ function TimelineItem({
 				<p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-white/30">
 					{boss.pullCount} pulls
 				</p>
-				<p
-					className={`text-[10px] uppercase tracking-[0.35em] ${statusClass}`}
-				>
+				<p className={`text-[10px] uppercase tracking-[0.35em] ${statusClass}`}>
 					{statusLabel}
 				</p>
 			</div>

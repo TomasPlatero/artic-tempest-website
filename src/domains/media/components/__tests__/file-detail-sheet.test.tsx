@@ -227,9 +227,7 @@ describe("FileDetailSheet", () => {
 
 		const altInput = screen.getByLabelText("Texto alternativo");
 		expect(altInput).toBeDefined();
-		expect((altInput as HTMLInputElement).value).toBe(
-			"Descripción alternativa",
-		);
+		expect((altInput as HTMLInputElement).value).toBe("Descripción alternativa");
 	});
 
 	it("renders editable caption field", () => {

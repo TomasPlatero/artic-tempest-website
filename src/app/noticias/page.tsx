@@ -174,9 +174,7 @@ export default async function NewsPage({
 			<div className="min-h-dvh bg-[#050814] selection:bg-blue-500/30 dark">
 				<LandingNavigation />
 				<main id="main-content" className="pt-40 pb-20 px-6">
-					<div
-						className={cn("mx-auto max-w-7xl", PUBLIC_SECTION_REVEAL_CLASSES)}
-					>
+					<div className={cn("mx-auto max-w-7xl", PUBLIC_SECTION_REVEAL_CLASSES)}>
 						{/* Header */}
 						<div className="flex flex-col justify-between gap-6 mb-8 md:mb-12 sm:flex-row sm:items-end">
 							<div className="text-center sm:text-left">
@@ -201,12 +199,10 @@ export default async function NewsPage({
 									pathname="/noticias"
 									zoneId="news-list-inline-1"
 									adSlot={
-										seoSettings.monetization.googleAdsenseSlots
-											.newsListInline1 || undefined
+										seoSettings.monetization.googleAdsenseSlots.newsListInline1 ||
+										undefined
 									}
-									adClient={
-										seoSettings.monetization.googleAdsenseClientId || undefined
-									}
+									adClient={seoSettings.monetization.googleAdsenseClientId || undefined}
 									className="mx-auto max-w-5xl"
 								/>
 
@@ -225,8 +221,7 @@ export default async function NewsPage({
 											/>
 											<Image
 												src={
-													featuredNews.image_url ||
-													"/assets/images/midnight-battle.webp"
+													featuredNews.image_url || "/assets/images/midnight-battle.webp"
 												}
 												alt={featuredNews.title}
 												fill
@@ -290,8 +285,7 @@ export default async function NewsPage({
 												className={cn(
 													"group relative flex flex-col overflow-hidden rounded-2xl border border-white/5 bg-zinc-950  motion-reduce:transition-none hover:border-blue-500/30",
 													PUBLIC_CARD_REVEAL_CLASSES,
-													PUBLIC_STAGGER_DELAY_CLASSES[idx + 1] ??
-														"animate-delay-500",
+													PUBLIC_STAGGER_DELAY_CLASSES[idx + 1] ?? "animate-delay-500",
 												)}
 											>
 												<div className="relative aspect-video overflow-hidden">
@@ -300,10 +294,7 @@ export default async function NewsPage({
 														aria-hidden="true"
 													/>
 													<Image
-														src={
-															item.image_url ||
-															"/assets/images/midnight-battle.webp"
-														}
+														src={item.image_url || "/assets/images/midnight-battle.webp"}
 														alt={item.title}
 														fill
 														sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
