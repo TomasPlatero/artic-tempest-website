@@ -328,6 +328,20 @@ export async function generateMetadata({
 	};
 }
 
+type NewsDetailSession = Awaited<ReturnType<typeof getCachedServerSession>>;
+type NewsDetailAuthz = Awaited<ReturnType<typeof getAuthzSnapshot>>;
+
+function resolveCanViewDraft(
+	isPreview: boolean,
+	session: NewsDetailSession,
+	authz: NewsDetailAuthz | null,
+) {
+	if (!isPreview) return false;
+	if (!session) return false;
+	const roleLevel = authz?.roleSlug ?? session.user?.roleLevel;
+	return roleLevel === "gm" || roleLevel === "officer";
+}
+
 export default async function NewsDetailPage({
 	params,
 	searchParams,
@@ -347,13 +361,7 @@ export default async function NewsDetailPage({
 	const authz = session ? await getAuthzSnapshot(session) : null;
 
 	// Check if we can view the draft
-	const canViewDraft =
-		isPreview &&
-		!!(
-			session &&
-			((authz?.roleSlug ?? session.user?.roleLevel) === "gm" ||
-				(authz?.roleSlug ?? session.user?.roleLevel) === "officer")
-		);
+	const canViewDraft = resolveCanViewDraft(isPreview, session, authz);
 
 	const item = await getNewsItem(slug, canViewDraft);
 

@@ -29,6 +29,7 @@ import {
 	SheetClose,
 } from "@/shared/ui/sheet";
 import type { MediaFile } from "@/domains/media/types";
+import { openExternalUrl } from "@/shared/lib/external-url";
 
 // ── Helpers ───────────────────────────────
 async function doSaveFileMetadata(
@@ -176,6 +177,198 @@ function formReducer(state: FormState, action: FormAction): FormState {
 // ── Component ─────────────────────────────
 // react-doctor-disable-next-line no-giant-component
 // react-doctor-disable-next-line prefer-explicit-variants
+function resolveFileLabels(file: NonNullable<FileDetailSheetProps["file"]>) {
+	return {
+		label: file.title || file.storage_path,
+		alt: file.alt_text || file.title || file.storage_path,
+	};
+}
+
+function FileMetadataFields({
+	form,
+	dispatch,
+	handleBlur,
+	file,
+	canEdit,
+}: {
+	form: FormState;
+	dispatch: React.Dispatch<FormAction>;
+	handleBlur: (field: string, value: string, originalValue: string) => Promise<void>;
+	file: NonNullable<FileDetailSheetProps["file"]>;
+	canEdit?: boolean;
+}) {
+	return (
+					<div className="flex flex-col gap-3">
+						<h3 className="text-xs font-semibold uppercase tracking-widest text-white/40">
+							Metadatos
+						</h3>
+
+						<div className="flex flex-col gap-2">
+							<Label htmlFor="detail-title">Título</Label>
+							<Input
+								id="detail-title"
+								value={form.title}
+								onChange={(e) =>
+									dispatch({ type: "setTitle", value: e.target.value })
+								}
+								onBlur={() => void handleBlur("title", form.title, file.title || "")}
+								maxLength={MAX_LENGTHS.title}
+								aria-label="Título"
+								className={
+									form.errors.title ? "border-red-500/50" : "border-white/10"
+								}
+								disabled={!canEdit}
+							/>
+							{form.errors.title && (
+								<p className="text-xs text-red-400">{form.errors.title}</p>
+							)}
+						</div>
+
+						<div className="flex flex-col gap-2">
+							<Label htmlFor="detail-alt">Texto alternativo</Label>
+							<Input
+								id="detail-alt"
+								value={form.altText}
+								onChange={(e) =>
+									dispatch({ type: "setAltText", value: e.target.value })
+								}
+								onBlur={() =>
+									void handleBlur("alt_text", form.altText, file.alt_text || "")
+								}
+								maxLength={MAX_LENGTHS.alt_text}
+								aria-label="Texto alternativo"
+								className="border-white/10"
+								disabled={!canEdit}
+							/>
+						</div>
+
+						<div className="flex flex-col gap-2">
+							<Label htmlFor="detail-caption">Pie de foto</Label>
+							<Input
+								id="detail-caption"
+								value={form.caption}
+								onChange={(e) =>
+									dispatch({ type: "setCaption", value: e.target.value })
+								}
+								onBlur={() =>
+									void handleBlur("caption", form.caption, file.caption || "")
+								}
+								maxLength={MAX_LENGTHS.caption}
+								aria-label="Pie de foto"
+								className="border-white/10"
+								disabled={!canEdit}
+							/>
+						</div>
+
+						<div className="flex flex-col gap-2">
+							<Label htmlFor="detail-desc">Descripción</Label>
+							<Textarea
+								id="detail-desc"
+								value={form.description}
+								onChange={(e) =>
+									dispatch({ type: "setDescription", value: e.target.value })
+								}
+								onBlur={() =>
+									void handleBlur(
+										"description",
+										form.description,
+										file.description || "",
+									)
+								}
+								maxLength={MAX_LENGTHS.description}
+								aria-label="Descripción"
+								className="border-white/10 min-h-20"
+								rows={3}
+								disabled={!canEdit}
+							/>
+						</div>
+					</div>
+	);
+}
+
+function FileInfoSection({
+	file,
+}: {
+	file: NonNullable<FileDetailSheetProps["file"]>;
+}) {
+	return (
+					<div className="flex flex-col gap-3">
+						<h3 className="text-xs font-semibold uppercase tracking-widest text-white/40">
+							Información del archivo
+						</h3>
+
+						<div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+							<span className="text-white/40">Carpeta</span>
+							<span className="text-white/70 font-mono text-xs truncate">
+								{file.bucket}
+							</span>
+
+							<span className="text-white/40">Ruta</span>
+							<span className="text-white/70 font-mono text-xs truncate">
+								{file.storage_path}
+							</span>
+
+							<span className="text-white/40">Tipo</span>
+							<span className="text-white/70 font-mono text-xs">
+								{file.mime_type}
+							</span>
+
+							<span className="text-white/40">Tamaño</span>
+							<span className="text-white/70 text-xs">
+								{formatFileSize(file.file_size)}
+							</span>
+
+							{file.dimensions && (
+								<>
+									<span className="text-white/40">Dimensiones</span>
+									<span className="text-white/70 text-xs">
+										{file.dimensions}
+									</span>
+								</>
+							)}
+
+							<span className="text-white/40">Fecha</span>
+							<span className="text-white/70 text-xs">
+								{formatDate(file.created_at)}
+							</span>
+						</div>
+					</div>
+	);
+}
+
+function resolveShowNavigation(hasPrev: boolean, hasNext: boolean) {
+	return hasPrev || hasNext;
+}
+
+function SheetNavArrow({
+	direction,
+	enabled,
+	onNavigate,
+}: {
+	direction: "prev" | "next";
+	enabled: boolean;
+	onNavigate: (direction: "prev" | "next") => void;
+}) {
+	if (!enabled) return <div className="size-8" />;
+	return (
+		<Button
+			variant="ghost"
+			size="icon"
+			className="size-8 text-white/50 hover:text-white/80"
+			onClick={() => onNavigate(direction)}
+			aria-label={
+				direction === "prev" ? "Archivo anterior" : "Archivo siguiente"
+			}
+		>
+			{direction === "prev" ? (
+				<IconChevronLeft className="size-5" />
+			) : (
+				<IconChevronRight className="size-5" />
+			)}
+		</Button>
+	);
+}
+
 export function FileDetailSheet({
 	file,
 	open,
@@ -275,7 +468,7 @@ export function FileDetailSheet({
 	// ── Download ──────────────────────────
 	const handleDownload = () => {
 		if (file) {
-			window.open(file.url, "_blank", "noopener,noreferrer");
+			openExternalUrl(file.url);
 		}
 	};
 
@@ -283,6 +476,8 @@ export function FileDetailSheet({
 	if (!file) return null;
 
 	const isImage = file.mime_type.startsWith("image/");
+	const { label: fileLabel, alt: fileAlt } = resolveFileLabels(file);
+	const showNavigation = resolveShowNavigation(hasPrev, hasNext);
 
 	return (
 		<Sheet open={open} onOpenChange={onOpenChange}>
@@ -294,7 +489,7 @@ export function FileDetailSheet({
 				<SheetHeader className="shrink-0 px-5 pt-5 pb-3 border-b border-white/10">
 					<div className="flex items-center gap-2">
 						<SheetTitle className="text-white/90 text-base truncate flex-1">
-							{file.title || file.storage_path}
+							{fileLabel}
 						</SheetTitle>
 						<SheetClose
 							className="rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:outline-none"
@@ -304,7 +499,7 @@ export function FileDetailSheet({
 						</SheetClose>
 					</div>
 					<SheetDescription className="sr-only">
-						Detalle del archivo {file.title || file.storage_path}. Vista previa,
+						Detalle del archivo {fileLabel}. Vista previa,
 						metadatos editables y acciones.
 					</SheetDescription>
 				</SheetHeader>
@@ -316,7 +511,7 @@ export function FileDetailSheet({
 						{isImage ? (
 							<Image
 								src={file.url}
-								alt={file.alt_text || file.title || file.storage_path}
+								alt={fileAlt}
 								fill
 								sizes="(max-width: 768px) 50vw, 25vw"
 								className="object-contain"
@@ -327,134 +522,16 @@ export function FileDetailSheet({
 					</div>
 
 					{/* Metadata Form */}
-					<div className="flex flex-col gap-3">
-						<h3 className="text-xs font-semibold uppercase tracking-widest text-white/40">
-							Metadatos
-						</h3>
-
-						<div className="flex flex-col gap-2">
-							<Label htmlFor="detail-title">Título</Label>
-							<Input
-								id="detail-title"
-								value={form.title}
-								onChange={(e) =>
-									dispatch({ type: "setTitle", value: e.target.value })
-								}
-								onBlur={() => void handleBlur("title", form.title, file.title || "")}
-								maxLength={MAX_LENGTHS.title}
-								aria-label="Título"
-								className={
-									form.errors.title ? "border-red-500/50" : "border-white/10"
-								}
-								disabled={!canEdit}
-							/>
-							{form.errors.title && (
-								<p className="text-xs text-red-400">{form.errors.title}</p>
-							)}
-						</div>
-
-						<div className="flex flex-col gap-2">
-							<Label htmlFor="detail-alt">Texto alternativo</Label>
-							<Input
-								id="detail-alt"
-								value={form.altText}
-								onChange={(e) =>
-									dispatch({ type: "setAltText", value: e.target.value })
-								}
-								onBlur={() =>
-									void handleBlur("alt_text", form.altText, file.alt_text || "")
-								}
-								maxLength={MAX_LENGTHS.alt_text}
-								aria-label="Texto alternativo"
-								className="border-white/10"
-								disabled={!canEdit}
-							/>
-						</div>
-
-						<div className="flex flex-col gap-2">
-							<Label htmlFor="detail-caption">Pie de foto</Label>
-							<Input
-								id="detail-caption"
-								value={form.caption}
-								onChange={(e) =>
-									dispatch({ type: "setCaption", value: e.target.value })
-								}
-								onBlur={() =>
-									void handleBlur("caption", form.caption, file.caption || "")
-								}
-								maxLength={MAX_LENGTHS.caption}
-								aria-label="Pie de foto"
-								className="border-white/10"
-								disabled={!canEdit}
-							/>
-						</div>
-
-						<div className="flex flex-col gap-2">
-							<Label htmlFor="detail-desc">Descripción</Label>
-							<Textarea
-								id="detail-desc"
-								value={form.description}
-								onChange={(e) =>
-									dispatch({ type: "setDescription", value: e.target.value })
-								}
-								onBlur={() =>
-									void handleBlur(
-										"description",
-										form.description,
-										file.description || "",
-									)
-								}
-								maxLength={MAX_LENGTHS.description}
-								aria-label="Descripción"
-								className="border-white/10 min-h-20"
-								rows={3}
-								disabled={!canEdit}
-							/>
-						</div>
-					</div>
+					<FileMetadataFields
+						form={form}
+						dispatch={dispatch}
+						handleBlur={handleBlur}
+						file={file}
+						canEdit={canEdit}
+					/>
 
 					{/* File Info */}
-					<div className="flex flex-col gap-3">
-						<h3 className="text-xs font-semibold uppercase tracking-widest text-white/40">
-							Información del archivo
-						</h3>
-
-						<div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-							<span className="text-white/40">Carpeta</span>
-							<span className="text-white/70 font-mono text-xs truncate">
-								{file.bucket}
-							</span>
-
-							<span className="text-white/40">Ruta</span>
-							<span className="text-white/70 font-mono text-xs truncate">
-								{file.storage_path}
-							</span>
-
-							<span className="text-white/40">Tipo</span>
-							<span className="text-white/70 font-mono text-xs">
-								{file.mime_type}
-							</span>
-
-							<span className="text-white/40">Tamaño</span>
-							<span className="text-white/70 text-xs">
-								{formatFileSize(file.file_size)}
-							</span>
-
-							{file.dimensions && (
-								<>
-									<span className="text-white/40">Dimensiones</span>
-									<span className="text-white/70 text-xs">
-										{file.dimensions}
-									</span>
-								</>
-							)}
-
-							<span className="text-white/40">Fecha</span>
-							<span className="text-white/70 text-xs">
-								{formatDate(file.created_at)}
-							</span>
-						</div>
-					</div>
+					<FileInfoSection file={file} />
 
 					{/* Save button */}
 					<div className="flex items-center justify-end pt-1">
@@ -520,37 +597,21 @@ export function FileDetailSheet({
 					</div>
 
 					{/* Navigation arrows */}
-					{(hasPrev || hasNext) && (
+					{showNavigation && (
 						<div className="flex items-center justify-center gap-4">
-							{hasPrev ? (
-								<Button
-									variant="ghost"
-									size="icon"
-									className="size-8 text-white/50 hover:text-white/80"
-									onClick={() => onNavigate("prev")}
-									aria-label="Archivo anterior"
-								>
-									<IconChevronLeft className="size-5" />
-								</Button>
-							) : (
-								<div className="size-8" />
-							)}
+							<SheetNavArrow
+								direction="prev"
+								enabled={hasPrev}
+								onNavigate={onNavigate}
+							/>
 							<span className="text-xs text-white/40">
 								Navegar entre archivos
 							</span>
-							{hasNext ? (
-								<Button
-									variant="ghost"
-									size="icon"
-									className="size-8 text-white/50 hover:text-white/80"
-									onClick={() => onNavigate("next")}
-									aria-label="Archivo siguiente"
-								>
-									<IconChevronRight className="size-5" />
-								</Button>
-							) : (
-								<div className="size-8" />
-							)}
+							<SheetNavArrow
+								direction="next"
+								enabled={hasNext}
+								onNavigate={onNavigate}
+							/>
 						</div>
 					)}
 				</div>

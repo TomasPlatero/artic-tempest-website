@@ -47,10 +47,6 @@ Object.defineProperty(navigator, "clipboard", {
 	configurable: true,
 });
 
-// Mock window.open
-const mockOpen = vi.fn();
-window.open = mockOpen;
-
 beforeEach(() => {
 	vi.clearAllMocks();
 	mockWriteText.mockResolvedValue(undefined);
@@ -435,14 +431,20 @@ describe("FileDetailSheet", () => {
 			/>,
 		);
 
+		const clickSpy = vi
+			.spyOn(HTMLAnchorElement.prototype, "click")
+			.mockImplementation(() => {});
+
 		const downloadBtn = screen.getByText("Descargar");
 		fireEvent.click(downloadBtn);
 
-		expect(mockOpen).toHaveBeenCalledWith(
-			file.url,
-			"_blank",
-			"noopener,noreferrer",
-		);
+		expect(clickSpy).toHaveBeenCalledTimes(1);
+		const anchor = clickSpy.mock.instances[0] as unknown as HTMLAnchorElement;
+		expect(anchor.href).toBe(file.url);
+		expect(anchor.target).toBe("_blank");
+		expect(anchor.rel).toBe("noopener noreferrer");
+
+		clickSpy.mockRestore();
 	});
 
 	it("renders Delete button when canEdit is true", () => {

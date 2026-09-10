@@ -117,6 +117,15 @@ export function AccountsClient(props: {
 	return useAccountsClient(props);
 }
 
+function resolveAriaSort(
+	sortColumn: string,
+	column: string,
+	sortDirection: string,
+): "ascending" | "descending" | "none" {
+	if (sortColumn !== column) return "none";
+	return sortDirection === "asc" ? "ascending" : "descending";
+}
+
 function useAccountsClient({
 	initialProfiles,
 	roles,
@@ -417,13 +426,11 @@ function useAccountsClient({
 						<TableRow className="hover:bg-transparent border-white/[0.05]">
 							<TableHead
 								className="h-14 pl-8 uppercase tracking-[0.2em] text-[10px] font-semibold text-white/40 text-left"
-								aria-sort={
-									sortColumn === "discord_username"
-										? sortDirection === "asc"
-											? "ascending"
-											: "descending"
-										: "none"
-								}
+								aria-sort={resolveAriaSort(
+									sortColumn,
+									"discord_username",
+									sortDirection,
+								)}
 							>
 								<button
 									type="button"
@@ -435,13 +442,11 @@ function useAccountsClient({
 							</TableHead>
 							<TableHead
 								className="uppercase tracking-[0.2em] text-[10px] font-semibold text-white/40 text-left"
-								aria-sort={
-									sortColumn === "role_level"
-										? sortDirection === "asc"
-											? "ascending"
-											: "descending"
-										: "none"
-								}
+								aria-sort={resolveAriaSort(
+									sortColumn,
+									"role_level",
+									sortDirection,
+								)}
 							>
 								<button
 									type="button"
@@ -453,13 +458,11 @@ function useAccountsClient({
 							</TableHead>
 							<TableHead
 								className="uppercase tracking-[0.2em] text-[10px] font-semibold text-white/40 text-left"
-								aria-sort={
-									sortColumn === "created_at"
-										? sortDirection === "asc"
-											? "ascending"
-											: "descending"
-										: "none"
-								}
+								aria-sort={resolveAriaSort(
+									sortColumn,
+									"created_at",
+									sortDirection,
+								)}
 							>
 								<button
 									type="button"
