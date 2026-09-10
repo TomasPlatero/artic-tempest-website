@@ -27,21 +27,15 @@ type FileViewProps = {
 	onBulkDelete?: () => Promise<boolean>;
 };
 
-export function FileView({
-	files,
-	isLoading,
-	error,
-	hasMore,
-	total,
-	onLoadMore,
-	onClickFile,
+function useFileSelection({
 	selectedIds,
 	onSelectFile,
 	onDeselectAll,
-	onBulkDelete,
-}: FileViewProps) {
-	const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-
+}: {
+	selectedIds?: Set<string>;
+	onSelectFile?: (id: string, selected: boolean) => void;
+	onDeselectAll?: () => void;
+}) {
 	// Internal fallback selection state (for tests or standalone usage)
 	const [internalSelectedIds, setInternalSelectedIds] = useState<Set<string>>(
 		new Set(),
@@ -60,57 +54,105 @@ export function FileView({
 	const effectiveOnDeselect =
 		onDeselectAll ?? (() => setInternalSelectedIds(new Set()));
 
+	return { effectiveSelectedIds, effectiveOnSelect, effectiveOnDeselect };
+}
+
+function LoadingState() {
+	return (
+		<div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">
+			<IconLoader2 className="size-8 animate-spin" />
+			<p className="text-sm font-medium">Cargando archivos…</p>
+		</div>
+	);
+}
+
+function ErrorState({ error }: { error: string }) {
+	return (
+		<div className="flex flex-col items-center justify-center py-20 gap-3">
+			<div className="size-16 rounded-2xl bg-red-500/10 flex items-center justify-center ring-1 ring-red-500/20">
+				<IconAlertTriangle className="size-8 text-red-400" />
+			</div>
+			<p className="text-base font-semibold text-red-300">{error}</p>
+		</div>
+	);
+}
+
+function FileViewToolbar({
+	total,
+	viewMode,
+	onChangeView,
+}: {
+	total: number;
+	viewMode: "grid" | "list";
+	onChangeView: (mode: "grid" | "list") => void;
+}) {
+	return (
+		<div className="flex items-center justify-between">
+			<p className="text-sm font-medium text-white/50">
+				{total} {total === 1 ? "archivo" : "archivos"}
+			</p>
+			<div className="flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 p-1">
+				<Button
+					variant={viewMode === "grid" ? "secondary" : "ghost"}
+					size="icon"
+					className="size-8"
+					onClick={() => onChangeView("grid")}
+					aria-label="Vista de cuadrícula"
+				>
+					<IconLayoutGrid className="size-4" />
+				</Button>
+				<Button
+					variant={viewMode === "list" ? "secondary" : "ghost"}
+					size="icon"
+					className="size-8"
+					onClick={() => onChangeView("list")}
+					aria-label="Vista de lista"
+				>
+					<IconLayoutList className="size-4" />
+				</Button>
+			</div>
+		</div>
+	);
+}
+
+export function FileView({
+	files,
+	isLoading,
+	error,
+	hasMore,
+	total,
+	onLoadMore,
+	onClickFile,
+	selectedIds,
+	onSelectFile,
+	onDeselectAll,
+	onBulkDelete,
+}: FileViewProps) {
+	const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+	// Internal fallback selection state (for tests or standalone usage)
+	const { effectiveSelectedIds, effectiveOnSelect, effectiveOnDeselect } =
+		useFileSelection({ selectedIds, onSelectFile, onDeselectAll });
+
 	// ── Loading ──────────────────────────────
 	if (isLoading && files.length === 0) {
-		return (
-			<div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">
-				<IconLoader2 className="size-8 animate-spin" />
-				<p className="text-sm font-medium">Cargando archivos…</p>
-			</div>
-		);
+		return <LoadingState />;
 	}
 
 	// ── Error ────────────────────────────────
 	if (error) {
-		return (
-			<div className="flex flex-col items-center justify-center py-20 gap-3">
-				<div className="size-16 rounded-2xl bg-red-500/10 flex items-center justify-center ring-1 ring-red-500/20">
-					<IconAlertTriangle className="size-8 text-red-400" />
-				</div>
-				<p className="text-base font-semibold text-red-300">{error}</p>
-			</div>
-		);
+		return <ErrorState error={error} />;
 	}
 
 	// ── Content ──────────────────────────────
 	return (
 		<div className="flex flex-col gap-4">
 			{/* Toolbar: view toggle + file count */}
-			<div className="flex items-center justify-between">
-				<p className="text-sm font-medium text-white/50">
-					{total} {total === 1 ? "archivo" : "archivos"}
-				</p>
-				<div className="flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 p-1">
-					<Button
-						variant={viewMode === "grid" ? "secondary" : "ghost"}
-						size="icon"
-						className="size-8"
-						onClick={() => setViewMode("grid")}
-						aria-label="Vista de cuadrícula"
-					>
-						<IconLayoutGrid className="size-4" />
-					</Button>
-					<Button
-						variant={viewMode === "list" ? "secondary" : "ghost"}
-						size="icon"
-						className="size-8"
-						onClick={() => setViewMode("list")}
-						aria-label="Vista de lista"
-					>
-						<IconLayoutList className="size-4" />
-					</Button>
-				</div>
-			</div>
+			<FileViewToolbar
+				total={total}
+				viewMode={viewMode}
+				onChangeView={setViewMode}
+			/>
 
 			{/* File content */}
 			{viewMode === "grid" ? (

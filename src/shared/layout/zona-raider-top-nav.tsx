@@ -103,6 +103,50 @@ function RecruitmentBadge({
 // Nav dropdown card (sub-item inside a dropdown)
 // ──────────────────────────────────────────────
 
+function resolveCardClassName({
+	isChildActive,
+	childHasChildren,
+	hasUrl,
+}: {
+	isChildActive: boolean;
+	childHasChildren: boolean;
+	hasUrl: boolean;
+}) {
+	return cn(
+		"flex items-start gap-4 rounded-xl border  group/item p-3 size-full min-h-[110px]",
+		isChildActive
+			? "bg-blue-500/5 border-blue-500/30 shadow-[0_20px_45px_rgba(59,130,246,0.09)]"
+			: childHasChildren
+				? "border-blue-500/10 bg-blue-500/[0.02] hover:border-blue-500/30 hover:bg-blue-500/[0.05] cursor-pointer"
+				: "border-white/5 bg-zinc-950/20 hover:border-white/15 hover:bg-white/5",
+		!hasUrl && !childHasChildren && "opacity-75",
+	);
+}
+
+function resolveCardRole({
+	childHasChildren,
+	hasUrl,
+}: {
+	childHasChildren: boolean;
+	hasUrl: boolean;
+}) {
+	if (childHasChildren) return "button";
+	return hasUrl ? undefined : "presentation";
+}
+
+function toggleHoveredChildIcon(
+	prev: Record<string, string | undefined>,
+	parentKey: string,
+	iconName: string | undefined,
+	entering: boolean,
+): Record<string, string | undefined> {
+	if (!entering && !prev[parentKey]) return prev;
+	const next = { ...prev };
+	if (entering) next[parentKey] = iconName;
+	else delete next[parentKey];
+	return next;
+}
+
 function NavDropdownCard({
 	child,
 	parentKey,
@@ -125,24 +169,16 @@ function NavDropdownCard({
 	const hasUrl = Boolean(child.url);
 
 	const handleHover = (entering: boolean) => {
-		setHoveredChildIconByParent((prev) => {
-			if (!entering && !prev[parentKey]) return prev;
-			const next = { ...prev };
-			if (entering) next[parentKey] = child.icon_name;
-			else delete next[parentKey];
-			return next;
-		});
+		setHoveredChildIconByParent((prev) =>
+			toggleHoveredChildIcon(prev, parentKey, child.icon_name, entering),
+		);
 	};
 
-	const cardClassName = cn(
-		"flex items-start gap-4 rounded-xl border  group/item p-3 size-full min-h-[110px]",
-		isChildActive
-			? "bg-blue-500/5 border-blue-500/30 shadow-[0_20px_45px_rgba(59,130,246,0.09)]"
-			: childHasChildren
-				? "border-blue-500/10 bg-blue-500/[0.02] hover:border-blue-500/30 hover:bg-blue-500/[0.05] cursor-pointer"
-				: "border-white/5 bg-zinc-950/20 hover:border-white/15 hover:bg-white/5",
-		!hasUrl && !childHasChildren && "opacity-75",
-	);
+	const cardClassName = resolveCardClassName({
+		isChildActive,
+		childHasChildren,
+		hasUrl,
+	});
 
 	const content = (
 		<div
@@ -151,7 +187,7 @@ function NavDropdownCard({
 			onMouseLeave={() => handleHover(false)}
 			onFocus={() => handleHover(true)}
 			onBlur={() => handleHover(false)}
-			role={childHasChildren ? "button" : hasUrl ? undefined : "presentation"}
+			role={resolveCardRole({ childHasChildren, hasUrl })}
 		>
 			<div
 				className={cn(
