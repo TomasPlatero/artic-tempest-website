@@ -70,6 +70,36 @@ function GuildSidebarHeader({
 	);
 }
 
+function resolveApiPath(hasSession: boolean, path: string) {
+	return hasSession ? path : null;
+}
+
+function resolveRecruitmentApiPath(
+	hasSession: boolean,
+	canSeeRecruitmentBadge: boolean,
+) {
+	return hasSession && canSeeRecruitmentBadge
+		? "/api/recruitment/count"
+		: null;
+}
+
+function resolveSidebarBadges({
+	canSeeRecruitmentBadge,
+	recruitmentCount,
+	notificationsData,
+}: {
+	canSeeRecruitmentBadge: boolean;
+	recruitmentCount?: number;
+	notificationsData: unknown;
+}): Record<string, number> {
+	return {
+		recruitment: canSeeRecruitmentBadge ? (recruitmentCount ?? 0) : 0,
+		notifications: Array.isArray(notificationsData)
+			? notificationsData.filter((n: any) => !n.isRead).length
+			: 0,
+	};
+}
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	const { data: session } = useSession();
 	const { toggleSidebar, state: sidebarState, isMobile } = useSidebar();
@@ -90,17 +120,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 		icon_url?: string | null;
 		name?: string | null;
 		version?: string | null;
-	}>(session ? "/api/guild/info" : null, {
+	}>(resolveApiPath(Boolean(session), "/api/guild/info"), {
 		refreshInterval: 10 * 60 * 1000,
 	});
 	const { data: notificationsData, mutate: mutateNotifications } = useApiQuery<
 		any[]
-	>(session ? "/api/notifications" : null, {
+	>(resolveApiPath(Boolean(session), "/api/notifications"), {
 		refreshInterval: 60 * 1000,
 	});
 	const { data: recruitmentData } = useApiQuery<{
 		count: number;
-	}>(session && canSeeRecruitmentBadge ? "/api/recruitment/count" : null, {
+	}>(resolveRecruitmentApiPath(Boolean(session), canSeeRecruitmentBadge), {
 		refreshInterval: 2 * 60 * 1000,
 	});
 
@@ -109,12 +139,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	const appVersion = guildInfo?.version ?? "Zona Raider";
 	const navigation = navigationData ?? [];
 
-	const badges: Record<string, number> = {
-		recruitment: canSeeRecruitmentBadge ? (recruitmentData?.count ?? 0) : 0,
-		notifications: Array.isArray(notificationsData)
-			? notificationsData.filter((n: any) => !n.isRead).length
-			: 0,
-	};
+	const badges = resolveSidebarBadges({
+		canSeeRecruitmentBadge,
+		recruitmentCount: recruitmentData?.count,
+		notificationsData,
+	});
 
 	const badgesRef = React.useRef(badges);
 

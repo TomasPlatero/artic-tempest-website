@@ -83,12 +83,7 @@ interface NewsItem {
 const NEWS_SELECT =
 	"id, title, slug, summary, content, image_url, category, author, is_featured, created_at";
 
-export default async function NewsPage({
-	searchParams,
-}: {
-	searchParams: Promise<{ page?: string }>;
-}) {
-	const { page } = await searchParams;
+async function loadNewsPageData(page: string | undefined) {
 	const parsedPage = Number.parseInt(page || "1", 10);
 	const currentPage =
 		Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
@@ -121,6 +116,33 @@ export default async function NewsPage({
 		: newsItems;
 
 	const baseUrl = seoSettings.site.url || "https://artictempest.es";
+
+	return {
+		seoSettings,
+		newsItems,
+		currentPage,
+		totalPages,
+		featuredNews,
+		otherNews,
+		baseUrl,
+	};
+}
+
+export default async function NewsPage({
+	searchParams,
+}: {
+	searchParams: Promise<{ page?: string }>;
+}) {
+	const { page } = await searchParams;
+	const {
+		seoSettings,
+		newsItems,
+		currentPage,
+		totalPages,
+		featuredNews,
+		otherNews,
+		baseUrl,
+	} = await loadNewsPageData(page);
 
 	return (
 		<>

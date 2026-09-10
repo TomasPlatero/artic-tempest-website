@@ -86,6 +86,23 @@ export function SettingsNewsClient(props: {
 	return useSettingsNewsClient(props);
 }
 
+function resolveViewToggleClass(
+	viewMode: "cards" | "table",
+	target: "cards" | "table",
+) {
+	return `h-8 px-2 sm:px-3 rounded-lg flex gap-1 ${
+		viewMode === target ? "bg-white/10 text-white" : "text-zinc-500"
+	}`;
+}
+
+function resolveText(value: string | null | undefined) {
+	return value || "";
+}
+
+function resolveSubmitLabel(editingId: string | null) {
+	return editingId ? "Actualizar" : "Publicar";
+}
+
 function useSettingsNewsClient({
 	initialNews,
 	categories,
@@ -281,7 +298,7 @@ function useSettingsNewsClient({
 									<Button
 										variant="ghost"
 										size="sm"
-										className={`h-8 px-2 sm:px-3 rounded-lg flex gap-1 ${viewMode === "table" ? "bg-white/10 text-white" : "text-zinc-500"}`}
+										className={`h-8 px-2 sm:px-3 rounded-lg flex gap-1 ${resolveViewToggleClass(viewMode, "table")}`}
 										onClick={() => setViewMode("table")}
 									>
 										<IconLayoutList className="size-4" />
@@ -292,7 +309,7 @@ function useSettingsNewsClient({
 									<Button
 										variant="ghost"
 										size="sm"
-										className={`h-8 px-2 sm:px-3 rounded-lg flex gap-1 ${viewMode === "cards" ? "bg-white/10 text-white" : "text-zinc-500"}`}
+										className={`h-8 px-2 sm:px-3 rounded-lg flex gap-1 ${resolveViewToggleClass(viewMode, "cards")}`}
 										onClick={() => setViewMode("cards")}
 									>
 										<IconLayoutCards className="size-4" />
@@ -326,7 +343,7 @@ function useSettingsNewsClient({
 								<Input
 									placeholder="Título de la noticia..."
 									className="text-3xl sm:text-4xl h-auto py-2 bg-transparent border-0 border-b border-transparent focus:border-primary/20 rounded-none font-semibold italic tracking-tighter placeholder:opacity-20  uppercase"
-									value={form.title || ""}
+									value={resolveText(form.title)}
 									onChange={(e) => {
 										if (isCreating) {
 											updateTitleAndSlug(e.target.value);
@@ -342,7 +359,7 @@ function useSettingsNewsClient({
 									Contenido
 								</Label>
 								<RichTextEditor
-									value={form.content || ""}
+									value={resolveText(form.content)}
 									onChange={(content) =>
 										setForm((prev) => ({ ...prev, content }))
 									}
@@ -381,7 +398,7 @@ function useSettingsNewsClient({
 											onClick={() => void save()}
 										>
 											<IconCheck className="size-4 mr-1" />{" "}
-											{editingId ? "Actualizar" : "Publicar"}
+											{resolveSubmitLabel(editingId)}
 										</Button>
 									</div>
 								</div>
@@ -430,7 +447,7 @@ function useSettingsNewsClient({
 											</Label>
 											<div className="relative group">
 												<Input
-													value={form.slug || ""}
+													value={resolveText(form.slug)}
 													onChange={(e) =>
 														setForm((prev) => ({
 															...prev,
@@ -448,7 +465,7 @@ function useSettingsNewsClient({
 												Resumen de la noticia
 											</Label>
 											<Input
-												value={form.summary || ""}
+												value={resolveText(form.summary)}
 												onChange={(e) =>
 													setForm((prev) => ({
 														...prev,
