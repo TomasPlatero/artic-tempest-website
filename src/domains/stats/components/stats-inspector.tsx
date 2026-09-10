@@ -99,6 +99,56 @@ export function InspectorRosterCard({
 	);
 }
 
+function resolveInspectorTitle(inspector: InspectorState) {
+	return inspector.selectedMember
+		? inspector.selectedMember.character_name
+		: "Armería";
+}
+
+function resolveInspectorHint(inspector: InspectorState) {
+	return inspector.selectedMember
+		? ""
+		: "Selecciona un jugador del panel izquierdo";
+}
+
+function resolveInspectorViewState(inspector: InspectorState) {
+	if (!inspector.selectedMember) return "empty";
+	if (inspector.isInspecting) return "loading";
+	if (inspector.error) return "error";
+	if (inspector.characterData) return "ready";
+	return "blank";
+}
+
+function SelectedMemberBadge({
+	member,
+}: {
+	member: InspectorState["selectedMember"];
+}) {
+	if (!member) return null;
+	return (
+		<Badge
+			variant="outline"
+			className="text-xs ml-2 opacity-70 border-border/50"
+		>
+			{member.character_realm}
+		</Badge>
+	);
+}
+
+function InspectorProfileLink({ inspector }: { inspector: InspectorState }) {
+	if (!inspector.selectedMember || !inspector.characterData) return null;
+	return (
+		<a
+			href={inspector.characterData.profile_url}
+			target="_blank"
+			rel="noreferrer"
+			className="text-xs text-primary hover:underline"
+		>
+			Ver Perfil Completo &rarr;
+		</a>
+	);
+}
+
 export function InspectorDetailsCard({
 	inspector,
 	fmtDateFromUnknown,
@@ -106,56 +156,42 @@ export function InspectorDetailsCard({
 	inspector: InspectorState;
 	fmtDateFromUnknown: (value: string | number | Date) => string;
 }) {
+	const viewState = resolveInspectorViewState(inspector);
+
 	return (
 		<Card className="md:col-span-8 lg:col-span-9 border-border/40 shadow-sm bg-card/60 flex flex-col min-h-[500px] pt-0 overflow-hidden">
 			<CardHeader className="pt-4 pb-4 border-b bg-muted/20">
 				<div className="flex flex-col md:flex-row items-center justify-between gap-2 text-center md:text-left">
 					<div className="flex flex-col items-center md:items-start">
 						<CardTitle className="text-lg text-foreground/80 flex items-center justify-center md:justify-start gap-2">
-							{inspector.selectedMember
-								? inspector.selectedMember.character_name
-								: "Armería"}
-							{inspector.selectedMember && (
-								<Badge
-									variant="outline"
-									className="text-xs ml-2 opacity-70 border-border/50"
-								>
-									{inspector.selectedMember.character_realm}
-								</Badge>
-							)}
+							{resolveInspectorTitle(inspector)}
+							<SelectedMemberBadge member={inspector.selectedMember} />
 						</CardTitle>
 						<CardDescription className="text-xs mt-1">
-							{!inspector.selectedMember &&
-								"Selecciona un jugador del panel izquierdo"}
+							{resolveInspectorHint(inspector)}
 						</CardDescription>
 					</div>
-					{inspector.selectedMember && inspector.characterData && (
-						<a
-							href={inspector.characterData.profile_url}
-							target="_blank"
-							rel="noreferrer"
-							className="text-xs text-primary hover:underline"
-						>
-							Ver Perfil Completo &rarr;
-						</a>
-					)}
+					<InspectorProfileLink inspector={inspector} />
 				</div>
 			</CardHeader>
 			<CardContent className="p-6">
-				{!inspector.selectedMember ? (
+				{viewState === "empty" && (
 					<div className="flex flex-col items-center justify-center h-full min-h-[300px] text-muted-foreground gap-2">
 						<IconChartBar className="size-10 opacity-20" />
 						<p>Selecciona un miembro para ver su Mythic+ Score</p>
 					</div>
-				) : inspector.isInspecting ? (
+				)}
+				{viewState === "loading" && (
 					<div className="flex items-center justify-center h-full min-h-[300px] text-muted-foreground animate-pulse">
 						Consultando Raider.IO…
 					</div>
-				) : inspector.error ? (
+				)}
+				{viewState === "error" && (
 					<div className="flex items-center justify-center h-full min-h-[300px] text-red-400">
 						{inspector.error}
 					</div>
-				) : inspector.characterData ? (
+				)}
+				{viewState === "ready" && (
 					<div className="flex flex-col gap-6 animate-in fade-in-50">
 						<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
 							<div className="flex flex-col p-4 rounded-xl bg-muted/20 border border-border/50 items-center justify-center text-center">
@@ -242,7 +278,7 @@ export function InspectorDetailsCard({
 								</div>
 							)}
 					</div>
-				) : null}
+				)}
 			</CardContent>
 		</Card>
 	);

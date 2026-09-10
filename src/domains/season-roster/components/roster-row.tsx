@@ -216,6 +216,27 @@ function RosterRowActions({
 // Row component
 // ──────────────────────────────────────────────
 
+function resolveInitialFields(entry: RosterEntry): EditableFields {
+	return {
+		main_spec: entry.main_spec,
+		off_spec: entry.off_spec ?? "",
+		profession_1: entry.profession_1 ?? "",
+		profession_2: entry.profession_2 ?? "",
+	};
+}
+
+function resolveOffSpecView(entry: RosterEntry) {
+	return {
+		iconUrl: entry.off_spec
+			? (getSpecIconUrl(entry.class_id, entry.off_spec) ?? "")
+			: "",
+		label: entry.off_spec ?? "",
+		displayName: entry.off_spec
+			? getSpecDisplayName(entry.off_spec)
+			: "—",
+	};
+}
+
 function RosterRow({
 	entry,
 	classNames,
@@ -232,12 +253,10 @@ function RosterRow({
 	const router = useRouter();
 	const [editing, setEditing] = useState(false);
 	const [saving, setSaving] = useState(false);
-	const [fields, setFields] = useState<EditableFields>({
-		main_spec: entry.main_spec,
-		off_spec: entry.off_spec ?? "",
-		profession_1: entry.profession_1 ?? "",
-		profession_2: entry.profession_2 ?? "",
-	});
+	const [fields, setFields] = useState<EditableFields>(() =>
+		resolveInitialFields(entry),
+	);
+	const offSpecView = resolveOffSpecView(entry);
 
 	const specs = getSpecsForClassId(entry.class_id, specsByClass);
 	const className = classNames[entry.class_id] ?? "Desconocida";
@@ -433,17 +452,13 @@ function RosterRow({
 					<div className="flex items-center gap-2">
 						<div className="relative size-5 shrink-0 overflow-hidden rounded border border-white/10 bg-zinc-800">
 							<Img
-								src={
-									entry.off_spec
-										? (getSpecIconUrl(entry.class_id, entry.off_spec) ?? "")
-										: ""
-								}
-								alt={entry.off_spec ?? ""}
+								src={offSpecView.iconUrl}
+									alt={offSpecView.label}
 								className="size-full"
 							/>
 						</div>
 						<span className="text-sm text-zinc-200">
-							{entry.off_spec ? getSpecDisplayName(entry.off_spec) : "—"}
+							{offSpecView.displayName}
 						</span>
 					</div>
 				)}

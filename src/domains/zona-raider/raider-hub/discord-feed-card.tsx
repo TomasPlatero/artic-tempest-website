@@ -286,6 +286,53 @@ function DiscordPollCard({ poll }: { poll: DiscordPoll }) {
 // ===========================================================================
 // DiscordMessageRow — one message, expandable to reveal the full content.
 // ===========================================================================
+function isImageAttachment(
+	att: DiscordChannelMessage["attachments"][number],
+) {
+	return (
+		Boolean(att.contentType?.startsWith("image/")) ||
+		/[.](png|jpe?g|gif|webp)([?]|$)/i.test(att.url)
+	);
+}
+
+function resolveMessageMedia(
+	message: DiscordChannelMessage,
+	isOverflowing: boolean,
+	expanded: boolean,
+) {
+	const imageAttachments = message.attachments.filter(isImageAttachment);
+	const hasMedia = message.youtubeId !== null || imageAttachments.length > 0;
+	return {
+		imageAttachments,
+		showToggle: isOverflowing || hasMedia,
+		showCollapsedChip: !expanded && hasMedia,
+		showExpandedMedia: expanded && hasMedia,
+	};
+}
+
+function resolveContentClassName(expanded: boolean) {
+	return `mt-1 break-words text-sm text-white ${
+		expanded ? "" : "line-clamp-1"
+	}`;
+}
+
+function ExpandToggleLabel({ expanded }: { expanded: boolean }) {
+	if (expanded) {
+		return (
+			<>
+				<IconChevronUp className="size-3.5" />
+				Ver menos
+			</>
+		);
+	}
+	return (
+		<>
+			<IconChevronDown className="size-3.5" />
+			Ver más
+		</>
+	);
+}
+
 function DiscordMessageRow({ message }: { message: DiscordChannelMessage }) {
 	const [expanded, setExpanded] = useState(false);
 	const [isOverflowing, setIsOverflowing] = useState(false);
@@ -297,13 +344,8 @@ function DiscordMessageRow({ message }: { message: DiscordChannelMessage }) {
 		setIsOverflowing(Boolean(el && el.scrollHeight > el.clientHeight + 1));
 	}, [message.content, expanded]);
 
-	const imageAttachments = message.attachments.filter(
-		(att) =>
-			att.contentType?.startsWith("image/") ||
-			/[.](png|jpe?g|gif|webp)([?]|$)/i.test(att.url),
-	);
-	const hasMedia = message.youtubeId !== null || imageAttachments.length > 0;
-	const showToggle = isOverflowing || hasMedia;
+	const { imageAttachments, showToggle, showCollapsedChip, showExpandedMedia } =
+		resolveMessageMedia(message, isOverflowing, expanded);
 
 	return (
 		<div className={`${ZONA_RAIDER_SURFACE_INSET} p-4`}>
@@ -341,9 +383,7 @@ function DiscordMessageRow({ message }: { message: DiscordChannelMessage }) {
 					{message.content && (
 						<div
 							ref={contentRef}
-							className={`mt-1 break-words text-sm text-white ${
-								!expanded ? "line-clamp-1" : ""
-							}`}
+							className={resolveContentClassName(expanded)}
 						>
 							<DiscordContent content={message.content} />
 						</div>
@@ -353,7 +393,7 @@ function DiscordMessageRow({ message }: { message: DiscordChannelMessage }) {
 					{message.poll && <DiscordPollCard poll={message.poll} />}
 
 					{/* Media preview: label chip while collapsed */}
-					{!expanded && hasMedia && (
+					{showCollapsedChip && (
 						<div className="mt-2 flex flex-wrap items-center gap-1.5">
 							{imageAttachments.length > 0 && (
 								<span className="inline-flex items-center gap-1 rounded-md border border-border/60 bg-background/40 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
@@ -377,22 +417,12 @@ function DiscordMessageRow({ message }: { message: DiscordChannelMessage }) {
 							onClick={() => setExpanded((prev) => !prev)}
 							className="mt-2 inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:text-white"
 						>
-							{expanded ? (
-								<>
-									<IconChevronUp className="size-3.5" />
-									Ver menos
-								</>
-							) : (
-								<>
-									<IconChevronDown className="size-3.5" />
-									Ver más
-								</>
-							)}
+							<ExpandToggleLabel expanded={expanded} />
 						</button>
 					)}
 
 					{/* Media: shown inside "Ver más" */}
-					{expanded && (message.youtubeId || imageAttachments.length > 0) && (
+					{showExpandedMedia && (
 						<div className="mt-3 flex flex-wrap items-start gap-2">
 							{message.youtubeId && (
 								<div className="overflow-hidden rounded-lg border border-border/60 bg-black">
