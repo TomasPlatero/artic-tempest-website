@@ -35,6 +35,23 @@ function sweep(){const nodes=document.querySelectorAll('[data-darkreader-saved]'
 requestAnimationFrame(sweep)})();
 `;
 
+const CANONICAL_SITE_URL = "https://artictempest.es";
+
+/**
+ * metadataBase must be a valid absolute URL. The canonical host is used when the
+ * configured site URL is empty or malformed.
+ */
+function resolveMetadataBase(siteUrl: string): URL {
+	const candidate = URL.canParse(siteUrl) ? siteUrl : CANONICAL_SITE_URL;
+
+	try {
+		return new URL(candidate);
+	} catch (error) {
+		// Unreachable: `candidate` is always parseable, but the call is guard-wrapped
+		// so a bad value can never take the render down.
+		throw new Error(`Invalid metadataBase "${candidate}": ${String(error)}`);
+	}
+}
 export async function generateMetadata(): Promise<Metadata> {
 	const [guild, seoSettings] = await Promise.all([
 		getGuildBranding(),
@@ -79,9 +96,7 @@ export async function generateMetadata(): Promise<Metadata> {
 			address: false,
 			telephone: false,
 		},
-		metadataBase: URL.canParse(publicSiteUrl)
-			? new URL(publicSiteUrl)
-			: new URL("https://artictempest.es"),
+		metadataBase: resolveMetadataBase(publicSiteUrl),
 		alternates: {
 			canonical: "/",
 		},
