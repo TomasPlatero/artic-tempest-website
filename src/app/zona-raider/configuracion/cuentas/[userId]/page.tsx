@@ -52,7 +52,7 @@ export default async function AccountDetailPage({
 
 	// Editors and admins can see officer_notes and discord_refresh_token;
 	// view-only users get these fields stripped before the data reaches the client.
-	const canAccessSensitive = permissions.canEdit || permissions.canManage;
+	const canAccessSensitive = resolveCanAccessSensitive(permissions);
 
 	let { data: profile } = await supabaseAdmin
 		.from("profiles")
@@ -112,6 +112,127 @@ export default async function AccountDetailPage({
 		getGuildCredentials(),
 	]);
 
+	const {
+		discordRoleOptions,
+		discordMemberRoleIds,
+		discordRoleManagerError,
+		discordHasVerifiedRole,
+	} = await resolveDiscordRoleManager({ profile, creds });
+
+	const profileUserId = profile.user_id;
+
+	const [charactersRes, applicationsRes, presenceMap] = await Promise.all([
+		supabaseAdmin
+			.from("bnet_characters")
+			.select("*")
+			.eq("user_id", profileUserId)
+			.order("name", { ascending: true }),
+		supabaseAdmin
+			.from("recruitment_applications")
+			.select(
+				"id, status, character_name, character_class, character_spec, created_at, updated_at",
+			)
+			.eq("user_id", profileUserId)
+			.order("created_at", { ascending: false })
+			.limit(10),
+		getPresenceMap([profileUserId]),
+	]);
+
+	if (charactersRes.error) {
+		console.error(
+			`[ADMIN ACCOUNT DETAIL] Failed to load characters for ${profileUserId}:`,
+			charactersRes.error,
+		);
+	}
+
+	const lastSeenTs = resolveLastSeenTimestamp(presenceMap, profileUserId);
+
+	// Strip sensitive fields for view-only users before data reaches the client
+	if (!canAccessSensitive) {
+		const {
+			discord_refresh_token: _rt,
+			officer_notes: _on,
+			...safeProfile
+		} = profile as Record<string, unknown> & {
+			discord_refresh_token?: unknown;
+			officer_notes?: unknown;
+		};
+		void _rt;
+		void _on;
+		profile = safeProfile as typeof profile;
+	}
+
+	const enrichedProfile = buildEnrichedProfile({
+		profile,
+		session,
+		cookieMainCharacterId,
+		lastSeenTs,
+		raiderRulesAcceptance,
+		discordHasVerifiedRole,
+	});
+
+	const { data: roles } = await supabaseAdmin
+		.from("app_roles")
+		.select(
+			"level,label,description,priority,color,can_access_zona_raider,can_use_raider_app,is_super_admin,is_admin",
+		)
+		.order("priority", { ascending: false });
+
+	return (
+		<div className="flex flex-col gap-6 p-6 lg:px-8 w-full max-w-full">
+			<div className="flex items-center gap-6">
+				<Link href="/zona-raider/configuracion/cuentas">
+					<Button
+						variant="outline"
+						size="icon"
+						aria-label="Volver a cuentas"
+						className="size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10  shadow-xl"
+					>
+						<IconArrowLeft className="size-6" />
+					</Button>
+				</Link>
+				<div>
+					<p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/40">
+						Gestión de cuentas
+					</p>
+					<h1 className="text-3xl font-semibold font-heading italic tracking-tight uppercase">
+						Ficha de {profile.discord_username}
+					</h1>
+				</div>
+			</div>
+
+			<AccountDetailClient
+				key={userId}
+				initialProfile={enrichedProfile}
+				characters={resolveListOrEmpty(charactersRes?.data)}
+				applications={resolveListOrEmpty(applicationsRes?.data)}
+				canEdit={permissions.canEdit}
+				canManage={permissions.canManage}
+				roleCatalog={roles ?? []}
+				initialDiscordRoleOptions={discordRoleOptions}
+				initialDiscordMemberRoleIds={discordMemberRoleIds}
+				discordRoleManagerError={discordRoleManagerError}
+				charactersErrorMessage={charactersRes.error?.message ?? null}
+			/>
+		</div>
+	);
+}
+
+type DiscordRoleManagerResult = {
+	discordRoleOptions: Array<{ id: string; name: string; position: number; managed: boolean }>;
+	discordMemberRoleIds: string[];
+	discordRoleManagerError: string | null;
+	discordHasVerifiedRole: boolean;
+};
+
+/** Loads the Discord role manager state for one member. */
+async function resolveDiscordRoleManager({
+	profile,
+	creds,
+}: {
+	profile: { discord_user_id: string | null };
+	creds: { discord_bot_token?: string | null; discord_guild_id?: string | null };
+}): Promise<DiscordRoleManagerResult> {
 	let discordRoleOptions: Array<{
 		id: string;
 		name: string;
@@ -182,114 +303,60 @@ export default async function AccountDetailPage({
 				}).catch(() => false)
 			: false;
 
-	const profileUserId = profile.user_id;
-
-	const [charactersRes, applicationsRes, presenceMap] = await Promise.all([
-		supabaseAdmin
-			.from("bnet_characters")
-			.select("*")
-			.eq("user_id", profileUserId)
-			.order("name", { ascending: true }),
-		supabaseAdmin
-			.from("recruitment_applications")
-			.select(
-				"id, status, character_name, character_class, character_spec, created_at, updated_at",
-			)
-			.eq("user_id", profileUserId)
-			.order("created_at", { ascending: false })
-			.limit(10),
-		getPresenceMap([profileUserId]),
-	]);
-
-	if (charactersRes.error) {
-		console.error(
-			`[ADMIN ACCOUNT DETAIL] Failed to load characters for ${profileUserId}:`,
-			charactersRes.error,
-		);
-	}
-
-	const lastSeenTs = presenceMap[profileUserId] ?? null;
-
-	// Strip sensitive fields for view-only users before data reaches the client
-	if (!canAccessSensitive) {
-		const {
-			discord_refresh_token: _rt,
-			officer_notes: _on,
-			...safeProfile
-		} = profile as Record<string, unknown> & {
-			discord_refresh_token?: unknown;
-			officer_notes?: unknown;
-		};
-		void _rt;
-		void _on;
-		profile = safeProfile as typeof profile;
-	}
-
-	const enrichedProfile = {
-		...profile,
-		main_character_id:
-			profile.main_character_id ||
-			(session?.user?.id === profile.user_id ? cookieMainCharacterId : null),
-		is_online: isUserOnline(lastSeenTs),
-		last_online_at: lastSeenTs ? new Date(lastSeenTs).toISOString() : null,
-		raider_rules_accepted_at: raiderRulesAcceptance?.accepted_at ?? null,
-		raider_rules_accepted_version:
-			raiderRulesAcceptance?.accepted_version ?? null,
-		raider_rules_discord_role_assigned_at:
-			raiderRulesAcceptance?.discord_role_assigned_at ??
-			(discordHasVerifiedRole ? new Date().toISOString() : null),
-		raider_rules_discord_role_status:
-			raiderRulesAcceptance?.discord_role_status ??
-			(discordHasVerifiedRole ? "assigned" : null),
-		raider_rules_discord_role_error:
-			raiderRulesAcceptance?.discord_role_error ?? null,
-		raider_rules_discord_role_last_attempt_at:
-			raiderRulesAcceptance?.discord_role_last_attempt_at ?? null,
+	return {
+		discordRoleOptions,
+		discordMemberRoleIds,
+		discordRoleManagerError,
+		discordHasVerifiedRole,
 	};
+}
 
-	const { data: roles } = await supabaseAdmin
-		.from("app_roles")
-		.select(
-			"level,label,description,priority,color,can_access_zona_raider,can_use_raider_app,is_super_admin,is_admin",
-		)
-		.order("priority", { ascending: false });
+/** Adds the derived presence / Raider Rules fields to the stored profile. */
+function buildEnrichedProfile({
+	profile,
+	session,
+	cookieMainCharacterId,
+	lastSeenTs,
+	raiderRulesAcceptance,
+	discordHasVerifiedRole,
+}: {
+	profile: any;
+	session: any;
+	cookieMainCharacterId: string | null;
+	lastSeenTs: number | null;
+	raiderRulesAcceptance: any;
+	discordHasVerifiedRole: boolean;
+}) {
+	return {
+			...profile,
+			main_character_id:
+				profile.main_character_id ||
+				(session?.user?.id === profile.user_id ? cookieMainCharacterId : null),
+			is_online: isUserOnline(lastSeenTs),
+			last_online_at: lastSeenTs ? new Date(lastSeenTs).toISOString() : null,
+			raider_rules_accepted_at: raiderRulesAcceptance?.accepted_at ?? null,
+			raider_rules_accepted_version:
+				raiderRulesAcceptance?.accepted_version ?? null,
+			raider_rules_discord_role_assigned_at:
+				raiderRulesAcceptance?.discord_role_assigned_at ??
+				(discordHasVerifiedRole ? new Date().toISOString() : null),
+			raider_rules_discord_role_status:
+				raiderRulesAcceptance?.discord_role_status ??
+				(discordHasVerifiedRole ? "assigned" : null),
+			raider_rules_discord_role_error:
+				raiderRulesAcceptance?.discord_role_error ?? null,
+			raider_rules_discord_role_last_attempt_at:
+				raiderRulesAcceptance?.discord_role_last_attempt_at ?? null,
+	};
+}
+function resolveCanAccessSensitive(permissions: { canEdit: boolean; canManage: boolean }) {
+	return permissions.canEdit || permissions.canManage;
+}
 
-	return (
-		<div className="flex flex-col gap-6 p-6 lg:px-8 w-full max-w-full">
-			<div className="flex items-center gap-6">
-				<Link href="/zona-raider/configuracion/cuentas">
-					<Button
-						variant="outline"
-						size="icon"
-						aria-label="Volver a cuentas"
-						className="size-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10  shadow-xl"
-					>
-						<IconArrowLeft className="size-6" />
-					</Button>
-				</Link>
-				<div>
-					<p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/40">
-						Gestión de cuentas
-					</p>
-					<h1 className="text-3xl font-semibold font-heading italic tracking-tight uppercase">
-						Ficha de {profile.discord_username}
-					</h1>
-				</div>
-			</div>
+function resolveLastSeenTimestamp(presenceMap: Record<string, number | null>, userId: string) {
+	return presenceMap[userId] ?? null;
+}
 
-			<AccountDetailClient
-				key={userId}
-				initialProfile={enrichedProfile}
-				characters={charactersRes?.data || []}
-				applications={applicationsRes?.data || []}
-				canEdit={permissions.canEdit}
-				canManage={permissions.canManage}
-				roleCatalog={roles ?? []}
-				initialDiscordRoleOptions={discordRoleOptions}
-				initialDiscordMemberRoleIds={discordMemberRoleIds}
-				discordRoleManagerError={discordRoleManagerError}
-				charactersErrorMessage={charactersRes.error?.message ?? null}
-			/>
-		</div>
-	);
+function resolveListOrEmpty<T>(value: T[] | null | undefined) {
+	return value || [];
 }
