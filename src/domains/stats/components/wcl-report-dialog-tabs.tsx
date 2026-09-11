@@ -1,7 +1,13 @@
 // Extracted from stats-client.tsx (ATW-20).
 
 import { Badge } from "@/shared/ui/badge";
-import { IconSwords, IconTrophy, IconCheck, IconX, IconExternalLink } from "@/shared/ui/tabler-icons";
+import {
+	IconSwords,
+	IconTrophy,
+	IconCheck,
+	IconX,
+	IconExternalLink,
+} from "@/shared/ui/tabler-icons";
 import { cn } from "@/shared/tailwind/tailwind-utils";
 import { normalizeName } from "./stats.utils";
 
@@ -11,7 +17,11 @@ type WclReportSummaryTabProps = {
 	wcl: any;
 };
 
-export function WclReportSummaryTab({ classColors, members, wcl }: WclReportSummaryTabProps) {
+export function WclReportSummaryTab({
+	classColors,
+	members,
+	wcl,
+}: WclReportSummaryTabProps) {
 	return (
 		<>
 			<>
@@ -129,21 +139,14 @@ export function WclReportSummaryTab({ classColors, members, wcl }: WclReportSumm
 
 						const mergeRosterRows = (entries: any[]) => {
 							const entryMap = new Map(
-								entries.map((entry) => [
-									normalizeName(entry.name ?? ""),
-									entry,
-								]),
+								entries.map((entry) => [normalizeName(entry.name ?? ""), entry]),
 							);
 
 							return members
 								.map((member: any) => {
-									const reportEntry = entryMap.get(
-										normalizeName(member.character_name),
-									);
+									const reportEntry = entryMap.get(normalizeName(member.character_name));
 									const total = reportEntry?.total ?? 0;
-									const type = reportEntry?.type
-										? String(reportEntry.type)
-										: undefined;
+									const type = reportEntry?.type ? String(reportEntry.type) : undefined;
 
 									return {
 										name: member.character_name,

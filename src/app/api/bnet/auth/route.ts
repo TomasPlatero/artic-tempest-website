@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { parseRequestUrl } from "@/shared/lib/request-url"
 import { auth } from '@/auth';
 import { cookies } from "next/headers"
 import crypto from "crypto"
@@ -18,7 +19,10 @@ function resolveReturnTo(pathname: string | null) {
 
 export async function POST(request: Request) {
     const session = await auth()
-    const reqUrl = new URL(request.url)
+    const reqUrl = parseRequestUrl(request)
+    if (!reqUrl) {
+        return NextResponse.json({ error: "invalid_request_url" }, { status: 400 })
+    }
     const baseUrl = process.env.NEXTAUTH_URL || reqUrl.origin
 
     if (!session) {
@@ -56,12 +60,35 @@ export async function POST(request: Request) {
     const redirectUri = `${baseUrl}/api/bnet/callback`
     const scope = "wow.profile"
 
-    const authUrl = new URL("https://oauth.battle.net/authorize")
-    authUrl.searchParams.set("client_id", clientId!)
-    authUrl.searchParams.set("redirect_uri", redirectUri)
-    authUrl.searchParams.set("response_type", "code")
-    authUrl.searchParams.set("scope", scope)
-    authUrl.searchParams.set("state", state)
+    const authUrl = buildBattleNetAuthUrl({ clientId, redirectUri, scope, state })
+    if (!authUrl) {
+        return NextResponse.json({ error: "bnet_auth_url_failed" }, { status: 500 })
+    }
 
     return NextResponse.json({ redirect: authUrl.toString() })
+}
+
+/** Builds the Battle.net authorize URL; returns null if it cannot be assembled. */
+function buildBattleNetAuthUrl({
+    clientId,
+    redirectUri,
+    scope,
+    state,
+}: {
+    clientId: string | null | undefined;
+    redirectUri: string;
+    scope: string;
+    state: string;
+}): string | null {
+    try {
+        const authUrl = new URL("https://oauth.battle.net/authorize")
+        authUrl.searchParams.set("client_id", clientId ?? "")
+        authUrl.searchParams.set("redirect_uri", redirectUri)
+        authUrl.searchParams.set("response_type", "code")
+        authUrl.searchParams.set("scope", scope)
+        authUrl.searchParams.set("state", state)
+        return authUrl.toString()
+    } catch {
+        return null
+    }
 }

@@ -10,6 +10,8 @@
 import { vi } from "vitest";
 
 // ── IntersectionObserver ──────────────────────
+// SAFETY: the mock implements only what the tested components touch; the cast
+// covers the rest of the DOM interface, which is never exercised in tests.
 globalThis.IntersectionObserver = class IntersectionObserver {
   root: Element | null = null;
   rootMargin = "";
@@ -27,6 +29,7 @@ globalThis.IntersectionObserver = class IntersectionObserver {
 } as unknown as typeof IntersectionObserver;
 
 // ── ResizeObserver ────────────────────────────
+// SAFETY: same reasoning as the IntersectionObserver mock above.
 globalThis.ResizeObserver = class ResizeObserver {
   constructor(_callback: ResizeObserverCallback) {}
   observe() {}
@@ -53,6 +56,7 @@ globalThis.matchMedia =
   });
 
 // ── scrollTo ──────────────────────────────────
+// SAFETY: jsdom has no scrollTo; a bare mock is enough for the assertions.
 globalThis.scrollTo = vi.fn() as unknown as typeof globalThis.scrollTo;
 
 // ── URL.createObjectURL / revokeObjectURL ─────

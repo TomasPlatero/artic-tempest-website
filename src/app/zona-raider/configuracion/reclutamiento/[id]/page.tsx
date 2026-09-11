@@ -60,17 +60,10 @@ export default async function ApplicationDetailPage({
 	const charName = application.character_name.trim();
 	const charRealm = application.character_realm.trim();
 
-	console.log(`[Server] Fetching RIO for ${charName} - ${charRealm}`);
 	const [rioData, bnetData] = await Promise.all([
 		fetchCharacterRIO(charName, charRealm),
 		fetchCharacterItemLevel(toSlug(charRealm), toSlug(charName)),
 	]);
-	console.log(
-		`[Server] RIO Data ${rioData ? "FOUND" : "NOT FOUND (404/Error)"}`,
-	);
-
-	console.log(`[Server] BNET Data ${bnetData ? "FOUND" : "NOT FOUND"}`);
-
 	return (
 		<div className="flex min-size-full max-w-full flex-col gap-6 p-4 md:p-6 lg:px-8">
 			<div className="flex items-center gap-6">

@@ -5,7 +5,6 @@ import { Suspense } from "react";
 import useSWR from "swr";
 import { useSearchParams } from "next/navigation";
 
-
 import { Tabs, TabsContent } from "@/shared/ui/tabs";
 import { IconExternalLink } from "@/shared/ui/tabler-icons";
 import { cn } from "@/shared/tailwind/tailwind-utils";
@@ -33,10 +32,12 @@ import {
 } from "./stats.types";
 import { fmtDateFromUnknown, EMPTY_CLASS_COLORS } from "./stats.utils";
 import { WclReportsCard } from "./wcl-reports-card";
-import { WclReportFightsTab, WclReportSummaryTab } from "./wcl-report-dialog-tabs";
+import {
+	WclReportFightsTab,
+	WclReportSummaryTab,
+} from "./wcl-report-dialog-tabs";
 
 const LOGS_PAGE_SIZE = 10;
-
 
 async function doFetchWclReport(
 	code: string,
@@ -416,9 +417,13 @@ function useStatsClientContent({
 									</div>
 								) : wcl.reportDetails ? (
 									<div className="space-y-6">
-									<WclReportSummaryTab classColors={classColors} members={members} wcl={wcl} />
+										<WclReportSummaryTab
+											classColors={classColors}
+											members={members}
+											wcl={wcl}
+										/>
 
-									<WclReportFightsTab wcl={wcl} />
+										<WclReportFightsTab wcl={wcl} />
 									</div>
 								) : (
 									<div className="text-center py-12 text-sm text-red-400">

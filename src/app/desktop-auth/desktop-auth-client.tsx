@@ -40,19 +40,45 @@ function reducer(state: State, action: Action): State {
 	}
 }
 
+/**
+ * Returns the deep link only when it is a well-formed `artictempest:` URL, so a
+ * crafted value can never send the web app somewhere else.
+ */
+function resolveDesktopAppUrl(url: string): string | null {
+	try {
+		const parsed = new URL(url);
+
+		return parsed.protocol === "artictempest:" ? parsed.toString() : null;
+	} catch {
+		return null;
+	}
+}
+
+/** Hands an already validated URL to the browser through a temporary anchor. */
+function openValidatedUrl(url: string): void {
+	const anchor = document.createElement("a");
+
+	anchor.href = url;
+	anchor.rel = "noopener noreferrer";
+	anchor.click();
+}
+
 export default function DesktopAuthBridge() {
 	const [state, dispatch] = useReducer(reducer, initialState);
 	const { status, desktopUrl, countdown } = state;
 
 	const handleRedirect = (url: string) => {
-		// Only allow the custom desktop app protocol
-		if (!url.startsWith("artictempest://")) return;
+		// Only the custom desktop app protocol may reach the browser.
+		const desktopUrl = resolveDesktopAppUrl(url);
+
+		if (!desktopUrl) return;
+
 		dispatch({
 			type: "set_status",
 			status: "Intentando abrir Artic Tempest...",
 		});
 		dispatch({ type: "set_countdown", countdown: 5 });
-		window.location.href = url;
+		openValidatedUrl(desktopUrl);
 	};
 
 	useEffect(() => {

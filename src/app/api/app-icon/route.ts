@@ -1,11 +1,19 @@
 import { NextResponse } from "next/server";
+import { isSafeExternalUrl } from "@/shared/lib/external-url";
+import { parseRequestUrl } from "@/shared/lib/request-url";
 import { supabaseAdmin } from "@/shared/lib/supabase-admin";
 import sharp from "sharp";
 
 export const runtime = "nodejs"; // Sharp requires Node.js runtime
 
 export async function GET(request: Request) {
-	const { searchParams } = new URL(request.url);
+	const parsedUrl = parseRequestUrl(request);
+
+	if (!parsedUrl) {
+		return new NextResponse("Invalid request URL", { status: 400 });
+	}
+
+	const { searchParams } = parsedUrl;
 	const sizeParam = searchParams.get("size") || "192";
 	const size = parseInt(sizeParam, 10);
 
@@ -22,7 +30,7 @@ export async function GET(request: Request) {
 
 		let imageBuffer: Buffer;
 
-		if (guild?.icon_url) {
+		if (guild?.icon_url && isSafeExternalUrl(guild.icon_url)) {
 			const response = await fetch(guild.icon_url, { cache: "no-store" });
 			if (response.ok) {
 				const arrayBuffer = await response.arrayBuffer();

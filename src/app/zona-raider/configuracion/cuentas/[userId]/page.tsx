@@ -219,7 +219,12 @@ export default async function AccountDetailPage({
 }
 
 type DiscordRoleManagerResult = {
-	discordRoleOptions: Array<{ id: string; name: string; position: number; managed: boolean }>;
+	discordRoleOptions: Array<{
+		id: string;
+		name: string;
+		position: number;
+		managed: boolean;
+	}>;
 	discordMemberRoleIds: string[];
 	discordRoleManagerError: string | null;
 	discordHasVerifiedRole: boolean;
@@ -328,32 +333,38 @@ function buildEnrichedProfile({
 	discordHasVerifiedRole: boolean;
 }) {
 	return {
-			...profile,
-			main_character_id:
-				profile.main_character_id ||
-				(session?.user?.id === profile.user_id ? cookieMainCharacterId : null),
-			is_online: isUserOnline(lastSeenTs),
-			last_online_at: lastSeenTs ? new Date(lastSeenTs).toISOString() : null,
-			raider_rules_accepted_at: raiderRulesAcceptance?.accepted_at ?? null,
-			raider_rules_accepted_version:
-				raiderRulesAcceptance?.accepted_version ?? null,
-			raider_rules_discord_role_assigned_at:
-				raiderRulesAcceptance?.discord_role_assigned_at ??
-				(discordHasVerifiedRole ? new Date().toISOString() : null),
-			raider_rules_discord_role_status:
-				raiderRulesAcceptance?.discord_role_status ??
-				(discordHasVerifiedRole ? "assigned" : null),
-			raider_rules_discord_role_error:
-				raiderRulesAcceptance?.discord_role_error ?? null,
-			raider_rules_discord_role_last_attempt_at:
-				raiderRulesAcceptance?.discord_role_last_attempt_at ?? null,
+		...profile,
+		main_character_id:
+			profile.main_character_id ||
+			(session?.user?.id === profile.user_id ? cookieMainCharacterId : null),
+		is_online: isUserOnline(lastSeenTs),
+		last_online_at: lastSeenTs ? new Date(lastSeenTs).toISOString() : null,
+		raider_rules_accepted_at: raiderRulesAcceptance?.accepted_at ?? null,
+		raider_rules_accepted_version:
+			raiderRulesAcceptance?.accepted_version ?? null,
+		raider_rules_discord_role_assigned_at:
+			raiderRulesAcceptance?.discord_role_assigned_at ??
+			(discordHasVerifiedRole ? new Date().toISOString() : null),
+		raider_rules_discord_role_status:
+			raiderRulesAcceptance?.discord_role_status ??
+			(discordHasVerifiedRole ? "assigned" : null),
+		raider_rules_discord_role_error:
+			raiderRulesAcceptance?.discord_role_error ?? null,
+		raider_rules_discord_role_last_attempt_at:
+			raiderRulesAcceptance?.discord_role_last_attempt_at ?? null,
 	};
 }
-function resolveCanAccessSensitive(permissions: { canEdit: boolean; canManage: boolean }) {
+function resolveCanAccessSensitive(permissions: {
+	canEdit: boolean;
+	canManage: boolean;
+}) {
 	return permissions.canEdit || permissions.canManage;
 }
 
-function resolveLastSeenTimestamp(presenceMap: Record<string, number | null>, userId: string) {
+function resolveLastSeenTimestamp(
+	presenceMap: Record<string, number | null>,
+	userId: string,
+) {
 	return presenceMap[userId] ?? null;
 }
 

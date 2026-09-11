@@ -1,7 +1,13 @@
 // Extracted from stats-client.tsx (ATW-20).
 
 import { Badge } from "@/shared/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/shared/ui/card";
 import { IconSwords, IconSearch, IconUser } from "@/shared/ui/tabler-icons";
 import { WclFilterControls } from "./stats-wcl-controls";
 import { fmtDateFromUnknown } from "./stats.utils";
@@ -60,9 +66,7 @@ export function WclReportsCard({
 					<WclFilterControls
 						wcl={wcl}
 						zones={WCL_ZONES}
-						onZoneChange={(v) =>
-							dispatchWcl({ type: "SET_ZONE_FILTER", filter: v })
-						}
+						onZoneChange={(v) => dispatchWcl({ type: "SET_ZONE_FILTER", filter: v })}
 						onTagChange={(v) => dispatchWcl({ type: "SET_TAG_FILTER", filter: v })}
 						onSearchChange={(v) =>
 							dispatchWcl({ type: "SET_SEARCH_QUERY", query: v })
