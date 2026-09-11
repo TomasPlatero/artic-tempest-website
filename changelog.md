@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.21
+
+- refactor: split the recruitment detail header out of `RecruitmentDetailContent` (ATW-26) — removing the executable download pushed that component past the 300-line limit and react-doctor dropped from 100 to 98; the header block now lives in `recruitment-detail-header.tsx` with its shared helpers in `recruitment-detail-view-state.ts`, and react-doctor is back to 100 with 0 diagnostics
+
 ## 1.11.9
 
 - fix: repaired the broken install (ATW-18) — Dependabot bumped only `@tiptap/core` to 3.30.5 while the rest of the family stayed on 3.30.0, leaving incompatible `@tiptap/pm` peers; `npm ci` failed with ERESOLVE (Lint CI job red) and local `node_modules` did not match `package.json`. The whole `@tiptap/*` family is now aligned on 3.31.3
