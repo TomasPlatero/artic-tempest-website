@@ -2,10 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/shared/ui/button";
-import {
-	IconExternalLink,
-	IconMessageCircle,
-} from "@/shared/ui/tabler-icons";
+import { IconExternalLink, IconMessageCircle } from "@/shared/ui/tabler-icons";
 
 type RecruitmentDetailChatHistoryProps = {
 	application: any;
@@ -56,7 +53,10 @@ function resolveHasAverage(initialBnetData: any) {
 function resolveHasItemLevelTotal(rioData: any) {
 	return rioData.gear.item_level_total > 0;
 }
-export function RecruitmentDetailItemLevel({ initialBnetData, rioData }: RecruitmentDetailItemLevelProps) {
+export function RecruitmentDetailItemLevel({
+	initialBnetData,
+	rioData,
+}: RecruitmentDetailItemLevelProps) {
 	return (
 		<>
 			<div className="bg-white/5 border border-white/5 rounded-2xl p-4 flex flex-col items-center justify-center hover:bg-white/10 transition-colors">
@@ -68,9 +68,7 @@ export function RecruitmentDetailItemLevel({ initialBnetData, rioData }: Recruit
 						<>
 							{initialBnetData.equipped}
 							{resolveHasAverage(initialBnetData) && (
-								<span className="text-zinc-500 ml-1">
-									/ {initialBnetData.average}
-								</span>
+								<span className="text-zinc-500 ml-1">/ {initialBnetData.average}</span>
 							)}
 						</>
 					) : rioData?.gear?.item_level_equipped ? (
