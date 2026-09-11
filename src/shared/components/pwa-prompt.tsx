@@ -2,10 +2,7 @@
 
 import { useEffect, useReducer } from "react";
 import { toast } from "sonner";
-import {
-	IconDownload,
-	IconDeviceMobile,
-} from "@/shared/ui/tabler-icons";
+import { IconDownload, IconDeviceMobile } from "@/shared/ui/tabler-icons";
 
 type PwaPromptState = {
 	deferredPrompt: any;
@@ -77,10 +74,7 @@ export function PwaPrompt() {
 		window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
 
 		return () => {
-			window.removeEventListener(
-				"beforeinstallprompt",
-				handleBeforeInstallPrompt,
-			);
+			window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
 		};
 	}, []);
 

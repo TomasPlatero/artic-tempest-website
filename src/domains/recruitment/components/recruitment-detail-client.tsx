@@ -8,7 +8,14 @@ import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Badge } from "@/shared/ui/badge";
 
-import { IconX, IconTrendingUp, IconSword, IconShield, IconHeartHandshake, IconLoader2 } from "@/shared/ui/tabler-icons";
+import {
+	IconX,
+	IconTrendingUp,
+	IconSword,
+	IconShield,
+	IconHeartHandshake,
+	IconLoader2,
+} from "@/shared/ui/tabler-icons";
 import { toast } from "sonner";
 import { Label } from "@/shared/ui/label";
 import { fetchCharacterRIO } from "@/shared/integrations/raiderio/raiderio-client";
@@ -179,7 +186,10 @@ export function RecruitmentDetailClient(props: Props) {
 }
 
 /** The stored Raider.IO payload only counts when it belongs to this character. */
-function resolveInitialRioMatchesApplication(initialRioData: any, application: any) {
+function resolveInitialRioMatchesApplication(
+	initialRioData: any,
+	application: any,
+) {
 	return Boolean(
 		initialRioData &&
 			initialRioData.name?.toLowerCase() ===
@@ -189,13 +199,21 @@ function resolveInitialRioMatchesApplication(initialRioData: any, application: a
 	);
 }
 
-function resolveRioData(initialRioMatchesApplication: boolean, initialRioData: any, externalRio: any) {
+function resolveRioData(
+	initialRioMatchesApplication: boolean,
+	initialRioData: any,
+	externalRio: any,
+) {
 	return initialRioMatchesApplication
 		? initialRioData
 		: (externalRio ?? initialRioData ?? null);
 }
 
-function resolveLoadingRio(isFetchingRio: boolean, initialRioData: any, rioData: any) {
+function resolveLoadingRio(
+	isFetchingRio: boolean,
+	initialRioData: any,
+	rioData: any,
+) {
 	return isFetchingRio || (!initialRioData && !rioData);
 }
 
@@ -239,7 +257,9 @@ function resolveCanShowScores(loadingRio: boolean, rioData: any) {
 /** Protection / Blood / Guardian are the tank specialisations. */
 function resolveIsTankSpec(spec: string) {
 	const value = spec.toLowerCase();
-	return ["tank", "protection", "blood", "guardian"].some((keyword) => value.includes(keyword));
+	return ["tank", "protection", "blood", "guardian"].some((keyword) =>
+		value.includes(keyword),
+	);
 }
 function useRecruitmentDetailClient({
 	application,
@@ -570,8 +590,7 @@ function RecruitmentDetailContent({
 							</h2>
 						</div>
 						<p className="text-lg font-medium" style={{ color: cls?.color }}>
-							{resolveSpecLabel(application, rioData)}{" "}
-							{cls?.name}
+							{resolveSpecLabel(application, rioData)} {cls?.name}
 						</p>
 						<p
 							className="text-sm text-muted-foreground flex items-center gap-2"
@@ -583,8 +602,7 @@ function RecruitmentDetailContent({
 						{rioData?.guild?.name && (
 							<p className="text-sm text-blue-400/80 font-medium flex items-center gap-1.5 mt-1">
 								<IconShield className="size-3.5" />
-								&lt;{rioData.guild.name}&gt; ·{" "}
-								{resolveGuildRealm(rioData, application)}
+								&lt;{rioData.guild.name}&gt; · {resolveGuildRealm(rioData, application)}
 							</p>
 						)}
 					</div>
@@ -744,8 +762,16 @@ function RecruitmentDetailContent({
 								{hasAnyRaidProgress ? (
 									<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 										{[
-											{ key: "season-1", title: SEASON_1_CARD_TITLE, progress: season1Progress },
-											{ key: "season-2", title: SEASON_2_CARD_TITLE, progress: season2Progress },
+											{
+												key: "season-1",
+												title: SEASON_1_CARD_TITLE,
+												progress: season1Progress,
+											},
+											{
+												key: "season-2",
+												title: SEASON_2_CARD_TITLE,
+												progress: season2Progress,
+											},
 										].map(({ key, title, progress }) => (
 											<div
 												key={key}
@@ -763,13 +789,19 @@ function RecruitmentDetailContent({
 													{/* Mythic */}
 													<div className="space-y-1.5">
 														<div className="flex justify-between items-center">
-															<span className="text-[9px] font-semibold text-zinc-500 tracking-wider">MÍTICO</span>
-															<span className="text-[11px] font-semibold text-orange-400">{progress.mythic}/{progress.total}</span>
+															<span className="text-[9px] font-semibold text-zinc-500 tracking-wider">
+																MÍTICO
+															</span>
+															<span className="text-[11px] font-semibold text-orange-400">
+																{progress.mythic}/{progress.total}
+															</span>
 														</div>
 														<div className="h-1.5 w-full bg-white/[0.03] rounded-full">
 															<div
 																className="h-full bg-linear-to-r from-orange-600 to-orange-400 rounded-full shadow-[0_0_8px_rgba(251,146,60,0.3)]"
-																style={{ width: `${progress.total > 0 ? (progress.mythic / progress.total) * 100 : 0}%` }}
+																style={{
+																	width: `${progress.total > 0 ? (progress.mythic / progress.total) * 100 : 0}%`,
+																}}
 															/>
 														</div>
 													</div>
@@ -777,13 +809,19 @@ function RecruitmentDetailContent({
 													{/* Heroic */}
 													<div className="space-y-1.5">
 														<div className="flex justify-between items-center">
-															<span className="text-[9px] font-semibold text-zinc-500 tracking-wider">HEROICO</span>
-															<span className="text-[11px] font-semibold text-purple-400">{progress.heroic}/{progress.total}</span>
+															<span className="text-[9px] font-semibold text-zinc-500 tracking-wider">
+																HEROICO
+															</span>
+															<span className="text-[11px] font-semibold text-purple-400">
+																{progress.heroic}/{progress.total}
+															</span>
 														</div>
 														<div className="h-1.5 w-full bg-white/[0.03] rounded-full">
 															<div
 																className="h-full bg-linear-to-r from-purple-600 to-purple-400 rounded-full"
-																style={{ width: `${progress.total > 0 ? (progress.heroic / progress.total) * 100 : 0}%` }}
+																style={{
+																	width: `${progress.total > 0 ? (progress.heroic / progress.total) * 100 : 0}%`,
+																}}
 															/>
 														</div>
 													</div>
@@ -791,13 +829,19 @@ function RecruitmentDetailContent({
 													{/* Normal */}
 													<div className="space-y-1.5">
 														<div className="flex justify-between items-center">
-															<span className="text-[9px] font-semibold text-zinc-500 tracking-wider">NORMAL</span>
-															<span className="text-[11px] font-semibold text-blue-400">{progress.normal}/{progress.total}</span>
+															<span className="text-[9px] font-semibold text-zinc-500 tracking-wider">
+																NORMAL
+															</span>
+															<span className="text-[11px] font-semibold text-blue-400">
+																{progress.normal}/{progress.total}
+															</span>
 														</div>
 														<div className="h-1.5 w-full bg-white/[0.03] rounded-full">
 															<div
 																className="h-full bg-linear-to-r from-blue-600 to-blue-400 rounded-full"
-																style={{ width: `${progress.total > 0 ? (progress.normal / progress.total) * 100 : 0}%` }}
+																style={{
+																	width: `${progress.total > 0 ? (progress.normal / progress.total) * 100 : 0}%`,
+																}}
 															/>
 														</div>
 													</div>
@@ -818,7 +862,7 @@ function RecruitmentDetailContent({
 							</div>
 
 							{/* Service Buttons */}
-								<RecruitmentDetailServiceButtons application={application} />
+							<RecruitmentDetailServiceButtons application={application} />
 						</div>
 					)}
 				</CardContent>
