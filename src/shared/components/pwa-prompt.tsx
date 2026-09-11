@@ -100,10 +100,8 @@ export function PwaPrompt() {
 					onClick: () => {
 						void (async () => {
 							state.deferredPrompt.prompt();
-							const { outcome } = await state.deferredPrompt.userChoice;
-							if (outcome === "accepted") {
-								console.log("User accepted the install prompt");
-							}
+							await state.deferredPrompt.userChoice;
+
 							dispatch({ type: "setDeferredPrompt", prompt: null });
 							localStorage.setItem("pwa_prompted", "true");
 						})();

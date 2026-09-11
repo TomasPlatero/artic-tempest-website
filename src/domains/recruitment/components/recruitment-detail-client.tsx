@@ -359,16 +359,6 @@ function useRecruitmentDetailClient({
 		currentStatus as any,
 	);
 
-	// Debug
-	if (rioData) {
-		console.log("RIO Data state:", {
-			name: rioData.name,
-			seasonsCount: rioData.mythic_plus_scores_by_season?.length,
-			selectedSeason,
-			mPlusScore,
-		});
-	}
-
 	// Season Grouping Logic
 	const rawSeasons = resolveRawSeasons(rioData);
 	// Remove duplicates if RIO returns the same season for 'current' and 'season-xxx'

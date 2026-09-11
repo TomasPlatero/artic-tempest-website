@@ -50,10 +50,7 @@ export default async function ApplicationDetailPage({
 			.from("application_answers")
 			.select("*, recruitment_questions(*)")
 			.eq("application_id", id),
-		supabaseAdmin
-			.from("game_constants")
-			.select("*")
-			.eq("category", "wow_class"),
+		supabaseAdmin.from("game_constants").select("*").eq("category", "wow_class"),
 	]);
 
 	// Fetch Raider.io data on the server to avoid CORS

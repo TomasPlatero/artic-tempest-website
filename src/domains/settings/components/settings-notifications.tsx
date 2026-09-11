@@ -323,9 +323,7 @@ function NotificationCard({
 			>
 				<CardContent className="p-0">
 					<div className="flex items-stretch">
-						<div
-							className={cn("w-1.5 shrink-0 transition-opacity", styles.bg)}
-						/>
+						<div className={cn("w-1.5 shrink-0 transition-opacity", styles.bg)} />
 						<div className="flex-1 px-6 py-5 flex items-center justify-between gap-4">
 							<h3 className="font-semibold text-lg text-zinc-100 tracking-tight group-hover:text-blue-400 transition-colors truncate">
 								{notification.title}
@@ -345,9 +343,7 @@ function NotificationCard({
 			<div
 				className={cn(
 					"grid overflow-hidden ",
-					isExpanded
-						? "grid-rows-[1fr] opacity-100"
-						: "grid-rows-[0fr] opacity-0",
+					isExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
 				)}
 			>
 				<div className="min-h-0">
@@ -363,8 +359,7 @@ function NotificationCard({
 							>
 								{styles.label}
 							</span>
-							{notification.target_roles &&
-							notification.target_roles.length > 0 ? (
+							{notification.target_roles && notification.target_roles.length > 0 ? (
 								<div className="flex flex-wrap gap-1.5">
 									{notification.target_roles.map((r) => (
 										<Badge
@@ -572,16 +567,12 @@ function NotificationsForm({
 							{sending ? (
 								<div className="flex items-center gap-3">
 									<div className="size-5 border-2 border-white/30 border-t-white animate-spin rounded-full" />
-									<span>
-										{editingId ? "Actualizando…" : "Emitiendo Notificación…"}
-									</span>
+									<span>{editingId ? "Actualizando…" : "Emitiendo Notificación…"}</span>
 								</div>
 							) : (
 								<>
 									<IconSend className="size-5" />
-									{editingId
-										? "Actualizar Notificación"
-										: "Emitir Notificación Global"}
+									{editingId ? "Actualizar Notificación" : "Emitir Notificación Global"}
 								</>
 							)}
 						</Button>
@@ -637,8 +628,7 @@ export function SettingsNotificationsClient() {
 	const sortedNotifications: NotificationRecord[] = (
 		notifications as NotificationRecord[]
 	).toSorted(
-		(a, b) =>
-			new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+		(a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
 	);
 	const totalPages = Math.max(
 		1,
@@ -760,8 +750,7 @@ export function SettingsNotificationsClient() {
 							value="send"
 							className="rounded-xl font-semibold text-[10px] tracking-[0.2em] gap-2 data-[state=active]:bg-blue-500 data-[state=active]:text-white"
 						>
-							<IconSend className="size-3.5" />{" "}
-							{editingId ? "Editar" : "Enviar"}
+							<IconSend className="size-3.5" /> {editingId ? "Editar" : "Enviar"}
 						</TabsTrigger>
 						<TabsTrigger
 							value="history"
@@ -844,9 +833,7 @@ export function SettingsNotificationsClient() {
 										notification={n}
 										isExpanded={expandedIds.has(n.id)}
 										deletingId={deletingId}
-										onToggleExpand={(id) =>
-											dispatchUi({ type: "TOGGLE_EXPAND", id })
-										}
+										onToggleExpand={(id) => dispatchUi({ type: "TOGGLE_EXPAND", id })}
 										onEdit={handleEdit}
 										onDelete={(id) => void handleDelete(id)}
 									/>
