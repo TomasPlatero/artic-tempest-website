@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.23
+
+- perf: raise the rate-limit `VERIFY_INTERVAL` from 10 to 50 so the middleware hits the Supabase `check_rate_limit` RPC 5x less often (ATW-27 follow-up) — reduces write pressure on the free-tier DB pool that was causing "Gateway Timeout" spikes
+
 ## 1.11.22
 
 - fix: recruitment submit no longer misreports a Supabase query error (e.g. Gateway Timeout) as "El personaje seleccionado no pertenece a tu cuenta" (ATW-27) — `submitApplicationCore` now returns 503 with the real error when the character lookup fails, and only returns the 400 "character doesn't belong to your account" when the row genuinely doesn't exist

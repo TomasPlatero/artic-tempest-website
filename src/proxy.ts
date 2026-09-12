@@ -46,7 +46,7 @@ function markBackendUnavailable() {
 // 2. Every Nth request (periodic verification, N = VERIFY_INTERVAL)
 // 3. When local tracking shows usage > 80% of limit (needs accurate enforcement)
 
-const VERIFY_INTERVAL = 10; // Call backend every ~10 requests per identifier for sync
+const VERIFY_INTERVAL = 50; // Call backend every ~50 requests per identifier for sync
 const HIGH_USAGE_THRESHOLD = 0.8; // 80% of limit → always call backend
 const LOCAL_CLEANUP_INTERVAL_MS = 300_000; // Cleanup stale entries every 5 min
 const LOCAL_CLEANUP_GRACE_MS = 60_000; // 1 min grace period after window expiry before cleanup
