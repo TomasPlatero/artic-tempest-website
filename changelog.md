@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.24
+
+- chore: remove the last `/api/download` integration prefix from `proxy-route-access.ts` (ATW-26) — the executable download route was already dropped, so no route is exposed anymore
+
 ## 1.11.23
 
 - perf: raise the rate-limit `VERIFY_INTERVAL` from 10 to 50 so the middleware hits the Supabase `check_rate_limit` RPC 5x less often (ATW-27 follow-up) — reduces write pressure on the free-tier DB pool that was causing "Gateway Timeout" spikes

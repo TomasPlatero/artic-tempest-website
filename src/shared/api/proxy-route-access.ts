@@ -43,7 +43,6 @@ const RAIDER_ONLY_ROUTES = [
 
 const INTEGRATION_ROUTES = [
 	withExact("/api/guild/constants"),
-	withPrefix("/api/download"),
 	withExact("/api/curseforge-addon"),
 	withExact("/api/desktop-notifications"),
 	withExact("/api/desktop/session"),
