@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.22
+
+- fix: recruitment submit no longer misreports a Supabase query error (e.g. Gateway Timeout) as "El personaje seleccionado no pertenece a tu cuenta" (ATW-27) — `submitApplicationCore` now returns 503 with the real error when the character lookup fails, and only returns the 400 "character doesn't belong to your account" when the row genuinely doesn't exist
+
 ## 1.11.21
 
 - refactor: split the recruitment detail header out of `RecruitmentDetailContent` (ATW-26) — removing the executable download pushed that component past the 300-line limit and react-doctor dropped from 100 to 98; the header block now lives in `recruitment-detail-header.tsx` with its shared helpers in `recruitment-detail-view-state.ts`, and react-doctor is back to 100 with 0 diagnostics

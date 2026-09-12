@@ -57,7 +57,18 @@ export async function submitApplicationCore(
 					.eq("realm", selectedChar.realm.trim())
 					.maybeSingle();
 
-		if (characterError || !selectedCharacter) {
+		if (characterError) {
+			console.error(
+				"Submit application core: character lookup failed:",
+				characterError,
+			);
+			return {
+				ok: false,
+				status: 503,
+				error: `No se pudo verificar el personaje (${characterError.message || "error de base de datos"}). Inténtalo de nuevo.`,
+			};
+		}
+		if (!selectedCharacter) {
 			return {
 				ok: false,
 				status: 400,
