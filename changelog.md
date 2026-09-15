@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.31
+
+- fix(membership): add the missing Discord `Raider` role mapping and correct `Trial` to the `trial` level (ATW-33) — the sync engine's priority map was also missing `trial`, so trial members could be mis-ranked
+
 ## 1.11.30
 
 - fix(auth): re-sync the profile role from Discord on every sign-in instead of freezing the first resolved role (ATW-33) — a stale/invalidated Discord token could leave a user stuck at `invitado` (no Zona Raider menu/access) even after re-login with a fresh OAuth token

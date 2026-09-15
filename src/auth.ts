@@ -283,8 +283,7 @@ export const authOptions: AuthOptions = {
 		async session({ session, token }) {
 			const sessionRoleLevel = (token.roleLevel as RoleLevel) ?? "member";
 			const sessionRoleFlags =
-				(token.roleFlags as RoleFlags) ??
-				(await getRoleFlags(sessionRoleLevel));
+				(token.roleFlags as RoleFlags) ?? (await getRoleFlags(sessionRoleLevel));
 			const sessionAuthzScope: AuthzScope =
 				(token.authzScope as AuthzScope | undefined) ??
 				resolveAuthzScopeFromFlags(

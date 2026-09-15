@@ -144,9 +144,10 @@ export async function verifyUser(userId: string): Promise<SyncResult> {
 	if (isActuallyInGuild) {
 		// Definimos prioridad de roles de la App
 		const rolePriority: Record<RoleLevel, number> = {
-			gm: 5,
-			officer: 4,
-			raider: 3,
+			gm: 6,
+			officer: 5,
+			raider: 4,
+			trial: 3,
 			member: 2,
 			invitado: 1,
 		};
