@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.29
+
+- fix: switch Cookiebot CMP to `data-blockingmode="manual"` (ATW-33 follow-up) — the site already gates ads/analytics via Consent Mode v2 + `hasMarketingConsent`/`hasAnalyticsConsent`, so Cookiebot auto-blocking was redundant and its script reordering still broke App Router hydration after login
+
 ## 1.11.28
 
 - fix: load Cookiebot CMP with `strategy="beforeInteractive"` instead of `afterInteractive` so the consent script stops interfering with App Router hydration (ATW-33) — fixes `Unexpected server data: missing bootstrap script` (Sentry ARTICTEMPEST-WEB-Q), which froze the app after login and blocked navigation to Zona Raider

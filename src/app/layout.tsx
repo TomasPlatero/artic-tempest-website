@@ -190,13 +190,13 @@ export default function RootLayout({
 				>
 					{`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('consent','default',{ad_personalization:'denied',ad_storage:'denied',ad_user_data:'denied',analytics_storage:'denied',functionality_storage:'denied',personalization_storage:'denied',security_storage:'granted',wait_for_update:500});gtag('set','ads_data_redaction',true);gtag('set','url_passthrough',false);`}
 				</Script>
-				{/* 2. Cookiebot CMP — beforeInteractive para que el CMP cargue antes de la hidratación y no interfiera con el streaming del App Router (missing bootstrap script, ATW-33) */}
+				{/* 2. Cookiebot CMP — beforeInteractive + modo manual: el sitio ya aplica Consent Mode v2 y gating manual (hasMarketingConsent/hasAnalyticsConsent), así que el auto-blocking solo rompía la hidratación del App Router (ATW-33) */}
 				{process.env.NEXT_PUBLIC_COOKIEBOT_ID ? (
 					<Script
 						id="Cookiebot"
 						src="https://consent.cookiebot.com/uc.js"
 						data-cbid={process.env.NEXT_PUBLIC_COOKIEBOT_ID}
-						data-blockingmode="auto"
+						data-blockingmode="manual"
 						data-cfasync="false"
 						strategy="beforeInteractive"
 					/>
