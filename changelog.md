@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.25
+
+- fix: build NextAuth options per-request instead of at module load in `[...nextauth]/route.ts` (ATW-28) — a transient Supabase read failure during a Vercel cold start no longer crashes the whole auth route with `Falta configuración de Discord en app_discord` (Sentry ARTICTEMPEST-WEB-12)
+
 ## 1.11.24
 
 - chore: remove the last `/api/download` integration prefix from `proxy-route-access.ts` (ATW-26) — the executable download route was already dropped, so no route is exposed anymore
