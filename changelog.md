@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.28
+
+- fix: load Cookiebot CMP with `strategy="beforeInteractive"` instead of `afterInteractive` so the consent script stops interfering with App Router hydration (ATW-33) — fixes `Unexpected server data: missing bootstrap script` (Sentry ARTICTEMPEST-WEB-Q), which froze the app after login and blocked navigation to Zona Raider
+
 ## 1.11.27
 
 - feat: add Aikido security badge to the landing footer "Web responsable" section (ATW-32) — static banner under the WebCarbon widget and `app.aikido.dev` allowed in the CSP `img-src`

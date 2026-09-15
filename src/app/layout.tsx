@@ -190,7 +190,7 @@ export default function RootLayout({
 				>
 					{`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('consent','default',{ad_personalization:'denied',ad_storage:'denied',ad_user_data:'denied',analytics_storage:'denied',functionality_storage:'denied',personalization_storage:'denied',security_storage:'granted',wait_for_update:500});gtag('set','ads_data_redaction',true);gtag('set','url_passthrough',false);`}
 				</Script>
-				{/* 2. Cookiebot CMP — afterInteractive porque Consent Mode v2 ya bloquea todo por defecto */}
+				{/* 2. Cookiebot CMP — beforeInteractive para que el CMP cargue antes de la hidratación y no interfiera con el streaming del App Router (missing bootstrap script, ATW-33) */}
 				{process.env.NEXT_PUBLIC_COOKIEBOT_ID ? (
 					<Script
 						id="Cookiebot"
@@ -198,7 +198,7 @@ export default function RootLayout({
 						data-cbid={process.env.NEXT_PUBLIC_COOKIEBOT_ID}
 						data-blockingmode="auto"
 						data-cfasync="false"
-						strategy="afterInteractive"
+						strategy="beforeInteractive"
 					/>
 				) : null}
 				{/* 3. Darkreader — necesario antes del render, ignorado por Cookiebot */}
