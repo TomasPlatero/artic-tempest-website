@@ -1,7 +1,13 @@
 # Changelog
 
+## 1.11.35
+
+- feat(admin): stream "Sincronizar Discord" progress (NDJSON) so the accounts page shows "Sincronizando X/Y…" while the sequential Discord lookups run, instead of looking frozen (ATW-33)
+
 ## 1.11.34
+
 - fix(admin): serialize the "Sincronizar Discord" (raider rules) sync instead of firing all member lookups in parallel — parallel requests hit Discord's 1 req/s rate limit and returned 429 "You are being rate limited" for most raiders (ATW-33)
+
 ## 1.11.33
 
 - fix(bot): only sync `profiles.role_level` for members who already have a profile (have logged into the web) — stop creating empty profiles for Discord members who never logged in (ATW-33)

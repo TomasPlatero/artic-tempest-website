@@ -65,7 +65,27 @@ const formatLastSeen = (iso?: string | null) => {
 	})}`;
 };
 
-async function doSyncDiscordRoles(): Promise<{
+type SyncProgress = {
+	processed: number;
+	total: number;
+	username: string;
+	result: "assigned" | "missing" | "error";
+};
+
+type StreamEvent =
+	| { type: "progress" } & SyncProgress
+	| {
+			type: "done";
+			assignedCount: number;
+			missingCount: number;
+			errorCount: number;
+			assignedMembers: Array<{ userId: string; username: string }>;
+	  }
+	| { type: "error"; error: string };
+
+async function doSyncDiscordRoles(
+	onProgress: (progress: SyncProgress) => void,
+): Promise<{
 	success: boolean;
 	error?: string;
 	data?: {
@@ -78,34 +98,78 @@ async function doSyncDiscordRoles(): Promise<{
 	try {
 		const res = await fetch("/api/admin/raider-rules/sync-discord", {
 			method: "POST",
+			headers: { Accept: "application/x-ndjson" },
 		});
 		if (!res.ok) {
-			const data = await res.json();
+			const data = await res.json().catch(() => null);
 			return {
 				success: false,
-				error: data.error || "No se pudo sincronizar Discord",
+				error: data?.error || "No se pudo sincronizar Discord",
 			};
 		}
-		const data = await res.json();
-		if (!data.success) {
-			return {
-				success: false,
-				error: data.error || "No se pudo sincronizar Discord",
-			};
+		if (!res.body) {
+			return { success: false, error: "No se pudo leer la respuesta" };
 		}
-		return {
-			success: true,
-			data: {
-				assignedCount: data.assignedCount ?? 0,
-				missingCount: data.missingCount ?? 0,
-				errorCount: data.errorCount ?? 0,
-				assignedMembers: data.assignedMembers ?? [],
-			},
-		};
-	} catch (error: any) {
+
+		const reader = res.body.getReader();
+		const decoder = new TextDecoder();
+		let buffer = "";
+
+		while (true) {
+			const { done, value } = await reader.read();
+			if (done) break;
+			buffer += decoder.decode(value, { stream: true });
+
+			const lines = buffer.split("\n");
+			buffer = lines.pop() ?? "";
+
+			for (const line of lines) {
+				if (!line.trim()) continue;
+
+				let event: StreamEvent;
+				try {
+					event = JSON.parse(line) as StreamEvent;
+				} catch {
+					continue;
+				}
+
+				if (event.type === "progress") {
+					onProgress({
+						processed: event.processed,
+						total: event.total,
+						username: event.username,
+						result: event.result,
+					});
+				} else if (event.type === "done") {
+					return {
+						success: true,
+						data: {
+							assignedCount: event.assignedCount ?? 0,
+							missingCount: event.missingCount ?? 0,
+							errorCount: event.errorCount ?? 0,
+							assignedMembers: event.assignedMembers ?? [],
+						},
+					};
+				} else if (event.type === "error") {
+					return {
+						success: false,
+						error: event.error || "No se pudo sincronizar Discord",
+					};
+				}
+			}
+		}
+
 		return {
 			success: false,
-			error: error.message || "No se pudo sincronizar Discord",
+			error: "La sincronización terminó sin resultado",
+		};
+	} catch (error) {
+		return {
+			success: false,
+			error:
+				error instanceof Error
+					? error.message
+					: "No se pudo sincronizar Discord",
 		};
 	}
 }
@@ -141,6 +205,12 @@ function useAccountsClient({
 		sortDirection: "desc" as SortDirection,
 		isMounted: true,
 		syncing: false,
+		syncProgress: null as {
+			processed: number;
+			total: number;
+			username: string;
+			result: "assigned" | "missing" | "error";
+		} | null,
 		syncSummary: null as {
 			assignedCount: number;
 			missingCount: number;
@@ -155,6 +225,7 @@ function useAccountsClient({
 		sortDirection,
 		isMounted,
 		syncing,
+		syncProgress,
 		syncSummary,
 	} = viewState;
 	const itemsPerPage = 10;
@@ -168,8 +239,10 @@ function useAccountsClient({
 	})();
 
 	const syncDiscordRoles = async () => {
-		setViewState((prev) => ({ ...prev, syncing: true }));
-		const result = await doSyncDiscordRoles();
+		setViewState((prev) => ({ ...prev, syncing: true, syncProgress: null }));
+		const result = await doSyncDiscordRoles((progress) => {
+			setViewState((prev) => ({ ...prev, syncProgress: progress }));
+		});
 		if (result.success && result.data) {
 			setViewState((prev) => ({
 				...prev,
@@ -179,7 +252,11 @@ function useAccountsClient({
 			setViewState((prev) => ({ ...prev, syncSummary: null }));
 			alert(result.error || "No se pudo sincronizar Discord");
 		}
-		setViewState((prev) => ({ ...prev, syncing: false }));
+		setViewState((prev) => ({
+			...prev,
+			syncing: false,
+			syncProgress: null,
+		}));
 	};
 
 	const filteredProfiles = (() => {
@@ -306,6 +383,18 @@ function useAccountsClient({
 					Sincronizar Discord
 				</Button>
 			</div>
+
+			{syncing && syncProgress && (
+				<div className="rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-4 text-sm text-cyan-100">
+					<div className="flex items-center gap-2">
+						<IconRefresh className="size-4 animate-spin" />
+						<span>
+							Sincronizando {syncProgress.processed}/{syncProgress.total}…{" "}
+							{syncProgress.username}
+						</span>
+					</div>
+				</div>
+			)}
 
 			{syncSummary && (
 				<div className="rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-4 text-sm text-cyan-100 space-y-3">
