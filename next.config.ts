@@ -165,6 +165,15 @@ const config = process.env.SENTRY_AUTH_TOKEN
 
 config.headers = async () => [
   {
+    source: "/:path*",
+    headers: [
+      {
+        key: "Strict-Transport-Security",
+        value: SECURITY_HEADER_VALUES["Strict-Transport-Security"],
+      },
+    ],
+  },
+  {
     source: "/_next/static/:path*",
     headers: [
       {

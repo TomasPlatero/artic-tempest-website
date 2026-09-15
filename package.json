@@ -1,6 +1,6 @@
 {
   "name": "artic-tempest-website",
-  "version": "1.11.25",
+  "version": "1.11.26",
   "author": "Zatoshi",
   "description": "Artictempest Project Website",
   "private": true,
@@ -65,7 +65,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
-    "dompurify": "^3.4.13",
+    "dompurify": "^3.4.15",
     "framer-motion": "^12.43.0",
     "jose": "^6.2.8",
     "next": "^16.3.4",
@@ -101,7 +101,7 @@
     "babel-plugin-react-compiler": "^1.0.0",
     "cross-env": "^10.1.0",
     "dotenv": "^17.4.2",
-    "jsdom": "^29.1.1",
+    "jsdom": "^30.0.1",
     "oxlint": "^1.77.0",
     "oxlint-tsgolint": "^7.0.2001",
     "playwright": "^1.62.0",
@@ -125,6 +125,8 @@
     "unrs-resolver"
   ],
   "overrides": {
-    "fast-uri": "^3.1.6"
+    "fast-uri": "^3.1.6",
+    "undici": "^8.10.2",
+    "es-toolkit": "^1.51.0"
   }
 }
