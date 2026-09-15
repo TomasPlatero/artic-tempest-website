@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.36
+
+- fix(recruitment): derive the recruitment settings tab from the `?tab=` query so the recruits badge in the public and Zona Raider menus always opens "Bandeja de Entrada" instead of staying on "Vacantes de Clase" (ATW-34)
+
 ## 1.11.35
 
 - feat(admin): stream "Sincronizar Discord" progress (NDJSON) so the accounts page shows "Sincronizando X/Y…" while the sequential Discord lookups run, instead of looking frozen (ATW-33)
