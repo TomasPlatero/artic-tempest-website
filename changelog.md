@@ -1,5 +1,7 @@
 # Changelog
 
+## 1.11.33
+- fix(bot): only sync `profiles.role_level` for members who already have a profile (have logged into the web) — stop creating empty profiles for Discord members who never logged in (ATW-33)
 ## 1.11.32
 
 - feat(bot): add `/api/bot/sync-roles` so the Discord bot can push guild members' roles and keep `profiles.role_level` in sync with Discord (ATW-33) — batched, diff-based upsert to avoid Supabase pool pressure

@@ -36,7 +36,10 @@ export async function POST(request: NextRequest) {
 
 	const raw = Array.isArray(body.members) ? body.members : [];
 	if (raw.length === 0) {
-		return NextResponse.json({ error: "members es obligatorio" }, { status: 400 });
+		return NextResponse.json(
+			{ error: "members es obligatorio" },
+			{ status: 400 },
+		);
 	}
 
 	// Sanitizar entrada
@@ -52,7 +55,9 @@ export async function POST(request: NextRequest) {
 		members.push({
 			discordUserId: member.discordUserId,
 			roles: Array.isArray(member.roles)
-				? member.roles.filter((roleId): roleId is string => typeof roleId === "string")
+				? member.roles.filter(
+						(roleId): roleId is string => typeof roleId === "string",
+					)
 				: [],
 		});
 	}
@@ -107,7 +112,10 @@ export async function POST(request: NextRequest) {
 		.in("discord_user_id", discordIds);
 
 	if (readError) {
-		return NextResponse.json({ error: "Error leyendo perfiles" }, { status: 500 });
+		return NextResponse.json(
+			{ error: "Error leyendo perfiles" },
+			{ status: 500 },
+		);
 	}
 
 	const currentByDiscordId = new Map<string, string>();
@@ -117,8 +125,14 @@ export async function POST(request: NextRequest) {
 		}
 	}
 
+	// Solo sincronizar perfiles que YA existen (usuarios que han hecho login).
+	// No creamos perfiles nuevos para miembros que aún no han entrado en la web.
 	const changed = computed
-		.filter((entry) => currentByDiscordId.get(entry.discord_user_id) !== entry.role_level)
+		.filter(
+			(entry) =>
+				currentByDiscordId.has(entry.discord_user_id) &&
+				currentByDiscordId.get(entry.discord_user_id) !== entry.role_level,
+		)
 		.map((entry) => ({
 			discord_user_id: entry.discord_user_id,
 			role_level: entry.role_level,
