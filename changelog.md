@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.32
+
+- feat(bot): add `/api/bot/sync-roles` so the Discord bot can push guild members' roles and keep `profiles.role_level` in sync with Discord (ATW-33) — batched, diff-based upsert to avoid Supabase pool pressure
+
 ## 1.11.31
 
 - fix(membership): add the missing Discord `Raider` role mapping and correct `Trial` to the `trial` level (ATW-33) — the sync engine's priority map was also missing `trial`, so trial members could be mis-ranked
