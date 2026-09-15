@@ -72,6 +72,7 @@ export function buildCsp(options?: { dev?: boolean }): string {
 			"shop.restedxp.com",
 			"media.restedxp.com",
 			"artictempest.es",
+			"app.aikido.dev",
 			vercelImgSrc,
 			"www.instant-gaming.com",
 			"vpncdn.protonweb.com",

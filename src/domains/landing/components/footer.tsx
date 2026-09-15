@@ -57,8 +57,8 @@ export function LandingFooter({
 							className="h-15 w-auto object-contain"
 						/>
 						<p className="text-white/80 text-sm max-w-xs leading-relaxed">
-							Hermandad competitiva de World of Warcraft en EU-Dun Modr.
-							Alcanzando la excelencia desde hace más de 1 año.
+							Hermandad competitiva de World of Warcraft en EU-Dun Modr. Alcanzando la
+							excelencia desde hace más de 1 año.
 						</p>
 					</div>
 
@@ -81,10 +81,10 @@ export function LandingFooter({
 						</a>
 					</p>
 					<p className="text-[9px] text-white/80 font-medium leading-relaxed max-w-xs mt-2 italic">
-						World of Warcraft® y Blizzard Entertainment® son marcas registradas
-						de Blizzard Entertainment, Inc. Artic Tempest es un sitio web de
-						fans no oficial y no está afiliado, respaldado, patrocinado ni
-						aprobado específicamente por Blizzard Entertainment.
+						World of Warcraft® y Blizzard Entertainment® son marcas registradas de
+						Blizzard Entertainment, Inc. Artic Tempest es un sitio web de fans no
+						oficial y no está afiliado, respaldado, patrocinado ni aprobado
+						específicamente por Blizzard Entertainment.
 					</p>
 				</div>
 
@@ -93,11 +93,20 @@ export function LandingFooter({
 					<h4 className="text-white/80 text-[10px] font-semibold uppercase tracking-[0.2em]">
 						Web responsable
 					</h4>
-					<div className="rounded-2xl border border-emerald-400/15 bg-emerald-400/5 p-4 max-w-xs">
-						<p className="text-xs text-white/60 leading-relaxed mb-3">
-							Medimos y mostramos nuestra huella digital.
-						</p>
-						<WebsiteCarbonBadgeWidget />
+					<div className="flex flex-col gap-4 max-w-xs">
+						<div className="rounded-2xl border border-emerald-400/15 bg-emerald-400/5 p-4">
+							<p className="text-xs text-white/60 leading-relaxed mb-3">
+								Medimos y mostramos nuestra huella digital.
+							</p>
+							<WebsiteCarbonBadgeWidget />
+						</div>
+						{/* oxlint-disable-next-line next/no-img-element -- badge SVG externo estático */}
+						<img
+							src="https://app.aikido.dev/assets/badges/label-only-dark-theme.svg"
+							alt="Aikido Security"
+							height={40}
+							className="h-10 w-auto"
+						/>
 					</div>
 				</div>
 

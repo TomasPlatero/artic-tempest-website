@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.27
+
+- feat: add Aikido security badge to the landing footer "Web responsable" section (ATW-32) — static banner under the WebCarbon widget and `app.aikido.dev` allowed in the CSP `img-src`
+
 ## 1.11.26
 
 - security: fix 4 Aikido issues in artic-tempest-website (ATW-31) — apply `Strict-Transport-Security` globally to all routes; bump `dompurify` 3.4.13 → 3.4.15 and `jsdom` 29 → 30, and force `undici` ^8.10.2 and `es-toolkit` ^1.51.0 via overrides to clear AIKIDO-2026-54683 and AIKIDO-2026-523264
