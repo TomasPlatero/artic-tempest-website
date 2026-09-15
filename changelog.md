@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.30
+
+- fix(auth): re-sync the profile role from Discord on every sign-in instead of freezing the first resolved role (ATW-33) — a stale/invalidated Discord token could leave a user stuck at `invitado` (no Zona Raider menu/access) even after re-login with a fresh OAuth token
+
 ## 1.11.29
 
 - fix: switch Cookiebot CMP to `data-blockingmode="manual"` (ATW-33 follow-up) — the site already gates ads/analytics via Consent Mode v2 + `hasMarketingConsent`/`hasAnalyticsConsent`, so Cookiebot auto-blocking was redundant and its script reordering still broke App Router hydration after login

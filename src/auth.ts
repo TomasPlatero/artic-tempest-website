@@ -153,7 +153,13 @@ export const authOptions: AuthOptions = {
 
 				const discordLevel: RoleLevel =
 					topRole?.level ?? (member ? "member" : "invitado");
-				const finalLevel: RoleLevel = existing ? dbLevel : discordLevel;
+				// Re-sync del rol desde Discord en cada login: si Discord resuelve un
+				// rol de la hermandad es la fuente de verdad; si no (no miembro o API
+				// caída) conservamos el rol guardado para no degradar a nadie (ATW-33).
+				let finalLevel: RoleLevel = discordLevel;
+				if (discordLevel === "invitado" && existing) {
+					finalLevel = dbLevel;
+				}
 
 				const { error } = await supabaseAdmin.from("profiles").upsert(
 					{
