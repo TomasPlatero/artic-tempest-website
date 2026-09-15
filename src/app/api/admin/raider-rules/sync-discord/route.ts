@@ -17,6 +17,12 @@ type SettledResult =
   | { result: 'missing'; userId: string; username: string }
   | { result: 'error'; userId: string; username: string; error: string };
 
+const DISCORD_MEMBER_FETCH_DELAY_MS = 1100;
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export async function POST() {
   const session = await ensureAppPermission('settings-accounts', 'manage');
   if (!session) {
@@ -56,77 +62,84 @@ export async function POST() {
   const missingMembers: Array<{ userId: string; username: string }> = [];
   const errors: Array<{ userId: string; username: string; error: string }> = [];
 
-  const settledResults = await Promise.allSettled(
-    targetProfiles.map(async (profile): Promise<SettledResult> => {
-      const now = new Date().toISOString();
+  const results: SettledResult[] = [];
 
-      try {
-        const hasRole = await discordMemberHasVerifiedRole({
-          discordUserId: profile.discord_user_id,
-          guildId: creds.discord_guild_id,
-          botToken: creds.discord_bot_token,
+  // Procesamos secuencialmente para respetar el rate limit de Discord
+  // (GET /guilds/{id}/members/{userId} ≈ 1 petición/segundo). Disparar todas
+  // en paralelo provocaba 429 "You are being rate limited" (18 con error).
+  for (let index = 0; index < targetProfiles.length; index += 1) {
+    const profile = targetProfiles[index];
+    const now = new Date().toISOString();
+
+    try {
+      const hasRole = await discordMemberHasVerifiedRole({
+        discordUserId: profile.discord_user_id,
+        guildId: creds.discord_guild_id,
+        botToken: creds.discord_bot_token,
+      });
+
+      const acceptance = acceptanceMap.get(profile.user_id);
+      if (acceptance) {
+        await markRaiderRulesAcceptanceState({
+          userId: profile.user_id,
+          acceptedAt: acceptance.accepted_at ?? now,
+          acceptedVersion: acceptance.accepted_version ?? RAIDER_RULES_VERSION,
+          roleAssignedAt: hasRole
+            ? (acceptance.discord_role_assigned_at ?? now)
+            : (acceptance.discord_role_assigned_at ?? null),
+          roleStatus: hasRole ? 'assigned' : 'missing',
+          roleError: null,
+          roleLastAttemptAt: now,
         });
-
-        const acceptance = acceptanceMap.get(profile.user_id);
-        if (acceptance) {
-          await markRaiderRulesAcceptanceState({
-            userId: profile.user_id,
-            acceptedAt: acceptance.accepted_at ?? now,
-            acceptedVersion: acceptance.accepted_version ?? RAIDER_RULES_VERSION,
-            roleAssignedAt: hasRole
-              ? (acceptance.discord_role_assigned_at ?? now)
-              : (acceptance.discord_role_assigned_at ?? null),
-            roleStatus: hasRole ? 'assigned' : 'missing',
-            roleError: null,
-            roleLastAttemptAt: now,
-          });
-        } else if (hasRole) {
-          await markRaiderRulesAcceptanceState({
-            userId: profile.user_id,
-            acceptedAt: now,
-            acceptedVersion: RAIDER_RULES_VERSION,
-            roleAssignedAt: now,
-            roleStatus: 'assigned',
-            roleError: null,
-            roleLastAttemptAt: now,
-          });
-        }
-
-        return {
-          result: hasRole ? 'assigned' : 'missing' as const,
+      } else if (hasRole) {
+        await markRaiderRulesAcceptanceState({
           userId: profile.user_id,
-          username: profile.discord_username ?? profile.user_id,
-        } as SettledResult;
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : 'Error desconocido';
-
-        const acceptance = acceptanceMap.get(profile.user_id);
-        if (acceptance) {
-          await markRaiderRulesAcceptanceState({
-            userId: profile.user_id,
-            acceptedAt: acceptance.accepted_at ?? now,
-            acceptedVersion: acceptance.accepted_version ?? RAIDER_RULES_VERSION,
-            roleAssignedAt: acceptance.discord_role_assigned_at ?? null,
-            roleStatus: 'error',
-            roleError: message,
-            roleLastAttemptAt: now,
-          });
-        }
-
-        return {
-          result: 'error' as const,
-          userId: profile.user_id,
-          username: profile.discord_username ?? profile.user_id,
-          error: message,
-        };
+          acceptedAt: now,
+          acceptedVersion: RAIDER_RULES_VERSION,
+          roleAssignedAt: now,
+          roleStatus: 'assigned',
+          roleError: null,
+          roleLastAttemptAt: now,
+        });
       }
-    }),
-  );
 
-  for (const settled of settledResults) {
-    if (settled.status !== 'fulfilled') continue;
-    const value = settled.value;
+      const username = profile.discord_username ?? profile.user_id;
+      if (hasRole) {
+        results.push({ result: 'assigned', userId: profile.user_id, username });
+      } else {
+        results.push({ result: 'missing', userId: profile.user_id, username });
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Error desconocido';
+
+      const acceptance = acceptanceMap.get(profile.user_id);
+      if (acceptance) {
+        await markRaiderRulesAcceptanceState({
+          userId: profile.user_id,
+          acceptedAt: acceptance.accepted_at ?? now,
+          acceptedVersion: acceptance.accepted_version ?? RAIDER_RULES_VERSION,
+          roleAssignedAt: acceptance.discord_role_assigned_at ?? null,
+          roleStatus: 'error',
+          roleError: message,
+          roleLastAttemptAt: now,
+        });
+      }
+
+      results.push({
+        result: 'error',
+        userId: profile.user_id,
+        username: profile.discord_username ?? profile.user_id,
+        error: message,
+      });
+    }
+
+    if (index < targetProfiles.length - 1) {
+      await sleep(DISCORD_MEMBER_FETCH_DELAY_MS);
+    }
+  }
+
+  for (const value of results) {
     if (value.result === 'assigned') {
       assignedMembers.push({ userId: value.userId, username: value.username });
     } else if (value.result === 'missing') {
