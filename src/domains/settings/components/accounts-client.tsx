@@ -73,7 +73,7 @@ type SyncProgress = {
 };
 
 type StreamEvent =
-	| { type: "progress" } & SyncProgress
+	| ({ type: "progress" } & SyncProgress)
 	| {
 			type: "done";
 			assignedCount: number;
@@ -167,9 +167,7 @@ async function doSyncDiscordRoles(
 		return {
 			success: false,
 			error:
-				error instanceof Error
-					? error.message
-					: "No se pudo sincronizar Discord",
+				error instanceof Error ? error.message : "No se pudo sincronizar Discord",
 		};
 	}
 }

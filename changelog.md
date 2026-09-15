@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.37
+
+- chore: apply formatter to `sync-engine.server.ts` and `accounts-client.tsx` (line wrapping, no behavior change)
+
 ## 1.11.36
 
 - fix(recruitment): derive the recruitment settings tab from the `?tab=` query so the recruits badge in the public and Zona Raider menus always opens "Bandeja de Entrada" instead of staying on "Vacantes de Clase" (ATW-34)

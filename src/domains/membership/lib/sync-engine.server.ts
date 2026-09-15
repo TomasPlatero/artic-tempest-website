@@ -106,9 +106,7 @@ export async function verifyUser(userId: string): Promise<SyncResult> {
 	// --- CHECK DISCORD ---
 	if (profile.discord_refresh_token) {
 		try {
-			const refreshed = await refreshDiscordToken(
-				profile.discord_refresh_token,
-			);
+			const refreshed = await refreshDiscordToken(profile.discord_refresh_token);
 			newRefreshToken = refreshed.refresh_token;
 
 			const discordData = await getDiscordMemberData(
@@ -164,9 +162,7 @@ export async function verifyUser(userId: string): Promise<SyncResult> {
 			if (mappings && mappings.length > 0) {
 				let highestMappedLevel: RoleLevel = "member";
 
-				const mappingsByRoleId = new Map(
-					mappings.map((m: any) => [m.role_id, m]),
-				);
+				const mappingsByRoleId = new Map(mappings.map((m: any) => [m.role_id, m]));
 				for (const roleId of discordRoles) {
 					const mapping = mappingsByRoleId.get(roleId);
 					if (mapping) {
@@ -198,10 +194,7 @@ export async function verifyUser(userId: string): Promise<SyncResult> {
 		.eq("user_id", userId);
 
 	if (updateError) {
-		console.error(
-			`Verification profile update fail for ${userId}:`,
-			updateError,
-		);
+		console.error(`Verification profile update fail for ${userId}:`, updateError);
 		throw updateError;
 	}
 
