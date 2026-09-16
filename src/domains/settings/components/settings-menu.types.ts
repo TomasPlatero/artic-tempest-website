@@ -19,6 +19,10 @@ export type NavigationItem = {
 	visibility?: string | null;
 	description?: string | null;
 	roles?: string[];
+	/** Draft-only: the item has not been persisted yet (no id in the database). */
+	isDraft?: boolean;
+	/** Draft-only: insert the new item right after this sibling. */
+	insertAfterId?: string | null;
 };
 
 export type MenuUiState = {

@@ -2,6 +2,29 @@ import { NextResponse } from "next/server"
 import { supabaseAdmin } from '@/shared/lib/supabase-admin';
 import { ensureAdmin } from "@/shared/auth/permissions"
 
+/** Columns that really exist in `navigation_items`; anything else is dropped. */
+const ITEM_FIELDS = [
+    "name",
+    "url",
+    "icon_name",
+    "order_index",
+    "parent_id",
+    "app_id",
+    "badge_key",
+    "is_active",
+    "css_class",
+    "element_id",
+    "visibility",
+    "description",
+] as const
+
+function pickItemFields(payload: Record<string, unknown>) {
+    return ITEM_FIELDS.reduce<Record<string, unknown>>((fields, field) => {
+        if (field in payload) fields[field] = payload[field]
+        return fields
+    }, {})
+}
+
 /** Role slugs arriving from the menu editor; anything blank is dropped. */
 function normalizeRoleSlugs(roles: string[] | undefined): string[] {
     if (!Array.isArray(roles)) return []
@@ -71,12 +94,12 @@ export async function POST(req: Request) {
             ensureAdmin(),
             req.json(),
         ]);
-        const { roles, css_class, element_id, visibility, ...body } = rawBody
-        
+        const { roles, ...rawFields } = rawBody
+
         // 1. Create item
         const { data: item, error } = await supabaseAdmin
             .from("navigation_items")
-            .insert({ ...body, css_class, element_id, visibility })
+            .insert(pickItemFields(rawFields))
             .select()
             .single()
 
@@ -109,14 +132,14 @@ export async function PATCH(req: Request) {
             ensureAdmin(),
             req.json(),
         ]);
-        const { id, roles, css_class, element_id, visibility, ...body } = rawBody
+        const { id, roles, ...rawFields } = rawBody
 
         if (!id) throw new Error("Item ID is required")
 
         // 1. Update core fields
         const { error } = await supabaseAdmin
             .from("navigation_items")
-            .update({ ...body, css_class, element_id, visibility })
+            .update(pickItemFields(rawFields))
             .eq("id", id)
 
         if (error) throw error

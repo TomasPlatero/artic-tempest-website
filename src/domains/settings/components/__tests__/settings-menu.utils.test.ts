@@ -1,9 +1,12 @@
 import { describe, it, expect } from "vitest";
 import {
+	buildInsertAfterPayload,
 	buildRoleOptions,
+	computeSiblingOrderIndex,
+	createEditDraft,
+	createNewItemDraft,
 	normalizeItemRoles,
 	normalizeNavigationItem,
-	createEditDraft,
 } from "../settings-menu.utils";
 import type { NavigationItemRecord } from "../settings-menu.utils";
 import type { NavigationItem } from "../settings-menu.types";
@@ -156,5 +159,119 @@ describe("createEditDraft", () => {
 		} as unknown as NavigationItem;
 
 		expect(createEditDraft(createEditDraft(item)).roles).toEqual(["gm"]);
+	});
+});
+
+// ═══════════════════════════════════════════
+// computeSiblingOrderIndex
+// ═══════════════════════════════════════════
+function navigationItem(overrides: Partial<NavigationItem>): NavigationItem {
+	return {
+		id: overrides.id ?? "id",
+		name: overrides.name ?? "Elemento",
+		url: overrides.url ?? "/zona-raider/ruta",
+		icon_name: overrides.icon_name ?? "IconLink",
+		order_index: overrides.order_index ?? 0,
+		parent_id: overrides.parent_id ?? null,
+		is_active: true,
+		...overrides,
+	} as NavigationItem;
+}
+
+describe("computeSiblingOrderIndex", () => {
+	it("starts at 10 when the level is empty", () => {
+		expect(computeSiblingOrderIndex([], null)).toBe(10);
+	});
+
+	it("goes after the last sibling of the same parent", () => {
+		const items = [
+			navigationItem({ id: "a", order_index: 10 }),
+			navigationItem({ id: "b", order_index: 30 }),
+			navigationItem({ id: "c", order_index: 99, parent_id: "a" }),
+		];
+
+		expect(computeSiblingOrderIndex(items, null)).toBe(40);
+		expect(computeSiblingOrderIndex(items, "a")).toBe(109);
+	});
+});
+
+// ═══════════════════════════════════════════
+// createNewItemDraft
+// ═══════════════════════════════════════════
+const existingMenu = [
+	navigationItem({ id: "raiz", name: "Zona Raider", url: null, order_index: 10 }),
+	navigationItem({ id: "roster", name: "Roster", parent_id: "raiz", order_index: 10 }),
+	navigationItem({ id: "stats", name: "Stats", parent_id: "raiz", order_index: 20 }),
+];
+
+describe("createNewItemDraft", () => {
+	it("marks the item as a draft so nothing is created before saving", () => {
+		const draft = createNewItemDraft("link", existingMenu);
+
+		expect(draft.isDraft).toBe(true);
+		expect(draft.roles).toEqual([]);
+		expect(draft.url).toBe("/zona-raider/cambiame");
+		expect(draft.is_active).toBe(true);
+	});
+
+	it("creates a category without url and with the folder icon", () => {
+		const draft = createNewItemDraft("category", existingMenu);
+
+		expect(draft.url).toBeNull();
+		expect(draft.icon_name).toBe("IconFolder");
+		expect(draft.name).toBe("Nueva Categoría");
+	});
+
+	it("places the draft at the end of the level it belongs to", () => {
+		const draft = createNewItemDraft("link", existingMenu, { parentId: "raiz" });
+
+		expect(draft.parent_id).toBe("raiz");
+		expect(draft.order_index).toBe(30);
+	});
+
+	it("remembers the row it has to sit below", () => {
+		const draft = createNewItemDraft("link", existingMenu, {
+			parentId: "raiz",
+			insertAfterId: "roster",
+		});
+
+		expect(draft.insertAfterId).toBe("roster");
+		const plain = createNewItemDraft("link", existingMenu);
+		expect(plain.insertAfterId).toBeNull();
+	});
+});
+
+// ═══════════════════════════════════════════
+// buildInsertAfterPayload
+// ═══════════════════════════════════════════
+describe("buildInsertAfterPayload", () => {
+	it("re-indexes the level with the new item right below the clicked row", () => {
+		const payload = buildInsertAfterPayload(
+			existingMenu,
+			"raiz",
+			"roster",
+			"nuevo",
+		);
+
+		expect(payload).toEqual([
+			{ id: "roster", order_index: 10, parent_id: "raiz" },
+			{ id: "nuevo", order_index: 20, parent_id: "raiz" },
+			{ id: "stats", order_index: 30, parent_id: "raiz" },
+		]);
+	});
+
+	it("works on the root level too", () => {
+		const payload = buildInsertAfterPayload(existingMenu, null, "raiz", "nuevo");
+
+		expect(payload).toEqual([
+			{ id: "raiz", order_index: 10, parent_id: null },
+			{ id: "nuevo", order_index: 20, parent_id: null },
+		]);
+	});
+
+	it("does nothing when the reference row is no longer in that level", () => {
+		expect(
+			buildInsertAfterPayload(existingMenu, "raiz", "desconocido", "nuevo"),
+		).toEqual([]);
 	});
 });

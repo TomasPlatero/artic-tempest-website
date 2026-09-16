@@ -27,6 +27,8 @@ import {
 	buildRoleOptions,
 	createEditDraft,
 	buildParentBreadcrumb,
+	createNewItemDraft,
+	buildInsertAfterPayload,
 	normalizeNavigationItem,
 	type NavigationItemRecord,
 	type RoleRecord,
@@ -87,9 +89,22 @@ function useSettingsMenuClient() {
 
 	const tree = useMemo(() => buildNavigationTree(items), [items]);
 
-	const [openIds, setOpenIds] = useState<Set<string>>(() =>
-		collectCategoryIds(items),
+	// `null` means "every category open", which is the state until the admin closes
+	// one, so the whole menu is visible as soon as the page loads.
+	const [openIdsState, setOpenIds] = useState<Set<string> | null>(null);
+	const openIds = useMemo(
+		() => openIdsState ?? collectCategoryIds(items),
+		[openIdsState, items],
 	);
+
+	const toggleOpen = (id: string) => {
+		setOpenIds((prev) => {
+			const next = new Set(prev ?? collectCategoryIds(items));
+			if (next.has(id)) next.delete(id);
+			else next.add(id);
+			return next;
+		});
+	};
 
 	const filteredTree = useMemo(() => {
 		const addOpenFlag = (nodes: any[]): any[] =>
@@ -102,36 +117,34 @@ function useSettingsMenuClient() {
 	}, [tree, searchQuery, openIds]);
 
 	const expandAll = () => {
-		// Not available with uncontrolled tree
+		setOpenIds(collectCategoryIds(items));
 	};
 
 	const collapseAll = () => {
-		// Not available with uncontrolled tree
+		setOpenIds(new Set());
 	};
 
-	const handleCreate = async (type: "category" | "link", parentId?: string) => {
-		const siblings = items.filter((i) => i.parent_id === parentId);
-		const maxOrder = siblings.reduce(
-			(max, i) => Math.max(max, i.order_index),
-			0,
-		);
-
-		await fetch("/api/admin/navigation", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({
-				name: type === "category" ? "Nueva Categoría" : "Nuevo Enlace",
-				url: type === "category" ? null : "/zona-raider/cambiame",
-				icon_name: type === "category" ? "IconFolder" : "IconLink",
-				order_index: maxOrder + 10,
-				parent_id: parentId || null,
-				is_active: true,
-			}),
+	// Opens the editor with an unsaved draft: nothing is written until «Crear».
+	const openCreateDraft = (
+		type: "category" | "link",
+		options: { parentId?: string | null; insertAfterId?: string | null } = {},
+	) => {
+		dispatch({
+			type: "setEditingItem",
+			value: createNewItemDraft(type, items, options) as any,
 		});
+	};
 
-		await refreshItems();
-		router.refresh();
-		toast.success(type === "category" ? "Categoría creada" : "Enlace creado");
+	// «+» on a link adds a sibling right below it; on a category, a link inside it.
+	const handleQuickAdd = (item: NavigationItem) => {
+		if (!item.url) {
+			openCreateDraft("link", { parentId: item.id });
+			return;
+		}
+		openCreateDraft("link", {
+			parentId: item.parent_id ?? null,
+			insertAfterId: item.id,
+		});
 	};
 
 	const handleDuplicate = async (item: NavigationItem) => {
@@ -207,37 +220,83 @@ function useSettingsMenuClient() {
 			visibility,
 			description,
 			roles,
+			isDraft,
+			insertAfterId,
 		} = editingItem;
 
+		const payload = {
+			name,
+			url: url || null,
+			icon_name,
+			order_index,
+			parent_id: parent_id || null,
+			app_id,
+			css_class,
+			element_id,
+			visibility,
+			description,
+			roles,
+		};
+
 		const response = await fetch("/api/admin/navigation", {
-			method: "PATCH",
+			method: isDraft ? "POST" : "PATCH",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({
-				id,
-				name,
-				url: url || null,
-				icon_name,
-				order_index,
-				parent_id: parent_id || null,
-				app_id,
-				css_class,
-				element_id,
-				visibility,
-				description,
-				roles,
-			}),
+			body: JSON.stringify(isDraft ? payload : { id, ...payload }),
 		});
 
 		if (!response.ok) {
-			const payload = await response.json().catch(() => null);
-			toast.error(payload?.error || "No se pudieron guardar los cambios");
+			const errorPayload = await response.json().catch(() => null);
+			toast.error(
+				errorPayload?.error ||
+					(isDraft
+						? "No se pudo crear el elemento"
+						: "No se pudieron guardar los cambios"),
+			);
 			return;
+		}
+
+		if (isDraft && insertAfterId) {
+			const created = await response.json().catch(() => null);
+			if (created?.id) {
+				const level = buildInsertAfterPayload(
+					items,
+					payload.parent_id,
+					insertAfterId,
+					created.id,
+				);
+				if (level.length > 0) {
+					const reorderResponse = await fetch(
+						"/api/admin/navigation/reorder",
+						{
+							method: "POST",
+							headers: { "Content-Type": "application/json" },
+							body: JSON.stringify({ items: level }),
+						},
+					);
+					if (!reorderResponse.ok) {
+						toast.error("Creado, pero se ha colocado al final del nivel");
+					}
+				}
+			}
+		}
+
+		if (isDraft && payload.parent_id) {
+			const parentId = payload.parent_id;
+			setOpenIds(
+				(prev) => new Set(prev ?? collectCategoryIds(items)).add(parentId),
+			);
 		}
 
 		dispatch({ type: "setEditingItem", value: null as any });
 		await refreshItems();
 		router.refresh();
-		toast.success("Cambios guardados");
+		toast.success(
+			isDraft
+				? payload.url
+					? "Enlace creado"
+					: "Categoría creada"
+				: "Cambios guardados",
+		);
 	};
 
 	const openEdit = (item: NavigationItem) => {
@@ -330,7 +389,7 @@ function useSettingsMenuClient() {
 			/>
 
 			<div className="flex items-center justify-end">
-				<AddMenuDropdown onCreate={(type, parentId) => void handleCreate(type, parentId)} />
+				<AddMenuDropdown onCreate={(type) => openCreateDraft(type)} />
 			</div>
 
 			<MenuSearchToolbar
@@ -350,14 +409,7 @@ function useSettingsMenuClient() {
 					) : (
 						<Tree
 							data={filteredTree}
-							onToggle={(id: string) => {
-								setOpenIds((prev) => {
-									const next = new Set(prev);
-									if (next.has(id)) next.delete(id);
-									else next.add(id);
-									return next;
-								});
-							}}
+							onToggle={(id: string) => toggleOpen(id)}
 							onMove={(args) => void handleMove(args)}
 							width="100%"
 							height={Math.max(200, items.length * 48 + 40)}
@@ -373,11 +425,12 @@ function useSettingsMenuClient() {
 									onDuplicate={(item) => void handleDuplicate(item)}
 									onToggleActive={(item) => void handleToggleActive(item)}
 									onAddChild={(parentId: string) =>
-										void handleCreate("link", parentId)
+										openCreateDraft("link", { parentId })
 									}
 									onAddCategory={(parentId: string) =>
-										void handleCreate("category", parentId)
+										openCreateDraft("category", { parentId })
 									}
+									onQuickAdd={handleQuickAdd}
 								/>
 							)}
 						</Tree>
@@ -391,7 +444,10 @@ function useSettingsMenuClient() {
 			>
 				<SheetContent className="w-full sm:max-w-4xl lg:max-w-5xl overflow-y-auto">
 					<SheetTitle className="sr-only">Editar elemento del menú</SheetTitle>
-					<SettingsEditSheetHeader />
+		            <SettingsEditSheetHeader
+              isDraft={Boolean(editingItem?.isDraft)}
+              isCategory={!editingItem?.url}
+            />
 
 					{editingItem && (
 						<React.Suspense fallback={null}>
@@ -410,6 +466,7 @@ function useSettingsMenuClient() {
 					<SettingsEditSheetFooter
 						onCancel={() => setEditingItem(null)}
 						onSave={() => void handleSaveEdit()}
+						submitLabel={editingItem?.isDraft ? "Crear" : "Guardar"}
 					/>
 				</SheetContent>
 			</Sheet>

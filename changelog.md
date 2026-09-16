@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.11.39
+
+- feat(menu): crear elementos del menú en un solo paso (ATW-36) — «Añadir» y el nuevo botón «+» de cada fila abren el editor con un borrador: solo se guarda al pulsar «Crear», así que cancelar no deja nada suelto. El nombre aparece listo para escribir encima, un enlace creado con «+» queda justo debajo de la fila pulsada, crear dentro de una categoría la deja abierta, y el menú se muestra desplegado al entrar (los botones «Expandir»/«Colapsar» vuelven a funcionar).
+- fix(menu): la API de administración solo reenvía columnas reales de `navigation_items`, de modo que los campos internos del borrador nunca pueden llegar a la tabla.
+
 ## 1.11.38
 
 - fix(menu): repair the visibility permissions panel in Configuración → Menú (ATW-35) — the role grid now shows each role's name (`app_roles.level` / `label`, instead of the non-existent `role_level` / `display_name`), stored roles are pre-selected when the sheet opens (the admin API nests them as `navigation_item_roles`), a failed save reports the server error instead of a false “Cambios guardados” toast, and duplicated items keep their roles. Role sync no longer deletes the previous rows before inserting the new ones, and half-written role rows can no longer hide a menu item from every role.

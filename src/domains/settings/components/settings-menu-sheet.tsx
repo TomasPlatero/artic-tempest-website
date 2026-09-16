@@ -4,12 +4,26 @@ import { Button } from "@/shared/ui/button";
 import { IconDeviceFloppy } from "@/shared/ui/tabler-icons";
 import { SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/shared/ui/sheet";
 
-export function SettingsEditSheetHeader() {
+export function SettingsEditSheetHeader({
+  isDraft,
+  isCategory,
+}: {
+  isDraft?: boolean;
+  isCategory?: boolean;
+}) {
   return (
     <SheetHeader>
-      <SheetTitle>Editar Elemento</SheetTitle>
+      <SheetTitle>
+        {isDraft
+          ? isCategory
+            ? "Nueva Categoría"
+            : "Nuevo Enlace"
+          : "Editar Elemento"}
+      </SheetTitle>
       <SheetDescription>
-        Configura nombre, ruta, icono, permisos y visibilidad.
+        {isDraft
+          ? "Rellena los datos y pulsa Crear. El elemento no existe hasta que guardes."
+          : "Configura nombre, ruta, icono, permisos y visibilidad."}
       </SheetDescription>
     </SheetHeader>
   );
@@ -18,9 +32,11 @@ export function SettingsEditSheetHeader() {
 export function SettingsEditSheetFooter({
   onCancel,
   onSave,
+  submitLabel = "Guardar",
 }: {
   onCancel: () => void;
   onSave: () => void;
+  submitLabel?: string;
 }) {
   return (
     <SheetFooter className="sm:justify-between mt-6 border-t border-white/5 pt-4">
@@ -28,7 +44,7 @@ export function SettingsEditSheetFooter({
         Cancelar
       </Button>
       <Button onClick={onSave} className="gap-2">
-        <IconDeviceFloppy className="size-4" /> Guardar
+        <IconDeviceFloppy className="size-4" /> {submitLabel}
       </Button>
     </SheetFooter>
   );

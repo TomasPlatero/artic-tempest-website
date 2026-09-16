@@ -119,6 +119,74 @@ export function normalizeNavigationItem(
 	return { ...item, roles: normalizeItemRoles(item) };
 }
 
+export type NewItemKind = "category" | "link";
+
+/**
+ * Position for a brand-new item: right after the last sibling of `parentId`.
+ */
+export function computeSiblingOrderIndex(
+	items: NavigationItem[],
+	parentId: string | null,
+): number {
+	const siblings = items.filter(
+		(item) => (item.parent_id ?? null) === (parentId ?? null),
+	);
+	const maxOrder = siblings.reduce(
+		(max, item) => Math.max(max, item.order_index),
+		0,
+	);
+	return maxOrder + 10;
+}
+
+/**
+ * Item queued from the editor but not persisted yet. `isDraft` keeps it out of the
+ * database until the admin confirms, so cancelling leaves no placeholder behind.
+ */
+export function createNewItemDraft(
+	kind: NewItemKind,
+	items: NavigationItem[],
+	options: { parentId?: string | null; insertAfterId?: string | null } = {},
+): NavigationItem {
+	const parentId = options.parentId ?? null;
+	const isCategory = kind === "category";
+	return {
+		id: `draft-${kind}`,
+		name: isCategory ? "Nueva Categoría" : "Nuevo Enlace",
+		url: isCategory ? null : "/zona-raider/cambiame",
+		icon_name: isCategory ? "IconFolder" : "IconLink",
+		order_index: computeSiblingOrderIndex(items, parentId),
+		parent_id: parentId,
+		is_active: true,
+		roles: [],
+		isDraft: true,
+		insertAfterId: options.insertAfterId ?? null,
+	};
+}
+
+/**
+ * Re-index payload that leaves `newItemId` right below `afterId` inside its level;
+ * steps of 10 keep `order_index` integral.
+ */
+export function buildInsertAfterPayload(
+	items: NavigationItem[],
+	parentId: string | null,
+	afterId: string,
+	newItemId: string,
+) {
+	const level = items
+		.filter((item) => (item.parent_id ?? null) === (parentId ?? null))
+		.sort((a, b) => a.order_index - b.order_index)
+		.map((item) => item.id);
+	const position = level.indexOf(afterId);
+	if (position === -1) return [];
+	level.splice(position + 1, 0, newItemId);
+	return level.map((id, index) => ({
+		id,
+		order_index: (index + 1) * 10,
+		parent_id: parentId,
+	}));
+}
+
 export function isDescendant(
 	items: NavigationItem[],
 	parentId: string | null,

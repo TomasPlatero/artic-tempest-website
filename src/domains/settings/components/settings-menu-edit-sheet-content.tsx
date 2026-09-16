@@ -45,6 +45,17 @@ export function EditSheetContent({
 	items,
 }: EditSheetContentProps) {
 	const { data: pages } = useApiQuery<AppPage[]>("/api/pages", {});
+	const nameInputRef = React.useRef<HTMLInputElement | null>(null);
+
+	// A new item starts ready to be renamed: focus and select the suggested name.
+	React.useEffect(() => {
+		if (!editingItem.isDraft) return;
+		const timer = setTimeout(() => {
+			nameInputRef.current?.focus();
+			nameInputRef.current?.select();
+		}, 0);
+		return () => clearTimeout(timer);
+	}, [editingItem.isDraft]);
 
 	const activePages = (pages ?? []).filter(
 		(p): p is AppPage & { path: string } => Boolean(p.is_active && p.path),
@@ -134,9 +145,10 @@ export function EditSheetContent({
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 					<div className="space-y-2">
 						<Label>Nombre</Label>
-						<Input
-							value={editingItem.name}
-							onChange={(e) =>
+            <Input
+              ref={nameInputRef}
+              value={editingItem.name}
+              onChange={(e) =>
 								setEditingItem((prev: any) =>
 									prev ? { ...prev, name: e.target.value } : prev,
 								)

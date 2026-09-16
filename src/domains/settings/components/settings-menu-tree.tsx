@@ -19,6 +19,7 @@ import {
 	IconFolderPlus,
 	IconGripVertical,
 	IconLinkPlus,
+	IconPlus,
 	IconTrash,
 	IconChevronDown,
 	IconChevronRight,
@@ -80,6 +81,12 @@ function resolveActivateToggleLabel(isActive: boolean) {
 	return isActive ? "Desactivar" : "Activar";
 }
 
+function resolveQuickAddLabel(item: ArboristNode) {
+	return item.url
+		? `Añadir enlace debajo de ${item.name}`
+		: `Añadir enlace dentro de ${item.name}`;
+}
+
 function DepthSpacer({
 	visible,
 	className,
@@ -106,6 +113,7 @@ export function ArboristNodeRenderer({
 	onToggleActive,
 	onAddChild,
 	onAddCategory,
+	onQuickAdd,
 }: {
 	node: any;
 	style: React.CSSProperties;
@@ -117,6 +125,7 @@ export function ArboristNodeRenderer({
 	onToggleActive: (item: any) => void;
 	onAddChild: (parentId: string) => void;
 	onAddCategory: (parentId: string) => void;
+	onQuickAdd: (item: ArboristNode) => void;
 }) {
 	const item = node.data as ArboristNode;
 	const isCategory = !item.url;
@@ -219,6 +228,16 @@ export function ArboristNodeRenderer({
 					<p className="text-xs text-white/30 truncate font-mono">{item.url}</p>
 				)}
 			</div>
+
+			<button
+				type="button"
+				onClick={() => onQuickAdd(item)}
+				className="p-1.5 rounded-md hover:bg-white/10 text-white/30 hover:text-white/60 transition-colors shrink-0 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+				title={resolveQuickAddLabel(item)}
+				aria-label={resolveQuickAddLabel(item)}
+			>
+				<IconPlus className="size-4" />
+			</button>
 
 			<button
 				type="button"
