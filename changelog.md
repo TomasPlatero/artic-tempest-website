@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.38
+
+- fix(menu): repair the visibility permissions panel in Configuración → Menú (ATW-35) — the role grid now shows each role's name (`app_roles.level` / `label`, instead of the non-existent `role_level` / `display_name`), stored roles are pre-selected when the sheet opens (the admin API nests them as `navigation_item_roles`), a failed save reports the server error instead of a false “Cambios guardados” toast, and duplicated items keep their roles. Role sync no longer deletes the previous rows before inserting the new ones, and half-written role rows can no longer hide a menu item from every role.
+
 ## 1.11.37
 
 - chore: apply formatter to `sync-engine.server.ts` and `accounts-client.tsx` (line wrapping, no behavior change)

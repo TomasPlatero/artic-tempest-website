@@ -10,7 +10,6 @@ import { Badge } from "@/shared/ui/badge";
 import { cn } from "@/shared/tailwind/tailwind-utils";
 import { getIconByName } from "@/shared/lib/icon-utils";
 import { IconPicker } from "@/shared/components/icon-picker";
-import { Checkbox } from "@/shared/ui/checkbox";
 import {
 	Select,
 	SelectContent,
@@ -18,7 +17,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/shared/ui/select";
-import { IconCopy } from "@/shared/ui/tabler-icons";
+import { IconCheck, IconCopy } from "@/shared/ui/tabler-icons";
 import { useApiQuery } from "@/shared/hooks/use-api-query";
 import { SectionCard } from "./settings-menu-section-card";
 import type { NavigationItem } from "./settings-menu.types";
@@ -349,41 +348,54 @@ export function EditSheetContent({
 				description="Limita quién puede ver el elemento. Sin selección = todos."
 			>
 				<div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-					{roleOptions.map((role) => (
-						<button
-							type="button"
-							key={role.value}
-							className={cn(
-								"flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-left transition-colors bg-transparent w-full",
-								editingRolesSet.has(role.value)
-									? "border-primary/60 bg-primary/10"
-									: "border-white/5 hover:border-white/20",
-							)}
-							onClick={() => {
-								const current = editingItem.roles || [];
-								const exists = current.includes(role.value);
-								setEditingItem((prev: any) =>
-									prev
-										? {
-												...prev,
-												roles: exists
-													? current.filter((r: string) => r !== role.value)
-													: [...current, role.value],
-											}
-										: prev,
-								);
-							}}
-						>
-							<Checkbox
-								checked={editingRolesSet.has(role.value)}
-								className="border-white/20 data-[state=checked]:bg-primary data-[state=checked]:text-zinc-950"
-							/>
-							<span className="text-sm font-medium">{role.label}</span>
-						</button>
-					))}
+					{roleOptions.map((role) => {
+						const isSelected = editingRolesSet.has(role.value);
+						return (
+							<button
+								type="button"
+								key={role.value}
+								aria-pressed={isSelected}
+								className={cn(
+									"flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-left transition-colors bg-transparent w-full",
+									isSelected
+										? "border-primary/60 bg-primary/10"
+										: "border-white/5 hover:border-white/20",
+								)}
+								onClick={() => {
+									const current = editingItem.roles || [];
+									const exists = current.includes(role.value);
+									setEditingItem((prev: any) =>
+										prev
+											? {
+													...prev,
+													roles: exists
+														? current.filter((r: string) => r !== role.value)
+														: [...current, role.value],
+												}
+											: prev,
+									);
+								}}
+							>
+								<span
+									aria-hidden="true"
+									className={cn(
+										"flex size-4 shrink-0 items-center justify-center rounded-[4px] border transition-colors",
+										isSelected
+											? "border-primary bg-primary text-primary-foreground"
+											: "border-white/20",
+									)}
+								>
+									{isSelected && <IconCheck className="size-3.5" />}
+								</span>
+								<span className="text-sm font-medium">{role.label}</span>
+							</button>
+						);
+					})}
 				</div>
 				<p className="text-xs text-muted-foreground">
-					Puedes mezclar roles para crear accesos personalizados.
+					{roleOptions.length > 0
+						? "Puedes mezclar roles para crear accesos personalizados."
+						: "No se pudieron cargar los roles disponibles."}
 				</p>
 			</SectionCard>
 		</div>

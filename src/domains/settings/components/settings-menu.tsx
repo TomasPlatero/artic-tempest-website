@@ -27,6 +27,9 @@ import {
 	buildRoleOptions,
 	createEditDraft,
 	buildParentBreadcrumb,
+	normalizeNavigationItem,
+	type NavigationItemRecord,
+	type RoleRecord,
 } from "./settings-menu.utils";
 
 function useSettingsMenuClient() {
@@ -38,9 +41,9 @@ function useSettingsMenuClient() {
 		data: navigationData,
 		isLoading,
 		mutate: mutateNavigation,
-	} = useApiQuery<NavigationItem[]>("/api/admin/navigation");
+	} = useApiQuery<NavigationItemRecord[]>("/api/admin/navigation");
 
-	const { data: rolesData } = useApiQuery<any[]>("/api/guild/roles");
+	const { data: rolesData } = useApiQuery<RoleRecord[]>("/api/guild/roles");
 
 	const setSearchQuery = (value: string) => {
 		dispatch({ type: "setSearchQuery", value });
@@ -64,7 +67,7 @@ function useSettingsMenuClient() {
 	React.useEffect(() => {
 		if (Array.isArray(navigationData)) {
 			// react-doctor-disable-next-line
-			setItems(navigationData);
+			setItems(navigationData.map(normalizeNavigationItem));
 			dispatch({
 				type: "setExpandedCategories",
 				value: collectCategoryIds(navigationData),
@@ -153,6 +156,7 @@ function useSettingsMenuClient() {
 				css_class: item.css_class,
 				element_id: item.element_id,
 				visibility: item.visibility,
+				roles: item.roles ?? [],
 			}),
 		});
 
@@ -205,7 +209,7 @@ function useSettingsMenuClient() {
 			roles,
 		} = editingItem;
 
-		await fetch("/api/admin/navigation", {
+		const response = await fetch("/api/admin/navigation", {
 			method: "PATCH",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
@@ -223,6 +227,12 @@ function useSettingsMenuClient() {
 				roles,
 			}),
 		});
+
+		if (!response.ok) {
+			const payload = await response.json().catch(() => null);
+			toast.error(payload?.error || "No se pudieron guardar los cambios");
+			return;
+		}
 
 		dispatch({ type: "setEditingItem", value: null as any });
 		await refreshItems();

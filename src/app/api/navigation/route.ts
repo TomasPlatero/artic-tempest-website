@@ -52,7 +52,9 @@ export async function GET() {
 
             const results = await Promise.all(children.map(async (item) => {
                 // 1. Roles: Own roles or inherit from parent
-                const itemRoles: string[] = item.navigation_item_roles.map((r: any) => r.role_level)
+                const itemRoles = (item.navigation_item_roles ?? [])
+                    .map((r: { role_level?: string | null }) => r.role_level?.trim())
+                    .filter((role: string | undefined): role is string => Boolean(role))
                 const currentAllowedRoles = itemRoles.length > 0 ? new Set<string>(itemRoles) : parentAllowedRoles
 
                 // Check if user has one of the allowed roles (if restricted)

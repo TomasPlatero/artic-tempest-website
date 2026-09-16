@@ -56,13 +56,67 @@ export function filterTreeByQuery(nodes: any[], rawQuery: string): any[] {
 	}) as NavigationItem[];
 }
 
-export function buildRoleOptions(rolesData: any[] | undefined) {
+/** Shape returned by `GET /api/guild/roles` (`app_roles` + legacy aliases). */
+export type RoleRecord = {
+	level?: string | null;
+	label?: string | null;
+	roleSlug?: string | null;
+	roleLabel?: string | null;
+};
+
+/** Shape returned by `GET /api/admin/navigation` (item + nested role rows). */
+export type NavigationItemRecord = NavigationItem & {
+	navigation_item_roles?: { role_level?: string | null }[] | null;
+};
+
+function toRoleSlug(value: string | null | undefined): string | null {
+	const slug = value?.trim();
+	return slug ? slug : null;
+}
+
+function toRoleLabel(value: string | null | undefined, fallback: string): string {
+	const label = value?.trim();
+	return label ? label : fallback;
+}
+
+/**
+ * `/api/guild/roles` serves `app_roles` rows, whose columns are `level` / `label`.
+ * Both that shape and the legacy `roleSlug` / `roleLabel` aliases are accepted.
+ */
+export function buildRoleOptions(rolesData: RoleRecord[] | undefined) {
 	if (!Array.isArray(rolesData)) return [];
-	return rolesData.flatMap((r: any) =>
-		r.role_level !== "invitado"
-			? [{ value: r.role_level, label: r.display_name || r.role_level }]
-			: [],
-	);
+	return rolesData
+		.flatMap((role) => {
+			const value = toRoleSlug(role?.level ?? role?.roleSlug);
+			if (!value) return [];
+			return [
+				{
+					value,
+					label: toRoleLabel(role?.label ?? role?.roleLabel, value),
+				},
+			];
+		})
+		.filter((option) => option.value !== "invitado");
+}
+
+/**
+ * The admin API nests roles as `navigation_item_roles: [{ role_level }]`, while the
+ * rest of the UI reads a flat `roles: string[]`. Half-written values are dropped so
+ * they cannot hide an item from every role in the public tree.
+ */
+export function normalizeItemRoles(item: NavigationItemRecord): string[] {
+	const nested = item?.navigation_item_roles ?? [];
+	const flat = item?.roles ?? [];
+	const slugs = [...flat, ...nested.map((row) => toRoleSlug(row?.role_level))];
+	return Array.from(
+		new Set(slugs.filter((slug): slug is string => Boolean(slug))),
+	).sort((a, b) => a.localeCompare(b));
+}
+
+export function normalizeNavigationItem(
+	item: NavigationItemRecord,
+): NavigationItem {
+	return { ...item, roles: normalizeItemRoles(item) };
 }
 
 export function isDescendant(
@@ -80,7 +134,7 @@ export function createEditDraft(item: NavigationItem): NavigationItem {
 	return {
 		...item,
 		icon_name: item.icon_name || "IconFolder",
-		roles: item.roles || [],
+		roles: normalizeItemRoles(item),
 	};
 }
 
