@@ -9,9 +9,7 @@ export function DataCollectionSection() {
 		<PrivacidadSection
 			id="data-title"
 			title="2. Datos que recopilamos y su finalidad"
-			icon={
-				<IconFileText className="text-blue-400 size-6" aria-hidden="true" />
-			}
+			icon={<IconFileText className="text-blue-400 size-6" aria-hidden="true" />}
 			className="bg-white/5 md:p-12 rounded-[40px] border-white/10 backdrop-blur-xl"
 		>
 			<div className="grid gap-8">
@@ -101,23 +99,25 @@ export function TransferSection() {
 						description="Plataforma de alojamiento y despliegue del sitio web. Los datos de navegación pueden procesarse en servidores ubicados en Estados Unidos. Vercel cumple con el RGPD mediante cláusulas contractuales tipo (SCC) y medidas técnicas y organizativas apropiadas."
 					/>
 					<TransferItem
-						name="Cybot A/S — Cookiebot CMP"
+						name="CookieYes Limited — CookieYes CMP"
 						description={
 							<>
-								Plataforma de gestión de consentimiento de cookies (CMP).
-								Cookiebot escanea y clasifica automáticamente las cookies del
-								sitio, muestra el banner de consentimiento y almacena las
-								preferencias del usuario. Los datos se procesan en servidores
-								dentro del Espacio Económico Europeo (Microsoft Azure, región
-								UE). Cybot A/S cumple con el RGPD como encargado del
-								tratamiento. Para más detalles, consulta la{" "}
+								Plataforma de gestión del consentimiento de cookies (CMP). CookieYes
+								escanea y clasifica automáticamente las cookies del sitio, muestra el
+								banner de consentimiento y registra las preferencias del usuario.
+								CookieYes Limited (Reino Unido), operada por Mozilor Technologies Pvt.
+								Ltd., cumple con el RGPD como encargado del tratamiento. El Reino Unido
+								cuenta con decisión de adecuación de la Comisión Europea y, para el
+								resto de transferencias internacionales, su contrato de encargo
+								incorpora las cláusulas contractuales tipo (SCC). Para más detalles,
+								consulta la{" "}
 								<a
-									href="https://www.cookiebot.com/es/privacy-policy/"
+									href="https://www.cookieyes.com/privacy-policy/"
 									target="_blank"
 									rel="noreferrer"
 									className="text-blue-400 hover:text-blue-300 underline"
 								>
-									política de privacidad de Cookiebot
+									política de privacidad de CookieYes
 								</a>
 								.
 							</>
@@ -127,14 +127,13 @@ export function TransferSection() {
 						name="Cloudflare Inc. — Seguridad y Protección Anti-bots"
 						description={
 							<>
-								Proveedor de servicios de seguridad y red de distribución de
-								contenido (CDN). Cloudflare procesa las direcciones IP de los
-								visitantes y gestiona el servicio Turnstile para la verificación
-								anti-bots en nuestros formularios públicos (feedback y
-								reclutamiento), con el fin de proteger el sitio contra envíos
-								automatizados maliciosos. Cloudflare está certificado bajo el
-								Marco de Privacidad de Datos UE-EE. UU. (Data Privacy
-								Framework). Para más detalles, consulta la{" "}
+								Proveedor de servicios de seguridad y red de distribución de contenido
+								(CDN). Cloudflare procesa las direcciones IP de los visitantes y
+								gestiona el servicio Turnstile para la verificación anti-bots en
+								nuestros formularios públicos (feedback y reclutamiento), con el fin de
+								proteger el sitio contra envíos automatizados maliciosos. Cloudflare
+								está certificado bajo el Marco de Privacidad de Datos UE-EE. UU. (Data
+								Privacy Framework). Para más detalles, consulta la{" "}
 								<a
 									href="https://www.cloudflare.com/privacypolicy/"
 									target="_blank"
@@ -151,11 +150,11 @@ export function TransferSection() {
 						name="Google LLC — Analytics y AdSense"
 						description={
 							<>
-								Cuando aceptas las cookies de analítica o publicidad, los datos
-								se envían a servidores de Google en Estados Unidos. Google está
-								certificado bajo el Marco de Privacidad de Datos UE-EE. UU.
-								(Data Privacy Framework), garantizando un nivel adecuado de
-								protección. Para más detalles, consulta{" "}
+								Cuando aceptas las cookies de analítica o publicidad, los datos se
+								envían a servidores de Google en Estados Unidos. Google está certificado
+								bajo el Marco de Privacidad de Datos UE-EE. UU. (Data Privacy
+								Framework), garantizando un nivel adecuado de protección. Para más
+								detalles, consulta{" "}
 								<a
 									href="https://policies.google.com/privacy"
 									target="_blank"

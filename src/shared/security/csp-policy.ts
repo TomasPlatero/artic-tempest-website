@@ -27,9 +27,8 @@ export function buildCsp(options?: { dev?: boolean }): string {
 			"challenges.cloudflare.com",
 			devSecuritySrc,
 			vercelLiveSrc,
-			"consent.cookiebot.com",
-			"consentcdn.cookiebot.com",
-			"*.cookiebot.com",
+			"cdn-cookieyes.com",
+			"*.cookieyes.com",
 			"wow.zamimg.com",
 			"*.wowhead.com",
 			"*.googletagmanager.com",
@@ -76,7 +75,7 @@ export function buildCsp(options?: { dev?: boolean }): string {
 			vercelImgSrc,
 			"www.instant-gaming.com",
 			"vpncdn.protonweb.com",
-			"consent.cookiebot.com consentcdn.cookiebot.com *.cookiebot.com",
+			"cdn-cookieyes.com *.cookieyes.com",
 		]
 			.filter(Boolean)
 			.join(" "),
@@ -97,7 +96,7 @@ export function buildCsp(options?: { dev?: boolean }): string {
 			"vitals.vercel-insights.com",
 			vercelLiveSrc,
 			"wss://ws-us3.pusher.com",
-			"consent.cookiebot.com consentcdn.cookiebot.com *.cookiebot.com",
+			"cdn-cookieyes.com *.cookieyes.com",
 			"stats.g.doubleclick.net",
 			"raider.io *.raider.io",
 			"warcraftlogs.com *.warcraftlogs.com",
@@ -117,7 +116,6 @@ export function buildCsp(options?: { dev?: boolean }): string {
 			"player.twitch.tv",
 			vercelFrameSrc,
 			"www.youtube-nocookie.com www.youtube.com youtube.com m.youtube.com",
-			"consent.cookiebot.com consentcdn.cookiebot.com *.cookiebot.com",
 			googleAdsSourceHosts,
 		]
 			.filter(Boolean)

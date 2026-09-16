@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/shared/layout/theme-provider";
 import { SessionProvider } from "@/shared/layout/session-provider";
 import { SkipLink } from "@/shared/components/skip-link";
 import { getSynchronousNonce } from "@/shared/security/csp-nonce";
+import { COOKIEYES_BANNER_SCRIPT_URL } from "@/shared/consent/cookieyes";
 import { SECURITY_HEADER_VALUES } from "@/shared/security/response-headers";
 import { JsonLdHead } from "@/shared/seo/json-ld-head";
 import { LayoutH1 } from "@/shared/seo/layout-h1";
@@ -181,32 +182,26 @@ export default function RootLayout({
 	return (
 		<html lang="es" className="dark" suppressHydrationWarning>
 			<head>
-				{/* 1. Consent default — se marca ignore para que Cookiebot no lo bloquee */}
+				{/* 1. Consent default — Consent Mode v2 arranca en "denied" hasta que el usuario decida en el banner */}
 				<Script
 					id="gtag-consent-default"
 					strategy="beforeInteractive"
 					data-cfasync="false"
-					data-cookieconsent="ignore"
 				>
 					{`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('consent','default',{ad_personalization:'denied',ad_storage:'denied',ad_user_data:'denied',analytics_storage:'denied',functionality_storage:'denied',personalization_storage:'denied',security_storage:'granted',wait_for_update:500});gtag('set','ads_data_redaction',true);gtag('set','url_passthrough',false);`}
 				</Script>
-				{/* 2. Cookiebot CMP — beforeInteractive + modo manual: el sitio ya aplica Consent Mode v2 y gating manual (hasMarketingConsent/hasAnalyticsConsent), así que el auto-blocking solo rompía la hidratación del App Router (ATW-33) */}
-				{process.env.NEXT_PUBLIC_COOKIEBOT_ID ? (
-					<Script
-						id="Cookiebot"
-						src="https://consent.cookiebot.com/uc.js"
-						data-cbid={process.env.NEXT_PUBLIC_COOKIEBOT_ID}
-						data-blockingmode="manual"
-						data-cfasync="false"
-						strategy="beforeInteractive"
-					/>
-				) : null}
-				{/* 3. Darkreader — necesario antes del render, ignorado por Cookiebot */}
+				{/* 2. CookieYes CMP — el sitio aplica Consent Mode v2 y gating manual (hasMarketingConsent/hasAnalyticsConsent) */}
+				<Script
+					id="cookieyes"
+					src={COOKIEYES_BANNER_SCRIPT_URL}
+					data-cfasync="false"
+					strategy="beforeInteractive"
+				/>
+				{/* 3. Darkreader — necesario antes del render */}
 				<Script
 					id="darkreader-hydration-guard"
 					strategy="beforeInteractive"
 					data-cfasync="false"
-					data-cookieconsent="ignore"
 				>
 					{darkReaderHydrationGuard}
 				</Script>

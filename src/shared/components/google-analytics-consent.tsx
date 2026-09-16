@@ -5,6 +5,7 @@ import Script from "next/script";
 import {
 	hasAnalyticsConsent,
 	hasMarketingConsent,
+	subscribeToConsentChanges,
 } from "@/shared/adsense/marketing-consent";
 
 declare global {
@@ -15,28 +16,10 @@ declare global {
 }
 
 /**
- * Subscribes to consent changes from both vanilla-cookieconsent (cc-consent-updated)
- * and Cookiebot (CookiebotOnAccept / CookiebotOnDecline).
- */
-function subscribeToConsentChanges(onStoreChange: () => void): () => void {
-	if (typeof window === "undefined") return () => {};
-
-	window.addEventListener("cc-consent-updated", onStoreChange);
-	window.addEventListener("CookiebotOnAccept", onStoreChange);
-	window.addEventListener("CookiebotOnDecline", onStoreChange);
-
-	return () => {
-		window.removeEventListener("cc-consent-updated", onStoreChange);
-		window.removeEventListener("CookiebotOnAccept", onStoreChange);
-		window.removeEventListener("CookiebotOnDecline", onStoreChange);
-	};
-}
-
-/**
  * GoogleAnalyticsConsent
  *
  * Gestiona el consentimiento analítico y publicitario mediante
- * vanilla-cookieconsent o Cookiebot. Este componente:
+ * vanilla-cookieconsent o CookieYes. Este componente:
  *  - Lee la cookie real de consentimiento (soporta ambos formatos)
  *  - Actualiza analytics_storage cuando el usuario da/deniega analytics
  *  - Actualiza ad_storage / ad_user_data / ad_personalization cuando
@@ -98,11 +81,7 @@ export function GoogleAnalyticsConsent({
 		<>
 			{gtmId ? (
 				<>
-					<Script
-						id="google-tag-manager"
-						strategy="lazyOnload"
-						data-cfasync="false"
-					>
+					<Script id="google-tag-manager" strategy="lazyOnload" data-cfasync="false">
 						{`
               (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
               new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -131,11 +110,7 @@ export function GoogleAnalyticsConsent({
 						data-cfasync="false"
 						src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
 					/>
-					<Script
-						id="google-analytics"
-						strategy="lazyOnload"
-						data-cfasync="false"
-					>
+					<Script id="google-analytics" strategy="lazyOnload" data-cfasync="false">
 						{`
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}

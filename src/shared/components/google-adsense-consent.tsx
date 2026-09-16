@@ -1,26 +1,11 @@
 "use client";
 
 import { useEffect, useSyncExternalStore } from "react";
-import { hasMarketingConsent } from "@/shared/adsense/marketing-consent";
+import {
+  hasMarketingConsent,
+  subscribeToConsentChanges,
+} from "@/shared/adsense/marketing-consent";
 import { isAdsenseEnabled } from "@/shared/adsense/adsense-config";
-
-/**
- * Subscribes to consent changes from both vanilla-cookieconsent (cc-consent-updated)
- * and Cookiebot (CookiebotOnAccept / CookiebotOnDecline).
- */
-function subscribeToConsentChanges(onStoreChange: () => void): () => void {
-  if (typeof window === "undefined") return () => {};
-
-  window.addEventListener("cc-consent-updated", onStoreChange);
-  window.addEventListener("CookiebotOnAccept", onStoreChange);
-  window.addEventListener("CookiebotOnDecline", onStoreChange);
-
-  return () => {
-    window.removeEventListener("cc-consent-updated", onStoreChange);
-    window.removeEventListener("CookiebotOnAccept", onStoreChange);
-    window.removeEventListener("CookiebotOnDecline", onStoreChange);
-  };
-}
 
 /**
  * GoogleAdsenseConsent

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.11.42
+
+- fix(consentimiento): Cookiebot CMP sustituido por CookieYes (ATW-39) — el banner se carga desde `cdn-cookieyes.com` y la política de cookies de `/cookies` (con el inventario completo) la genera CookieYes, así que desaparecen el script `uc.js`, la declaración `cd.js`, los atributos `data-cookieconsent`, los preconnect y los dominios CSP de Cookiebot. La variable pasa a `NEXT_PUBLIC_COOKIEYES_ID`, con la clave de sitio embebida como valor por defecto para que el banner nunca deje de cargar en producción.
+- fix(consentimiento): el consentimiento se lee de la cookie `cookieyes-consent` (`analytics`/`performance` → analítica, `advertisement` → marketing) y GA/AdSense escuchan los eventos de CookieYes (`cookieyes_consent_update`, `cookieyes_banner_load`) en lugar de los de Cookiebot. La política se monta dentro de la sección de declaración y no añade un segundo `<h1>`.
+- docs(privacidad): CookieYes Limited sustituye a Cybot A/S como destinatario, cookie de consentimiento y plataforma de la política de cookies.
+
 ## 1.11.41
 
 - feat(menu): el editor de un elemento del menú tiene página propia (ATW-38) — se acabó la ventana emergente: «Editar» abre `/zona-raider/configuracion/menu/<id>` y «+» / «Añadir» abren `/zona-raider/configuracion/menu/nuevo` con el contexto de la fila (tipo, categoría padre y posición). Para entrar hace falta permiso de edición en «Menú».

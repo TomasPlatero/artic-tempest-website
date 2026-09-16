@@ -7,7 +7,10 @@ import {
 	type AdsenseRouteZone,
 	isAdsenseEligibleRoute,
 } from "@/shared/adsense/route-scoped-zones";
-import { hasMarketingConsent } from "@/shared/adsense/marketing-consent";
+import {
+	hasMarketingConsent,
+	subscribeToConsentChanges,
+} from "@/shared/adsense/marketing-consent";
 import { useAdblockDetection } from "@/shared/adsense/adblock-detection";
 import { isAdsenseEnabled } from "@/shared/adsense/adsense-config";
 
@@ -134,17 +137,7 @@ export function RouteScopedAdsenseSlot({
 	const hasRequestedRef = useRef(false);
 	const adblockDetected = useAdblockDetection();
 	const consentGranted = useSyncExternalStore(
-		(onStoreChange) => {
-			if (typeof window === "undefined") return () => {};
-			window.addEventListener("cc-consent-updated", onStoreChange);
-			window.addEventListener("CookiebotOnAccept", onStoreChange);
-			window.addEventListener("CookiebotOnDecline", onStoreChange);
-			return () => {
-				window.removeEventListener("cc-consent-updated", onStoreChange);
-				window.removeEventListener("CookiebotOnAccept", onStoreChange);
-				window.removeEventListener("CookiebotOnDecline", onStoreChange);
-			};
-		},
+		subscribeToConsentChanges,
 		hasMarketingConsent,
 		() => false,
 	);

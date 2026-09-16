@@ -7,7 +7,7 @@ Notas importantes:
 - La autenticación usa NextAuth con providers de Discord y Battle.net. No hay registro por email.
 - Los datos de personajes WoW se obtienen desde Raider.io API (server-side) y Warcraft Logs API (server-side).
 - Las noticias se almacenan en Supabase y se renderizan como server components con contenido sanitizado.
-- El banner de cookies y consentimiento se gestiona mediante Cookiebot CMP.
+- El banner de cookies y consentimiento se gestiona mediante CookieYes (CookieYes Limited, Reino Unido).
 - Las páginas de privacidad, aviso legal y cookies contienen la documentación legal completa conforme a RGPD/LOPD-GDD/LSSI-CE.
 
 ## Páginas públicas principales
@@ -24,7 +24,7 @@ Notas importantes:
 
 - [Aviso Legal](https://artictempest.es/aviso-legal): Identidad del responsable, propiedad intelectual, condiciones de uso, exclusiones de responsabilidad, ley aplicable.
 - [Política de Privacidad](https://artictempest.es/privacidad): RGPD y LOPD-GDD, responsable del tratamiento, finalidades, base legal, derechos ARCO, plazos de conservación, destinatarios de datos.
-- [Política de Cookies](https://artictempest.es/cookies): Declaración completa de cookies gestionada por Cookiebot CMP, categorías, gestión del consentimiento.
+- [Política de Cookies](https://artictempest.es/cookies): Declaración completa de cookies gestionada por CookieYes, categorías, gestión del consentimiento.
 - [Accesibilidad](https://artictempest.es/accesibilidad): Declaración de accesibilidad WCAG 2.1 AA, estado de cumplimiento, funcionalidades de apoyo.
 
 ## Zona Raider (requiere autenticación)
@@ -56,7 +56,7 @@ Notas importantes:
 - **CSS/Tailwind**: Tailwind CSS v4, diseño dark mode
 - **Hosting**: Vercel (producción), con dominio artictempest.es
 - **Monitorización**: Sentry (errores y rendimiento)
-- **Analítica**: Google Analytics 4 via GTM, consentimiento gestionado con Cookiebot
+- **Analítica**: Google Analytics 4 via GTM, consentimiento gestionado con CookieYes
 - **Monetización**: Google AdSense, partners (RestedXP, Proton VPN, Instant Gaming)
 - **APIs externas**: Raider.io, Warcraft Logs, Discord, Battle.net, Twitch
 

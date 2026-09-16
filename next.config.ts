@@ -218,11 +218,7 @@ config.headers = async () => [
       },
       {
         key: "Link",
-        value: "<https://consent.cookiebot.com>; rel=preconnect",
-      },
-      {
-        key: "Link",
-        value: "<https://consentcdn.cookiebot.com>; rel=preconnect",
+        value: "<https://cdn-cookieyes.com>; rel=preconnect",
       },
       {
         key: "Link",

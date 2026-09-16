@@ -4,6 +4,7 @@
  */
 import { getSeoSettings } from "@/shared/seo/seo-settings";
 import { GoogleAdsenseConsent } from "@/shared/components/google-adsense-consent";
+import { isAdsenseEnabled } from "@/shared/adsense/adsense-config";
 import { GoogleAnalyticsConsent } from "@/shared/components/google-analytics-consent";
 import { FloatingActionsWrapper } from "@/shared/layout/floating-actions-wrapper";
 import { RouteEnhancements } from "@/shared/layout/route-enhancements";
@@ -76,23 +77,16 @@ export async function AsyncLayoutContent({ nonce }: AsyncLayoutContentProps) {
 				/>
 			))}
 
-			{/* Analytics */}
+			{/* Analytics — la CMP (CookieYes) está siempre presente, así que GA queda gated por consentimiento */}
 			<GoogleAnalyticsConsent
 				gaId={seoSettings.analytics.googleAnalyticsId || undefined}
 				gtmId={seoSettings.analytics.googleTagManagerId || undefined}
-				consentEnabled={
-					!!process.env.NEXT_PUBLIC_COOKIEBOT_ID ||
-					seoSettings.cookieConsent.enabled
-				}
 			/>
 
 			{/* AdSense */}
 			<GoogleAdsenseConsent
 				clientId={seoSettings.monetization.googleAdsenseClientId || undefined}
-				enabled={
-					!!process.env.NEXT_PUBLIC_COOKIEBOT_ID ||
-					seoSettings.cookieConsent.marketingEnabled
-				}
+				enabled={isAdsenseEnabled()}
 			/>
 
 			{/* Route enhancements & floating actions */}
