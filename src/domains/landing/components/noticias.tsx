@@ -18,6 +18,7 @@ import { NewsCardBody } from "@/domains/news/components/news-card-body";
 import { useApiQuery } from "@/shared/hooks/use-api-query";
 import { RouteScopedAdsenseSlot } from "@/shared/components/route-scoped-adsense-slot";
 import { Button } from "@/shared/ui/button";
+import { MarketingConsentGate } from "@/shared/consent/marketing-consent-gate";
 import {
 	PUBLIC_CARD_REVEAL_CLASSES,
 	PUBLIC_SECTION_REVEAL_CLASSES,
@@ -283,30 +284,32 @@ export function LandingNoticias({
 						</div>
 
 						{/* Ads Banner */}
-						<div className="space-y-4">
-							<p className="text-[10px] font-semibold text-zinc-300 uppercase tracking-[0.3em] px-2 flex items-center gap-2">
-								Publicidad <span className="h-px bg-zinc-800 flex-1" />
-							</p>
+						<MarketingConsentGate>
 							<div className="space-y-4">
-								<div className={PUBLIC_CARD_REVEAL_CLASSES}>
-									<AdBanner
-										type="protonvpn"
-										href="https://pr.tn/ref/6FT15FKW"
-									/>
-								</div>
-								<div
-									className={cn(
-										PUBLIC_CARD_REVEAL_CLASSES,
-										"animate-delay-150",
-									)}
-								>
-									<AdBanner
-										type="instantgaming"
-										href="https://www.instant-gaming.com/?igr=gamer-94712f"
-									/>
+								<p className="text-[10px] font-semibold text-zinc-300 uppercase tracking-[0.3em] px-2 flex items-center gap-2">
+									Publicidad <span className="h-px bg-zinc-800 flex-1" />
+								</p>
+								<div className="space-y-4">
+									<div className={PUBLIC_CARD_REVEAL_CLASSES}>
+										<AdBanner
+											type="protonvpn"
+											href="https://pr.tn/ref/6FT15FKW"
+										/>
+									</div>
+									<div
+										className={cn(
+											PUBLIC_CARD_REVEAL_CLASSES,
+											"animate-delay-150",
+										)}
+									>
+										<AdBanner
+											type="instantgaming"
+											href="https://www.instant-gaming.com/?igr=gamer-94712f"
+										/>
+									</div>
 								</div>
 							</div>
-						</div>
+						</MarketingConsentGate>
 					</div>
 				</div>
 			</div>

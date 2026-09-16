@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { IconExternalLink } from "@/shared/ui/tabler-icons";
+import { MarketingConsentGate } from "@/shared/consent/marketing-consent-gate";
 
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
@@ -76,13 +77,16 @@ export function ZonaRaiderPromoStrip() {
 						rel="noreferrer"
 						className="absolute inset-0 block"
 					>
-						<Image
-							src="https://media.restedxp.com/raw/q95sa9.png"
-							alt="RestedXP"
-							fill
-							sizes="(min-width: 768px) 30vw, 60vw"
-							className="absolute inset-0 size-full object-cover opacity-16"
-						/>
+						{/* La creatividad está alojada en el CDN del afiliado: no se pide sin consentimiento. */}
+						<MarketingConsentGate>
+							<Image
+								src="https://media.restedxp.com/raw/q95sa9.png"
+								alt="RestedXP"
+								fill
+								sizes="(min-width: 768px) 30vw, 60vw"
+								className="absolute inset-0 size-full object-cover opacity-16"
+							/>
+						</MarketingConsentGate>
 					</a>
 
 					<div

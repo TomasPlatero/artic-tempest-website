@@ -2,7 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useSyncExternalStore } from "react";
+import {
+	hasMarketingConsent,
+	subscribeToConsentChanges,
+} from "@/shared/adsense/marketing-consent";
 import {
 	IconExternalLink,
 	IconBolt,
@@ -36,8 +40,20 @@ export function AdBanner({
 	description,
 	imageSrc,
 }: AdBannerProps) {
+	const marketingConsent = useSyncExternalStore(
+		subscribeToConsentChanges,
+		hasMarketingConsent,
+		() => false,
+	);
+
 	useEffect(() => {
-		if (type !== "instantgaming" || typeof window === "undefined") return;
+		if (
+			!marketingConsent ||
+			type !== "instantgaming" ||
+			typeof window === "undefined"
+		)
+			return;
+		if (document.getElementById(INSTANT_GAMING_SCRIPT_ID)) return;
 
 		(
 			window as Window & { igBannerConfig?: InstantGamingBannerConfig }
@@ -52,7 +68,11 @@ export function AdBanner({
 		script.src = "https://www.instant-gaming.com/api/banner/partner/loader.js";
 		script.defer = true;
 		document.body.appendChild(script);
-	}, [type]);
+	}, [type, marketingConsent]);
+
+	// Sin consentimiento de marketing no se carga ninguna creatividad hotlinkeada
+	// ni el loader del afiliado: son peticiones a terceros que ponen cookies.
+	if (!marketingConsent) return null;
 
 	if (type === "restedxp") {
 		return (

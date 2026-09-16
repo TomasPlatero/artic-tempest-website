@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.11.43
+
+- fix(publicidad): ningún anuncio de terceros se pide antes del consentimiento (ATW-40) — los banners de afiliados (Instant Gaming, Proton VPN, RestedXP) y el loader `instant-gaming.com/api/banner/partner/loader.js` solo se cargan con consentimiento de marketing, así que ya no aparecen las cookies `ig_pid`, `ig_tz`, `abt_reco*` ni `__cf_bm` de esos dominios en la primera visita. El bloque «Publicidad» desaparece con ellos, sin dejar huecos vacíos.
+- fix(cookies): la política de CookieYes se monta dentro de la sección de declaración y se vuelve a montar si el script llega con la página ya cargada.
+
 ## 1.11.42
 
 - fix(consentimiento): Cookiebot CMP sustituido por CookieYes (ATW-39) — el banner se carga desde `cdn-cookieyes.com` y la política de cookies de `/cookies` (con el inventario completo) la genera CookieYes, así que desaparecen el script `uc.js`, la declaración `cd.js`, los atributos `data-cookieconsent`, los preconnect y los dominios CSP de Cookiebot. La variable pasa a `NEXT_PUBLIC_COOKIEYES_ID`, con la clave de sitio embebida como valor por defecto para que el banner nunca deje de cargar en producción.
