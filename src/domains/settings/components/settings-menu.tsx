@@ -5,14 +5,14 @@ import { useRouter } from "next/navigation";
 import { Tree } from "react-arborist";
 import { Card, CardContent } from "@/shared/ui/card";
 import { useApiQuery } from "@/shared/hooks/use-api-query";
-import { Sheet, SheetContent, SheetTitle } from "@/shared/ui/sheet";
+import { Dialog, DialogContent } from "@/shared/ui/dialog";
 import { toast } from "sonner";
 import { AdminPageHeader } from "@/shared/components/admin-page-header";
 import { AddMenuDropdown, MenuSearchToolbar } from "./settings-menu-toolbar";
 import {
-	SettingsEditSheetHeader,
-	SettingsEditSheetFooter,
-} from "./settings-menu-sheet";
+	MenuEditorDialogHeader,
+	MenuEditorDialogFooter,
+} from "./settings-menu-dialog";
 import { ArboristNodeRenderer } from "./settings-menu-tree";
 
 import {
@@ -438,20 +438,19 @@ function useSettingsMenuClient() {
 				</CardContent>
 			</Card>
 
-			<Sheet
+			<Dialog
 				open={!!editingItem}
 				onOpenChange={(open) => !open && setEditingItem(null)}
 			>
-				<SheetContent className="w-full sm:max-w-4xl lg:max-w-5xl overflow-y-auto">
-					<SheetTitle className="sr-only">Editar elemento del menú</SheetTitle>
-		            <SettingsEditSheetHeader
-              isDraft={Boolean(editingItem?.isDraft)}
-              isCategory={!editingItem?.url}
-            />
+				<DialogContent className="max-h-[90vh] w-[calc(100%-2rem)] overflow-y-auto sm:max-w-5xl">
+					<MenuEditorDialogHeader
+						isDraft={Boolean(editingItem?.isDraft)}
+						isCategory={!editingItem?.url}
+					/>
 
 					{editingItem && (
 						<React.Suspense fallback={null}>
-							<LazyEditSheetContent
+							<LazyMenuEditorContent
 								editingItem={editingItem}
 								setEditingItem={setEditingItem}
 								roleOptions={roleOptions}
@@ -463,20 +462,21 @@ function useSettingsMenuClient() {
 						</React.Suspense>
 					)}
 
-					<SettingsEditSheetFooter
+					<MenuEditorDialogFooter
 						onCancel={() => setEditingItem(null)}
 						onSave={() => void handleSaveEdit()}
 						submitLabel={editingItem?.isDraft ? "Crear" : "Guardar"}
+						isDraft={Boolean(editingItem?.isDraft)}
 					/>
-				</SheetContent>
-			</Sheet>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }
 
-const LazyEditSheetContent = React.lazy(() =>
-	import("./settings-menu-edit-sheet-content").then((m) => ({
-		default: m.EditSheetContent,
+const LazyMenuEditorContent = React.lazy(() =>
+	import("./settings-menu-editor-content").then((m) => ({
+		default: m.MenuEditorContent,
 	})),
 );
 

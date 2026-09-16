@@ -226,7 +226,35 @@ describe("alta de elementos del menú", () => {
 	});
 });
 
-describe("edición de elementos existentes", () => {
+describe("edición de elementos existentes", () => {	it("muestra todas las opciones en la misma ventana, sin pestañas", async () => {
+		render(<SettingsMenuClient />);
+
+		fireEvent.click(
+			await screen.findByRole("button", {
+				name: "Añadir enlace dentro de Zona Raider",
+			}),
+		);
+		await screen.findByRole("heading", { name: "Nuevo Enlace" });
+
+		expect(screen.getByRole("dialog")).toBeTruthy();
+		for (const label of [
+			"Nombre",
+			"URL / Ruta",
+			"Icono",
+			"Padre (Nivel superior)",
+			"App ID",
+			"Visibilidad",
+			"Descripción (Mega Menú)",
+			"Clase CSS",
+			"ID Elemento",
+			"Permisos de visualización",
+		]) {
+			expect(screen.getByText(label)).toBeTruthy();
+		}
+		expect(screen.getByRole("button", { name: "Cancelar" })).toBeTruthy();
+		expect(screen.getByRole("button", { name: /Crear/ })).toBeTruthy();
+	});
+
 	it("abre el editor con los permisos guardados ya marcados", async () => {
 		render(<SettingsMenuClient />);
 

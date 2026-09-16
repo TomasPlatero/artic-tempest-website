@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.40
+
+- feat(menu): el editor de un elemento del menú es ahora una ventana centrada con todas las opciones a la vista (ATW-37) — nombre, ruta (con selector de página), icono, categoría padre, App ID, visibilidad, activo, descripción del mega menú, clase CSS, ID de elemento y los permisos por rol, en una sola ventana con los botones siempre visibles. Se acabaron el panel lateral que tapaba el árbol y el scroll largo.
+
 ## 1.11.39
 
 - feat(menu): crear elementos del menú en un solo paso (ATW-36) — «Añadir» y el nuevo botón «+» de cada fila abren el editor con un borrador: solo se guarda al pulsar «Crear», así que cancelar no deja nada suelto. El nombre aparece listo para escribir encima, un enlace creado con «+» queda justo debajo de la fila pulsada, crear dentro de una categoría la deja abierta, y el menú se muestra desplegado al entrar (los botones «Expandir»/«Colapsar» vuelven a funcionar).
