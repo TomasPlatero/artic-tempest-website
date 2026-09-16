@@ -7,11 +7,7 @@ import {
 	hasMarketingConsent,
 	subscribeToConsentChanges,
 } from "@/shared/adsense/marketing-consent";
-import {
-	IconExternalLink,
-	IconBolt,
-	
-} from "@/shared/ui/tabler-icons";
+import { IconExternalLink, IconBolt } from "@/shared/ui/tabler-icons";
 
 interface AdBannerProps {
 	type: "restedxp" | "protonvpn" | "instantgaming" | "generic";
@@ -112,13 +108,12 @@ export function AdBanner({
 
 						<div className="flex flex-1 flex-col justify-center">
 							<h3 className="text-[1.1rem] md:text-[1.45rem] font-semibold text-white uppercase tracking-tighter leading-[1.02] group-hover:text-orange-400 transition-colors max-w-lg">
-								El <span className="text-orange-500">leveo más rápido</span>{" "}
-								para volver al endgame
+								El <span className="text-orange-500">leveo más rápido</span> para volver
+								al endgame
 							</h3>
 							<p className="mt-2 max-w-lg text-zinc-200 text-[10px] md:text-[12px] font-medium leading-relaxed">
-								Sube de nivel sin perder tiempo: rutas optimizadas, progreso
-								ágil y la ruta más directa para llegar preparado a raids,
-								míticas y PvP.
+								Sube de nivel sin perder tiempo: rutas optimizadas, progreso ágil y la
+								ruta más directa para llegar preparado a raids, míticas y PvP.
 							</p>
 						</div>
 
@@ -175,9 +170,9 @@ export function AdBanner({
 								<span className="sr-only">Proton VPN</span>
 							</h3>
 							<p className="text-sm text-white/75 mt-3 max-w-sm leading-relaxed">
-								Prueba Proton gratis por 14 días y obtén US$20 en créditos. Más
-								de 100 millones de personas ya eligen su ecosistema cifrado para
-								mantener el control de sus datos.
+								Prueba Proton gratis por 14 días y obtén US$20 en créditos. Más de 100
+								millones de personas ya eligen su ecosistema cifrado para mantener el
+								control de sus datos.
 							</p>
 						</div>
 
@@ -251,9 +246,7 @@ export function AdBanner({
 					</div>
 				)}
 				<div className="flex items-center justify-between mb-2">
-					<h3 className="text-sm font-semibold text-white uppercase">
-						{title}
-					</h3>
+					<h3 className="text-sm font-semibold text-white uppercase">{title}</h3>
 					<IconExternalLink className="size-4 text-white/20" />
 				</div>
 				<p className="text-xs text-zinc-400 leading-relaxed">{description}</p>

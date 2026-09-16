@@ -43,19 +43,14 @@ export function ZonaRaiderPromoStrip() {
 									ProtonVPN
 								</h3>
 								<p className="text-sm leading-6 text-white/80 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
-									Protección DDoS, menor latencia y privacidad para tus sesiones
-									de raid.
+									Protección DDoS, menor latencia y privacidad para tus sesiones de raid.
 								</p>
 							</div>
 						</div>
 
 						<div className="flex flex-wrap gap-3">
 							<Button asChild>
-								<Link
-									href="https://protonvpn.com/"
-									target="_blank"
-									rel="noreferrer"
-								>
+								<Link href="https://protonvpn.com/" target="_blank" rel="noreferrer">
 									<IconExternalLink size={16} />
 									Saber más
 								</Link>
@@ -114,8 +109,8 @@ export function ZonaRaiderPromoStrip() {
 								El maestro <span className="text-orange-400">del leveo</span>
 							</h4>
 							<p className="text-sm leading-6 text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
-								Sube de nivel más rápido con sus guías premium y el descuento
-								del afiliado. Obtén un 5% de descuento.
+								Sube de nivel más rápido con sus guías premium y el descuento del
+								afiliado. Obtén un 5% de descuento.
 							</p>
 						</div>
 

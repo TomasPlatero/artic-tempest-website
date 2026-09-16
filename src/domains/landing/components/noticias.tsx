@@ -145,10 +145,7 @@ export function LandingNoticias({
 										aria-hidden="true"
 									/>
 									<Image
-										src={
-											featuredNews.image_url ||
-											"/assets/images/midnight-battle.webp"
-										}
+										src={featuredNews.image_url || "/assets/images/midnight-battle.webp"}
 										alt={featuredNews.title}
 										width={1600}
 										height={900}
@@ -216,8 +213,7 @@ export function LandingNoticias({
 									className={cn(
 										"group relative flex flex-col overflow-hidden rounded-2xl border border-white/5 bg-zinc-950  motion-reduce:transition-none hover:border-blue-500/30",
 										PUBLIC_CARD_REVEAL_CLASSES,
-										PUBLIC_STAGGER_DELAY_CLASSES[idx + 1] ??
-											"animate-delay-500",
+										PUBLIC_STAGGER_DELAY_CLASSES[idx + 1] ?? "animate-delay-500",
 									)}
 								>
 									<div className="relative aspect-video overflow-hidden">
@@ -262,8 +258,7 @@ export function LandingNoticias({
 									Únete al Roster de Midnight
 								</p>
 								<p className="text-sm text-blue-50 mb-8 leading-relaxed">
-									Buscamos jugadores excepcionales para completar nuestro equipo
-									mítico.
+									Buscamos jugadores excepcionales para completar nuestro equipo mítico.
 								</p>
 								<Button variant="landingPrimary" size="landing" asChild>
 									<Link
@@ -291,17 +286,9 @@ export function LandingNoticias({
 								</p>
 								<div className="space-y-4">
 									<div className={PUBLIC_CARD_REVEAL_CLASSES}>
-										<AdBanner
-											type="protonvpn"
-											href="https://pr.tn/ref/6FT15FKW"
-										/>
+										<AdBanner type="protonvpn" href="https://pr.tn/ref/6FT15FKW" />
 									</div>
-									<div
-										className={cn(
-											PUBLIC_CARD_REVEAL_CLASSES,
-											"animate-delay-150",
-										)}
-									>
+									<div className={cn(PUBLIC_CARD_REVEAL_CLASSES, "animate-delay-150")}>
 										<AdBanner
 											type="instantgaming"
 											href="https://www.instant-gaming.com/?igr=gamer-94712f"
