@@ -60,7 +60,12 @@ beforeEach(() => {
 			icon_name: "IconFolder",
 			order_index: 10,
 		}),
-		menuItem({ id: "roster", name: "Roster", parent_id: "raiz", order_index: 10 }),
+		menuItem({
+			id: "roster",
+			name: "Roster",
+			parent_id: "raiz",
+			order_index: 10,
+		}),
 		menuItem({ id: "stats", name: "Stats", parent_id: "raiz", order_index: 20 }),
 	];
 	pushMock.mockReset();
@@ -75,9 +80,9 @@ describe("gestión del menú", () => {
 	it("lleva al formulario de edición al abrir un elemento", async () => {
 		render(<SettingsMenuClient />);
 
-		const rosterRow = (
-			await screen.findByText("Roster")
-		).closest('[role="treeitem"]') as HTMLElement;
+		const rosterRow = (await screen.findByText("Roster")).closest(
+			'[role="treeitem"]',
+		) as HTMLElement;
 		fireEvent.pointerDown(
 			within(rosterRow).getByRole("button", { name: "Abrir menú de opciones" }),
 			{ button: 0, ctrlKey: false },

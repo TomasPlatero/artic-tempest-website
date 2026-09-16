@@ -1,16 +1,21 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent, cleanup, waitFor } from "@testing-library/react";
+import {
+	render,
+	screen,
+	fireEvent,
+	cleanup,
+	waitFor,
+} from "@testing-library/react";
 
-const { pushMock, refreshMock, mutateMock, toastSuccess, toastError } = vi.hoisted(
-	() => ({
+const { pushMock, refreshMock, mutateMock, toastSuccess, toastError } =
+	vi.hoisted(() => ({
 		pushMock: vi.fn(),
 		refreshMock: vi.fn(),
 		mutateMock: vi.fn(async () => undefined),
 		toastSuccess: vi.fn(),
 		toastError: vi.fn(),
-	}),
-);
+	}));
 
 vi.mock("next/navigation", () => ({
 	useRouter: () => ({ push: pushMock, refresh: refreshMock }),
@@ -48,7 +53,13 @@ function menuItem(overrides: Partial<NavigationItem>): NavigationItem {
 }
 
 const items: NavigationItem[] = [
-	menuItem({ id: "raiz", name: "Zona Raider", url: null, icon_name: "IconFolder", order_index: 10 }),
+	menuItem({
+		id: "raiz",
+		name: "Zona Raider",
+		url: null,
+		icon_name: "IconFolder",
+		order_index: 10,
+	}),
 	menuItem({ id: "roster", name: "Roster", parent_id: "raiz", order_index: 10 }),
 	menuItem({ id: "stats", name: "Stats", parent_id: "raiz", order_index: 20 }),
 ];
@@ -214,14 +225,12 @@ describe("edición de un elemento del menú", () => {
 
 		expect(screen.getByDisplayValue("Roster")).toBeTruthy();
 		expect(
-			screen.getByRole("button", { name: "Guild Master" }).getAttribute(
-				"aria-pressed",
-			),
+			screen
+				.getByRole("button", { name: "Guild Master" })
+				.getAttribute("aria-pressed"),
 		).toBe("true");
 		expect(
-			screen.getByRole("button", { name: "Oficial" }).getAttribute(
-				"aria-pressed",
-			),
+			screen.getByRole("button", { name: "Oficial" }).getAttribute("aria-pressed"),
 		).toBe("false");
 	});
 

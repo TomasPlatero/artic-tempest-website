@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.45
+- style(settings, privacidad): normalización de formato con prettier — reordenación de imports, indentación y saltos de línea en el editor de menú y las páginas de privacidad; sin cambios funcionales.
+- chore(openspec): inicializada la configuración de OpenSpec/SDD (`openspec/config.yaml`).
+
 ## 1.11.44
 
 - docs(privacidad): los programas de afiliación figuran como destinatarios (ATW-41) — Instant Gaming (Aliasing DMCC, Dubái; sin decisión de adecuación, amparado en el consentimiento explícito del art. 49.1.a RGPD), Proton VPN (Proton AG, Suiza, con decisión de adecuación) y RestedXP. Se explica que actúan como responsables independientes, que reciben la IP y el referrer solo al aceptar publicidad o pulsar sus enlaces, y que sin consentimiento no se carga nada suyo. Actualizada la fecha de última actualización de la política.

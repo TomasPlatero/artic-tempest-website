@@ -2,10 +2,7 @@
 import type { NavigationItem } from "./settings-menu.types";
 
 export function buildNavigationTree(items: NavigationItem[]): any[] {
-	const map = new Map<
-		string,
-		NavigationItem & { children: NavigationItem[] }
-	>();
+	const map = new Map<string, NavigationItem & { children: NavigationItem[] }>();
 	const roots: (NavigationItem & { children: NavigationItem[] })[] = [];
 	for (const item of items) {
 		map.set(item.id, { ...item, children: [] });

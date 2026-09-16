@@ -26,7 +26,12 @@ function navigationItem(overrides: Partial<NavigationItem>): NavigationItem {
 }
 
 const existingMenu = [
-	navigationItem({ id: "raiz", name: "Zona Raider", url: null, order_index: 10 }),
+	navigationItem({
+		id: "raiz",
+		name: "Zona Raider",
+		url: null,
+		order_index: 10,
+	}),
 	navigationItem({
 		id: "roster",
 		name: "Roster",
@@ -58,9 +63,9 @@ describe("buildRoleOptions", () => {
 	});
 
 	it("accepts the legacy roleSlug/roleLabel aliases", () => {
-		expect(buildRoleOptions([{ roleSlug: "raider", roleLabel: "Raider" }])).toEqual(
-			[{ value: "raider", label: "Raider" }],
-		);
+		expect(
+			buildRoleOptions([{ roleSlug: "raider", roleLabel: "Raider" }]),
+		).toEqual([{ value: "raider", label: "Raider" }]);
 	});
 
 	it("falls back to the slug when the role has no label", () => {
@@ -226,9 +231,7 @@ describe("buildInsertAfterPayload", () => {
 	});
 
 	it("works on the root level too", () => {
-		expect(
-			buildInsertAfterPayload(existingMenu, null, "raiz", "nuevo"),
-		).toEqual([
+		expect(buildInsertAfterPayload(existingMenu, null, "raiz", "nuevo")).toEqual([
 			{ id: "raiz", order_index: 10, parent_id: null },
 			{ id: "nuevo", order_index: 20, parent_id: null },
 		]);

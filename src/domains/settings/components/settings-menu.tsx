@@ -13,10 +13,7 @@ import {
 	initialMenuUiState,
 	menuUiReducer,
 } from "./settings-menu.types";
-import {
-	buildNavigationTree,
-	filterTreeByQuery,
-} from "./settings-menu.utils";
+import { buildNavigationTree, filterTreeByQuery } from "./settings-menu.utils";
 import {
 	buildMenuEditorHref,
 	normalizeNavigationItem,
@@ -103,10 +100,7 @@ function useSettingsMenuClient() {
 
 	const handleDuplicate = async (item: NavigationItem) => {
 		const siblings = items.filter((i) => i.parent_id === item.parent_id);
-		const maxOrder = siblings.reduce(
-			(max, i) => Math.max(max, i.order_index),
-			0,
-		);
+		const maxOrder = siblings.reduce((max, i) => Math.max(max, i.order_index), 0);
 		const response = await fetch("/api/admin/navigation", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
@@ -237,9 +231,7 @@ function useSettingsMenuClient() {
 			/>
 
 			<div className="flex items-center justify-end">
-				<AddMenuDropdown
-					onCreate={(type) => openCreateEditor(type)}
-				/>
+				<AddMenuDropdown onCreate={(type) => openCreateEditor(type)} />
 			</div>
 
 			<MenuSearchToolbar
@@ -257,10 +249,10 @@ function useSettingsMenuClient() {
 							<span className="text-xs font-medium">Cargando menú…</span>
 						</div>
 					) : (
-					<Tree
-						ref={treeRef}
-						data={filteredTree}
-						onMove={(args) => void handleMove(args)}
+						<Tree
+							ref={treeRef}
+							data={filteredTree}
+							onMove={(args) => void handleMove(args)}
 							width="100%"
 							height={Math.max(200, items.length * 48 + 40)}
 							indent={28}
@@ -270,9 +262,7 @@ function useSettingsMenuClient() {
 							{(props: any) => (
 								<ArboristNodeRenderer
 									{...props}
-									onEdit={(item) =>
-										openEditor(buildMenuEditorHref({ id: item.id }))
-									}
+									onEdit={(item) => openEditor(buildMenuEditorHref({ id: item.id }))}
 									onDelete={(id) => void handleDelete(id)}
 									onDuplicate={(item) => void handleDuplicate(item)}
 									onToggleActive={(item) => void handleToggleActive(item)}

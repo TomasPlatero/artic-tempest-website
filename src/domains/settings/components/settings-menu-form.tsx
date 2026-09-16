@@ -136,9 +136,7 @@ async function saveMenuItem({
 		return {
 			ok: false,
 			error:
-				error instanceof Error
-					? error.message
-					: "No se pudo guardar el elemento",
+				error instanceof Error ? error.message : "No se pudo guardar el elemento",
 		};
 	}
 }
@@ -239,11 +237,7 @@ export function SettingsMenuForm({
 					title="Ubicación y estado"
 					description="Jerarquía, App ID y dispositivos donde aparece."
 				>
-					<MenuPlacementFields
-						item={item}
-						patchField={patchField}
-						items={items}
-					/>
+					<MenuPlacementFields item={item} patchField={patchField} items={items} />
 				</SectionCard>
 			</div>
 

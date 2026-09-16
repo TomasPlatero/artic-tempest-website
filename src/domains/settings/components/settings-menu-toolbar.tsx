@@ -2,8 +2,20 @@
 
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
-import { IconPlus, IconFolderPlus, IconLinkPlus, IconSearch, IconChevronsDown, IconChevronsUp } from "@/shared/ui/tabler-icons";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/shared/ui/dropdown-menu";
+import {
+  IconPlus,
+  IconFolderPlus,
+  IconLinkPlus,
+  IconSearch,
+  IconChevronsDown,
+  IconChevronsUp,
+} from "@/shared/ui/tabler-icons";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/shared/ui/dropdown-menu";
 
 export function AddMenuDropdown({
   onCreate,
@@ -53,16 +65,26 @@ export function MenuSearchToolbar({
           className="pl-9 h-10"
         />
       </div>
-  		<div
-			role="toolbar"
-			aria-label="Vista del menú"
-			className="flex items-center gap-2"
-		>
-        <Button variant="outline" size="sm" onClick={onExpand} className="h-10 gap-1.5">
+      <div
+        role="toolbar"
+        aria-label="Vista del menú"
+        className="flex items-center gap-2"
+      >
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onExpand}
+          className="h-10 gap-1.5"
+        >
           <IconChevronsDown className="size-4" />
           Expandir
         </Button>
-        <Button variant="outline" size="sm" onClick={onCollapse} className="h-10 gap-1.5">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onCollapse}
+          className="h-10 gap-1.5"
+        >
           <IconChevronsUp className="size-4" />
           Colapsar
         </Button>

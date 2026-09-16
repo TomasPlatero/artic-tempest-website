@@ -19,17 +19,13 @@ import { useApiQuery } from "@/shared/hooks/use-api-query";
 import type { NavigationItem } from "./settings-menu.types";
 import type { AppPage } from "@/app/api/pages/route";
 
-export type PatchField = (
-	field: keyof NavigationItem,
-	value: unknown,
-) => void;
+export type PatchField = (field: keyof NavigationItem, value: unknown) => void;
 
 /** Pages that can back a menu entry, straight from the pages registry. */
 export function useSelectablePages() {
 	const { data: pages } = useApiQuery<AppPage[]>("/api/pages", {});
-	return (pages ?? []).filter(
-		(page): page is AppPage & { path: string } =>
-			Boolean(page.is_active && page.path),
+	return (pages ?? []).filter((page): page is AppPage & { path: string } =>
+		Boolean(page.is_active && page.path),
 	);
 }
 

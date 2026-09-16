@@ -59,10 +59,7 @@ export default function PrivacidadPage() {
 				>
 					<header className="mb-16 text-center">
 						<div className="inline-flex bg-blue-500/10 p-4 rounded-3xl border border-blue-500/20 mb-6">
-							<IconShieldCheck
-								className="size-10 text-blue-400"
-								aria-hidden="true"
-							/>
+							<IconShieldCheck className="size-10 text-blue-400" aria-hidden="true" />
 						</div>
 						<h1 className="text-5xl md:text-6xl font-semibold text-white tracking-tighter mb-4">
 							Política de Privacidad
@@ -80,10 +77,7 @@ export default function PrivacidadPage() {
 						>
 							<div className="flex items-center gap-4 border-b border-white/5 pb-6">
 								<div className="p-3 rounded-2xl bg-blue-500/10 border border-blue-500/20">
-									<IconUser
-										className="text-blue-400 size-6"
-										aria-hidden="true"
-									/>
+									<IconUser className="text-blue-400 size-6" aria-hidden="true" />
 								</div>
 								<h2
 									id="responsable-title"
@@ -94,10 +88,10 @@ export default function PrivacidadPage() {
 							</div>
 							<div className="space-y-3">
 								<p className="text-zinc-300 leading-relaxed">
-									De conformidad con el Reglamento (UE) 2016/679 del Parlamento
-									Europeo y del Consejo (RGPD) y la Ley Orgánica 3/2018, de 5 de
-									diciembre, de Protección de Datos Personales y garantía de los
-									derechos digitales (LOPD-GDD), se informa:
+									De conformidad con el Reglamento (UE) 2016/679 del Parlamento Europeo y
+									del Consejo (RGPD) y la Ley Orgánica 3/2018, de 5 de diciembre, de
+									Protección de Datos Personales y garantía de los derechos digitales
+									(LOPD-GDD), se informa:
 								</p>
 								<ul className="list-none p-0 m-0 space-y-3">
 									<li className="text-sm font-bold text-white/85 border-b border-white/5 pb-3 flex flex-wrap items-baseline gap-2">
@@ -109,9 +103,7 @@ export default function PrivacidadPage() {
 										</span>
 									</li>
 									<li className="text-sm font-bold text-white/85 border-b border-white/5 pb-3 flex flex-wrap items-baseline gap-2">
-										<span className="uppercase tracking-widest text-[10px]">
-											Correo:
-										</span>
+										<span className="uppercase tracking-widest text-[10px]">Correo:</span>
 										<span className="text-blue-400">admin@artictempest.es</span>
 									</li>
 									<li className="text-sm font-bold text-white/85 border-b border-white/5 pb-3 flex flex-wrap items-baseline gap-2">
@@ -125,18 +117,17 @@ export default function PrivacidadPage() {
 											Actividad:
 										</span>
 										<span className="text-white">
-											Portal comunitario sin ánimo de lucro para gestión de
-											hermandad de World of Warcraft
+											Portal comunitario sin ánimo de lucro para gestión de hermandad de
+											World of Warcraft
 										</span>
 									</li>
 								</ul>
 								<p className="text-zinc-300 leading-relaxed text-sm">
-									Dado que la hermandad no realiza tratamiento de datos a gran
-									escala, no procesa categorías especiales de datos ni efectúa
-									un seguimiento sistemático de personas físicas, no existe la
-									obligación legal de designar un Delegado de Protección de
-									Datos (DPD). No obstante, cualquier consulta relativa a
-									privacidad será atendida en{" "}
+									Dado que la hermandad no realiza tratamiento de datos a gran escala, no
+									procesa categorías especiales de datos ni efectúa un seguimiento
+									sistemático de personas físicas, no existe la obligación legal de
+									designar un Delegado de Protección de Datos (DPD). No obstante,
+									cualquier consulta relativa a privacidad será atendida en{" "}
 									<strong className="text-white">admin@artictempest.es</strong>.
 								</p>
 							</div>
@@ -151,10 +142,7 @@ export default function PrivacidadPage() {
 						>
 							<div className="flex items-center gap-4 border-b border-white/5 pb-6">
 								<div className="p-3 rounded-2xl bg-blue-500/10 border border-blue-500/20">
-									<IconClock
-										className="text-blue-400 size-6"
-										aria-hidden="true"
-									/>
+									<IconClock className="text-blue-400 size-6" aria-hidden="true" />
 								</div>
 								<h2
 									id="retention-title"
@@ -165,15 +153,12 @@ export default function PrivacidadPage() {
 							</div>
 							<div className="space-y-4">
 								<p className="text-zinc-300 leading-relaxed text-sm">
-									Los datos personales se conservarán únicamente durante el
-									tiempo necesario para cumplir con la finalidad para la que
-									fueron recabados:
+									Los datos personales se conservarán únicamente durante el tiempo
+									necesario para cumplir con la finalidad para la que fueron recabados:
 								</p>
 								<ul className="text-zinc-300 space-y-2 text-sm list-disc list-inside">
 									<li>
-										<strong className="text-white/90">
-											Datos de cuenta y perfil:
-										</strong>{" "}
+										<strong className="text-white/90">Datos de cuenta y perfil:</strong>{" "}
 										mientras mantengas vinculada tu cuenta a la hermandad. Al
 										desvincularte, los datos se eliminan.
 									</li>
@@ -181,45 +166,42 @@ export default function PrivacidadPage() {
 										<strong className="text-white/90">
 											Formularios de contacto y feedback:
 										</strong>{" "}
-										máximo 12 meses desde la última comunicación, salvo que se
-										derive una relación continuada.
+										máximo 12 meses desde la última comunicación, salvo que se derive una
+										relación continuada.
 									</li>
 									<li>
 										<strong className="text-white/90">
 											Solicitudes de reclutamiento:
 										</strong>{" "}
-										3 meses desde la resolución definitiva (aceptación, rechazo
-										o cierre).
+										3 meses desde la resolución definitiva (aceptación, rechazo o cierre).
 									</li>
 									<li>
 										<strong className="text-white/90">
 											Datos de analítica (Google Analytics):
 										</strong>{" "}
-										el período de retención configurado en GA4, actualmente 14
-										meses desde la última interacción registrada.
+										el período de retención configurado en GA4, actualmente 14 meses desde
+										la última interacción registrada.
 									</li>
 									<li>
-										<strong className="text-white/90">
-											Datos de logs de raid:
-										</strong>{" "}
-										se conservan de forma agregada mientras la hermandad esté
-										activa, sin vinculación directa a datos personales una vez
-										superado el período de actividad del miembro.
+										<strong className="text-white/90">Datos de logs de raid:</strong> se
+										conservan de forma agregada mientras la hermandad esté activa, sin
+										vinculación directa a datos personales una vez superado el período de
+										actividad del miembro.
 									</li>
 								</ul>
 								<p className="text-zinc-300 leading-relaxed text-sm">
-									Transcurridos los plazos indicados, los datos serán suprimidos
-									conforme a lo dispuesto en la normativa de protección de
-									datos, lo que implicará su bloqueo durante los plazos legales
-									de prescripción de obligaciones (generalmente 5 años según el
-									Código Civil) y su posterior eliminación definitiva.
+									Transcurridos los plazos indicados, los datos serán suprimidos conforme
+									a lo dispuesto en la normativa de protección de datos, lo que implicará
+									su bloqueo durante los plazos legales de prescripción de obligaciones
+									(generalmente 5 años según el Código Civil) y su posterior eliminación
+									definitiva.
 								</p>
 							</div>
 						</section>
 
 						<footer className="text-center pt-10 text-white/20 text-[10px] font-semibold tracking-[0.3em]">
-							Última actualización: Septiembre 2026. Conforme con RGPD (UE) 2016/679
-							y LOPD-GDD 3/2018.
+							Última actualización: Septiembre 2026. Conforme con RGPD (UE) 2016/679 y
+							LOPD-GDD 3/2018.
 						</footer>
 					</div>
 				</main>

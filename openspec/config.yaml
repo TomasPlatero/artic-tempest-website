@@ -1,0 +1,65 @@
+strict_tdd: true
+context: |
+  artic-tempest-website is a Node.js/TypeScript, React, Next.js project.
+  Detected markers: package.json, tsconfig.json, npm package manager, GitHub Actions.
+  Package managers: npm.
+  Additional evidence: Test-like files detected (50); examples: e2e\smoke.spec.ts, src\app\api\admin\navigation\route.test.ts, src\app\api\guild\news\upload\route.test.ts, src\app\api\media\[id]\rename\route.test.ts, src\app\api\media\[id]\route.test.ts.
+  Primary test command: npm test.
+  Unit tests: Vitest (npm test).
+  Integration tests: Testing Library (npm test).
+  E2E tests: Playwright (npm run test:e2e).
+rules:
+  proposal:
+    require_problem_statement: true
+  spec:
+    require_acceptance_criteria: true
+  design:
+    require_tradeoffs: true
+  tasks:
+    protect_review_workload: true
+  apply:
+    test_command: "npm test"
+  verify:
+    test_command: "npm test"
+testing:
+  detected: "2026-09-16"
+  runner:
+    command: "npm test"
+    framework: "Vitest"
+  layers:
+    unit: "Vitest"
+    integration: "Testing Library"
+    e2e: "Playwright"
+  commands:
+    unit:
+      - scope: "."
+        command: "npm test"
+        framework: "Vitest"
+    integration:
+      - scope: "."
+        command: "npm test"
+        framework: "Testing Library"
+    e2e:
+      - scope: "."
+        command: "npm run test:e2e"
+        framework: "Playwright"
+  coverage:
+    command: ""
+    commands:
+      []
+quality:
+  lint: "npm run lint"
+  lint_commands:
+    - scope: "."
+      command: "npm run lint"
+      framework: "linter"
+  typecheck: "npm run type-check"
+  typecheck_commands:
+    - scope: "."
+      command: "npm run type-check"
+      framework: "type checker"
+  format: "npm run format"
+  format_commands:
+    - scope: "."
+      command: "npm run format"
+      framework: "formatter"

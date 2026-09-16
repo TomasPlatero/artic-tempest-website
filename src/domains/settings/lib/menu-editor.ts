@@ -54,7 +54,10 @@ function toRoleSlug(value: string | null | undefined): string | null {
 	return slug ? slug : null;
 }
 
-function toRoleLabel(value: string | null | undefined, fallback: string): string {
+function toRoleLabel(
+	value: string | null | undefined,
+	fallback: string,
+): string {
 	const label = value?.trim();
 	return label ? label : fallback;
 }

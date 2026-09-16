@@ -71,18 +71,18 @@ describe("filterTreeByQuery", () => {
 		const filtered = filterTreeByQuery(tree, "stats");
 
 		expect(filtered.map((node) => node.id)).toEqual(["raiz"]);
-		expect(filtered[0].children.map((child: NavigationItem) => child.id)).toEqual([
-			"stats",
-		]);
+		expect(filtered[0].children.map((child: NavigationItem) => child.id)).toEqual(
+			["stats"],
+		);
 	});
 
 	it("matches by route too", () => {
 		const tree = buildNavigationTree(menu);
 		const filtered = filterTreeByQuery(tree, "/zona-raider/roster");
 
-		expect(filtered[0].children.map((child: NavigationItem) => child.id)).toEqual([
-			"roster",
-		]);
+		expect(filtered[0].children.map((child: NavigationItem) => child.id)).toEqual(
+			["roster"],
+		);
 	});
 });
 
