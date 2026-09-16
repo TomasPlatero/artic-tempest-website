@@ -218,7 +218,7 @@ export default function PrivacidadPage() {
 						</section>
 
 						<footer className="text-center pt-10 text-white/20 text-[10px] font-semibold tracking-[0.3em]">
-							Última actualización: Julio 2026. Conforme con RGPD (UE) 2016/679
+							Última actualización: Septiembre 2026. Conforme con RGPD (UE) 2016/679
 							y LOPD-GDD 3/2018.
 						</footer>
 					</div>

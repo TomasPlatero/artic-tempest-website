@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.11.44
+
+- docs(privacidad): los programas de afiliación figuran como destinatarios (ATW-41) — Instant Gaming (Aliasing DMCC, Dubái; sin decisión de adecuación, amparado en el consentimiento explícito del art. 49.1.a RGPD), Proton VPN (Proton AG, Suiza, con decisión de adecuación) y RestedXP. Se explica que actúan como responsables independientes, que reciben la IP y el referrer solo al aceptar publicidad o pulsar sus enlaces, y que sin consentimiento no se carga nada suyo. Actualizada la fecha de última actualización de la política.
+
 ## 1.11.43
 
 - fix(publicidad): ningún anuncio de terceros se pide antes del consentimiento (ATW-40) — los banners de afiliados (Instant Gaming, Proton VPN, RestedXP) y el loader `instant-gaming.com/api/banner/partner/loader.js` solo se cargan con consentimiento de marketing, así que ya no aparecen las cookies `ig_pid`, `ig_tz`, `abt_reco*` ni `__cf_bm` de esos dominios en la primera visita. El bloque «Publicidad» desaparece con ellos, sin dejar huecos vacíos.

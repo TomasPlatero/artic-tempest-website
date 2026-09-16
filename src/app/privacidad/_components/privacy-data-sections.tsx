@@ -172,6 +172,87 @@ export function TransferSection() {
 								</Link>
 								.
 							</>
+							}
+					/>
+				</div>
+				<p className="text-zinc-300 leading-relaxed text-sm">
+					Además participamos en programas de afiliación. Si aceptas las cookies
+					de publicidad o pulsas uno de sus enlaces, el comercio correspondiente
+					recibe tu dirección IP y la dirección de la página desde la que llegas
+					(referrer) para atribuir la visita o la compra. Actúan como
+					responsables independientes del tratamiento, con sus propias
+					políticas de privacidad y de cookies, y sin tu consentimiento no se
+					carga ningún banner, script ni creatividad de estos programas.
+				</p>
+				<div className="space-y-4">
+					<TransferItem
+						name="Aliasing DMCC — Instant Gaming"
+						description={
+							<>
+								Programa de afiliación de venta de claves de videojuegos. Con
+								tu consentimiento de publicidad se carga su banner y se
+								comunican tu dirección IP y la URL de origen para atribuir la
+								visita o la compra. Lo opera Aliasing DMCC (Jumeirah Lakes
+								Towers, Dubái, Emiratos Árabes Unidos), que actúa como
+								responsable independiente. Los Emiratos Árabes Unidos no cuentan
+								con decisión de adecuación de la Comisión Europea, por lo que la
+								comunicación se ampara en tu consentimiento explícito (art.
+								49.1.a RGPD) y se limita a esos datos técnicos. Más información
+								en su{" "}
+								<a
+									href="https://www.instant-gaming.com/en/privacy-policy/"
+									target="_blank"
+									rel="noreferrer"
+									className="text-blue-400 hover:text-blue-300 underline"
+								>
+									política de privacidad
+								</a>
+								.
+							</>
+						}
+					/>
+					<TransferItem
+						name="Proton AG — Proton VPN"
+						description={
+							<>
+								Programa de afiliación de Proton VPN. Con tu consentimiento de
+								publicidad se carga su creatividad desde el CDN de Proton y, al
+								pulsar su enlace, se comunican tu dirección IP y la URL de
+								origen. Proton AG (Route de la Galaise 32, 1228
+								Plan-les-Ouates, Ginebra, Suiza) actúa como responsable
+								independiente; Suiza cuenta con decisión de adecuación de la
+								Comisión Europea. Más información en su{" "}
+								<a
+									href="https://protonvpn.com/privacy-policy"
+									target="_blank"
+									rel="noreferrer"
+									className="text-blue-400 hover:text-blue-300 underline"
+								>
+									política de privacidad
+								</a>
+								.
+							</>
+						}
+					/>
+					<TransferItem
+						name="RestedXP"
+						description={
+							<>
+								Tienda de guías de subida de nivel. Con tu consentimiento de
+								publicidad se carga su creatividad desde su propio dominio y, al
+								pulsar su enlace de afiliado, se comunican tu dirección IP y la
+								URL de origen para atribuir la visita. Actúa como responsable
+								independiente y aplica su propia{" "}
+								<a
+									href="https://shop.restedxp.com/privacy-policy/"
+									target="_blank"
+									rel="noreferrer"
+									className="text-blue-400 hover:text-blue-300 underline"
+								>
+									política de privacidad
+								</a>
+								.
+							</>
 						}
 					/>
 				</div>
