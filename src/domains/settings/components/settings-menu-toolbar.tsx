@@ -53,7 +53,11 @@ export function MenuSearchToolbar({
           className="pl-9 h-10"
         />
       </div>
-      <div className="flex items-center gap-2">
+  		<div
+			role="toolbar"
+			aria-label="Vista del menú"
+			className="flex items-center gap-2"
+		>
         <Button variant="outline" size="sm" onClick={onExpand} className="h-10 gap-1.5">
           <IconChevronsDown className="size-4" />
           Expandir

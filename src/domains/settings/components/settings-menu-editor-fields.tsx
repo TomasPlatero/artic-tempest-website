@@ -1,11 +1,10 @@
 "use client";
 import React from "react";
-import { Button } from "@/shared/ui/button";
+import { Badge } from "@/shared/ui/badge";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
-import { Textarea } from "@/shared/ui/textarea";
 import { Switch } from "@/shared/ui/switch";
-import { Badge } from "@/shared/ui/badge";
+import { Textarea } from "@/shared/ui/textarea";
 import { cn } from "@/shared/tailwind/tailwind-utils";
 import { getIconByName } from "@/shared/lib/icon-utils";
 import { IconPicker } from "@/shared/components/icon-picker";
@@ -16,25 +15,18 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/shared/ui/select";
-import { IconCheck, IconCopy } from "@/shared/ui/tabler-icons";
 import { useApiQuery } from "@/shared/hooks/use-api-query";
-import { SectionCard } from "./settings-menu-section-card";
 import type { NavigationItem } from "./settings-menu.types";
 import type { AppPage } from "@/app/api/pages/route";
 
-export interface MenuEditorContentProps {
-	editingItem: NavigationItem;
-	setEditingItem: (updater: any) => void;
-	roleOptions: { value: string; label: string }[];
-	editingRolesSet: Set<string>;
-	parentBreadcrumb: string | null;
-	handleCopyUrl: () => void;
-	items: NavigationItem[];
-}
+export type PatchField = (
+	field: keyof NavigationItem,
+	value: unknown,
+) => void;
 
-type PatchField = (field: keyof NavigationItem, value: unknown) => void;
-
-function selectActivePages(pages: AppPage[] | undefined) {
+/** Pages that can back a menu entry, straight from the pages registry. */
+export function useSelectablePages() {
+	const { data: pages } = useApiQuery<AppPage[]>("/api/pages", {});
 	return (pages ?? []).filter(
 		(page): page is AppPage & { path: string } =>
 			Boolean(page.is_active && page.path),
@@ -56,97 +48,89 @@ function buildParentOptions(items: NavigationItem[], excludeId: string) {
 	}, []);
 }
 
-function MenuEditorSummary({
-	editingItem,
+export function MenuItemSummary({
+	item,
 	parentBreadcrumb,
-	handleCopyUrl,
 }: {
-	editingItem: NavigationItem;
+	item: NavigationItem;
 	parentBreadcrumb: string | null;
-	handleCopyUrl: () => void;
 }) {
-	const isCategory = !editingItem.url;
+	const isCategory = !item.url;
 	return (
 		<div className="flex flex-wrap items-center gap-3 rounded-xl border border-white/10 bg-white/[0.02] px-3 py-2">
 			<span className="rounded-lg bg-primary/10 p-2 text-primary">
-				{React.createElement(
-					getIconByName(editingItem.icon_name || "IconFolder"),
-					{ className: "size-5" },
-				)}
+				{React.createElement(getIconByName(item.icon_name || "IconFolder"), {
+					className: "size-5",
+				})}
 			</span>
-			<div className="flex flex-1 flex-wrap items-center gap-2">
-				<span className="max-w-[16rem] truncate text-sm font-semibold text-white">
-					{editingItem.name || "Sin nombre"}
-				</span>
-				<Badge variant="outline" className="h-5 px-2">
-					{isCategory ? "Categoría" : "Enlace"}
-				</Badge>
-				<Badge
-					variant="outline"
-					className={cn(
-						"h-5 px-2",
-						editingItem.is_active
-							? "border-emerald-500/40 text-emerald-300"
-							: "border-red-500/40 text-red-300",
-					)}
-				>
-					{editingItem.is_active ? "Activo" : "Oculto"}
-				</Badge>
-				{parentBreadcrumb && (
-					<Badge variant="outline" className="h-5 px-2">
-						{parentBreadcrumb}
-					</Badge>
+			<span className="max-w-[18rem] truncate text-sm font-semibold text-white">
+				{item.name || "Sin nombre"}
+			</span>
+			<Badge variant="outline" className="h-5 px-2">
+				{isCategory ? "Categoría" : "Enlace"}
+			</Badge>
+			<Badge
+				variant="outline"
+				className={cn(
+					"h-5 px-2",
+					item.is_active
+						? "border-emerald-500/40 text-emerald-300"
+						: "border-red-500/40 text-red-300",
 				)}
-			</div>
-			{!isCategory && (
-				<Button
-					variant="outline"
-					size="sm"
-					className="gap-1.5"
-					onClick={handleCopyUrl}
-				>
-					<IconCopy className="size-3.5" /> Copiar ruta
-				</Button>
+			>
+				{item.is_active ? "Activo" : "Oculto"}
+			</Badge>
+			{parentBreadcrumb && (
+				<Badge variant="outline" className="h-5 px-2">
+					{parentBreadcrumb}
+				</Badge>
 			)}
 		</div>
 	);
 }
 
-function MenuEditorContentFields({
-	editingItem,
+export function MenuContentFields({
+	item,
 	patchField,
 	nameInputRef,
-	activePages,
-	onSelectPage,
 }: {
-	editingItem: NavigationItem;
+	item: NavigationItem;
 	patchField: PatchField;
 	nameInputRef: React.RefObject<HTMLInputElement | null>;
-	activePages: (AppPage & { path: string })[];
-	onSelectPage: (pageId: string) => void;
 }) {
+	const activePages = useSelectablePages();
+
+	const handlePageSelect = (pageId: string) => {
+		const page = activePages.find((candidate) => candidate.id === pageId);
+		if (!page) return;
+		patchField("url", page.path);
+		patchField("app_id", page.id);
+	};
+
 	return (
-		<div className="space-y-3">
+		<div className="space-y-4">
 			<div className="space-y-2">
-				<Label>Nombre</Label>
+				<Label htmlFor="menu-item-name">Nombre</Label>
 				<Input
+					id="menu-item-name"
 					ref={nameInputRef}
-					value={editingItem.name}
+					value={item.name}
 					onChange={(e) => patchField("name", e.target.value)}
 					placeholder="Nombre visible en el menú"
 				/>
 			</div>
 			<div className="space-y-2">
-				<Label>URL / Ruta</Label>
-				<div className="flex gap-2">
+				<Label htmlFor="menu-item-url">URL / Ruta</Label>
+				<div className="flex flex-col gap-2 sm:flex-row">
 					<Input
-						value={editingItem.url || ""}
+						id="menu-item-url"
+						value={item.url || ""}
 						onChange={(e) => patchField("url", e.target.value || null)}
 						placeholder="/zona-raider/ruta"
 						className="flex-1"
 					/>
-					<Select value="" onValueChange={onSelectPage}>
-						<SelectTrigger className="w-44">
+					<Select value="" onValueChange={handlePageSelect}>
+						<SelectTrigger className="sm:w-52">
 							<SelectValue placeholder="Elegir página…" />
 						</SelectTrigger>
 						<SelectContent>
@@ -159,13 +143,13 @@ function MenuEditorContentFields({
 					</Select>
 				</div>
 				<p className="text-[11px] text-muted-foreground">
-					Ruta absoluta. Vacío = categoría sin enlace.
+					Ruta absoluta. Déjalo vacío para una categoría sin enlace.
 				</p>
 			</div>
 			<div className="space-y-2">
 				<Label>Icono</Label>
 				<IconPicker
-					value={editingItem.icon_name}
+					value={item.icon_name}
 					onSelect={(name: string) => patchField("icon_name", name)}
 				/>
 			</div>
@@ -173,21 +157,21 @@ function MenuEditorContentFields({
 	);
 }
 
-function MenuEditorPlacementFields({
-	editingItem,
+export function MenuPlacementFields({
+	item,
 	patchField,
 	items,
 }: {
-	editingItem: NavigationItem;
+	item: NavigationItem;
 	patchField: PatchField;
 	items: NavigationItem[];
 }) {
 	return (
-		<div className="space-y-3">
+		<div className="space-y-4">
 			<div className="space-y-2">
 				<Label>Padre (Nivel superior)</Label>
 				<Select
-					value={editingItem.parent_id || "null"}
+					value={item.parent_id || "null"}
 					onValueChange={(v) => patchField("parent_id", v === "null" ? null : v)}
 				>
 					<SelectTrigger>
@@ -195,14 +179,18 @@ function MenuEditorPlacementFields({
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value="null">Ninguno (Raíz)</SelectItem>
-						{buildParentOptions(items, editingItem.id)}
+						{buildParentOptions(items, item.id)}
 					</SelectContent>
 				</Select>
+				<p className="text-[11px] text-muted-foreground">
+					Define dónde se anida dentro del árbol de navegación.
+				</p>
 			</div>
 			<div className="space-y-2">
-				<Label>App ID</Label>
+				<Label htmlFor="menu-item-app-id">App ID</Label>
 				<Input
-					value={editingItem.app_id || ""}
+					id="menu-item-app-id"
+					value={item.app_id || ""}
 					onChange={(e) => patchField("app_id", e.target.value)}
 					placeholder="roster, bis..."
 				/>
@@ -213,7 +201,7 @@ function MenuEditorPlacementFields({
 			<div className="space-y-2">
 				<Label>Visibilidad</Label>
 				<Select
-					value={editingItem.visibility || "all"}
+					value={item.visibility || "all"}
 					onValueChange={(v) => patchField("visibility", v)}
 				>
 					<SelectTrigger>
@@ -225,16 +213,19 @@ function MenuEditorPlacementFields({
 						<SelectItem value="mobile-only">Solo móvil</SelectItem>
 					</SelectContent>
 				</Select>
+				<p className="text-[11px] text-muted-foreground">
+					Útil para enlaces destacados por dispositivo.
+				</p>
 			</div>
 			<div className="flex items-center justify-between rounded-xl border border-white/5 bg-white/[0.02] px-3 py-2">
 				<div>
 					<p className="text-sm font-medium">Activo</p>
 					<p className="text-[11px] text-muted-foreground">
-						Desactivado se oculta para todos.
+						Si está desactivado, se ocultará para todos.
 					</p>
 				</div>
 				<Switch
-					checked={editingItem.is_active}
+					checked={item.is_active}
 					onCheckedChange={(v) => patchField("is_active", v)}
 				/>
 			</div>
@@ -242,45 +233,54 @@ function MenuEditorPlacementFields({
 	);
 }
 
-function MenuEditorAdvancedFields({
-	editingItem,
+export function MenuAdvancedFields({
+	item,
 	patchField,
 }: {
-	editingItem: NavigationItem;
+	item: NavigationItem;
 	patchField: PatchField;
 }) {
 	return (
-		<div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+		<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 			<div className="space-y-2 md:col-span-3">
-				<Label>Descripción (Mega Menú)</Label>
+				<Label htmlFor="menu-item-description">Descripción (Mega Menú)</Label>
 				<Textarea
-					value={editingItem.description || ""}
+					id="menu-item-description"
+					value={item.description || ""}
 					onChange={(e) => patchField("description", e.target.value)}
 					placeholder="Descripción breve para el mega menú…"
 					rows={2}
 				/>
 			</div>
 			<div className="space-y-2">
-				<Label>Clase CSS</Label>
+				<Label htmlFor="menu-item-css-class">Clase CSS</Label>
 				<Input
-					value={editingItem.css_class || ""}
+					id="menu-item-css-class"
+					value={item.css_class || ""}
 					onChange={(e) => patchField("css_class", e.target.value)}
 					placeholder="text-emerald-500"
 				/>
+				<p className="text-[11px] text-muted-foreground">
+					Colores, énfasis o badges puntuales.
+				</p>
 			</div>
 			<div className="space-y-2">
-				<Label>ID Elemento</Label>
+				<Label htmlFor="menu-item-element-id">ID Elemento</Label>
 				<Input
-					value={editingItem.element_id || ""}
+					id="menu-item-element-id"
+					value={item.element_id || ""}
 					onChange={(e) => patchField("element_id", e.target.value)}
 					placeholder="my-nav-item"
 				/>
+				<p className="text-[11px] text-muted-foreground">
+					Para automatizaciones o pruebas end-to-end.
+				</p>
 			</div>
 		</div>
 	);
 }
 
-function MenuEditorRoleGrid({
+export function MenuRolesGrid({
 	roleOptions,
 	editingRolesSet,
 	onToggleRole,
@@ -323,7 +323,7 @@ function MenuEditorRoleGrid({
 										: "border-white/20",
 								)}
 							>
-								{isSelected && <IconCheck className="size-3.5" />}
+								{isSelected && <IconCheckIcon />}
 							</span>
 							<span className="text-sm font-medium">{role.label}</span>
 						</button>
@@ -337,109 +337,19 @@ function MenuEditorRoleGrid({
 	);
 }
 
-export function MenuEditorContent({
-	editingItem,
-	setEditingItem,
-	roleOptions,
-	editingRolesSet,
-	parentBreadcrumb,
-	handleCopyUrl,
-	items,
-}: MenuEditorContentProps) {
-	const { data: pages } = useApiQuery<AppPage[]>("/api/pages", {});
-	const nameInputRef = React.useRef<HTMLInputElement | null>(null);
-
-	// A new item starts ready to be renamed: focus and select the suggested name.
-	React.useEffect(() => {
-		if (!editingItem.isDraft) return;
-		const timer = setTimeout(() => {
-			nameInputRef.current?.focus();
-			nameInputRef.current?.select();
-		}, 0);
-		return () => clearTimeout(timer);
-	}, [editingItem.isDraft]);
-
-	const activePages = selectActivePages(pages);
-
-	const patchField: PatchField = (field, value) =>
-		setEditingItem((prev: any) => (prev ? { ...prev, [field]: value } : prev));
-
-	const toggleRole = (roleValue: string) =>
-		setEditingItem((prev: any) => {
-			if (!prev) return prev;
-			const current: string[] = prev.roles ?? [];
-			return {
-				...prev,
-				roles: current.includes(roleValue)
-					? current.filter((role) => role !== roleValue)
-					: [...current, roleValue],
-			};
-		});
-
-	const handlePageSelect = (pageId: string) => {
-		const page = activePages.find((candidate) => candidate.id === pageId);
-		if (!page) return;
-		setEditingItem((prev: any) =>
-			prev ? { ...prev, url: page.path, app_id: page.id } : prev,
-		);
-	};
-
+function IconCheckIcon() {
 	return (
-		<div className="flex flex-col gap-4">
-			<MenuEditorSummary
-				editingItem={editingItem}
-				parentBreadcrumb={parentBreadcrumb}
-				handleCopyUrl={handleCopyUrl}
-			/>
-
-			<div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-				<SectionCard
-					title="Contenido principal"
-					description="Nombre, ruta visible e icono."
-				>
-					<MenuEditorContentFields
-						editingItem={editingItem}
-						patchField={patchField}
-						nameInputRef={nameInputRef}
-						activePages={activePages}
-						onSelectPage={handlePageSelect}
-					/>
-				</SectionCard>
-
-				<SectionCard
-					title="Ubicación y estado"
-					description="Jerarquía, App ID y dispositivos."
-				>
-					<MenuEditorPlacementFields
-						editingItem={editingItem}
-						patchField={patchField}
-						items={items}
-					/>
-				</SectionCard>
-
-				<SectionCard
-					title="Presentación avanzada"
-					description="Opcional: mega menú, estilos y anclas."
-					className="lg:col-span-2"
-				>
-					<MenuEditorAdvancedFields
-						editingItem={editingItem}
-						patchField={patchField}
-					/>
-				</SectionCard>
-
-				<SectionCard
-					title="Permisos de visualización"
-					description="Limita quién puede ver el elemento. Sin selección = todos."
-					className="lg:col-span-2"
-				>
-					<MenuEditorRoleGrid
-						roleOptions={roleOptions}
-						editingRolesSet={editingRolesSet}
-						onToggleRole={toggleRole}
-					/>
-				</SectionCard>
-			</div>
-		</div>
+		<svg
+			aria-hidden="true"
+			viewBox="0 0 24 24"
+			className="size-3.5"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="3"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+		>
+			<path d="M5 12l5 5L20 7" />
+		</svg>
 	);
 }

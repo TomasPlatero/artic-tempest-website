@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.11.41
+
+- feat(menu): el editor de un elemento del menú tiene página propia (ATW-38) — se acabó la ventana emergente: «Editar» abre `/zona-raider/configuracion/menu/<id>` y «+» / «Añadir» abren `/zona-raider/configuracion/menu/nuevo` con el contexto de la fila (tipo, categoría padre y posición). Para entrar hace falta permiso de edición en «Menú».
+- feat(menu): todos los campos a pantalla completa — nombre, ruta (con selector de página), icono, categoría padre, App ID, visibilidad, activo, descripción del mega menú, clase CSS, ID de elemento y los permisos por rol — con los botones «Crear elemento» / «Guardar cambios» y «Cancelar» al final. Cancelar no guarda nada y, si el guardado falla, se muestra el error sin perder lo escrito. Al mover un elemento a otra categoría, la posición se recalcula en el nivel de destino.
+- fix(menu): los botones «Expandir» y «Colapsar» del árbol vuelven a funcionar de verdad.
+
 ## 1.11.40
 
 - feat(menu): el editor de un elemento del menú es ahora una ventana centrada con todas las opciones a la vista (ATW-37) — nombre, ruta (con selector de página), icono, categoría padre, App ID, visibilidad, activo, descripción del mega menú, clase CSS, ID de elemento y los permisos por rol, en una sola ventana con los botones siempre visibles. Se acabaron el panel lateral que tapaba el árbol y el scroll largo.

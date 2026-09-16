@@ -1,10 +1,4 @@
 "use client";
-
-export type DropTarget = {
-	id: string;
-	type: "before" | "after" | "inside";
-};
-
 export type NavigationItem = {
 	id: string;
 	name: string;
@@ -19,43 +13,18 @@ export type NavigationItem = {
 	visibility?: string | null;
 	description?: string | null;
 	roles?: string[];
-	/** Draft-only: the item has not been persisted yet (no id in the database). */
-	isDraft?: boolean;
-	/** Draft-only: insert the new item right after this sibling. */
-	insertAfterId?: string | null;
 };
-
 export type MenuUiState = {
 	mounted: boolean;
 	searchQuery: string;
-	expandedCategories: Set<string>;
-	editingItem: NavigationItem | null;
-	activeId: string | null;
-	dropTarget: DropTarget | null;
 };
-
 export type MenuUiAction =
 	| { type: "mounted" }
-	| { type: "setSearchQuery"; value: string }
-	| { type: "setExpandedCategories"; value: Set<string> }
-	| { type: "toggleCategory"; id: string }
-	| { type: "setEditingItem"; value: NavigationItem | null }
-	| {
-			type: "patchEditingItem";
-			updater: (prev: NavigationItem) => NavigationItem;
-	  }
-	| { type: "setActiveId"; value: string | null }
-	| { type: "setDropTarget"; value: DropTarget | null };
-
+	| { type: "setSearchQuery"; value: string };
 export const initialMenuUiState: MenuUiState = {
 	mounted: false,
 	searchQuery: "",
-	expandedCategories: new Set(),
-	editingItem: null,
-	activeId: null,
-	dropTarget: null,
 };
-
 export function menuUiReducer(
 	state: MenuUiState,
 	action: MenuUiAction,
@@ -65,30 +34,6 @@ export function menuUiReducer(
 			return { ...state, mounted: true };
 		case "setSearchQuery":
 			return { ...state, searchQuery: action.value };
-		case "setExpandedCategories":
-			return { ...state, expandedCategories: action.value };
-		case "toggleCategory": {
-			const next = new Set(state.expandedCategories);
-			if (next.has(action.id)) next.delete(action.id);
-			else next.add(action.id);
-			return { ...state, expandedCategories: next };
-		}
-		case "setEditingItem":
-			return {
-				...state,
-				editingItem: action.value as MenuUiState["editingItem"],
-			};
-		case "patchEditingItem":
-			return {
-				...state,
-				editingItem: state.editingItem
-					? action.updater(state.editingItem)
-					: null,
-			};
-		case "setActiveId":
-			return { ...state, activeId: action.value };
-		case "setDropTarget":
-			return { ...state, dropTarget: action.value };
 		default:
 			return state;
 	}

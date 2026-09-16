@@ -62,7 +62,10 @@ const { mockFrom, operations, setResolver } = vi.hoisted(() => {
 		mockFrom,
 		operations,
 		setResolver: (
-			next: (table: string, ops: RecordedOp[]) => { data?: unknown; error?: unknown },
+			next: (
+				table: string,
+				ops: RecordedOp[],
+			) => { data?: unknown; error?: unknown },
 		) => {
 			resolver = next;
 		},
@@ -113,7 +116,9 @@ beforeEach(() => {
 describe("POST /api/admin/navigation", () => {
 	it("creates the item and stores the selected roles", async () => {
 		setResolver((table) =>
-			table === "navigation_items" ? { data: { id: "item-1" }, error: null } : { error: null },
+			table === "navigation_items"
+				? { data: { id: "item-1" }, error: null }
+				: { error: null },
 		);
 
 		const response = await POST(
@@ -196,18 +201,30 @@ describe("POST /api/admin/navigation", () => {
 describe("PATCH /api/admin/navigation", () => {
 	it("adds the missing roles and removes the unchecked ones", async () => {
 		setResolver((table, ops) => {
-			if (table === "navigation_item_roles" && ops.some((op) => op.method === "select")) {
-				return { data: [{ role_level: "gm" }, { role_level: "officer" }], error: null };
+			if (
+				table === "navigation_item_roles" &&
+				ops.some((op) => op.method === "select")
+			) {
+				return {
+					data: [{ role_level: "gm" }, { role_level: "officer" }],
+					error: null,
+				};
 			}
 			return { data: null, error: null };
 		});
 
 		const response = await PATCH(
-			buildRequest("PATCH", { id: "item-5", name: "Roster", roles: ["gm", "raider"] }),
+			buildRequest("PATCH", {
+				id: "item-5",
+				name: "Roster",
+				roles: ["gm", "raider"],
+			}),
 		);
 
 		expect(response.status).toBe(200);
-		expect(insertedRoles()).toEqual([{ item_id: "item-5", role_level: "raider" }]);
+		expect(insertedRoles()).toEqual([
+			{ item_id: "item-5", role_level: "raider" },
+		]);
 		const deleteOp = roleOps().find((op) => op.method === "delete");
 		const inOp = roleOps().find((op) => op.method === "in");
 		expect(deleteOp).toBeDefined();
@@ -216,7 +233,10 @@ describe("PATCH /api/admin/navigation", () => {
 
 	it("inserts before deleting so a failed insert cannot wipe the stored roles", async () => {
 		setResolver((table, ops) => {
-			if (table === "navigation_item_roles" && ops.some((op) => op.method === "select")) {
+			if (
+				table === "navigation_item_roles" &&
+				ops.some((op) => op.method === "select")
+			) {
 				return { data: [{ role_level: "officer" }], error: null };
 			}
 			return { data: null, error: null };
@@ -243,7 +263,10 @@ describe("PATCH /api/admin/navigation", () => {
 
 	it("clears every role when the payload sends an empty list", async () => {
 		setResolver((table, ops) => {
-			if (table === "navigation_item_roles" && ops.some((op) => op.method === "select")) {
+			if (
+				table === "navigation_item_roles" &&
+				ops.some((op) => op.method === "select")
+			) {
 				return { data: [{ role_level: "gm" }], error: null };
 			}
 			return { data: null, error: null };
